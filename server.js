@@ -127,11 +127,14 @@ app.use(
           "wss://*.peerjs.org",
           "wss://0.peerjs.com",
           "ws://localhost:*",
-          "http://localhost:*"
+          "http://localhost:*",
+          "https://lichess.org",
+          "https://*.lichess.org",
+          "https://*.internetchess.org"
         ],
         fontSrc: ["'self'", "data:", "https:", "fonts.gstatic.com"],
         objectSrc: ["'none'"],
-        mediaSrc: ["'self'", "data:", "blob:"],
+        mediaSrc: ["'self'", "data:", "https:", "blob:"],
         frameSrc: ["'self'", "https://*.peerjs.org"],
         workerSrc: ["'self'", "blob:"]
       }

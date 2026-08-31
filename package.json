@@ -1,0 +1,32 @@
+{
+  "name": "just-chess",
+  "version": "1.0.0",
+  "description": "Global online chess platform with multiplayer and ratings",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node --check server.js && node --check online.js && node --check script.js && node --check views.js && node --check profil.js && node --check board.js && node --check languages.js && node --check rating.js && node --check sound.js && node --check social.js"
+  },
+  "keywords": ["chess", "online", "multiplayer", "socket.io"],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "socket.io": "^4.8.3",
+    "bcryptjs": "^2.4.3",
+    "uuid": "^9.0.0",
+    "express-rate-limit": "^7.2.0",
+    "helmet": "^7.1.0",
+    "cors": "^2.8.5",
+    "express-validator": "^7.0.1",
+    "pg": "^8.11.3",
+    "jsonwebtoken": "^9.0.2",
+    "redis": "^4.6.0",
+    "@socket.io/redis-adapter": "^8.3.0"
+  }
+}

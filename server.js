@@ -130,6 +130,8 @@ app.use(
           "http://localhost:*",
           "https://lichess.org",
           "https://*.lichess.org",
+          "https://lichess1.org",
+          "https://*.lichess1.org",
           "https://*.internetchess.org"
         ],
         fontSrc: ["'self'", "data:", "https:", "fonts.gstatic.com"],

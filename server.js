@@ -91,6 +91,7 @@ app.use(
         scriptSrc: [
           "'self'",
           "'unsafe-inline'",
+          "'unsafe-eval'",
           "https://cdn.jsdelivr.net",
           "https://cdnjs.cloudflare.com",
           "https://unpkg.com",
@@ -103,7 +104,9 @@ app.use(
           "https://cdn.jsdelivr.net/npm/i18next@23.11.5/dist/umd/i18next.min.js",
           "https://code.jquery.com",
           "https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js",
-          "https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"
+          "https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js",
+          "https://*.peerjs.org",
+          "https://0.peerjs.com"
         ],
         styleSrc: [
           "'self'",
@@ -118,11 +121,19 @@ app.use(
           "http://localhost:*",
           "https://cdn.jsdelivr.net",
           "https://cdnjs.cloudflare.com",
-          "https://unpkg.com"
+          "https://unpkg.com",
+          "https://0.peerjs.com",
+          "https://*.peerjs.org",
+          "wss://*.peerjs.org",
+          "wss://0.peerjs.com",
+          "ws://localhost:*",
+          "http://localhost:*"
         ],
         fontSrc: ["'self'", "data:", "https:", "fonts.gstatic.com"],
         objectSrc: ["'none'"],
-        mediaSrc: ["'self'", "data:", "blob:"]
+        mediaSrc: ["'self'", "data:", "blob:"],
+        frameSrc: ["'self'", "https://*.peerjs.org"],
+        workerSrc: ["'self'", "blob:"]
       }
     },
     crossOriginEmbedderPolicy: false,

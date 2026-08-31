@@ -83,7 +83,53 @@ async function writeJsonFile(filename, data) {
     console.error(`Fayl yozishda xatolik: ${filename}`, err);
   }
 }
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdn.jsdelivr.net",
+          "https://cdnjs.cloudflare.com",
+          "https://unpkg.com",
+          "https://cdn.jsdelivr.net/npm/chart.js",
+          "https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js",
+          "https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js",
+          "https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js",
+          "https://cdn.socket.io/4.7.2/socket.io.min.js",
+          "https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js",
+          "https://cdn.jsdelivr.net/npm/i18next@23.11.5/dist/umd/i18next.min.js",
+          "https://code.jquery.com",
+          "https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js",
+          "https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"
+        ],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdn.jsdelivr.net",
+          "https://cdnjs.cloudflare.com",
+          "https://unpkg.com"
+        ],
+        imgSrc: ["'self'", "data:", "https:", "blob:"],
+        connectSrc: [
+          "'self'",
+          "http://localhost:*",
+          "https://cdn.jsdelivr.net",
+          "https://cdnjs.cloudflare.com",
+          "https://unpkg.com"
+        ],
+        fontSrc: ["'self'", "data:", "https:", "fonts.gstatic.com"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'", "data:", "blob:"]
+      }
+    },
+    crossOriginEmbedderPolicy: false,
+    crossOriginOpenerPolicy: false,
+    crossOriginResourcePolicy: false
+  })
+);
 app.use(cors({
   origin: true,
   credentials: true

@@ -108,6 +108,7 @@ app.use(
           "https://*.peerjs.org",
           "https://0.peerjs.com"
         ],
+        scriptSrcAttr: ["'self'", "'unsafe-inline'"],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
@@ -132,7 +133,8 @@ app.use(
           "https://*.lichess.org",
           "https://lichess1.org",
           "https://*.lichess1.org",
-          "https://*.internetchess.org"
+          "https://*.internetchess.org",
+          "https://cdn.socket.io"
         ],
         fontSrc: ["'self'", "data:", "https:", "fonts.gstatic.com"],
         objectSrc: ["'none'"],

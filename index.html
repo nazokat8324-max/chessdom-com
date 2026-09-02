@@ -1155,14 +1155,6 @@
             <span class="icon">🏠</span>
             <span id="mClubs">Klublar</span>
           </a>
-          <a class="menu-item" id="navFriends" onclick="switchView('friends')">
-            <span class="icon">👥</span>
-            <span id="mFriends">Do'stlar</span>
-          </a>
-          <a class="menu-item" id="navChat" onclick="switchView('chat')">
-            <span class="icon">💬</span>
-            <span id="mChat">Chat</span>
-          </a>
         </div>
       </div>
       <div class="sidebar-bottom" id="sidebarAuthContainer">
@@ -1222,14 +1214,14 @@
             >
               <span id="streakDisplayText">🔥 1 Day</span>
             </div>
-            <button class="play-big-btn" onclick="startMatchmaking()">
+            <button class="play-big-btn" onclick="switchView('game'); window.pendingOnlineMatchmaking = true;">
               ⚡ Play Online (Matchmaking)
             </button>
-            <button class="play-sub-btn" onclick="switchView('game')">
-              ⏱️ Play 1 daqiqa (Bullet)
+            <button class="play-sub-btn" onclick="switchView('tournaments')">
+              🏅 Turnirlar
             </button>
-            <button class="play-sub-btn" onclick="showPeerModal()">
-              🤖 Do'st bilan P2P o'ynash
+            <button class="play-sub-btn" onclick="switchView('clubs')">
+              🏠 Klublar
             </button>
           </div>
           <!-- O'rtadagi mini taxta bloki -->
@@ -1401,7 +1393,7 @@
 
             <button
               class="start-game-btn"
-              onclick="startNewGame()"
+              onclick="handleStartGame()"
               id="btnStartGame"
             >
               O'yinni boshlash
@@ -2181,98 +2173,39 @@
       </div>
     </div>
 
-    <!-- PEERJS MODAL -->
-    <div
-      id="peerModal"
-      style="
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.7);
-        z-index: 9999;
-        justify-content: center;
-        align-items: center;
-      "
-    >
-      <div
-        class="card-box"
-        style="width: 400px; max-height: 90vh; overflow-y: auto"
-      >
-        <div class="card-title">Do'st bilan O'ynash (P2P)</div>
-        <div
-          style="
-            font-size: 13px;
-            color: #aaa;
-            margin-bottom: 15px;
-            text-align: center;
-          "
-        >
-          Do'stingizga o'zingizning Peer ID ni bering yoki uning ID sini
-          kiriting
-        </div>
-        <div
-          style="
-            margin-bottom: 15px;
-            padding: 10px;
-            background: #192825;
-            border-radius: 6px;
-            text-align: center;
-          "
-        >
-          <span style="font-size: 12px; color: #88a" id="peerIdLabel"
-            >Mening ID:</span
-          >
-          <div
-            id="myPeerId"
-            style="
-              font-size: 14px;
-              color: #81b64c;
-              font-weight: bold;
-              word-break: break-all;
-              margin-top: 5px;
-            "
-          >
-            Yuklanmoqda...
-          </div>
+    <!-- CREATE TOURNAMENT MODAL -->
+    <div id="createTournamentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
+      <div class="card-box" style="width: 420px; max-height: 90vh; overflow-y: auto;">
+        <div class="card-title">Create Tournament</div>
+        <div class="form-group">
+          <label class="form-label">Tournament Name</label>
+          <input type="text" id="tournamentNameInput" class="form-input" placeholder="Enter tournament name" />
         </div>
         <div class="form-group">
-          <label class="form-label" id="friendPeerIdLabel"
-            >Do'stingizning Peer ID si</label
-          >
-          <input
-            type="text"
-            id="friendPeerIdInput"
-            class="form-input"
-            placeholder="Do'stingiz ID sini kiriting"
-          />
+          <label class="form-label">Type</label>
+          <select id="tournamentTypeInput" class="form-input">
+            <option value="arena">24/7 Arena</option>
+            <option value="individual">Individual (Swiss)</option>
+            <option value="team">Team vs Team</option>
+          </select>
         </div>
-        <button
-          class="form-submit"
-          onclick="
-            connectToPeer(document.getElementById('friendPeerIdInput').value)
-          "
-        >
-          Ulanish
-        </button>
-        <button
-          class="action-btn"
-          style="
-            width: 100%;
-            margin-top: 10px;
-            background: #1b2a28;
-            color: #ccc;
-            border: 1px solid #2a3e3b;
-          "
-          onclick="
-            hidePeerModal();
-            leaveOnlineGame();
-          "
-        >
-          Chiqish
-        </button>
+        <div class="form-group">
+          <label class="form-label">Time Control</label>
+          <select id="tournamentTCInput" class="form-input">
+            <option value="1+0">1 min Bullet</option>
+            <option value="3+0">3 min Blitz</option>
+            <option value="5+0">5 min Blitz</option>
+            <option value="10+0">10 min Rapid</option>
+            <option value="15+10">15+10 Rapid</option>
+            <option value="30+0">30 min Rapid</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Max Players</label>
+          <input type="number" id="tournamentMaxPlayers" class="form-input" value="16" min="2" max="64" />
+        </div>
+        <button class="form-submit" onclick="createTournamentFromModal()">Create</button>
+        <button class="action-btn" style="width: 100%; margin-top: 10px; background: #1b2a28; color: #ccc; border: 1px solid #2a3e3b;" onclick="hideCreateTournamentModal()">Cancel</button>
       </div>
     </div>
 
@@ -2348,7 +2281,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="script.js"></script>

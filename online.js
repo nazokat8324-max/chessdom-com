@@ -64,35 +64,10 @@ socket.on('opponent-move', (move) => {
   }
 });
 
-function createOnlineGame() {
-  if (!socket.connected) {
-    alert('Serverga ulanib bo\'lmadi!');
-    return;
-  }
-  socket.emit('create-room');
-}
-
-function joinOnlineGame(roomId) {
-  if (!socket.connected) {
-    alert('Serverga ulanib bo\'lmadi!');
-    return;
-  }
-  if (!roomId || roomId.trim() === '') {
-    alert('Xona kodini kiriting!');
-    return;
-  }
-  currentRoomId = roomId.trim().toUpperCase();
-  socket.emit('join-room', currentRoomId);
-}
-
 function leaveOnlineGame() {
   if (currentRoomId) {
     socket.emit('leave-room', currentRoomId);
     currentRoomId = null;
-  }
-  if (peerConn) {
-    peerConn.close();
-    peerConn = null;
   }
   isOnlineMode = false;
   updateOnlineStatus(false);
@@ -115,108 +90,12 @@ window.updateOnlineStatus = function(online) {
   }
 };
 
-const peer = new Peer();
-let peerConn = null;
-
-peer.on('open', (id) => {
-  console.log('Mening Peer ID raqamim: ' + id);
-  const peerIdEl = document.getElementById('myPeerId');
-  if (peerIdEl) {
-    peerIdEl.textContent = id;
-  }
-});
-
-peer.on('connection', (connection) => {
-  peerConn = connection;
-  console.log('PeerJS orqali do\'st ulandi!');
-  
-  peerConn.on('data', (data) => {
-    handlePeerMove(data);
-  });
-  
-  alert('Do\'stingiz PeerJS orqali ulandi!');
-});
-
-peer.on('error', (err) => {
-  console.error('PeerJS xatolik:', err);
-});
-
-function connectToPeer(friendPeerId) {
-  if (!peer || !peer.id) {
-    alert('Peer hali tayyor emas, ozgina kuting...');
-    return;
-  }
-  
-  if (!friendPeerId || friendPeerId.trim() === '') {
-    alert('Do\'stingizning Peer ID sini kiriting!');
-    return;
-  }
-  
-  if (currentRoomId) {
-    socket.emit('leave-room', currentRoomId);
-    currentRoomId = null;
-  }
-  
-  peerConn = peer.connect(friendPeerId.trim());
-  
-  if (!peerConn) {
-    alert('Ulanishni yaratib bo\'lmadi!');
-    return;
-  }
-
-  peerConn.on('open', () => {
-    console.log('PeerJS orqali muvaffaqiyatli ulandingiz!');
-    alert('Do\'stingizga muvaffaqiyatli ulandingiz!');
-    isOnlineMode = true;
-    updateOnlineStatus(true);
+window.handleStartGame = async function() {
+  if (window.pendingOnlineMatchmaking) {
+    window.pendingOnlineMatchmaking = false;
+    await startMatchmaking();
+  } else {
     if (typeof startNewGame === 'function') startNewGame();
-  });
-  
-  peerConn.on('data', (data) => {
-    handlePeerMove(data);
-  });
-  
-  peerConn.on('close', () => {
-    isOnlineMode = false;
-    updateOnlineStatus(false);
-    peerConn = null;
-  });
-  
-  peerConn.on('error', (err) => {
-    console.error('PeerJS ulanish xatoligi:', err);
-    isOnlineMode = false;
-    updateOnlineStatus(false);
-    peerConn = null;
-  });
-}
-
-function sendMoveViaPeer(moveData) {
-  if (peerConn && peerConn.open) {
-    peerConn.send(moveData);
-  }
-}
-
-function handlePeerMove(move) {
-  if (typeof game !== 'undefined' && typeof board !== 'undefined') {
-    game.move(move);
-    board.position(game.fen());
-    if (typeof updateHistory === 'function') {
-      updateHistory();
-    }
-  }
-}
-
-window.showPeerModal = function() {
-  const modal = document.getElementById('peerModal');
-  if (modal) {
-    modal.style.display = 'flex';
-  }
-};
-
-window.hidePeerModal = function() {
-  const modal = document.getElementById('peerModal');
-  if (modal) {
-    modal.style.display = 'none';
   }
 };
 
@@ -261,6 +140,7 @@ window.startMatchmaking = async function() {
       switchView('game');
       if (typeof startNewGame === 'function') startNewGame();
     } else if (data.success) {
+      switchView('game');
       alert(`Navbatingiz: ${data.position}. Kuting...`);
     }
   } catch (err) {

@@ -2243,6 +2243,7 @@ server.listen(PORT, () => {
   console.log('  GET  /api/leaderboard');
   console.log('  GET  /api/daily-winners');
   console.log('  GET  /api/stats/:username');
+  console.log('  GET  /api/users/:username/games');
   console.log('  POST /api/games');
   console.log('  POST /api/ratings/update');
   console.log('  POST /api/matchmaking/join');

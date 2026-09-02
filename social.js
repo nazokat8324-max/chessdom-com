@@ -785,40 +785,59 @@ window.filterCountries = function() {
 };
 
 window.showCreateTournamentModal = function() {
-  const name = prompt('Turnir nomini kiriting:');
-  if (!name || name.trim().length < 3) {
+  if (!window.currentUser) {
+    alert('Please log in first!');
+    switchView('login');
+    return;
+  }
+  const modal = document.getElementById('createTournamentModal');
+  if (modal) modal.style.display = 'flex';
+};
+
+window.hideCreateTournamentModal = function() {
+  const modal = document.getElementById('createTournamentModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.createTournamentFromModal = async function() {
+  const name = document.getElementById('tournamentNameInput').value.trim();
+  const type = document.getElementById('tournamentTypeInput').value;
+  const tc = document.getElementById('tournamentTCInput').value;
+  const maxPlayers = parseInt(document.getElementById('tournamentMaxPlayers').value) || 16;
+
+  if (!name || name.length < 3) {
     alert('Tournament name must be at least 3 characters!');
     return;
   }
-  
-  const maxPlayers = prompt('Maximum number of players (2-64):', '16');
-  const maxPlayersNum = parseInt(maxPlayers) || 16;
-  
-  fetch('/api/tournaments', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${window.authToken}`
-    },
-    body: JSON.stringify({
-      name: name.trim(),
-      description: '',
-      maxPlayers: Math.max(2, Math.min(64, maxPlayersNum))
-    })
-  })
-  .then(res => res.json())
-  .then(data => {
+
+  try {
+    const res = await fetch('/api/tournaments', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.authToken}`
+      },
+      body: JSON.stringify({
+        name,
+        description: '',
+        maxPlayers: Math.max(2, Math.min(64, maxPlayers)),
+        tournamentType: type,
+        timeControl: tc,
+        rounds: type === 'individual' ? (tc.includes('Bullet') ? 9 : tc.includes('Blitz') ? 7 : 5) : 7
+      })
+    });
+    const data = await res.json();
     if (data.success) {
-       alert('Tournament created!');
+      hideCreateTournamentModal();
+      alert('Tournament created!');
       loadTournaments();
     } else {
-      alert(data.message || 'Xatolik yuz berdi!');
+      alert(data.message || 'Failed to create tournament');
     }
-  })
-  .catch(err => {
-    console.error('Create tournament xatoligi:', err);
-    alert('Serverga ulanib bo\'lmadi!');
-  });
+  } catch (err) {
+    console.error('Create tournament error:', err);
+    alert('Server connection failed');
+  }
 };
 
 window.loadArenas = function() {

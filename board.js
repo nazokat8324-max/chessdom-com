@@ -331,10 +331,6 @@ function onDrop(source, target) {
     sendMove(moveData);
   }
 
-  if (typeof sendMoveViaPeer === 'function' && typeof peerConn !== 'undefined' && peerConn && peerConn.open) {
-    sendMoveViaPeer(moveData);
-  }
-
   if (game.game_over()) {
     clearInterval(timerInterval);
     playSound('gameEnd');

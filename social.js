@@ -98,10 +98,6 @@ const europeanCountries = [
   { name: "Vatican City", code: "va" }
 ];
 
-// Combined list of all national clubs
-const allCountries = [...asianCountries, ...europeanCountries];
-
-// Additional continents
 const africanCountries = [
   { name: "Algeria", code: "dz" },
   { name: "Angola", code: "ao" },
@@ -211,6 +207,9 @@ const oceanianCountries = [
   { name: "Tuvalu", code: "tv" },
   { name: "Vanuatu", code: "vu" }
 ];
+
+// Combined list of all national clubs
+const allCountries = [...asianCountries, ...europeanCountries, ...africanCountries, ...southAmericanCountries, ...northAmericanCountries, ...oceanianCountries];
 
 // Continent-based lookup
 const continentCountries = {

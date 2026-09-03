@@ -2075,6 +2075,78 @@ app.get('/api/clubs/:id/members', async (req, res) => {
     
     res.json({ success: true, members });
   } catch (err) {
+    console.error('Club members xatoligi:', err);
+    res.status(500).json({ success: false, message: 'Server xatoligi!' });
+  }
+});
+
+app.get('/api/clubs/leaderboard', async (req, res) => {
+  try {
+    let clubs = [];
+    let users = [];
+    
+    if (useDatabase) {
+      const clubsResult = await pool.query('SELECT id, name, icon, current_members FROM clubs WHERE is_public = true');
+      clubs = clubsResult.rows;
+      users = await pool.query('SELECT id, stats FROM users');
+    } else {
+      clubs = await readJsonFile('clubs.json', []);
+      clubs = clubs.filter(c => c.is_public);
+      users = await readJsonFile('users.json', []);
+    }
+    
+    const userStatsMap = {};
+    users.forEach(u => {
+      const stats = u.stats || {};
+      userStatsMap[u.id] = {
+        wins: parseInt(stats.wins) || 0,
+        losses: parseInt(stats.losses) || 0,
+        draws: parseInt(stats.draws) || 0
+      };
+    });
+    
+    const leaderboard = await Promise.all(clubs.map(async (club) => {
+      let memberIds = [];
+      
+      if (useDatabase) {
+        const membersResult = await pool.query('SELECT user_id FROM club_members WHERE club_id = $1', [club.id]);
+        memberIds = membersResult.rows.map(r => r.user_id);
+      } else {
+        const allMembers = await readJsonFile('club_members.json', []);
+        memberIds = allMembers.filter(m => m.club_id === club.id).map(m => m.user_id);
+      }
+      
+      let totalWins = 0;
+      let totalLosses = 0;
+      let totalDraws = 0;
+      
+      memberIds.forEach(userId => {
+        const stats = userStatsMap[userId] || { wins: 0, losses: 0, draws: 0 };
+        totalWins += stats.wins;
+        totalLosses += stats.losses;
+        totalDraws += stats.draws;
+      });
+      
+      const games = totalWins + totalLosses + totalDraws;
+      const winPercentage = games > 0 ? ((totalWins / games) * 100).toFixed(1) : '0.0';
+      
+      return {
+        name: club.name || club.icon || '♟️',
+        games,
+        wins: totalWins,
+        losses: totalLosses,
+        winPercentage: parseFloat(winPercentage)
+      };
+    }));
+    
+    leaderboard.sort((a, b) => {
+      if (b.games !== a.games) return b.games - a.games;
+      return parseFloat(b.winPercentage) - parseFloat(a.winPercentage);
+    });
+    
+    res.json({ success: true, leaderboard });
+  } catch (err) {
+    console.error('Club leaderboard xatoligi:', err);
     res.status(500).json({ success: false, message: 'Server xatoligi!' });
   }
 });

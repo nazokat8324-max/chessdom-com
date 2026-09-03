@@ -1,109 +1,204 @@
-window.updateFullLeaderboard = async function() {
-  const container = document.getElementById("fullLeaderboardContainer");
-  if (!container) return;
+window.leaderboardMode = 'players';
+window.leaderboardFilter = 'all';
+window.playersLeaderboardData = [];
+window.clubsLeaderboardData = [];
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Yuklanmoqda...</div>';
+window.switchLeaderboardMode = function(mode) {
+  window.leaderboardMode = mode;
+  
+  const playersTab = document.getElementById("playersTab");
+  const clubsTab = document.getElementById("clubsTab");
+  const filters = document.getElementById("leaderboardFilters");
+  const tableHead = document.getElementById("leaderboardTableHead");
+  const cardTitle = document.getElementById("leaderboardCardTitle");
+  
+  if (mode === 'players') {
+    if (playersTab) playersTab.classList.add('active');
+    if (clubsTab) clubsTab.classList.remove('active');
+    if (filters) filters.style.display = 'flex';
+    if (cardTitle) cardTitle.textContent = "O'yinchilar Reytingi";
+    
+    if (tableHead) {
+      tableHead.innerHTML = `
+        <th>#</th>
+        <th>Player</th>
+        <th>Wins</th>
+        <th>Games</th>
+        <th>Win %</th>
+      `;
+    }
+    
+    renderPlayersTable(window.playersLeaderboardData, window.leaderboardFilter);
+  } else {
+    if (playersTab) playersTab.classList.remove('active');
+    if (clubsTab) clubsTab.classList.add('active');
+    if (filters) filters.style.display = 'none';
+    if (cardTitle) cardTitle.textContent = "Klublar Reytingi";
+    
+    if (tableHead) {
+      tableHead.innerHTML = `
+        <th>#</th>
+        <th>Clan</th>
+        <th>Games</th>
+        <th>Wins</th>
+        <th>Losses</th>
+        <th>Win %</th>
+      `;
+    }
+    
+    renderClubsTable(window.clubsLeaderboardData);
+  }
+};
+
+window.filterLeaderboard = function(filter) {
+  window.leaderboardFilter = filter;
+  
+  document.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.classList.remove('active');
+    if (tab.dataset.filter === filter) {
+      tab.classList.add('active');
+    }
+  });
+  
+  renderPlayersTable(window.playersLeaderboardData, filter);
+};
+
+window.renderPlayersTable = function(players, filter) {
+  const tbody = document.getElementById("leaderboardTableBody");
+  if (!tbody) return;
+  
+  if (!players || players.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #88a; padding: 30px;">Hozircha ro'yxatda o'yinchilar yo'q</td></tr>`;
+    return;
+  }
+  
+  let sorted = players.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  
+  let html = '';
+  sorted.forEach((user, index) => {
+    const wins = parseInt(user.wins) || 0;
+    const losses = parseInt(user.losses) || 0;
+    const draws = parseInt(user.draws) || 0;
+    const games = wins + losses + draws;
+    const winPercentage = games > 0 ? ((wins / games) * 100).toFixed(1) : '0.0';
+    const firstLetter = user.username ? user.username.charAt(0).toUpperCase() : "U";
+    
+    let rankClass = 'rank-other';
+    let rankIcon = '';
+    if (index === 0) {
+      rankClass = 'rank-first';
+      rankIcon = '<span class="trophy-icon">👑</span>';
+    } else if (index === 1) {
+      rankClass = 'rank-second';
+    } else if (index === 2) {
+      rankClass = 'rank-third';
+    }
+    
+    let winPercentClass = 'low';
+    if (parseFloat(winPercentage) >= 50) winPercentClass = 'high';
+    else if (parseFloat(winPercentage) >= 30) winPercentClass = 'medium';
+    
+    html += `
+      <tr class="${rankClass}">
+        <td><span class="rank-badge ${rankClass}">${rankIcon}${index + 1}</span></td>
+        <td>
+          <div class="player-cell">
+            <div class="player-avatar">${firstLetter}</div>
+            <span class="player-name">${user.username}</span>
+          </div>
+        </td>
+        <td>${wins}</td>
+        <td>${games}</td>
+        <td><span class="win-percentage ${winPercentClass}">${winPercentage}%</span></td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+};
+
+window.renderClubsTable = function(clubs) {
+  const tbody = document.getElementById("leaderboardTableBody");
+  if (!tbody) return;
+  
+  if (!clubs || clubs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #88a; padding: 30px;">Hozircha klublar ro'yxati bo'sh</td></tr>`;
+    return;
+  }
+  
+  let html = '';
+  clubs.forEach((club, index) => {
+    const games = parseInt(club.games) || 0;
+    const wins = parseInt(club.wins) || 0;
+    const losses = parseInt(club.losses) || 0;
+    const winPercentage = club.winPercentage || 0;
+    
+    let rankClass = 'rank-other';
+    let rankIcon = '';
+    if (index === 0) {
+      rankClass = 'rank-first';
+      rankIcon = '<span class="trophy-icon">👑</span>';
+    } else if (index === 1) {
+      rankClass = 'rank-second';
+    } else if (index === 2) {
+      rankClass = 'rank-third';
+    }
+    
+    let winPercentClass = 'low';
+    if (winPercentage >= 50) winPercentClass = 'high';
+    else if (winPercentage >= 30) winPercentClass = 'medium';
+    
+    html += `
+      <tr class="${rankClass}">
+        <td><span class="rank-badge ${rankClass}">${rankIcon}${index + 1}</span></td>
+        <td><span class="player-name">${club.name}</span></td>
+        <td>${games}</td>
+        <td>${wins}</td>
+        <td>${losses}</td>
+        <td><span class="win-percentage ${winPercentClass}">${winPercentage.toFixed(1)}%</span></td>
+      </tr>
+    `;
+  });
+  
+  tbody.innerHTML = html;
+};
+
+window.updateFullLeaderboard = async function() {
+  const tbody = document.getElementById("leaderboardTableBody");
+  if (!tbody) return;
+  
+  const currentMode = window.leaderboardMode;
+  const colspan = currentMode === 'clubs' ? 6 : 5;
+  
+  tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>`;
   
   try {
     const res = await fetch('/api/leaderboard');
     if (!res.ok) throw new Error('Failed to fetch');
     const data = await res.json();
-    if (!data.success || !data.leaderboard || data.leaderboard.length === 0) {
-      container.innerHTML = `<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Hozircha ro'yxatda o'yinchilar yo'q</div>`;
-      return;
+    
+    if (data.success && data.leaderboard && data.leaderboard.length > 0) {
+      window.playersLeaderboardData = data.leaderboard;
+    } else {
+      window.playersLeaderboardData = [];
     }
-
-    const sorted = (data.leaderboard || []).slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
-
-    let htmlContent = "";
-    sorted.forEach((user, index) => {
-      const rating = user.rating || 1500;
-      const firstLetter = user.username ? user.username.charAt(0).toUpperCase() : "U";
-
-      let badgeColor = "#555";
-      if (index === 0) badgeColor = "#f1c40f";
-      else if (index === 1) badgeColor = "#bdc3c7";
-      else if (index === 2) badgeColor = "#e67e22";
-
-      htmlContent += `
-        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
-          <div style="display: flex; align-items: center; gap: 12px;">
-            <span style="font-size: 14px; font-weight: bold; width: 22px; text-align: center; color: ${badgeColor};">#${index + 1}</span>
-            <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
-            <div>
-              <b style="font-size: 14px; color: #fff; display: block;">${user.username}</b>
-            </div>
-          </div>
-          <div style="text-align: right;">
-            <span style="color: #f1c40f; font-weight: bold; font-size: 15px;">⭐ ${rating}</span>
-          </div>
-        </div>
-      `;
-    });
-
-    container.innerHTML = htmlContent;
+    
+    const clubRes = await fetch('/api/clubs/leaderboard');
+    if (clubRes.ok) {
+      const clubData = await clubRes.json();
+      if (clubData.success && clubData.leaderboard) {
+        window.clubsLeaderboardData = clubData.leaderboard;
+      }
+    }
+    
+    if (window.leaderboardMode === 'players') {
+      renderPlayersTable(window.playersLeaderboardData, window.leaderboardFilter);
+    } else {
+      renderClubsTable(window.clubsLeaderboardData);
+    }
   } catch (err) {
     console.error('Leaderboard yuklash xatoligi:', err);
-    container.innerHTML = `<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Yuklashda xatolik yuz berdi</div>`;
-  }
-};
-
-window.updateGameHistoryView = async function() {
-  const container = document.getElementById("fullHistoryContainer");
-  if (!container) return;
-
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Yuklanmoqda...</div>';
-  
-  try {
-    let history = [];
-    if (typeof window.currentUser !== 'undefined' && window.currentUser) {
-      const res = await fetch(`/api/users/${encodeURIComponent(window.currentUser.username)}/games`, {
-        headers: { 'Authorization': `Bearer ${window.authToken}` }
-      });
-      if (!res.ok) throw new Error('Failed to fetch');
-      const data = await res.json();
-      if (data.success) {
-        history = data.games || [];
-      }
-    } else {
-      history = JSON.parse(localStorage.getItem("justChessGameHistory")) || [];
-    }
-
-    if (history.length === 0) {
-      container.innerHTML = `<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Hozircha o'yinlar tarixi mavjud emas</div>`;
-      return;
-    }
-
-    let htmlContent = "";
-    history.slice().reverse().forEach((game) => {
-      let resultColor = "#2ecc71";
-      let resultText = "G'alaba";
-      if (game.result === "loss") {
-        resultColor = "#e74c3c";
-        resultText = "Mag'lubiyat";
-      } else if (game.result === "draw") {
-        resultColor = "#f39c12";
-        resultText = "Durrang";
-      }
-
-      htmlContent += `
-        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px 15px; border-radius: 8px;">
-          <div>
-            <b style="font-size: 14px; color: #fff; display: block;">Raqib: ${game.opponent || 'Oq va Qora (Lokal)'}</b>
-            <span style="font-size: 11px; color: #88a;">Sana: ${game.date || 'Yaqinda'}</span>
-          </div>
-          <div style="text-align: right;">
-            <span style="color: ${resultColor}; font-weight: bold; font-size: 13px; display: block;">${resultText}</span>
-            <span style="font-size: 11px; color: #aaa;">Rejimi: ${game.mode || 'Lokal o\'yin'}</span>
-          </div>
-        </div>
-      `;
-    });
-
-    container.innerHTML = htmlContent;
-  } catch (err) {
-    console.error('History yuklash xatoligi:', err);
-    container.innerHTML = `<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Yuklashda xatolik yuz berdi</div>`;
+    tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align: center; color: #888; padding: 20px;">Yuklashda xatolik yuz berdi</td></tr>`;
   }
 };
 

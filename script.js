@@ -178,6 +178,8 @@ window.switchView = function(viewName) {
       window.playAnimation("profileView", "fadeIn");
     }
   } else if (viewName === "leaderboard") {
+    window.leaderboardMode = 'players';
+    window.leaderboardFilter = 'all';
     if (typeof window.updateFullLeaderboard === "function") {
       window.updateFullLeaderboard();
     }
@@ -396,6 +398,57 @@ window.openProfileModal = function() {
   }
 };
 
+window.openLanguageModal = function() {
+  const modal = document.getElementById("languageModal");
+  if (modal) {
+    modal.style.display = "flex";
+    renderLanguageCards();
+  }
+};
+
+window.closeLanguageModal = function() {
+  const modal = document.getElementById("languageModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+};
+
+window.selectLanguage = function(lang) {
+  window.setLanguage(lang);
+  localStorage.setItem("justChessLang", lang);
+  window.closeLanguageModal();
+};
+
+window.renderLanguageCards = function(filter = '') {
+  const grid = document.getElementById("languageGrid");
+  if (!grid) return;
+
+  const languages = [
+    { code: 'uz', name: "O'zbekcha", english: 'Uzbek', flag: '🇺🇿' },
+    { code: 'en', name: 'English', english: 'English', flag: '🇬🇧' },
+    { code: 'ru', name: 'Русский', english: 'Russian', flag: '🇷🇺' },
+    { code: 'es', name: 'Español', english: 'Spanish', flag: '🇪🇸' },
+    { code: 'de', name: 'Deutsch', english: 'German', flag: '🇩🇪' },
+    { code: 'fr', name: 'Français', english: 'French', flag: '🇫🇷' }
+  ];
+
+  const currentLang = window.currentLang || localStorage.getItem("justChessLang") || 'uz';
+
+  grid.innerHTML = languages
+    .filter(lang => 
+      lang.name.toLowerCase().includes(filter.toLowerCase()) ||
+      lang.english.toLowerCase().includes(filter.toLowerCase())
+    )
+    .map(lang => `
+      <div class="language-card ${lang.code === currentLang ? 'active' : ''}" onclick="selectLanguage('${lang.code}')">
+        <div class="language-card-check">✓</div>
+        <div class="language-card-flag">${lang.flag}</div>
+        <div class="language-card-name">${lang.name}</div>
+        <div class="language-card-english">${lang.english}</div>
+      </div>
+    `).join('');
+};
+
 window.updateProfileModalData = function() {
   if (!window.currentUser) return;
 
@@ -408,41 +461,44 @@ window.updateProfileModalData = function() {
   if (usernameDisplay) usernameDisplay.textContent = window.currentUser.username;
   if (handleDisplay) handleDisplay.textContent = "@" + window.currentUser.username;
 
-  const rating = window.currentUser.rating || 1500;
-  if (rapidRating) rapidRating.textContent = rating;
-  if (blitzRating) blitzRating.textContent = rating;
-  if (bulletRating) bulletRating.textContent = rating;
-
   const profileData = JSON.parse(localStorage.getItem("justChessProfileData")) || {};
-  const fideId = profileData.fideId || '14258030';
-  const goal = profileData.goal || 'IM 2027';
-  const debut = profileData.debut || 'Venger ochilishi (1. g3)';
-  const club = profileData.club || 'Angry Tigers';
-  const status = profileData.status || "Faol o'yinchi";
+  const fideId = profileData.fideId || '';
+  const goal = profileData.goal || '';
+  const debut = profileData.debut || '';
+  const club = profileData.club || '';
+  const rapid = profileData.rapid || (window.currentUser.rating || 1500);
+  const blitz = profileData.blitz || (window.currentUser.rating || 1500);
+  const bullet = profileData.bullet || (window.currentUser.rating || 1500);
+
+  if (rapidRating) rapidRating.textContent = rapid;
+  if (blitzRating) blitzRating.textContent = blitz;
+  if (bulletRating) bulletRating.textContent = bullet;
 
   const fideIdEl = document.getElementById("profileFideId");
   const goalEl = document.getElementById("profileGoal");
   const debutEl = document.getElementById("statDebut");
   const clubEl = document.getElementById("statClub");
-  const statusEl = document.getElementById("statStatus");
 
   if (fideIdEl) fideIdEl.textContent = fideId;
   if (goalEl) goalEl.textContent = goal;
   if (debutEl) debutEl.textContent = debut;
   if (clubEl) clubEl.textContent = club;
-  if (statusEl) statusEl.textContent = status;
 
   const inputFideId = document.getElementById("inputFideId");
   const inputGoal = document.getElementById("inputGoal");
   const inputDebut = document.getElementById("inputDebut");
   const inputClub = document.getElementById("inputClub");
-  const inputStatus = document.getElementById("inputStatus");
+  const inputRapid = document.getElementById("inputRapid");
+  const inputBlitz = document.getElementById("inputBlitz");
+  const inputBullet = document.getElementById("inputBullet");
 
   if (inputFideId) inputFideId.value = fideId;
   if (inputGoal) inputGoal.value = goal;
   if (inputDebut) inputDebut.value = debut;
   if (inputClub) inputClub.value = club;
-  if (inputStatus) inputStatus.value = status;
+  if (inputRapid) inputRapid.value = rapid;
+  if (inputBlitz) inputBlitz.value = blitz;
+  if (inputBullet) inputBullet.value = bullet;
 };
 
 window.setProfileEditMode = function(enabled) {
@@ -481,7 +537,9 @@ window.saveProfileData = function() {
     goal: (document.getElementById("inputGoal")?.value || '').trim(),
     debut: (document.getElementById("inputDebut")?.value || '').trim(),
     club: (document.getElementById("inputClub")?.value || '').trim(),
-    status: (document.getElementById("inputStatus")?.value || '').trim()
+    rapid: parseInt(document.getElementById("inputRapid")?.value || '1500', 10) || 1500,
+    blitz: parseInt(document.getElementById("inputBlitz")?.value || '1500', 10) || 1500,
+    bullet: parseInt(document.getElementById("inputBullet")?.value || '1500', 10) || 1500
   };
 
   localStorage.setItem("justChessProfileData", JSON.stringify(profileData));
@@ -491,10 +549,6 @@ window.saveProfileData = function() {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  const langSelect = document.getElementById("langSelect");
-  if (langSelect) {
-    langSelect.value = window.currentLang;
-  }
   window.updateStreakUI();
   window.updateAuthHeaderUI();
   window.updateTopPlayersList();
@@ -533,6 +587,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape" && profileModal && profileModal.style.display === "flex") {
       profileModal.style.display = "none";
     }
+    if (e.key === "Escape" && languageModal && languageModal.style.display === "flex") {
+      languageModal.style.display = "none";
+    }
   });
 
   const editProfileBtn = document.getElementById("editProfileBtn");
@@ -549,6 +606,31 @@ document.addEventListener("DOMContentLoaded", () => {
     cancelProfileBtn.addEventListener("click", () => {
       window.updateProfileModalData();
       window.setProfileEditMode(false);
+    });
+  }
+
+  // Language Modal
+  const languageModal = document.getElementById("languageModal");
+  const closeLanguageBtn = document.getElementById("closeLanguageModal");
+  const languageSearch = document.getElementById("languageSearch");
+
+  if (closeLanguageBtn && languageModal) {
+    closeLanguageBtn.addEventListener("click", () => {
+      languageModal.style.display = "none";
+    });
+  }
+
+  if (languageModal) {
+    languageModal.addEventListener("click", (e) => {
+      if (e.target === languageModal) {
+        languageModal.style.display = "none";
+      }
+    });
+  }
+
+  if (languageSearch) {
+    languageSearch.addEventListener("input", (e) => {
+      window.renderLanguageCards(e.target.value);
     });
   }
 });

@@ -262,7 +262,7 @@ window.updateAuthHeaderUI = function() {
 
   if (window.currentUser) {
     container.innerHTML = `
-      <div class="user-mini-profile" onclick="switchView('profile')">
+      <div class="user-mini-profile" onclick="window.openProfileModal()">
         <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}</div>
         <div class="mini-info">
           <b>${window.currentUser.username}</b>
@@ -388,6 +388,108 @@ window.handleLogout = async function() {
   window.switchView("home");
 };
 
+window.openProfileModal = function() {
+  updateProfileModalData();
+  const profileModal = document.getElementById("profileModal");
+  if (profileModal) {
+    profileModal.style.display = "flex";
+  }
+};
+
+window.updateProfileModalData = function() {
+  if (!window.currentUser) return;
+
+  const usernameDisplay = document.getElementById("profileModalUsername");
+  const handleDisplay = document.getElementById("profileModalHandle");
+  const rapidRating = document.getElementById("statRapid");
+  const blitzRating = document.getElementById("statBlitz");
+  const bulletRating = document.getElementById("statBullet");
+
+  if (usernameDisplay) usernameDisplay.textContent = window.currentUser.username;
+  if (handleDisplay) handleDisplay.textContent = "@" + window.currentUser.username;
+
+  const rating = window.currentUser.rating || 1500;
+  if (rapidRating) rapidRating.textContent = rating;
+  if (blitzRating) blitzRating.textContent = rating;
+  if (bulletRating) bulletRating.textContent = rating;
+
+  const profileData = JSON.parse(localStorage.getItem("justChessProfileData")) || {};
+  const fideId = profileData.fideId || '14258030';
+  const goal = profileData.goal || 'IM 2027';
+  const debut = profileData.debut || 'Venger ochilishi (1. g3)';
+  const club = profileData.club || 'Angry Tigers';
+  const status = profileData.status || "Faol o'yinchi";
+
+  const fideIdEl = document.getElementById("profileFideId");
+  const goalEl = document.getElementById("profileGoal");
+  const debutEl = document.getElementById("statDebut");
+  const clubEl = document.getElementById("statClub");
+  const statusEl = document.getElementById("statStatus");
+
+  if (fideIdEl) fideIdEl.textContent = fideId;
+  if (goalEl) goalEl.textContent = goal;
+  if (debutEl) debutEl.textContent = debut;
+  if (clubEl) clubEl.textContent = club;
+  if (statusEl) statusEl.textContent = status;
+
+  const inputFideId = document.getElementById("inputFideId");
+  const inputGoal = document.getElementById("inputGoal");
+  const inputDebut = document.getElementById("inputDebut");
+  const inputClub = document.getElementById("inputClub");
+  const inputStatus = document.getElementById("inputStatus");
+
+  if (inputFideId) inputFideId.value = fideId;
+  if (inputGoal) inputGoal.value = goal;
+  if (inputDebut) inputDebut.value = debut;
+  if (inputClub) inputClub.value = club;
+  if (inputStatus) inputStatus.value = status;
+};
+
+window.setProfileEditMode = function(enabled) {
+  const metaRows = document.querySelectorAll('.profile-meta-box .meta-row');
+  metaRows.forEach(row => {
+    const textSpan = row.querySelector('.editable-text');
+    const input = row.querySelector('.editable-input');
+    if (textSpan && input) {
+      textSpan.style.display = enabled ? 'none' : 'inline';
+      input.style.display = enabled ? 'inline' : 'none';
+    }
+  });
+
+  const statCards = document.querySelectorAll('.editable-card');
+  statCards.forEach(card => {
+    const textSpan = card.querySelector('.editable-text');
+    const input = card.querySelector('.editable-input');
+    if (textSpan && input) {
+      textSpan.style.display = enabled ? 'none' : 'block';
+      input.style.display = enabled ? 'block' : 'none';
+    }
+  });
+
+  const editBtn = document.getElementById("editProfileBtn");
+  const saveBtn = document.getElementById("saveProfileBtn");
+  const cancelBtn = document.getElementById("cancelProfileBtn");
+
+  if (editBtn) editBtn.style.display = enabled ? 'none' : 'inline-block';
+  if (saveBtn) saveBtn.style.display = enabled ? 'inline-block' : 'none';
+  if (cancelBtn) cancelBtn.style.display = enabled ? 'inline-block' : 'none';
+};
+
+window.saveProfileData = function() {
+  const profileData = {
+    fideId: (document.getElementById("inputFideId")?.value || '').trim(),
+    goal: (document.getElementById("inputGoal")?.value || '').trim(),
+    debut: (document.getElementById("inputDebut")?.value || '').trim(),
+    club: (document.getElementById("inputClub")?.value || '').trim(),
+    status: (document.getElementById("inputStatus")?.value || '').trim()
+  };
+
+  localStorage.setItem("justChessProfileData", JSON.stringify(profileData));
+  window.updateProfileModalData();
+  window.setProfileEditMode(false);
+  showToast("Ma'lumotlar saqlandi", "success");
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   const langSelect = document.getElementById("langSelect");
   if (langSelect) {
@@ -396,6 +498,59 @@ document.addEventListener("DOMContentLoaded", () => {
   window.updateStreakUI();
   window.updateAuthHeaderUI();
   window.updateTopPlayersList();
+
+  // Profile Modal
+  const profileModal = document.getElementById("profileModal");
+  const closeProfileBtn = document.getElementById("closeProfileBtn");
+  const copyProfileLinkBtn = document.getElementById("copyProfileLinkBtn");
+
+  if (closeProfileBtn && profileModal) {
+    closeProfileBtn.addEventListener("click", () => {
+      profileModal.style.display = "none";
+    });
+  }
+
+  if (copyProfileLinkBtn && profileModal) {
+    copyProfileLinkBtn.addEventListener("click", () => {
+      const profileUrl = window.location.origin + "/profile/" + (window.currentUser ? window.currentUser.username : "");
+      navigator.clipboard.writeText(profileUrl).then(() => {
+        showToast("Profil havolasi nusxalandi", "success");
+      }).catch(() => {
+        showToast("Nusxalashda xatolik yuz berdi", "error");
+      });
+    });
+  }
+
+  if (profileModal) {
+    profileModal.addEventListener("click", (e) => {
+      if (e.target === profileModal) {
+        profileModal.style.display = "none";
+      }
+    });
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && profileModal && profileModal.style.display === "flex") {
+      profileModal.style.display = "none";
+    }
+  });
+
+  const editProfileBtn = document.getElementById("editProfileBtn");
+  const saveProfileBtn = document.getElementById("saveProfileBtn");
+  const cancelProfileBtn = document.getElementById("cancelProfileBtn");
+
+  if (editProfileBtn) {
+    editProfileBtn.addEventListener("click", () => window.setProfileEditMode(true));
+  }
+  if (saveProfileBtn) {
+    saveProfileBtn.addEventListener("click", window.saveProfileData);
+  }
+  if (cancelProfileBtn) {
+    cancelProfileBtn.addEventListener("click", () => {
+      window.updateProfileModalData();
+      window.setProfileEditMode(false);
+    });
+  }
 });
 
 document.addEventListener("click", (event) => {

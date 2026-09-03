@@ -1174,6 +1174,345 @@
           opacity: 1;
         }
       }
+
+      /* Profile Modal */
+      .profile-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.2s ease-out;
+      }
+      .profile-container {
+        background: #152220;
+        border: 1px solid #223330;
+        border-radius: 14px;
+        padding: 30px;
+        width: 900px;
+        max-width: 95%;
+        max-height: 85vh;
+        overflow-y: auto;
+        display: flex;
+        gap: 30px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+        animation: scaleIn 0.25s ease-out;
+      }
+      .profile-close-btn {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 22px;
+        cursor: pointer;
+        padding: 5px 10px;
+      }
+      .profile-sidebar-card {
+        background: #192825;
+        border: 1px solid #2a3e3b;
+        border-radius: 10px;
+        padding: 20px;
+        text-align: center;
+        min-width: 220px;
+        height: fit-content;
+      }
+      .profile-avatar-wrapper {
+        margin-bottom: 12px;
+      }
+      .profile-sidebar-card h2 {
+        font-size: 18px;
+        color: #fff;
+        margin: 8px 0 4px;
+      }
+      .profile-sidebar-card p {
+        font-size: 13px;
+        color: #88a;
+        margin: 0;
+      }
+      .profile-badge {
+        display: inline-block;
+        background: #81b64c;
+        color: #111;
+        font-size: 11px;
+        font-weight: bold;
+        padding: 4px 10px;
+        border-radius: 12px;
+        margin-top: 8px;
+      }
+      .profile-meta-box {
+        margin-top: 18px;
+        text-align: left;
+      }
+      .meta-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: #ccc;
+        padding: 6px 0;
+        border-bottom: 1px solid #223330;
+      }
+      .copy-link-btn {
+        width: 100%;
+        margin-top: 12px;
+        padding: 8px;
+        background: #223330;
+        color: #fff;
+        border: 1px solid #2a3e3b;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+      }
+      .profile-stats-content {
+        flex: 1;
+      }
+      .profile-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+      .tab-btn {
+        background: #192825;
+        color: #aaa;
+        border: 1px solid #2a3e3b;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      .tab-btn.active {
+        background: #81b64c;
+        color: #111;
+        border-color: #81b64c;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .stat-card {
+        background: #192825;
+        border: 1px solid #2a3e3b;
+        border-radius: 10px;
+        padding: 14px;
+        text-align: center;
+      }
+      .stat-title {
+        display: block;
+        font-size: 11px;
+        color: #88a;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+      }
+      .stat-value {
+        display: block;
+        font-size: 20px;
+        font-weight: bold;
+        color: #fff;
+      }
+      .stat-value.win {
+        color: #22c55e;
+      }
+
+      /* Profile Modal */
+      .profile-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+      }
+      .profile-container {
+        background: #182823;
+        border: 1px solid #283e37;
+        width: 850px;
+        max-width: 95%;
+        border-radius: 12px;
+        display: flex;
+        padding: 25px;
+        position: relative;
+        color: #fff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      }
+      .profile-close-btn {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: #223831;
+        border: none;
+        color: #fff;
+        font-size: 18px;
+        cursor: pointer;
+        border-radius: 6px;
+        width: 35px;
+        height: 35px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .profile-sidebar-card {
+        width: 300px;
+        background: #121e1a;
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        border: 1px solid #20352e;
+      }
+      .profile-avatar-wrapper {
+        margin-bottom: 12px;
+      }
+      .profile-sidebar-card h2 {
+        margin: 15px 0 5px;
+        font-size: 20px;
+      }
+      .profile-sidebar-card p {
+        color: #8da39b;
+        font-size: 14px;
+        margin-bottom: 10px;
+      }
+      .profile-badge {
+        background: #22c55e20;
+        color: #22c55e;
+        padding: 4px 12px;
+        font-size: 12px;
+        border-radius: 20px;
+        font-weight: bold;
+        margin-bottom: 20px;
+      }
+      .profile-meta-box {
+        width: 100%;
+        font-size: 13px;
+        text-align: left;
+        border-top: 1px solid #20352e;
+        padding-top: 15px;
+      }
+      .meta-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        color: #9ca3af;
+      }
+      .copy-link-btn {
+        width: 100%;
+        background: #20352e;
+        border: 1px solid #2d4a41;
+        color: #fff;
+        padding: 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        margin-top: 10px;
+        font-weight: 500;
+        transition: 0.2s;
+      }
+      .copy-link-btn:hover { background: #2d4a41; }
+      .profile-stats-content {
+        flex: 1;
+        margin-left: 20px;
+        display: flex;
+        flex-direction: column;
+      }
+      .profile-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .tab-btn {
+        background: #d97706;
+        border: 1px solid #d97706;
+        color: #fff;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+      }
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .stat-card {
+        background: #121e1a;
+        border: 1px solid #20352e;
+        padding: 15px;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+      }
+      .stat-title {
+        font-size: 11px;
+        color: #9ca3af;
+        font-weight: bold;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+      }
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #fff;
+      }
+      .stat-value.win { color: #22c55e; }
+      .meta-value {
+        display: flex;
+        align-items: center;
+      }
+      .meta-value .editable-text {
+        text-align: right;
+      }
+      .meta-value .editable-input {
+        background: #1a2e28;
+        border: 1px solid #2d4a41;
+        color: #fff;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 12px;
+        width: auto;
+        min-width: 80px;
+        text-align: right;
+      }
+      .editable-card .editable-input {
+        background: #1a2e28;
+        border: 1px solid #2d4a41;
+        color: #fff;
+        padding: 6px 8px;
+        border-radius: 4px;
+        font-size: 13px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 5px;
+      }
+      .edit-tab-btn {
+        background: #223831;
+        border: 1px solid #2d4a41;
+        margin-left: auto;
+      }
+      .save-tab-btn {
+        background: #22c55e;
+        border: 1px solid #22c55e;
+        color: #111;
+      }
+      .cancel-tab-btn {
+        background: #ef4444;
+        border: 1px solid #ef4444;
+        color: #fff;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
     </style>
     <link
       rel="stylesheet"
@@ -2361,5 +2700,78 @@
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="profile-modal-overlay" style="display: none;">
+      <div class="profile-container">
+        <button class="profile-close-btn" id="closeProfileBtn">&larr;</button>
+        
+        <div class="profile-sidebar-card">
+          <div class="profile-avatar-wrapper">
+            <div style="width: 90px; height: 90px; background: #2d4a41; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 36px;">♔</div>
+          </div>
+          <h2 id="profileModalUsername">Sarvarovich_Zafar</h2>
+          <p id="profileModalHandle">@Sarvarovich_Zafar</p>
+          <span class="profile-badge">CHESSDOM</span>
+
+          <div class="profile-meta-box">
+            <div class="meta-row">
+              <span>FIDE ID</span>
+              <div class="meta-value">
+                <span class="editable-text" id="profileFideId">14258030</span>
+                <input type="text" class="editable-input" id="inputFideId" value="14258030" style="display:none;">
+              </div>
+            </div>
+            <div class="meta-row">
+              <span>Maqsad</span>
+              <div class="meta-value">
+                <span class="editable-text" id="profileGoal">IM 2027</span>
+                <input type="text" class="editable-input" id="inputGoal" value="IM 2027" style="display:none;">
+              </div>
+            </div>
+            <button class="copy-link-btn" id="copyProfileLinkBtn">🔗 Profil havolasini nusxalash</button>
+          </div>
+        </div>
+
+        <div class="profile-stats-content">
+          <div class="profile-tabs">
+            <button class="tab-btn active">📊 Reytinglar</button>
+            <button class="tab-btn edit-tab-btn" id="editProfileBtn">✏️ Tahrirlash</button>
+            <button class="tab-btn save-tab-btn" id="saveProfileBtn" style="display: none;">💾 Saqlash</button>
+            <button class="tab-btn cancel-tab-btn" id="cancelProfileBtn" style="display: none;">✕ Bekor</button>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-title">RAPID REYTING</span>
+              <span class="stat-value" id="statRapid">1900</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">BLITZ REYTING</span>
+              <span class="stat-value" id="statBlitz">1900</span>
+            </div>
+            <div class="stat-card">
+              <span class="stat-title">BULLET REYTING</span>
+              <span class="stat-value" id="statBullet">1900</span>
+            </div>
+            <div class="stat-card editable-card">
+              <span class="stat-title">ENG KUCHLI DEbyut</span>
+              <span class="stat-value editable-text" id="statDebut" style="font-size: 16px; margin-top: 5px;">Venger ochilishi (1. g3)</span>
+              <input type="text" class="editable-input" id="inputDebut" value="Venger ochilishi (1. g3)" style="display: none;">
+            </div>
+            <div class="stat-card editable-card">
+              <span class="stat-title">KLUB</span>
+              <span class="stat-value editable-text" id="statClub" style="font-size: 16px; margin-top: 5px;">Angry Tigers</span>
+              <input type="text" class="editable-input" id="inputClub" value="Angry Tigers" style="display: none;">
+            </div>
+            <div class="stat-card editable-card">
+              <span class="stat-title">STATUS</span>
+              <span class="stat-value win editable-text" id="statStatus" style="font-size: 16px; margin-top: 5px;">Faol o'yinchi</span>
+              <input type="text" class="editable-input" id="inputStatus" value="Faol o'yinchi" style="display: none;">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

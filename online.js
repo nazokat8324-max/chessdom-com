@@ -2,6 +2,7 @@ const socket = io(window.location.origin);
 
 let currentRoomId = null;
 let isOnlineMode = false;
+let gameStartRequested = false;
 
 socket.on('connect', () => {
   console.log('Serverga ulandi:', socket.id);
@@ -19,17 +20,23 @@ socket.on('room-joined', (roomId) => {
   currentRoomId = roomId;
   isOnlineMode = true;
   updateOnlineStatus(true);
-  if (typeof startNewGame === 'function') startNewGame();
+  if (!gameStartRequested && typeof startNewGame === 'function') {
+    gameStartRequested = true;
+    startNewGame();
+  }
 });
 
 socket.on('waiting-for-opponent', (roomId) => {
   currentRoomId = roomId;
-  alert('Raqib kutilmoqda...');
+  showToast('Raqib kutilmoqda...', 'info');
 });
 
 socket.on('opponent-connected', () => {
-  alert('Raqib topildi! O\'yin boshlanishi...');
-  if (typeof startNewGame === 'function') startNewGame();
+  showToast('Raqib topildi! O\'yin boshlanishi...', 'success');
+  if (!gameStartRequested && typeof startNewGame === 'function') {
+    gameStartRequested = true;
+    startNewGame();
+  }
 });
 
 socket.on('opponent-disconnected', () => {

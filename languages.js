@@ -571,13 +571,10 @@ function updateUI() {
   
   const mHome = document.getElementById("mHome"); if (mHome) mHome.textContent = t('mHome');
   const mPlay = document.getElementById("mPlay"); if (mPlay) mPlay.textContent = t('mPlay');
-  const mPuzzles = document.getElementById("mPuzzles"); if (mPuzzles) mPuzzles.textContent = t('mPuzzles');
   const mLeaderboard = document.getElementById("mLeaderboard"); if (mLeaderboard) mLeaderboard.textContent = t('mLeaderboard');
   const mHistory = document.getElementById("mHistory"); if (mHistory) mHistory.textContent = t('mHistory');
   const mTournaments = document.getElementById("mTournaments"); if (mTournaments) mTournaments.textContent = t('tournamentsTitle');
-  const mFriends = document.getElementById("mFriends"); if (mFriends) mFriends.textContent = t('friendsTitle');
   const mClubs = document.getElementById("mClubs"); if (mClubs) mClubs.textContent = t('clubsTitle');
-  const mChat = document.getElementById("mChat"); if (mChat) mChat.textContent = t('mChat');
   
   const dashWelcomeTitle = document.getElementById("dashWelcomeTitle"); if (dashWelcomeTitle) dashWelcomeTitle.textContent = t('dashWelcomeTitle');
   const dashDesc = document.getElementById("dashDesc"); if (dashDesc) dashDesc.textContent = t('dashDesc');

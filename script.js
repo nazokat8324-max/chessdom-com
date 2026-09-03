@@ -114,6 +114,10 @@ window.updateTopPlayersList = async function() {
 };
 
 window.switchView = function(viewName) {
+  if (typeof window.gameStartRequested !== 'undefined') {
+    window.gameStartRequested = false;
+  }
+  
   document
     .querySelectorAll(".view-section")
     .forEach((el) => el.classList.remove("active-view"));

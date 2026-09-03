@@ -729,7 +729,7 @@ window.loadClubs = function() {
         <div class="stamp-perforation"></div>
         ${isJoined ? '<div class="stamp-badge">✓</div>' : ''}
         <div class="stamp-inner">
-          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${country.code}.png" alt="${country.name}" style="width: 64px; height: 42px; border-radius: 3px; display: block;"></div>
+          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${country.code}.png" alt="${country.name}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
           <div class="stamp-country-name">${country.name}</div>
           <div class="stamp-members">${stats.members} members</div>
         </div>
@@ -743,7 +743,13 @@ window.loadClubs = function() {
   container.innerHTML = htmlContent;
 };
 
-window.filterCountries = function() {
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+window.filterCountries = debounce(function() {
   const query = document.getElementById('clubSearchInput').value.toLowerCase().trim();
   const container = document.getElementById('clubsListContainer');
   if (!container) return;
@@ -763,17 +769,19 @@ window.filterCountries = function() {
   filtered.forEach(country => {
     const stats = getClubStats(country.name);
     const isJoined = userClubs.includes(country.name);
+    const safeName = escapeHtml(country.name);
+    const safeCode = escapeHtml(country.code);
 
     htmlContent += `
-      <div class="country-stamp ${isJoined ? 'joined' : ''}" onclick="openClubDetail('${country.name}', '${country.code}')">
+      <div class="country-stamp ${isJoined ? 'joined' : ''}" onclick="openClubDetail('${safeName}', '${safeCode}')">
         <div class="stamp-perforation"></div>
         ${isJoined ? '<div class="stamp-badge">✓</div>' : ''}
         <div class="stamp-inner">
-          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${country.code}.png" alt="${country.name}" style="width: 64px; height: 42px; border-radius: 3px; display: block;"></div>
-          <div class="stamp-country-name">${country.name}</div>
+          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${safeCode}.png" alt="${safeName}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
+          <div class="stamp-country-name">${safeName}</div>
           <div class="stamp-members">${stats.members} members</div>
         </div>
-        <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${country.name}', '${country.code}')">
+        <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${safeName}', '${safeCode}')">
           View
         </button>
       </div>
@@ -781,7 +789,7 @@ window.filterCountries = function() {
   });
 
   container.innerHTML = htmlContent;
-};
+}, 300);
 
 window.showCreateTournamentModal = function() {
   if (!window.currentUser) {
@@ -1573,7 +1581,9 @@ window.showClubChat = function(countryName, countryCode) {
 
   const titleEl = document.getElementById("clubChatTitle");
   if (titleEl) {
-    titleEl.innerHTML = `<img src="https://flagcdn.com/w20/${countryCode}.png" style="width: 20px; height: 14px; margin-right: 8px; border-radius: 2px;"> ${countryName} Club Chat`;
+    const safeCountryName = escapeHtml(countryName);
+    const safeCountryCode = escapeHtml(countryCode);
+    titleEl.innerHTML = `<img src="https://flagcdn.com/w20/${safeCountryCode}.png" style="width: 20px; height: 14px; margin-right: 8px; border-radius: 2px;"> ${safeCountryName} Club Chat`;
   }
 
   const container = document.getElementById("clubChatMessagesContainer");

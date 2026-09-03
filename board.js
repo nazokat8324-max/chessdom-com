@@ -192,7 +192,7 @@ function startTimer() {
         clearInterval(timerInterval);
         saveGameHistory("loss", "Oq va Qora (Lokal)", "Lokal o'yin");
         recordResult("black_win");
-        alert(t.whiteTimeUp);
+        showToast(t.whiteTimeUp, 'error', 5000);
       }
     } else {
       blackTimeLeft = Math.max(0, blackTimeLeft - 0.2);
@@ -208,7 +208,7 @@ function startTimer() {
         clearInterval(timerInterval);
         saveGameHistory("win", "Oq va Qora (Lokal)", "Lokal o'yin");
         recordResult("white_win");
-        alert(t.blackTimeUp);
+        showToast(t.blackTimeUp, 'error', 5000);
       }
     }
     updateTimersDisplay();
@@ -255,8 +255,21 @@ function resignGame() {
   const result = currentTurn === "w" ? "loss" : "win";
   saveGameHistory(result, "Oq va Qora (Lokal)", "Lokal o'yin");
   recordResult(currentTurn === "w" ? "black_win" : "white_win");
-  alert(currentTurn === "w" ? t.whiteResigned : t.blackResigned);
+  showToast(currentTurn === "w" ? t.whiteResigned : t.blackResigned, 'error', 5000);
 }
+
+window.undoMove = function() {
+  if (!game || game.history().length === 0) {
+    showToast('Qaytarish uchun yurishlar yo\'q!', 'warning');
+    return;
+  }
+  
+  game.undo();
+  if (board) board.position(game.fen());
+  updateHistory();
+  saveGameState();
+  showToast('Oxirgi yurish qaytarildi', 'info');
+};
 
 window.toggleRated = function() {
   const toggle = document.getElementById('ratedToggle');
@@ -348,11 +361,11 @@ function onDrop(source, target) {
       const result = game.turn() === 'w' ? "loss" : "win";
       saveGameHistory(result, "Oq va Qora (Lokal)", "Lokal o'yin");
       recordResult(winner);
-      alert("Shaxmat! O'yin tugadi.");
+      showToast("Shaxmat! O'yin tugadi.", 'success', 5000);
     } else {
       saveGameHistory("draw", "Oq va Qora (Lokal)", "Lokal o'yin");
       recordResult("draw");
-      alert("Durang!");
+      showToast("Durang!", 'warning', 5000);
     }
   }
 }
@@ -396,4 +409,184 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("chessBoard")) {
     board = Chessboard('chessBoard', config);
   }
+  
+  restoreGameState();
 });
+
+// Toast notification system
+function showToast(message, type = 'info', duration = 3000) {
+  const container = document.getElementById('toastContainer');
+  if (!container) return;
+  
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icons = {
+    success: '✓',
+    error: '✕',
+    info: 'ℹ',
+    warning: '⚠'
+  };
+  
+  toast.innerHTML = `<span>${icons[type] || 'ℹ'}</span><span>${message}</span>`;
+  container.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.classList.add('removing');
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.parentNode.removeChild(toast);
+      }
+    }, 300);
+  }, duration);
+}
+
+// Game state preservation
+function saveGameState() {
+  if (!game || !board) return;
+  
+  const state = {
+    fen: game.fen(),
+    history: game.history(),
+    whiteTime: whiteTimeLeft,
+    blackTime: blackTimeLeft,
+    initialTime: initialTime,
+    gameStarted: gameStarted,
+    timestamp: Date.now()
+  };
+  
+  sessionStorage.setItem('chessGameState', JSON.stringify(state));
+}
+
+function restoreGameState() {
+  const saved = sessionStorage.getItem('chessGameState');
+  if (!saved) return;
+  
+  try {
+    const state = JSON.parse(saved);
+    const timeDiff = Date.now() - state.timestamp;
+    
+    if (timeDiff < 3600000 && state.fen) {
+      game.load(state.fen);
+      if (board) board.position(state.fen);
+      
+      whiteTimeLeft = state.whiteTime || 300;
+      blackTimeLeft = state.blackTime || 300;
+      initialTime = state.initialTime || 300;
+      gameStarted = state.gameStarted || false;
+      
+      updateTimersDisplay();
+      
+      if (gameStarted) {
+        const preGameControls = document.getElementById('preGameControls');
+        const inGameControls = document.getElementById('inGameControls');
+        if (preGameControls) preGameControls.style.display = 'none';
+        if (inGameControls) inGameControls.style.display = 'block';
+        startTimer();
+      }
+      
+      if (state.history && state.history.length > 0) {
+        if (moveHistoryPanel) moveHistoryPanel.style.display = 'block';
+        updateHistory();
+      }
+      
+      showToast('O\'yin holati tiklandi', 'success');
+    } else {
+      sessionStorage.removeItem('chessGameState');
+    }
+  } catch (e) {
+    console.error('Game state restore error:', e);
+    sessionStorage.removeItem('chessGameState');
+  }
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  
+  if (e.key === 'Escape') {
+    const modals = document.querySelectorAll('[style*="display: flex"], [style*="display: block"]');
+    modals.forEach(modal => {
+      if (modal.id && (modal.id.includes('Modal') || modal.id.includes('modal'))) {
+        modal.style.display = 'none';
+      }
+    });
+  }
+  
+  if (e.ctrlKey || e.metaKey) {
+    switch (e.key.toLowerCase()) {
+      case 'z':
+        e.preventDefault();
+        if (typeof undoMove === 'function') undoMove();
+        break;
+      case 'r':
+        e.preventDefault();
+        switchView('leaderboard');
+        break;
+    }
+  }
+});
+
+// 50-move rule and 3-fold repetition
+let halfMoveClock = 0;
+let positionHistory = [];
+
+const originalOnSnapEnd = onSnapEnd;
+onSnapEnd = function() {
+  originalOnSnapEnd();
+  
+  const history = game.history();
+  if (history.length > 0 && (history[history.length - 1].includes('x') || history[history.length - 1].includes('O-O'))) {
+    halfMoveClock = 0;
+  } else {
+    halfMoveClock++;
+  }
+  
+  const fen = game.fen();
+  positionHistory.push(fen);
+  const repetitions = positionHistory.filter(pos => pos === fen).length;
+  
+  if (halfMoveClock >= 100) {
+    showToast('50 harakat qoidasi: Durrang!', 'warning', 5000);
+    saveGameHistory('draw', 'Oq va Qora (Lokal)', 'Lokal o\'yin');
+    recordResult('draw');
+    clearInterval(timerInterval);
+  } else if (repetitions >= 3) {
+    showToast('3 ta takroranish: Durrang!', 'warning', 5000);
+    saveGameHistory('draw', 'Oq va Qora (Lokal)', 'Lokal o\'yin');
+    recordResult('draw');
+    clearInterval(timerInterval);
+  }
+  
+  saveGameState();
+};
+
+// Time forfeit detection
+function checkTimeForfeit() {
+  if (!gameStarted || game.game_over()) return;
+  
+  if (whiteTimeLeft <= 0 && game.turn() === 'w') {
+    showToast('Oq vaqtdan chiqdi! Qora g\'alaba!', 'error', 5000);
+    saveGameHistory('loss', 'Oq va Qora (Lokal)', 'Lokal o\'yin');
+    recordResult('black_win');
+    clearInterval(timerInterval);
+  } else if (blackTimeLeft <= 0 && game.turn() === 'b') {
+    showToast('Qora vaqtdan chiqdi! Oq g\'alaba!', 'error', 5000);
+    saveGameHistory('win', 'Oq va Qora (Lokal)', 'Lokal o\'yin');
+    recordResult('white_win');
+    clearInterval(timerInterval);
+  }
+}
+
+// Debounce utility
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}

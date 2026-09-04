@@ -74,13 +74,33 @@ window.renderPlayersTable = function(players, filter) {
   
   let sorted = players.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
   
+  if (filter !== 'all') {
+    const modeStats = (user) => user.statsByMode?.[filter] || { wins: 0, losses: 0, draws: 0 };
+    sorted = sorted.filter(user => {
+      const stats = modeStats(user);
+      return (stats.wins || 0) + (stats.losses || 0) + (stats.draws || 0) > 0;
+    });
+  }
+  
   let html = '';
   sorted.forEach((user, index) => {
-    const wins = parseInt(user.wins) || 0;
-    const losses = parseInt(user.losses) || 0;
-    const draws = parseInt(user.draws) || 0;
-    const games = wins + losses + draws;
-    const winPercentage = games > 0 ? ((wins / games) * 100).toFixed(1) : '0.0';
+    const modeStats = user.statsByMode?.[filter] || { wins: 0, losses: 0, draws: 0 };
+    
+    let wins, losses, draws, games, winPercentage;
+    if (filter === 'all') {
+      wins = parseInt(user.wins) || 0;
+      losses = parseInt(user.losses) || 0;
+      draws = parseInt(user.draws) || 0;
+      games = wins + losses + draws;
+      winPercentage = games > 0 ? ((wins / games) * 100).toFixed(1) : '0.0';
+    } else {
+      wins = parseInt(modeStats.wins) || 0;
+      losses = parseInt(modeStats.losses) || 0;
+      draws = parseInt(modeStats.draws) || 0;
+      games = wins + losses + draws;
+      winPercentage = games > 0 ? ((wins / games) * 100).toFixed(1) : '0.0';
+    }
+    
     const firstLetter = user.username ? user.username.charAt(0).toUpperCase() : "U";
     
     let rankClass = 'rank-other';

@@ -10,6 +10,13 @@ let initialTime = 300,
   blackTimeLeft = 300;
 let timerInterval = null;
 let gameStarted = false;
+window.currentGameTimeControl = 'blitz';
+
+function getGameModeFromTime(sec) {
+  if (sec <= 120) return 'bullet';
+  if (sec <= 300) return 'blitz';
+  return 'rapid';
+}
 
 function updateStatsDisplay() {
   const sWins = document.getElementById("statWins");
@@ -32,30 +39,61 @@ function updateStatsDisplay() {
 }
 
 function recordResult(res) {
+  if (!window.statsByMode) {
+    window.statsByMode = {
+      rapid: { wins: 0, losses: 0, draws: 0 },
+      blitz: { wins: 0, losses: 0, draws: 0 },
+      bullet: { wins: 0, losses: 0, draws: 0 }
+    };
+  }
+  const mode = window.currentGameTimeControl;
+  if (!window.statsByMode[mode]) {
+    window.statsByMode[mode] = { wins: 0, losses: 0, draws: 0 };
+  }
+
   if (res === "white_win") {
     window.stats.wins++;
+    window.statsByMode[mode].wins++;
     if (typeof updateRating === 'function') updateRating('win');
   } else if (res === "black_win") {
     window.stats.losses++;
+    window.statsByMode[mode].losses++;
     if (typeof updateRating === 'function') updateRating('loss');
   } else if (res === "draw") {
     window.stats.draws++;
+    window.statsByMode[mode].draws++;
     if (typeof updateRating === 'function') updateRating('draw');
   }
   updateStatsDisplay();
+  if (window.currentUser) {
+    window.currentUser.statsByMode = window.statsByMode;
+    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+    let users = JSON.parse(localStorage.getItem("justChessAllUsers")) || [];
+    users = users.map((u) => u.username === window.currentUser.username ? window.currentUser : u);
+    localStorage.setItem("justChessAllUsers", JSON.stringify(users));
+  } else {
+    localStorage.setItem("justChessStatsByMode", JSON.stringify(window.statsByMode));
+  }
 }
 
 window.resetStats = function() {
   if (!confirm("Haqiqatan ham statistikalarni tozalashni xohlaysizmi?")) return;
   window.stats = { wins: 0, losses: 0, draws: 0 };
+  window.statsByMode = {
+    rapid: { wins: 0, losses: 0, draws: 0 },
+    blitz: { wins: 0, losses: 0, draws: 0 },
+    bullet: { wins: 0, losses: 0, draws: 0 }
+  };
   if (window.currentUser) {
     window.currentUser.stats = window.stats;
+    window.currentUser.statsByMode = window.statsByMode;
     localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
     let users = JSON.parse(localStorage.getItem("justChessAllUsers")) || [];
     users = users.map((u) => u.username === window.currentUser.username ? window.currentUser : u);
     localStorage.setItem("justChessAllUsers", JSON.stringify(users));
   } else {
     localStorage.setItem("justChessGuestStats", JSON.stringify(window.stats));
+    localStorage.setItem("justChessStatsByMode", JSON.stringify(window.statsByMode));
   }
   updateStatsDisplay();
   updateRatingDisplay();
@@ -114,6 +152,7 @@ function saveGameHistory(result, opponent, mode) {
     result: result,
     opponent: opponent || 'Lokal',
     mode: mode || 'Lokal o\'yin',
+    timeControl: window.currentGameTimeControl || 'blitz',
     moves: game.history()
   };
 
@@ -145,6 +184,7 @@ function saveGameHistory(result, opponent, mode) {
         result: result,
         opponent: opponent || 'Lokal',
         mode: mode || 'Lokal o\'yin',
+        timeControl: window.currentGameTimeControl || 'blitz',
         moves: game.history()
       })
     }).catch(err => console.error('Game save xatoligi:', err));
@@ -220,6 +260,7 @@ function setGameTime(sec, btnElement) {
   initialTime = whiteTimeLeft = blackTimeLeft = sec;
   gameStarted = false;
   game.reset();
+  window.currentGameTimeControl = getGameModeFromTime(sec);
   updateTimersDisplay();
   updateHistory();
   

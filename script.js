@@ -2,7 +2,12 @@ if (typeof window.currentLang === 'undefined') {
   window.currentLang = localStorage.getItem("justChessLang") || "uz";
 }
 window.currentUser = JSON.parse(localStorage.getItem("justChessCurrentUser")) || null;
-window.stats = window.currentUser ? window.currentUser.stats : { wins: 0, losses: 0, draws: 0 };
+window.stats = window.currentUser ? window.currentUser.stats : localStorage.getItem("justChessGuestStats") ? JSON.parse(localStorage.getItem("justChessGuestStats")) : { wins: 0, losses: 0, draws: 0 };
+window.statsByMode = (window.currentUser && window.currentUser.statsByMode) || JSON.parse(localStorage.getItem("justChessStatsByMode")) || {
+  rapid: { wins: 0, losses: 0, draws: 0 },
+  blitz: { wins: 0, losses: 0, draws: 0 },
+  bullet: { wins: 0, losses: 0, draws: 0 }
+};
 window.authToken = localStorage.getItem("justChessAuthToken") || null;
 
 window.playAnimation = function(elementId, animationName, callback) {

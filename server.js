@@ -38,6 +38,12 @@ async function checkDatabaseConnection() {
     await pool.query('SELECT 1');
     useDatabase = true;
     console.log('PostgreSQL ishlayapti');
+    try {
+      await pool.query("ALTER TABLE users ADD COLUMN IF NOT EXISTS stats_by_mode JSONB DEFAULT '{\"rapid\":{\"wins\":0,\"losses\":0,\"draws\":0},\"blitz\":{\"wins\":0,\"losses\":0,\"draws\":0},\"bullet\":{\"wins\":0,\"losses\":0,\"draws\":0}}'::jsonb");
+    } catch (e) { console.log('stats_by_mode migrate:', e.message); }
+    try {
+      await pool.query("ALTER TABLE games ADD COLUMN IF NOT EXISTS time_control VARCHAR(20) DEFAULT 'blitz'");
+    } catch (e) { console.log('time_control migrate:', e.message); }
   } catch (err) {
     console.log('PostgreSQL ulanmadi, localStorage/JSON rejimida ishlayapmiz');
     useDatabase = false;
@@ -250,7 +256,7 @@ async function createUser(user) {
   return result.rows[0];
 }
 
-async function updateUserStats(userId, result, opponent, mode, moves) {
+async function updateUserStats(userId, result, opponent, mode, moves, timeControl) {
   const user = await getUserById(userId);
   if (!user) return null;
   
@@ -258,6 +264,19 @@ async function updateUserStats(userId, result, opponent, mode, moves) {
   if (result === 'win') stats.wins++;
   else if (result === 'loss') stats.losses++;
   else stats.draws++;
+  
+  const statsByMode = user.statsByMode || {
+    rapid: { wins: 0, losses: 0, draws: 0 },
+    blitz: { wins: 0, losses: 0, draws: 0 },
+    bullet: { wins: 0, losses: 0, draws: 0 }
+  };
+  const modeKey = timeControl || 'blitz';
+  if (!statsByMode[modeKey]) {
+    statsByMode[modeKey] = { wins: 0, losses: 0, draws: 0 };
+  }
+  if (result === 'win') statsByMode[modeKey].wins++;
+  else if (result === 'loss') statsByMode[modeKey].losses++;
+  else statsByMode[modeKey].draws++;
   
   const history = user.history || [];
   history.push({
@@ -267,26 +286,28 @@ async function updateUserStats(userId, result, opponent, mode, moves) {
     result: result,
     opponent: opponent || 'Lokal',
     mode: mode || 'Lokal o\'yin',
+    timeControl: timeControl || 'blitz',
     moves: moves || []
   });
   
   if (useDatabase) {
     await pool.query(
-      'UPDATE users SET stats = $1, history = $2, last_active = $3 WHERE id = $4',
-      [JSON.stringify(stats), JSON.stringify(history), new Date().toISOString(), userId]
+      'UPDATE users SET stats = $1, stats_by_mode = $2, history = $3, last_active = $4 WHERE id = $5',
+      [JSON.stringify(stats), JSON.stringify(statsByMode), JSON.stringify(history), new Date().toISOString(), userId]
     );
   } else {
     const users = await readJsonFile('users.json', []);
     const idx = users.findIndex(u => u.id === userId);
     if (idx !== -1) {
       users[idx].stats = stats;
+      users[idx].statsByMode = statsByMode;
       users[idx].history = history;
       users[idx].last_active = new Date().toISOString();
       await writeJsonFile('users.json', users);
     }
   }
   
-  return { stats, history };
+  return { stats, statsByMode, history };
 }
 
 async function updateUserRating(userId, newRating) {
@@ -472,7 +493,7 @@ app.get('/api/leaderboard', async (req, res) => {
   try {
     let users = [];
     if (useDatabase) {
-      const result = await pool.query('SELECT username, rating, stats FROM users ORDER BY rating DESC LIMIT 100');
+      const result = await pool.query('SELECT username, rating, stats, stats_by_mode FROM users ORDER BY rating DESC LIMIT 100');
       users = result.rows;
     } else {
       users = await readJsonFile('users.json', []);
@@ -482,7 +503,12 @@ app.get('/api/leaderboard', async (req, res) => {
       wins: parseInt(u.stats?.wins) || 0,
       losses: parseInt(u.stats?.losses) || 0,
       draws: parseInt(u.stats?.draws) || 0,
-      rating: u.rating || 1500
+      rating: u.rating || 1500,
+      statsByMode: u.statsByMode || u.stats_by_mode || {
+        rapid: { wins: 0, losses: 0, draws: 0 },
+        blitz: { wins: 0, losses: 0, draws: 0 },
+        bullet: { wins: 0, losses: 0, draws: 0 }
+      }
     })).sort((a, b) => (b.rating || 0) - (a.rating || 0));
     res.json({ success: true, leaderboard });
   } catch (err) {
@@ -567,7 +593,8 @@ app.post('/api/games', authMiddleware, [
   body('result').isIn(['win', 'loss', 'draw']).withMessage('Invalid result'),
   body('opponent').optional().isLength({ max: 100 }),
   body('mode').optional().isLength({ max: 50 }),
-  body('moves').optional().isArray()
+  body('moves').optional().isArray(),
+  body('timeControl').optional().isIn(['rapid', 'blitz', 'bullet']).withMessage('Invalid time control')
 ], async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -575,8 +602,8 @@ app.post('/api/games', authMiddleware, [
       return res.status(400).json({ success: false, message: errors.array()[0].msg });
     }
     
-    const { result, opponent, mode, moves } = req.body;
-    const updated = await updateUserStats(req.user.userId, result, opponent, mode, moves);
+    const { result, opponent, mode, moves, timeControl } = req.body;
+    const updated = await updateUserStats(req.user.userId, result, opponent, mode, moves, timeControl);
     
     if (!updated) {
       return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });

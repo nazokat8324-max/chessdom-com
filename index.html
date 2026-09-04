@@ -164,17 +164,37 @@
         animation: slideIn 0.3s ease-out;
         min-width: 250px;
       }
-      .toast.success { border-left: 4px solid #2ecc71; }
-      .toast.error { border-left: 4px solid #e74c3c; }
-      .toast.info { border-left: 4px solid #3498db; }
-      .toast.warning { border-left: 4px solid #f39c12; }
+      .toast.success {
+        border-left: 4px solid #2ecc71;
+      }
+      .toast.error {
+        border-left: 4px solid #e74c3c;
+      }
+      .toast.info {
+        border-left: 4px solid #3498db;
+      }
+      .toast.warning {
+        border-left: 4px solid #f39c12;
+      }
       @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
       }
       @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
+        from {
+          transform: translateX(0);
+          opacity: 1;
+        }
+        to {
+          transform: translateX(100%);
+          opacity: 0;
+        }
       }
       .toast.removing {
         animation: slideOut 0.3s ease-in forwards;
@@ -202,7 +222,9 @@
         animation: spin 0.8s linear infinite;
       }
       @keyframes spin {
-        to { transform: rotate(360deg); }
+        to {
+          transform: rotate(360deg);
+        }
       }
       .lang-select {
         background: #192825;
@@ -1344,7 +1366,7 @@
         padding: 25px;
         position: relative;
         color: #fff;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       }
       .profile-close-btn {
         position: absolute;
@@ -1419,7 +1441,9 @@
         font-weight: 500;
         transition: 0.2s;
       }
-      .copy-link-btn:hover { background: #2d4a41; }
+      .copy-link-btn:hover {
+        background: #2d4a41;
+      }
       .profile-stats-content {
         flex: 1;
         margin-left: 20px;
@@ -1464,7 +1488,9 @@
         font-weight: bold;
         color: #fff;
       }
-      .stat-value.win { color: #22c55e; }
+      .stat-value.win {
+        color: #22c55e;
+      }
       .meta-value {
         display: flex;
         align-items: center;
@@ -1510,8 +1536,12 @@
         color: #fff;
       }
       @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
       }
       .lang-select-btn {
         background: #192825;
@@ -1546,7 +1576,7 @@
         max-height: 85vh;
         overflow-y: auto;
         padding: 25px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
       }
       .language-modal-header {
         display: flex;
@@ -1701,7 +1731,11 @@
         background: #1a2e28;
       }
       .leaderboard-table tbody tr.rank-first td {
-        background: linear-gradient(90deg, rgba(241, 196, 15, 0.15), rgba(241, 196, 15, 0.05));
+        background: linear-gradient(
+          90deg,
+          rgba(241, 196, 15, 0.15),
+          rgba(241, 196, 15, 0.05)
+        );
         border-color: rgba(241, 196, 15, 0.3);
       }
       .leaderboard-table tbody tr.rank-first td:first-child {
@@ -1772,6 +1806,124 @@
       }
       .clubs-table-head th {
         text-align: left;
+      }
+      .signup-btn {
+        background: #81b64c;
+        border: 1px solid #81b64c;
+        color: #111;
+        padding: 6px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: bold;
+        transition: 0.2s;
+        margin-left: 8px;
+      }
+      .signup-btn:hover {
+        background: #d97706;
+        border-color: #d97706;
+      }
+      .register-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.75);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(5px);
+      }
+      .register-modal-container {
+        background: #182823;
+        border: 1px solid #283e37;
+        border-radius: 12px;
+        width: 420px;
+        max-width: 95%;
+        max-height: 85vh;
+        overflow-y: auto;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      .register-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+      .register-modal-header h2 {
+        color: #fff;
+        font-size: 20px;
+        font-weight: bold;
+        margin: 0;
+      }
+      .register-modal-close {
+        background: none;
+        border: none;
+        color: #fff;
+        font-size: 22px;
+        cursor: pointer;
+        padding: 5px 10px;
+      }
+      .register-form-group {
+        margin-bottom: 18px;
+      }
+      .register-form-group label {
+        display: block;
+        color: #9ca3af;
+        font-size: 12px;
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+      .register-form-group input,
+      .register-form-group select {
+        width: 100%;
+        background: #121e1a;
+        border: 1px solid #20352e;
+        color: #fff;
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        box-sizing: border-box;
+      }
+      .register-form-group input:focus,
+      .register-form-group select:focus {
+        border-color: #81b64c;
+      }
+      .register-submit-btn {
+        width: 100%;
+        background: #81b64c;
+        border: none;
+        color: #111;
+        padding: 12px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: 0.2s;
+        margin-bottom: 15px;
+      }
+      .register-submit-btn:hover {
+        background: #d97706;
+      }
+      .register-switch {
+        text-align: center;
+        font-size: 13px;
+        color: #88a;
+      }
+      .register-switch a {
+        color: #81b64c;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      .register-error {
+        color: #e74c3c;
+        font-size: 12px;
+        margin-top: 4px;
+        display: none;
       }
     </style>
     <link
@@ -1854,8 +2006,19 @@
           style="font-size: 12px; color: #f39c12; display: none"
           >🔍 Qidirilmoqda...</span
         >
-        <button class="lang-select-btn" id="langSelectBtn" onclick="window.openLanguageModal()">
+        <button
+          class="lang-select-btn"
+          id="langSelectBtn"
+          onclick="window.openLanguageModal()"
+        >
           🌐 Til
+        </button>
+        <button
+          class="signup-btn"
+          id="signupBtn"
+          onclick="window.openRegisterModal()"
+        >
+          Ro'yxatdan o'tish
         </button>
       </div>
 
@@ -1870,7 +2033,13 @@
             >
               <span id="streakDisplayText">🔥 1 Day</span>
             </div>
-            <button class="play-big-btn" onclick="switchView('game'); window.pendingOnlineMatchmaking = true;">
+            <button
+              class="play-big-btn"
+              onclick="
+                switchView('game');
+                window.pendingOnlineMatchmaking = true;
+              "
+            >
               ⚡ Play Online (Matchmaking)
             </button>
             <button class="play-sub-btn" onclick="switchView('tournaments')">
@@ -2215,7 +2384,10 @@
         class="view-section"
         style="justify-content: center; align-items: center"
       >
-        <div class="card-box" style="width: 450px; max-height: 80vh; overflow-y: auto">
+        <div
+          class="card-box"
+          style="width: 450px; max-height: 80vh; overflow-y: auto"
+        >
           <div class="card-title" id="profileCardTitle">Shaxsiy Profil</div>
           <div class="profile-header-card">
             <div class="avatar-circle" id="profileAvatar">U</div>
@@ -2290,23 +2462,70 @@
         class="card-box leaderboard-card"
         style="width: 700px; max-height: 85vh; overflow-y: auto"
       >
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-          <div class="card-title" id="leaderboardCardTitle" style="margin-bottom: 0;">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <div
+            class="card-title"
+            id="leaderboardCardTitle"
+            style="margin-bottom: 0"
+          >
             O'yinchilar Reytingi
           </div>
           <div class="leaderboard-mode-tabs">
-            <button class="mode-tab active" id="playersTab" onclick="switchLeaderboardMode('players')">👥 Players</button>
-            <button class="mode-tab" id="clubsTab" onclick="switchLeaderboardMode('clubs')">🏛️ Clubs</button>
+            <button
+              class="mode-tab active"
+              id="playersTab"
+              onclick="switchLeaderboardMode('players')"
+            >
+              👥 Players
+            </button>
+            <button
+              class="mode-tab"
+              id="clubsTab"
+              onclick="switchLeaderboardMode('clubs')"
+            >
+              🏛️ Clubs
+            </button>
           </div>
         </div>
-        
+
         <div class="leaderboard-filters" id="leaderboardFilters">
-          <button class="filter-tab active" data-filter="all" onclick="filterLeaderboard('all')">All</button>
-          <button class="filter-tab" data-filter="rapid" onclick="filterLeaderboard('rapid')">Rapid</button>
-          <button class="filter-tab" data-filter="blitz" onclick="filterLeaderboard('blitz')">Blitz</button>
-          <button class="filter-tab" data-filter="bullet" onclick="filterLeaderboard('bullet')">Bullet</button>
+          <button
+            class="filter-tab active"
+            data-filter="all"
+            onclick="filterLeaderboard('all')"
+          >
+            All
+          </button>
+          <button
+            class="filter-tab"
+            data-filter="rapid"
+            onclick="filterLeaderboard('rapid')"
+          >
+            Rapid
+          </button>
+          <button
+            class="filter-tab"
+            data-filter="blitz"
+            onclick="filterLeaderboard('blitz')"
+          >
+            Blitz
+          </button>
+          <button
+            class="filter-tab"
+            data-filter="bullet"
+            onclick="filterLeaderboard('bullet')"
+          >
+            Bullet
+          </button>
         </div>
-        
+
         <div class="leaderboard-table-wrapper">
           <table class="leaderboard-table" id="leaderboardTable">
             <thead>
@@ -2520,7 +2739,7 @@
             id="clubSearchInput"
             class="form-input"
             placeholder="Search for a country..."
-             style="max-width: 90%"
+            style="max-width: 90%"
             oninput="filterCountries()"
           />
         </div>
@@ -2848,12 +3067,34 @@
     </div>
 
     <!-- CREATE TOURNAMENT MODAL -->
-    <div id="createTournamentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; justify-content: center; align-items: center;">
-      <div class="card-box" style="width: 420px; max-height: 90vh; overflow-y: auto;">
+    <div
+      id="createTournamentModal"
+      style="
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+      "
+    >
+      <div
+        class="card-box"
+        style="width: 420px; max-height: 90vh; overflow-y: auto"
+      >
         <div class="card-title">Create Tournament</div>
         <div class="form-group">
           <label class="form-label">Tournament Name</label>
-          <input type="text" id="tournamentNameInput" class="form-input" placeholder="Enter tournament name" />
+          <input
+            type="text"
+            id="tournamentNameInput"
+            class="form-input"
+            placeholder="Enter tournament name"
+          />
         </div>
         <div class="form-group">
           <label class="form-label">Type</label>
@@ -2876,10 +3117,31 @@
         </div>
         <div class="form-group">
           <label class="form-label">Max Players</label>
-          <input type="number" id="tournamentMaxPlayers" class="form-input" value="16" min="2" max="64" />
+          <input
+            type="number"
+            id="tournamentMaxPlayers"
+            class="form-input"
+            value="16"
+            min="2"
+            max="64"
+          />
         </div>
-        <button class="form-submit" onclick="createTournamentFromModal()">Create</button>
-        <button class="action-btn" style="width: 100%; margin-top: 10px; background: #1b2a28; color: #ccc; border: 1px solid #2a3e3b;" onclick="hideCreateTournamentModal()">Cancel</button>
+        <button class="form-submit" onclick="createTournamentFromModal()">
+          Create
+        </button>
+        <button
+          class="action-btn"
+          style="
+            width: 100%;
+            margin-top: 10px;
+            background: #1b2a28;
+            color: #ccc;
+            border: 1px solid #2a3e3b;
+          "
+          onclick="hideCreateTournamentModal()"
+        >
+          Cancel
+        </button>
       </div>
     </div>
 
@@ -2951,14 +3213,81 @@
     </div>
 
     <!-- Language Modal -->
-    <div id="languageModal" class="language-modal-overlay" style="display: none;">
+    <div
+      id="languageModal"
+      class="language-modal-overlay"
+      style="display: none"
+    >
       <div class="language-modal-container">
         <div class="language-modal-header">
           <h2>Select Language</h2>
-          <button class="language-modal-close" id="closeLanguageModal">&larr;</button>
+          <button class="language-modal-close" id="closeLanguageModal">
+            &larr;
+          </button>
         </div>
-        <input type="text" class="language-search-input" id="languageSearch" placeholder="🔍 Search languages...">
+        <input
+          type="text"
+          class="language-search-input"
+          id="languageSearch"
+          placeholder="🔍 Search languages..."
+        />
         <div class="language-grid" id="languageGrid"></div>
+      </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div
+      id="registerModal"
+      class="register-modal-overlay"
+      style="display: none"
+    >
+      <div class="register-modal-container">
+        <div class="register-modal-header">
+          <h2>Ro'yxatdan o'tish</h2>
+          <button class="register-modal-close" id="closeRegisterModal">
+            &larr;
+          </button>
+        </div>
+        <div class="register-form-group">
+          <label for="registerUsername">Foydalanuvchi nomi</label>
+          <input
+            type="text"
+            id="registerUsername"
+            class="register-input"
+            placeholder="Ism kiriting"
+          />
+          <div class="register-error" id="registerUsernameError">
+            Bu maydon bo'sh bo'lishi mumkin
+          </div>
+        </div>
+        <div class="register-form-group">
+          <label for="registerPassword">Parol</label>
+          <input
+            type="password"
+            id="registerPassword"
+            class="register-input"
+            placeholder="Parol kiriting"
+          />
+          <div class="register-error" id="registerPasswordError">
+            Kamida 4 belgi kiriting
+          </div>
+        </div>
+        <div class="register-form-group">
+          <label for="registerCountry">Davlat / Klub</label>
+          <select id="registerCountry" class="register-select">
+            <option value="">Tanlang...</option>
+          </select>
+        </div>
+        <button
+          class="register-submit-btn"
+          id="registerSubmitBtn"
+          onclick="window.handleRegisterModal()"
+        >
+          Ro'yxatdan o'tish
+        </button>
+        <div class="register-switch">
+          Hisobingiz bormi? <a onclick="switchView('login')">Kirish</a>
+        </div>
       </div>
     </div>
 
@@ -2983,13 +3312,26 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- Profile Modal -->
-    <div id="profileModal" class="profile-modal-overlay" style="display: none;">
+    <div id="profileModal" class="profile-modal-overlay" style="display: none">
       <div class="profile-container">
         <button class="profile-close-btn" id="closeProfileBtn">&larr;</button>
-        
+
         <div class="profile-sidebar-card">
           <div class="profile-avatar-wrapper">
-            <div style="width: 90px; height: 90px; background: #2d4a41; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 36px;">♔</div>
+            <div
+              style="
+                width: 90px;
+                height: 90px;
+                background: #2d4a41;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 36px;
+              "
+            >
+              ♔
+            </div>
           </div>
           <h2 id="profileModalUsername">Sarvarovich_Zafar</h2>
           <p id="profileModalHandle">@Sarvarovich_Zafar</p>
@@ -3000,57 +3342,127 @@
               <span>FIDE ID</span>
               <div class="meta-value">
                 <span class="editable-text" id="profileFideId"></span>
-                <input type="text" class="editable-input" id="inputFideId" value="" style="display:none;">
+                <input
+                  type="text"
+                  class="editable-input"
+                  id="inputFideId"
+                  value=""
+                  style="display: none"
+                />
               </div>
             </div>
             <div class="meta-row">
               <span>Maqsad</span>
               <div class="meta-value">
                 <span class="editable-text" id="profileGoal"></span>
-                <input type="text" class="editable-input" id="inputGoal" value="" style="display:none;">
+                <input
+                  type="text"
+                  class="editable-input"
+                  id="inputGoal"
+                  value=""
+                  style="display: none"
+                />
               </div>
             </div>
-            <button class="copy-link-btn" id="copyProfileLinkBtn">🔗 Profil havolasini nusxalash</button>
+            <button class="copy-link-btn" id="copyProfileLinkBtn">
+              🔗 Profil havolasini nusxalash
+            </button>
           </div>
         </div>
 
         <div class="profile-stats-content">
           <div class="profile-tabs">
             <button class="tab-btn active">📊 Reytinglar</button>
-            <button class="tab-btn edit-tab-btn" id="editProfileBtn">✏️ Tahrirlash</button>
-            <button class="tab-btn save-tab-btn" id="saveProfileBtn" style="display: none;">💾 Saqlash</button>
-            <button class="tab-btn cancel-tab-btn" id="cancelProfileBtn" style="display: none;">✕ Bekor</button>
+            <button class="tab-btn edit-tab-btn" id="editProfileBtn">
+              ✏️ Tahrirlash
+            </button>
+            <button
+              class="tab-btn save-tab-btn"
+              id="saveProfileBtn"
+              style="display: none"
+            >
+              💾 Saqlash
+            </button>
+            <button
+              class="tab-btn cancel-tab-btn"
+              id="cancelProfileBtn"
+              style="display: none"
+            >
+              ✕ Bekor
+            </button>
           </div>
 
           <div class="stats-grid">
             <div class="stat-card editable-card">
               <span class="stat-title">RAPID REYTING</span>
               <span class="stat-value editable-text" id="statRapid">1500</span>
-              <input type="number" class="editable-input" id="inputRapid" value="1500" style="display: none;">
+              <input
+                type="number"
+                class="editable-input"
+                id="inputRapid"
+                value="1500"
+                style="display: none"
+              />
             </div>
             <div class="stat-card editable-card">
               <span class="stat-title">BLITZ REYTING</span>
               <span class="stat-value editable-text" id="statBlitz">1500</span>
-              <input type="number" class="editable-input" id="inputBlitz" value="1500" style="display: none;">
+              <input
+                type="number"
+                class="editable-input"
+                id="inputBlitz"
+                value="1500"
+                style="display: none"
+              />
             </div>
             <div class="stat-card editable-card">
               <span class="stat-title">BULLET REYTING</span>
               <span class="stat-value editable-text" id="statBullet">1500</span>
-              <input type="number" class="editable-input" id="inputBullet" value="1500" style="display: none;">
+              <input
+                type="number"
+                class="editable-input"
+                id="inputBullet"
+                value="1500"
+                style="display: none"
+              />
             </div>
             <div class="stat-card editable-card">
-              <span class="stat-title">ENG KUCHLI DEbyut</span>
-              <span class="stat-value editable-text" id="statDebut" style="font-size: 16px; margin-top: 5px;"></span>
-              <input type="text" class="editable-input" id="inputDebut" value="" style="display: none;">
+              <span class="stat-title">ENG KUCHLI DEBYUT</span>
+              <span
+                class="stat-value editable-text"
+                id="statDebut"
+                style="font-size: 16px; margin-top: 5px"
+              ></span>
+              <input
+                type="text"
+                class="editable-input"
+                id="inputDebut"
+                value=""
+                style="display: none"
+              />
             </div>
             <div class="stat-card editable-card">
               <span class="stat-title">KLUB</span>
-              <span class="stat-value editable-text" id="statClub" style="font-size: 16px; margin-top: 5px;"></span>
-              <input type="text" class="editable-input" id="inputClub" value="" style="display: none;">
+              <span
+                class="stat-value editable-text"
+                id="statClub"
+                style="font-size: 16px; margin-top: 5px"
+              ></span>
+              <input
+                type="text"
+                class="editable-input"
+                id="inputClub"
+                value=""
+                style="display: none"
+              />
             </div>
             <div class="stat-card">
               <span class="stat-title">STATUS</span>
-              <span class="stat-value win" style="font-size: 16px; margin-top: 5px;">Faol o'yinchi</span>
+              <span
+                class="stat-value win"
+                style="font-size: 16px; margin-top: 5px"
+                >Faol o'yinchi</span
+              >
             </div>
           </div>
         </div>

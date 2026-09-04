@@ -403,6 +403,92 @@ window.openProfileModal = function() {
   }
 };
 
+window.openRegisterModal = function() {
+  const modal = document.getElementById("registerModal");
+  if (modal) {
+    populateCountrySelect();
+    modal.style.display = "flex";
+  }
+};
+
+window.closeRegisterModal = function() {
+  const modal = document.getElementById("registerModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
+};
+
+window.populateCountrySelect = function() {
+  const select = document.getElementById("registerCountry");
+  if (!select) return;
+
+  let optionsHtml = '<option value="">Tanlang...</option>';
+
+  if (typeof allCountries !== 'undefined') {
+    allCountries.forEach(c => {
+      optionsHtml += `<option value="${c.code}">${c.name}</option>`;
+    });
+  }
+
+  select.innerHTML = optionsHtml;
+};
+
+window.handleRegisterModal = async function() {
+  const username = document.getElementById("registerUsername").value.trim();
+  const password = document.getElementById("registerPassword").value.trim();
+  const country = document.getElementById("registerCountry").value;
+  const countrySelect = document.getElementById("registerCountry");
+
+  let valid = true;
+  const usernameError = document.getElementById("registerUsernameError");
+  const passwordError = document.getElementById("registerPasswordError");
+
+  if (!username) {
+    usernameError.style.display = "block";
+    valid = false;
+  } else {
+    usernameError.style.display = "none";
+  }
+
+  if (!password || password.length < 4) {
+    passwordError.style.display = "block";
+    valid = false;
+  } else {
+    passwordError.style.display = "none";
+  }
+
+  if (!valid) return;
+
+  const countryName = countrySelect.options[countrySelect.selectedIndex]?.textContent || '';
+
+  window.currentUser = {
+    username: username,
+    email: username + '@justchess.local',
+    rating: 1500,
+    stats: { wins: 0, losses: 0, draws: 0 },
+    statsByMode: {
+      rapid: { wins: 0, losses: 0, draws: 0 },
+      blitz: { wins: 0, losses: 0, draws: 0 },
+      bullet: { wins: 0, losses: 0, draws: 0 }
+    },
+    country: country || 'uz',
+    countryName: countryName,
+    history: []
+  };
+  window.stats = window.currentUser.stats;
+  window.statsByMode = window.currentUser.statsByMode;
+  window.authToken = "local_" + Date.now();
+
+  localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+  localStorage.setItem("justChessAuthToken", window.authToken);
+
+  window.closeRegisterModal();
+  window.updateAuthHeaderUI();
+  window.updateTopPlayersList();
+  window.switchView("home");
+  if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
+};
+
 window.openLanguageModal = function() {
   const modal = document.getElementById("languageModal");
   if (modal) {
@@ -638,6 +724,37 @@ document.addEventListener("DOMContentLoaded", () => {
       window.renderLanguageCards(e.target.value);
     });
   }
+
+  // Register Modal
+  const registerModal = document.getElementById("registerModal");
+  const closeRegisterBtn = document.getElementById("closeRegisterModal");
+
+  if (closeRegisterBtn && registerModal) {
+    closeRegisterBtn.addEventListener("click", () => {
+      if (!window.currentUser) return;
+      registerModal.style.display = "none";
+    });
+  }
+
+  if (registerModal) {
+    registerModal.addEventListener("click", (e) => {
+      if (e.target === registerModal) {
+        if (!window.currentUser) return;
+        registerModal.style.display = "none";
+      }
+    });
+  }
+
+  if (registerModal && !window.currentUser) {
+    registerModal.style.display = "flex";
+    window.populateCountrySelect();
+  }
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && registerModal && registerModal.style.display === "flex") {
+      if (window.currentUser) registerModal.style.display = "none";
+    }
+  });
 });
 
 document.addEventListener("click", (event) => {

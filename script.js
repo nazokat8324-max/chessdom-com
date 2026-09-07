@@ -416,6 +416,24 @@ window.handleLogout = async function() {
   window.updateAuthHeaderUI();
   window.updateTopPlayersList();
   window.switchView("home");
+  if (!window.currentUser && typeof window.openLoginModal === "function") {
+    window.openLoginModal();
+  }
+};
+
+window.handleLogoutFromProfile = function() {
+  const profileModal = document.getElementById("profileModal");
+  if (profileModal) {
+    profileModal.style.display = "none";
+  }
+  window.handleLogout();
+};
+
+window.closeProfileModal = function() {
+  const profileModal = document.getElementById("profileModal");
+  if (profileModal) {
+    profileModal.style.display = "none";
+  }
 };
 
 window.openProfileModal = function() {
@@ -748,6 +766,8 @@ window.renderLeagues = function() {
 
   continents.forEach(key => {
     const info = window.CONTINENTS[key];
+    const countries = (typeof continentCountries !== 'undefined' && continentCountries[key]) ? continentCountries[key] : [];
+    const teamCount = countries.length;
     html += `
       <div class="league-card" onclick="window.openLeagueDetail('${key}')">
         <div class="league-card-icon">${info.flag}</div>
@@ -758,7 +778,7 @@ window.renderLeagues = function() {
           <span class="league-mode-btn" onclick="event.stopPropagation(); window.playLeague('${key}', 'rapid')">⏱️ Rapid</span>
         </div>
         <div class="league-card-info">
-          <span class="league-card-teams">8 jamoa • Round-Robin</span>
+          <span class="league-card-teams">${teamCount} jamoa • Round-Robin</span>
         </div>
         <div class="league-card-desc">Barcha jamoalar o'zaro o'ynaydi. Eng ko'p ochko to'plagan jamoa g'olib!</div>
       </div>
@@ -776,13 +796,15 @@ window.renderChampionsLeague = function() {
 window.openLeagueDetail = function(leagueKey) {
   const info = window.CONTINENTS[leagueKey];
   if (!info) return;
-  alert(info.name + '\n\nBu ligada har oy Bullet, Blitz va Rapid musobaqalari o\'tkaziladi!');
+  const countries = (typeof continentCountries !== 'undefined' && continentCountries[leagueKey]) ? continentCountries[leagueKey] : [];
+  alert(info.name + '\n\n' + countries.length + ' ta jamoa\nRound-Robin tizimida har oy Bullet, Blitz va Rapid musobaqalari o\'tkaziladi!');
 };
 
 window.playLeague = function(leagueKey, mode) {
   const info = window.CONTINENTS[leagueKey];
   if (!info) return;
-  alert(info.name + ' - ' + mode.toUpperCase() + ' Ligasi\n\nTez kunda boshlanadi!');
+  const countries = (typeof continentCountries !== 'undefined' && continentCountries[leagueKey]) ? continentCountries[leagueKey] : [];
+  alert(info.name + ' - ' + mode.toUpperCase() + ' Ligasi\n\n' + countries.length + ' ta jamoa istagona o\'ynaydi!');
 };
 
 window.getLanguageInfo = function(code) {

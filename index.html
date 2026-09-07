@@ -555,6 +555,12 @@
         font-weight: bold;
         cursor: pointer;
         margin-top: 15px;
+        transition: all 0.2s;
+      }
+      .logout-btn:hover {
+        background: #5a2a2a;
+        border-color: #ff5555;
+        color: #ff5555;
       }
       #chessBoard {
         width: 400px !important;
@@ -3034,7 +3040,7 @@
         <div style="background: #1a2a28; border: 1px solid #2a3e3b; border-radius: 10px; padding: 18px;">
           <div style="font-size: 14px; color: #81b64c; font-weight: bold; margin-bottom: 10px;">Turnir formati (Round-Robin)</div>
           <div style="font-size: 12px; color: #88a; line-height: 1.7;">
-            <p style="margin: 0 0 6px 0;">• Har bir ligada 8 ta jamoa Round-Robin tizimida o'ynaydi</p>
+            <p style="margin: 0 0 6px 0;">• Har bir ligada mintaqasidagi barcha jamoalar Round-Robin tizimida o'ynaydi</p>
             <p style="margin: 0 0 6px 0;">• Barcha jamoalar bir-biri bilan 1 marta o'ynaydi (jami 28 o'yin)</p>
             <p style="margin: 0 0 6px 0;">• G'alaba: +3 ochko, Durang: +1 ochko, Mag'lubiyat: +0 ochko</p>
             <p style="margin: 0;">• Eng ko'p ochko to'plagan jamoa liganing chempioni bo'ladi</p>
@@ -3698,6 +3704,9 @@
             </div>
             <button class="copy-link-btn" id="copyProfileLinkBtn">
               🔗 Profil havolasini nusxalash
+            </button>
+            <button class="logout-btn" id="logoutProfileBtn" type="button" onclick="window.handleLogoutFromProfile()">
+              🚪 Chiqish
             </button>
           </div>
         </div>

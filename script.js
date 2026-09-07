@@ -249,6 +249,29 @@ window.switchView = function(viewName) {
     }
     const navEl = document.getElementById("navClubs");
     if (navEl) navEl.classList.add("active");
+  } else if (viewName === "leagues") {
+    const leaguesEl = document.getElementById("leaguesView");
+    if (leaguesEl) {
+      leaguesEl.classList.add("active-view");
+      if (typeof window.playAnimation === "function") {
+        window.playAnimation("leaguesView", "fadeIn");
+      }
+      if (typeof window.renderLeagues === "function") {
+        window.renderLeagues();
+      }
+    }
+    const navEl = document.getElementById("navLeagues");
+    if (navEl) navEl.classList.add("active");
+  } else if (viewName === "champions") {
+    const championsEl = document.getElementById("championsView");
+    if (championsEl) {
+      championsEl.classList.add("active-view");
+      if (typeof window.playAnimation === "function") {
+        window.playAnimation("championsView", "fadeIn");
+      }
+    }
+    const navEl = document.getElementById("navChampions");
+    if (navEl) navEl.classList.add("active");
   } else if (viewName === "chat") {
     const chatEl = document.getElementById("chatView");
     if (chatEl) {
@@ -697,9 +720,87 @@ window.closeLanguageModal = function() {
   }
 };
 
+window.LANGUAGES = [
+  { code: 'uz', name: "O'zbekcha", english: 'Uzbek', flag: '\u{1F1FA}\u{1F1FF}' },
+  { code: 'en', name: 'English', english: 'English', flag: '\u{1F1EC}\u{1F1E7}' },
+  { code: 'ru', name: 'Русский', english: 'Russian', flag: '\u{1F1F7}\u{1F1FA}' },
+  { code: 'es', name: 'Español', english: 'Spanish', flag: '\u{1F1EA}\u{1F1F8}' },
+  { code: 'de', name: 'Deutsch', english: 'German', flag: '\u{1F1E9}\u{1F1EA}' },
+  { code: 'fr', name: 'Français', english: 'French', flag: '\u{1F1EB}\u{1F1F7}' }
+];
+
+// --- Leagues Data ---
+window.CONTINENTS = {
+  Asia: { name: "Osiyo Ligasi", flag: "🌏", color: "#e74c3c" },
+  Europe: { name: "Yevropa Ligasi", flag: "🌍", color: "#3498db" },
+  Africa: { name: "Afrika Ligasi", flag: "🌍", color: "#f39c12" },
+  "South America": { name: "Janubiy Amerika Ligasi", flag: "🌎", color: "#2ecc71" },
+  "North America": { name: "Shimoliy Amerika Ligasi", flag: "🌎", color: "#9b59b6" },
+  Oceania: { name: "Okeaniya Ligasi", flag: "🌏", color: "#1abc9c" }
+};
+
+window.renderLeagues = function() {
+  const container = document.getElementById("leaguesListContainer");
+  if (!container) return;
+
+  const continents = Object.keys(window.CONTINENTS);
+  let html = '';
+
+  continents.forEach(key => {
+    const info = window.CONTINENTS[key];
+    html += `
+      <div class="league-card" onclick="window.openLeagueDetail('${key}')">
+        <div class="league-card-icon">${info.flag}</div>
+        <div class="league-card-title">${info.name}</div>
+        <div class="league-card-modes">
+          <span class="league-mode-btn" onclick="event.stopPropagation(); window.playLeague('${key}', 'bullet')">⚡ Bullet</span>
+          <span class="league-mode-btn" onclick="event.stopPropagation(); window.playLeague('${key}', 'blitz')">🔥 Blitz</span>
+          <span class="league-mode-btn" onclick="event.stopPropagation(); window.playLeague('${key}', 'rapid')">⏱️ Rapid</span>
+        </div>
+        <div class="league-card-info">
+          <span class="league-card-teams">8 jamoa • Round-Robin</span>
+        </div>
+        <div class="league-card-desc">Barcha jamoalar o'zaro o'ynaydi. Eng ko'p ochko to'plagan jamoa g'olib!</div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+  window.renderChampionsLeague();
+};
+
+window.renderChampionsLeague = function() {
+  // Champions League section is now static HTML
+};
+
+window.openLeagueDetail = function(leagueKey) {
+  const info = window.CONTINENTS[leagueKey];
+  if (!info) return;
+  alert(info.name + '\n\nBu ligada har oy Bullet, Blitz va Rapid musobaqalari o\'tkaziladi!');
+};
+
+window.playLeague = function(leagueKey, mode) {
+  const info = window.CONTINENTS[leagueKey];
+  if (!info) return;
+  alert(info.name + ' - ' + mode.toUpperCase() + ' Ligasi\n\nTez kunda boshlanadi!');
+};
+
+window.getLanguageInfo = function(code) {
+  return window.LANGUAGES.find(l => l.code === code) || window.LANGUAGES[1];
+};
+
+window.updateLanguageButton = function(lang) {
+  const info = window.getLanguageInfo(lang);
+  const flagSpan = document.getElementById("langBtnFlag");
+  const textSpan = document.getElementById("langBtnText");
+  if (flagSpan) flagSpan.textContent = info.flag;
+  if (textSpan) textSpan.textContent = info.name;
+};
+
 window.selectLanguage = function(lang) {
   window.setLanguage(lang);
   localStorage.setItem("justChessLang", lang);
+  window.updateLanguageButton(lang);
   window.closeLanguageModal();
 };
 
@@ -707,14 +808,7 @@ window.renderLanguageCards = function(filter = '') {
   const grid = document.getElementById("languageGrid");
   if (!grid) return;
 
-  const languages = [
-    { code: 'uz', name: "O'zbekcha", english: 'Uzbek', flag: '🇺🇿' },
-    { code: 'en', name: 'English', english: 'English', flag: '🇬🇧' },
-    { code: 'ru', name: 'Русский', english: 'Russian', flag: '🇷🇺' },
-    { code: 'es', name: 'Español', english: 'Spanish', flag: '🇪🇸' },
-    { code: 'de', name: 'Deutsch', english: 'German', flag: '🇩🇪' },
-    { code: 'fr', name: 'Français', english: 'French', flag: '🇫🇷' }
-  ];
+  const languages = window.LANGUAGES;
 
   const currentLang = window.currentLang || localStorage.getItem("justChessLang") || 'uz';
 
@@ -974,6 +1068,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
+
+  // Initialize language button
+  if (typeof window.updateLanguageButton === "function") {
+    window.updateLanguageButton(window.currentLang);
+  }
 
   // Auto-open login modal if not logged in
   if (!window.currentUser) {

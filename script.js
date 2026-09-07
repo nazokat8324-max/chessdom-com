@@ -426,12 +426,18 @@ window.populateCountrySelect = function() {
 
   if (typeof allCountries !== 'undefined') {
     allCountries.forEach(c => {
-      optionsHtml += `<option value="${c.code}">${c.name}</option>`;
+      const flagEmoji = countryCodeToFlag(c.code);
+      optionsHtml += `<option value="${c.code}">${flagEmoji} ${c.name}</option>`;
     });
   }
 
   select.innerHTML = optionsHtml;
 };
+
+function countryCodeToFlag(code) {
+  const upper = code.toUpperCase();
+  return upper.replace(/./g, ch => String.fromCharCode(127397 + ch.charCodeAt(0)));
+}
 
 window.handleRegisterModal = async function() {
   const username = document.getElementById("registerUsername").value.trim();
@@ -459,7 +465,8 @@ window.handleRegisterModal = async function() {
 
   if (!valid) return;
 
-  const countryName = countrySelect.options[countrySelect.selectedIndex]?.textContent || '';
+  const rawCountryName = countrySelect.options[countrySelect.selectedIndex]?.textContent || '';
+  const countryName = rawCountryName.replace(/^\p{Emoji}/u, '').trim();
 
   window.currentUser = {
     username: username,
@@ -545,12 +552,21 @@ window.updateProfileModalData = function() {
 
   const usernameDisplay = document.getElementById("profileModalUsername");
   const handleDisplay = document.getElementById("profileModalHandle");
+  const countryFlagEl = document.getElementById("profileModalCountryFlag");
+  const countryNameEl = document.getElementById("profileModalCountryName");
+  const countryWrapEl = document.getElementById("profileModalCountry");
   const rapidRating = document.getElementById("statRapid");
   const blitzRating = document.getElementById("statBlitz");
   const bulletRating = document.getElementById("statBullet");
 
   if (usernameDisplay) usernameDisplay.textContent = window.currentUser.username;
   if (handleDisplay) handleDisplay.textContent = "@" + window.currentUser.username;
+
+  const countryCode = (window.currentUser.country || 'uz').toLowerCase();
+  const countryName = window.currentUser.countryName || '';
+  if (countryWrapEl) countryWrapEl.style.display = countryName ? 'flex' : 'none';
+  if (countryFlagEl) countryFlagEl.src = `https://flagcdn.com/w20/${countryCode}.png`;
+  if (countryNameEl) countryNameEl.textContent = countryName;
 
   const profileData = JSON.parse(localStorage.getItem("justChessProfileData")) || {};
   const fideId = profileData.fideId || '';

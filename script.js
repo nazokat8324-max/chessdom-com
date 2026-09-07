@@ -403,23 +403,15 @@ window.openProfileModal = function() {
   }
 };
 
-window.openRegisterModal = function() {
-  const modal = document.getElementById("registerModal");
-  if (modal) {
-    populateCountrySelect();
-    modal.style.display = "flex";
-  }
-};
+// Country flag helper
+function countryCodeToFlag(code) {
+  const upper = code.toUpperCase();
+  return upper.replace(/./g, ch => String.fromCharCode(127397 + ch.charCodeAt(0)));
+}
 
-window.closeRegisterModal = function() {
-  const modal = document.getElementById("registerModal");
-  if (modal) {
-    modal.style.display = "none";
-  }
-};
-
+// Populate the signup country select with flag emojis
 window.populateCountrySelect = function() {
-  const select = document.getElementById("registerCountry");
+  const select = document.getElementById("signupCountry");
   if (!select) return;
 
   let optionsHtml = '<option value="">Tanlang...</option>';
@@ -434,39 +426,228 @@ window.populateCountrySelect = function() {
   select.innerHTML = optionsHtml;
 };
 
-function countryCodeToFlag(code) {
-  const upper = code.toUpperCase();
-  return upper.replace(/./g, ch => String.fromCharCode(127397 + ch.charCodeAt(0)));
-}
+// --- Login Modal ---
+window.openLoginModal = function() {
+  window.resetLoginErrors();
+  window.showLoginStep();
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.style.display = "flex";
+};
 
-window.handleRegisterModal = async function() {
-  const username = document.getElementById("registerUsername").value.trim();
-  const password = document.getElementById("registerPassword").value.trim();
-  const country = document.getElementById("registerCountry").value;
-  const countrySelect = document.getElementById("registerCountry");
+window.closeLoginModal = function() {
+  const modal = document.getElementById("loginModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.resetLoginErrors = function() {
+  const errorIds = ["loginUsernameError", "loginPasswordError", "loginGeneralError"];
+  errorIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+};
+
+window.showLoginStep = function() {
+  const loginStep = document.getElementById("authLoginStep");
+  const signupFormStep = document.getElementById("authSignupFormStep");
+  if (loginStep) loginStep.style.display = "block";
+  if (signupFormStep) signupFormStep.style.display = "none";
+  const emailStep = document.getElementById("authEmailStep");
+  if (emailStep) emailStep.style.display = "none";
+  const signupModal = document.getElementById("signupModal");
+  if (signupModal) signupModal.style.display = "none";
+};
+
+// --- Signup Modal ---
+window.openSignupModal = function() {
+  window.resetSignupErrors();
+  window.showEmailStep();
+  const modal = document.getElementById("signupModal");
+  if (modal) {
+    modal.style.display = "flex";
+    window.populateCountrySelect();
+  }
+  const loginModal = document.getElementById("loginModal");
+  if (loginModal) loginModal.style.display = "none";
+};
+
+window.closeSignupModal = function() {
+  const modal = document.getElementById("signupModal");
+  if (modal) modal.style.display = "none";
+};
+
+window.showEmailStep = function() {
+  const emailStep = document.getElementById("authEmailStep");
+  const signupFormStep = document.getElementById("authSignupFormStep");
+  if (emailStep) emailStep.style.display = "block";
+  if (signupFormStep) signupFormStep.style.display = "none";
+};
+
+window.showSignupForm = function() {
+  const emailStep = document.getElementById("authEmailStep");
+  const signupFormStep = document.getElementById("authSignupFormStep");
+  if (emailStep) emailStep.style.display = "none";
+  if (signupFormStep) signupFormStep.style.display = "block";
+};
+
+window.resetSignupErrors = function() {
+  const errorIds = ["signupUsernameError", "signupUsernameExistsError", "signupPasswordError"];
+  errorIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  });
+  const inputs = [
+    document.getElementById("signupUsername"),
+    document.getElementById("signupPassword")
+  ];
+  inputs.forEach(input => {
+    if (input) input.style.borderColor = "";
+  });
+};
+
+// --- Switch between modals ---
+window.switchToSignUp = function() {
+  window.openSignupModal();
+};
+
+window.switchToLogin = function() {
+  window.openLoginModal();
+};
+
+// --- Social Login (placeholder) ---
+window.socialLogin = function(provider) {
+  alert(`Social login (${provider}) will be available soon.`);
+};
+
+// --- Get registered users from localStorage ---
+window.getRegisteredUsers = function() {
+  try {
+    return JSON.parse(localStorage.getItem("justChessRegisteredUsers") || "[]");
+  } catch {
+    return [];
+  }
+};
+
+window.saveRegisteredUsers = function(users) {
+  localStorage.setItem("justChessRegisteredUsers", JSON.stringify(users));
+};
+
+// --- Login handler ---
+window.handleLoginModal = async function() {
+  const username = document.getElementById("loginModalUsername").value.trim();
+  const password = document.getElementById("loginModalPassword").value.trim();
+
+  const usernameError = document.getElementById("loginUsernameError");
+  const passwordError = document.getElementById("loginPasswordError");
+  const generalError = document.getElementById("loginGeneralError");
 
   let valid = true;
-  const usernameError = document.getElementById("registerUsernameError");
-  const passwordError = document.getElementById("registerPasswordError");
 
   if (!username) {
-    usernameError.style.display = "block";
+    if (usernameError) usernameError.style.display = "block";
     valid = false;
   } else {
-    usernameError.style.display = "none";
+    if (usernameError) usernameError.style.display = "none";
   }
 
-  if (!password || password.length < 4) {
-    passwordError.style.display = "block";
+  if (!password) {
+    if (passwordError) passwordError.style.display = "block";
     valid = false;
   } else {
-    passwordError.style.display = "none";
+    if (passwordError) passwordError.style.display = "none";
   }
 
   if (!valid) return;
 
-  const rawCountryName = countrySelect.options[countrySelect.selectedIndex]?.textContent || '';
-  const countryName = rawCountryName.replace(/^\p{Emoji}/u, '').trim();
+  // Check local registered users first
+  const users = window.getRegisteredUsers();
+  const existing = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+
+  if (existing && existing.password === password) {
+    // Local login success
+    window.currentUser = existing.userData;
+    window.authToken = "local_" + Date.now();
+    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+    localStorage.setItem("justChessAuthToken", window.authToken);
+    window.closeLoginModal();
+    window.updateAuthHeaderUI();
+    window.updateTopPlayersList();
+    window.switchView("home");
+    if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
+    return;
+  }
+
+  // Fallback: try server login
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password })
+    });
+    const data = await response.json();
+    if (data.success) {
+      localStorage.setItem("justChessCurrentUser", JSON.stringify(data.user));
+      localStorage.setItem("justChessAuthToken", data.token);
+      window.currentUser = data.user;
+      window.authToken = data.token;
+      window.closeLoginModal();
+      window.updateAuthHeaderUI();
+      window.updateTopPlayersList();
+      window.switchView("home");
+      if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
+    } else {
+      if (generalError) generalError.style.display = "block";
+    }
+  } catch {
+    if (generalError) generalError.style.display = "block";
+  }
+};
+
+// --- Signup handler ---
+window.handleSignupModal = async function() {
+  const username = document.getElementById("signupUsername").value.trim();
+  const password = document.getElementById("signupPassword").value.trim();
+  const countrySelect = document.getElementById("signupCountry");
+  const country = countrySelect ? countrySelect.value : '';
+  const countryName = countrySelect && countrySelect.options[countrySelect.selectedIndex]
+    ? countrySelect.options[countrySelect.selectedIndex].textContent.replace(/^\p{Emoji}\s*/u, '').trim()
+    : '';
+
+  const usernameError = document.getElementById("signupUsernameError");
+  const usernameExistsError = document.getElementById("signupUsernameExistsError");
+  const passwordError = document.getElementById("signupPasswordError");
+
+  let valid = true;
+
+  // Username required
+  if (!username) {
+    if (usernameError) usernameError.style.display = "block";
+    valid = false;
+  } else {
+    if (usernameError) usernameError.style.display = "none";
+  }
+
+  // Username uniqueness check
+  if (valid && username) {
+    const users = window.getRegisteredUsers();
+    const exists = users.some(u => u.username.toLowerCase() === username.toLowerCase());
+    if (exists) {
+      if (usernameExistsError) usernameExistsError.style.display = "block";
+      valid = false;
+    } else {
+      if (usernameExistsError) usernameExistsError.style.display = "none";
+    }
+  }
+
+  // Password min 6 chars
+  if (!password || password.length < 6) {
+    if (passwordError) passwordError.style.display = "block";
+    valid = false;
+  } else {
+    if (passwordError) passwordError.style.display = "none";
+  }
+
+  if (!valid) return;
 
   window.currentUser = {
     username: username,
@@ -479,7 +660,7 @@ window.handleRegisterModal = async function() {
       bullet: { wins: 0, losses: 0, draws: 0 }
     },
     country: country || 'uz',
-    countryName: countryName,
+    countryName: countryName || 'O\'zbekiston',
     history: []
   };
   window.stats = window.currentUser.stats;
@@ -489,7 +670,12 @@ window.handleRegisterModal = async function() {
   localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
   localStorage.setItem("justChessAuthToken", window.authToken);
 
-  window.closeRegisterModal();
+  // Save to registered users list for future login
+  const users = window.getRegisteredUsers();
+  users.push({ username: username, password: password, userData: window.currentUser });
+  window.saveRegisteredUsers(users);
+
+  window.closeSignupModal();
   window.updateAuthHeaderUI();
   window.updateTopPlayersList();
   window.switchView("home");
@@ -741,36 +927,58 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Register Modal
-  const registerModal = document.getElementById("registerModal");
-  const closeRegisterBtn = document.getElementById("closeRegisterModal");
+  // Auth Modals
+  const loginModal = document.getElementById("loginModal");
+  const signupModal = document.getElementById("signupModal");
+  const closeLoginBtn = document.getElementById("closeLoginModal");
+  const closeSignupBtn = document.getElementById("closeSignupModal");
 
-  if (closeRegisterBtn && registerModal) {
-    closeRegisterBtn.addEventListener("click", () => {
-      if (!window.currentUser) return;
-      registerModal.style.display = "none";
+  // Close buttons
+  if (closeLoginBtn && loginModal) {
+    closeLoginBtn.addEventListener("click", () => {
+      loginModal.style.display = "none";
     });
   }
 
-  if (registerModal) {
-    registerModal.addEventListener("click", (e) => {
-      if (e.target === registerModal) {
-        if (!window.currentUser) return;
-        registerModal.style.display = "none";
+  if (closeSignupBtn && signupModal) {
+    closeSignupBtn.addEventListener("click", () => {
+      signupModal.style.display = "none";
+    });
+  }
+
+  // Backdrop click closes
+  if (loginModal) {
+    loginModal.addEventListener("click", (e) => {
+      if (e.target === loginModal) {
+        loginModal.style.display = "none";
       }
     });
   }
 
-  if (registerModal && !window.currentUser) {
-    registerModal.style.display = "flex";
-    window.populateCountrySelect();
+  if (signupModal) {
+    signupModal.addEventListener("click", (e) => {
+      if (e.target === signupModal) {
+        signupModal.style.display = "none";
+      }
+    });
   }
 
+  // Escape key closes auth modals
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && registerModal && registerModal.style.display === "flex") {
-      if (window.currentUser) registerModal.style.display = "none";
+    if (e.key === "Escape") {
+      if (loginModal && loginModal.style.display === "flex") {
+        loginModal.style.display = "none";
+      }
+      if (signupModal && signupModal.style.display === "flex") {
+        signupModal.style.display = "none";
+      }
     }
   });
+
+  // Auto-open login modal if not logged in
+  if (!window.currentUser) {
+    window.openLoginModal();
+  }
 });
 
 document.addEventListener("click", (event) => {

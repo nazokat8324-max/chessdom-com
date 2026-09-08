@@ -151,15 +151,19 @@ window.switchView = function(viewName) {
     if (typeof window.updatePlayerInfo === 'function') {
       if (window.currentUser) {
         window.updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
-        window.updatePlayerInfo('black', 'Raqib', 1500);
+        window.updatePlayerInfo('black', 'Raqib', '⏳');
       } else {
         window.updatePlayerInfo('white', 'Oq', 1500);
-        window.updatePlayerInfo('black', 'Qora', 1500);
+        window.updatePlayerInfo('black', 'Raqib', '⏳');
       }
     }
     
     if (typeof window.updateTimersDisplay === 'function') {
       window.updateTimersDisplay();
+    }
+    
+    if (typeof window.setOpponentFound === 'function') {
+      window.setOpponentFound(false);
     }
   } else if (viewName === "login") {
     const loginEl = document.getElementById("loginView");

@@ -284,8 +284,8 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
     date: new Date().toLocaleDateString(),
     timestamp: new Date().toISOString(),
     result: result,
-    opponent: opponent || 'Lokal',
-    mode: mode || 'Lokal o\'yin',
+    opponent: opponent || 'Online',
+    mode: mode || 'Online o\'yin',
     timeControl: timeControl || 'blitz',
     moves: moves || []
   });
@@ -613,8 +613,8 @@ app.post('/api/games', authMiddleware, [
       id: require('uuid').v4(),
       date: new Date().toLocaleDateString(),
       result: result || 'draw',
-      opponent: opponent || 'Lokal',
-      mode: mode || 'Lokal o\'yin',
+      opponent: opponent || 'Online',
+      mode: mode || 'Online o\'yin',
       moves: moves || []
     };
     

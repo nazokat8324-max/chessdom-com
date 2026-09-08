@@ -93,17 +93,15 @@ window.updateOnlineStatus = function(online) {
     statusEl.style.background = online ? '#2ecc71' : '#e74c3c';
   }
   if (statusTextEl) {
-    statusTextEl.textContent = online ? 'Online (Xonada)' : 'Lokal';
+    statusTextEl.textContent = online ? 'Online (Xonada)' : 'Offline';
   }
 };
 
 window.handleStartGame = async function() {
   if (window.pendingOnlineMatchmaking) {
     window.pendingOnlineMatchmaking = false;
-    await startMatchmaking();
-  } else {
-    if (typeof startNewGame === 'function') startNewGame();
   }
+  await startMatchmaking();
 };
 
 window.startMatchmaking = async function() {
@@ -112,17 +110,21 @@ window.startMatchmaking = async function() {
     switchView('login');
     return;
   }
-  
+
   if (!socket.connected) {
     alert('Serverga ulanib bo\'lmadi!');
     return;
   }
-  
+
   const statusEl = document.getElementById('matchmakingStatus');
   if (statusEl) {
     statusEl.style.display = 'inline';
   }
-  
+
+  if (typeof window.setOpponentFound === 'function') {
+    window.setOpponentFound(false);
+  }
+
   try {
     const res = await fetch('/api/matchmaking/join', {
       method: 'POST',
@@ -139,7 +141,6 @@ window.startMatchmaking = async function() {
     
     if (data.success && data.matched) {
       if (statusEl) statusEl.style.display = 'none';
-      alert(`Raqib topildi! Xona: ${data.roomId}`);
       window.currentRoomId = data.roomId;
       isOnlineMode = true;
       updateOnlineStatus(true);
@@ -148,7 +149,6 @@ window.startMatchmaking = async function() {
       if (typeof startNewGame === 'function') startNewGame();
     } else if (data.success) {
       switchView('game');
-      alert(`Navbatingiz: ${data.position}. Kuting...`);
     }
   } catch (err) {
     console.error('Matchmaking xatoligi:', err);

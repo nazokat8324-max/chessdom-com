@@ -10,6 +10,18 @@ let initialTime = 300,
   blackTimeLeft = 300;
 let timerInterval = null;
 let gameStarted = false;
+let opponentFound = false;
+
+window.setOpponentFound = function(found) {
+  opponentFound = found;
+  if (board) {
+    board.setOption('draggable', found);
+  }
+  const overlay = document.getElementById('boardWaitingOverlay');
+  if (overlay) {
+    overlay.style.display = found ? 'none' : 'flex';
+  }
+};
 window.currentGameTimeControl = 'blitz';
 
 function getGameModeFromTime(sec) {
@@ -150,8 +162,8 @@ function saveGameHistory(result, opponent, mode) {
   const gameRecord = {
     date: new Date().toLocaleDateString(),
     result: result,
-    opponent: opponent || 'Lokal',
-    mode: mode || 'Lokal o\'yin',
+    opponent: opponent || 'Online',
+    mode: mode || 'Online o\'yin',
     timeControl: window.currentGameTimeControl || 'blitz',
     moves: game.history()
   };
@@ -182,8 +194,8 @@ function saveGameHistory(result, opponent, mode) {
       headers: headers,
       body: JSON.stringify({
         result: result,
-        opponent: opponent || 'Lokal',
-        mode: mode || 'Lokal o\'yin',
+        opponent: opponent || 'Online',
+        mode: mode || 'Online o\'yin',
         timeControl: window.currentGameTimeControl || 'blitz',
         moves: game.history()
       })
@@ -230,7 +242,7 @@ function startTimer() {
       if (blackTimerElement) blackTimerElement.classList.remove("active");
       if (whiteTimeLeft <= 0) {
         clearInterval(timerInterval);
-        saveGameHistory("loss", "Oq va Qora (Lokal)", "Lokal o'yin");
+        saveGameHistory("loss", "Oq va Qora (Online)", "Online o'yin");
         recordResult("black_win");
         showToast(t.whiteTimeUp, 'error', 5000);
       }
@@ -246,7 +258,7 @@ function startTimer() {
       if (whiteTimerElement) whiteTimerElement.classList.remove("active");
       if (blackTimeLeft <= 0) {
         clearInterval(timerInterval);
-        saveGameHistory("win", "Oq va Qora (Lokal)", "Lokal o'yin");
+        saveGameHistory("win", "Oq va Qora (Online)", "Online o'yin");
         recordResult("white_win");
         showToast(t.blackTimeUp, 'error', 5000);
       }
@@ -276,7 +288,19 @@ function setGameTime(sec, btnElement) {
   if (board) board.position('start');
 }
 
-function startNewGame() {
+window.startNewGame = function() {
+  gameStarted = false;
+  opponentFound = true;
+  
+  if (typeof window.setOpponentFound === 'function') {
+    window.setOpponentFound(true);
+  }
+  
+  if (board) {
+    board.setOption('draggable', true);
+    board.position('start');
+  }
+  
   if (window.currentUser) {
     updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
     updatePlayerInfo('black', 'Raqib', 1500);
@@ -285,7 +309,7 @@ function startNewGame() {
     updatePlayerInfo('black', 'Qora', 1500);
   }
   setGameTime(initialTime);
-}
+};
 
 function resignGame() {
   clearInterval(timerInterval);
@@ -294,7 +318,7 @@ function resignGame() {
   const t = translations[lang];
   const currentTurn = game.turn();
   const result = currentTurn === "w" ? "loss" : "win";
-  saveGameHistory(result, "Oq va Qora (Lokal)", "Lokal o'yin");
+  saveGameHistory(result, "Oq va Qora (Online)", "Online o'yin");
   recordResult(currentTurn === "w" ? "black_win" : "white_win");
   showToast(currentTurn === "w" ? t.whiteResigned : t.blackResigned, 'error', 5000);
 }
@@ -342,6 +366,11 @@ window.updatePlayerInfo = function(color, name, rating) {
 
 function onDragStart(source, piece, position, orientation) {
   if (game.game_over()) return false;
+
+  if (!opponentFound) {
+    showToast('Raqib topilishi kutilmoqda...', 'warning', 2000);
+    return false;
+  }
 
   if (!gameStarted) {
     gameStarted = true;
@@ -400,11 +429,11 @@ function onDrop(source, target) {
     if (game.in_checkmate()) {
       const winner = game.turn() === 'w' ? "black_win" : "white_win";
       const result = game.turn() === 'w' ? "loss" : "win";
-      saveGameHistory(result, "Oq va Qora (Lokal)", "Lokal o'yin");
+      saveGameHistory(result, "Oq va Qora (Online)", "Online o'yin");
       recordResult(winner);
       showToast("Shaxmat! O'yin tugadi.", 'success', 5000);
     } else {
-      saveGameHistory("draw", "Oq va Qora (Lokal)", "Lokal o'yin");
+      saveGameHistory("draw", "Oq va Qora (Online)", "Online o'yin");
       recordResult("draw");
       showToast("Durang!", 'warning', 5000);
     }
@@ -416,7 +445,7 @@ function onSnapEnd() {
 }
 
 let config = {
-  draggable: true,
+  draggable: false,
   position: 'start',
   pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
   onDragStart: onDragStart,
@@ -589,12 +618,12 @@ onSnapEnd = function() {
   
   if (halfMoveClock >= 100) {
     showToast('50 harakat qoidasi: Durrang!', 'warning', 5000);
-    saveGameHistory('draw', 'Oq va Qora (Lokal)', 'Lokal o\'yin');
+    saveGameHistory('draw', 'Oq va Qora (Online)', 'Online o\'yin');
     recordResult('draw');
     clearInterval(timerInterval);
   } else if (repetitions >= 3) {
     showToast('3 ta takroranish: Durrang!', 'warning', 5000);
-    saveGameHistory('draw', 'Oq va Qora (Lokal)', 'Lokal o\'yin');
+    saveGameHistory('draw', 'Oq va Qora (Online)', 'Online o\'yin');
     recordResult('draw');
     clearInterval(timerInterval);
   }
@@ -608,12 +637,12 @@ function checkTimeForfeit() {
   
   if (whiteTimeLeft <= 0 && game.turn() === 'w') {
     showToast('Oq vaqtdan chiqdi! Qora g\'alaba!', 'error', 5000);
-    saveGameHistory('loss', 'Oq va Qora (Lokal)', 'Lokal o\'yin');
+    saveGameHistory('loss', 'Oq va Qora (Online)', 'Online o\'yin');
     recordResult('black_win');
     clearInterval(timerInterval);
   } else if (blackTimeLeft <= 0 && game.turn() === 'b') {
     showToast('Qora vaqtdan chiqdi! Oq g\'alaba!', 'error', 5000);
-    saveGameHistory('win', 'Oq va Qora (Lokal)', 'Lokal o\'yin');
+    saveGameHistory('win', 'Oq va Qora (Online)', 'Online o\'yin');
     recordResult('white_win');
     clearInterval(timerInterval);
   }

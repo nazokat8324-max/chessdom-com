@@ -592,6 +592,7 @@
         padding: 15px;
         border: 1px solid #2a3e3b;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        position: relative;
       }
 
       .player-bar {
@@ -2127,19 +2128,6 @@
     <!-- ASOSIY QISM -->
     <div class="main-wrapper">
       <div class="top-bar">
-        <div
-          id="onlineStatusIndicator"
-          style="
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #e74c3c;
-          "
-          title="Online holat"
-        ></div>
-        <span id="onlineStatusText" style="font-size: 12px; color: #88a"
-          >Lokal</span
-        >
         <span
           id="matchmakingStatus"
           style="font-size: 12px; color: #f39c12; display: none"
@@ -2204,7 +2192,7 @@
             <button
               class="play-big-btn"
               style="width: auto; padding: 10px 20px"
-              onclick="switchView('game')"
+              onclick="handleStartGame()"
               id="dashStartBtn"
             >
               O'yinni boshlash
@@ -2263,6 +2251,13 @@
             </div>
             <div class="board-wrapper">
               <div class="board theme-green" id="chessBoard"></div>
+              <div id="boardWaitingOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); border-radius: 12px; display: flex; align-items: center; justify-content: center; z-index: 10;">
+                <div style="text-align: center; color: #fff;">
+                  <div style="font-size: 48px; margin-bottom: 10px;">⏳</div>
+                  <div style="font-size: 16px; font-weight: bold;">Raqib qidirilmoqda...</div>
+                  <div style="font-size: 12px; color: #88a; margin-top: 5px;">Iltimos, kuting</div>
+                </div>
+              </div>
             </div>
             <div
               class="panel"

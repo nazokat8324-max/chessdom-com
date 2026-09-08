@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS games (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
     result VARCHAR(20) NOT NULL,
-    opponent VARCHAR(100) DEFAULT 'Lokal',
-    mode VARCHAR(50) DEFAULT 'Lokal o\'yin',
+    opponent VARCHAR(100) DEFAULT 'Online',
+    mode VARCHAR(50) DEFAULT 'Online o\'yin',
     time_control VARCHAR(20) DEFAULT 'blitz',
     moves JSONB DEFAULT '[]'::jsonb,
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP

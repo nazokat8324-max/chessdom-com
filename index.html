@@ -2680,20 +2680,67 @@
     >
       <div
         class="card-box"
-        style="width: 600px; max-height: 80vh; overflow-y: auto"
+        style="width: 800px; max-height: 85vh; overflow-y: auto"
       >
-        <div class="card-title" id="historyCardTitle">O'yinlar tarixi</div>
         <div
-          style="font-size: 13px; color: #88a; margin-bottom: 15px"
-          id="historyDesc"
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
         >
-          Sizning oxirgi o'ynagan o'yinlaringiz ro'yxati
+          <div class="card-title" id="historyCardTitle" style="margin-bottom: 0">
+            O'yinlar tarixi
+          </div>
+          <div class="leaderboard-mode-tabs">
+            <button
+              class="mode-tab active"
+              id="allHistoryTab"
+              onclick="filterHistory('all')"
+            >
+              Barchasi
+            </button>
+            <button
+              class="mode-tab"
+              id="winsHistoryTab"
+              onclick="filterHistory('win')"
+            >
+              G'alabalar
+            </button>
+            <button
+              class="mode-tab"
+              id="lossesHistoryTab"
+              onclick="filterHistory('loss')"
+            >
+              Mag'lubiyatlar
+            </button>
+            <button
+              class="mode-tab"
+              id="drawsHistoryTab"
+              onclick="filterHistory('draw')"
+            >
+              Duranglar
+            </button>
+          </div>
         </div>
-        <div
-          id="fullHistoryContainer"
-          style="display: flex; flex-direction: column; gap: 8px"
-        >
-          <!-- JavaScript orqali o'yinlar tarixi shu yerga tushadi -->
+
+        <div class="leaderboard-table-wrapper">
+          <table class="leaderboard-table" id="historyTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Sana</th>
+                <th>Raqib</th>
+                <th>Rejim</th>
+                <th>Vaqt</th>
+                <th>Natija</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody">
+              <!-- JavaScript orqali yuklanadi -->
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

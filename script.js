@@ -118,6 +118,89 @@ window.updateTopPlayersList = async function() {
   }
 };
 
+window.updateGameHistoryView = function() {
+  const container = document.getElementById("historyTableBody");
+  if (!container) return;
+
+  let history = [];
+  if (window.currentUser && window.currentUser.history) {
+    history = window.currentUser.history;
+  } else {
+    const guestHistory = JSON.parse(localStorage.getItem("justChessGameHistory") || "[]");
+    history = guestHistory;
+  }
+
+  if (!history || history.length === 0) {
+    container.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888; padding: 30px;">Hozircha o'yinlar tarixi mavjud emas</td></tr>`;
+    return;
+  }
+
+  window._allGameHistory = history;
+  window._currentHistoryFilter = 'all';
+  renderHistoryTable(history);
+};
+
+function renderHistoryTable(history) {
+  const container = document.getElementById("historyTableBody");
+  if (!container) return;
+
+  let html = '';
+  history.forEach((game, index) => {
+    let resultBadge = '';
+    if (game.result === 'win') {
+      resultBadge = '<span style="color: #2ecc71; font-weight: bold;">G\'alaba</span>';
+    } else if (game.result === 'loss') {
+      resultBadge = '<span style="color: #e74c3c; font-weight: bold;">Mag\'lubiyat</span>';
+    } else if (game.result === 'draw') {
+      resultBadge = '<span style="color: #f39c12; font-weight: bold;">Durang</span>';
+    } else {
+      resultBadge = `<span style="color: #88a;">${game.result || '-'}</span>`;
+    }
+
+    const timeControl = game.timeControl || 'blitz';
+    const timeLabel = timeControl.charAt(0).toUpperCase() + timeControl.slice(1);
+
+    html += `
+      <tr>
+        <td style="color: #88a; font-size: 12px;">${index + 1}</td>
+        <td style="color: #ccc; font-size: 12px;">${game.date || '-'}</td>
+        <td style="color: #fff; font-size: 13px; font-weight: bold;">${game.opponent || 'Noma\'lum'}</td>
+        <td style="color: #88a; font-size: 12px;">${game.mode || 'Online'}</td>
+        <td style="color: #88a; font-size: 12px;">${timeLabel}</td>
+        <td style="text-align: center;">${resultBadge}</td>
+      </tr>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+window.filterHistory = function(filterType) {
+  if (!window._allGameHistory) return;
+
+  window._currentHistoryFilter = filterType;
+
+  document.querySelectorAll('#historyView .mode-tab').forEach(tab => {
+    tab.classList.remove('active');
+  });
+
+  const tabMap = {
+    'all': 'allHistoryTab',
+    'win': 'winsHistoryTab',
+    'loss': 'lossesHistoryTab',
+    'draw': 'drawsHistoryTab'
+  };
+  const activeTab = document.getElementById(tabMap[filterType]);
+  if (activeTab) activeTab.classList.add('active');
+
+  if (filterType === 'all') {
+    renderHistoryTable(window._allGameHistory);
+  } else {
+    const filtered = window._allGameHistory.filter(game => game.result === filterType);
+    renderHistoryTable(filtered);
+  }
+};
+
 window.switchView = function(viewName) {
   if (typeof window.gameStartRequested !== 'undefined') {
     window.gameStartRequested = false;

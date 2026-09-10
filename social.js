@@ -791,99 +791,83 @@ window.filterCountries = debounce(function() {
   container.innerHTML = htmlContent;
 }, 300);
 
-window.showCreateTournamentModal = function() {
-  if (!window.currentUser) {
-    alert('Please log in first!');
-    switchView('login');
-    return;
-  }
-  const modal = document.getElementById('createTournamentModal');
-  if (modal) modal.style.display = 'flex';
-};
-
-window.hideCreateTournamentModal = function() {
-  const modal = document.getElementById('createTournamentModal');
-  if (modal) modal.style.display = 'none';
-};
-
-window.createTournamentFromModal = async function() {
-  const name = document.getElementById('tournamentNameInput').value.trim();
-  const type = document.getElementById('tournamentTypeInput').value;
-  const tc = document.getElementById('tournamentTCInput').value;
-  const maxPlayers = parseInt(document.getElementById('tournamentMaxPlayers').value) || 16;
-
-  if (!name || name.length < 3) {
-    alert('Tournament name must be at least 3 characters!');
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/tournaments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${window.authToken}`
-      },
-      body: JSON.stringify({
-        name,
-        description: '',
-        maxPlayers: Math.max(2, Math.min(64, maxPlayers)),
-        tournamentType: type,
-        timeControl: tc,
-        rounds: type === 'individual' ? (tc.includes('Bullet') ? 9 : tc.includes('Blitz') ? 7 : 5) : 7
-      })
-    });
-    const data = await res.json();
-    if (data.success) {
-      hideCreateTournamentModal();
-      alert('Tournament created!');
-      loadTournaments();
-    } else {
-      alert(data.message || 'Failed to create tournament');
-    }
-  } catch (err) {
-    console.error('Create tournament error:', err);
-    alert('Server connection failed');
-  }
-};
-
 window.loadArenas = function() {
-  const container = document.getElementById('arenaContainer');
+  const container = document.getElementById('arenaScheduleContainer');
   if (!container) return;
+
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Jadval yuklanmoqda...</div>';
 
   fetch('/api/tournaments/arenas')
     .then(res => res.ok ? res.json() : null)
     .then(data => {
-      if (!data || !data.success) {
-        container.innerHTML = '';
+      if (!data || !data.success || !Array.isArray(data.schedule)) {
+        container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 20px;">Jadvalni yuklab bo\'lmadi</div>';
         return;
       }
-      const tc = data.timeControl;
-      const arena = data.currentArena;
+
+      const schedule = data.schedule;
+      const currentArena = data.currentArena;
       const timeUntilNext = data.timeUntilNext || 0;
+      const now = Date.now();
+      const livePlayers = currentArena ? (currentArena.current_players || 0) : 0;
 
-      const players = arena ? (arena.current_players || 0) : 0;
-      const joinBtn = arena
-         ? `<button class="form-submit" onclick="joinTournament('${arena.id}')" style="padding: 10px 22px; font-size: 14px;">Join Arena</button>`
-        : '';
-
-      container.innerHTML = `
-        <div style="background: linear-gradient(135deg, rgba(129,182,76,0.12), rgba(52,152,219,0.12)); border: 1px solid rgba(129,182,76,0.4); border-radius: 12px; padding: 16px; position: relative; overflow: hidden;">
-          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-            <div>
-              <div style="font-size: 11px; color: #88a; text-transform: uppercase; letter-spacing: 1px;">🕒 24/7 Arena</div>
-              <div style="font-size: 18px; font-weight: bold; color: #81b64c; margin-top: 2px;">${tc.icon} ${tc.name} <span style="color:#aaa; font-size: 13px;">(${tc.code})</span></div>
-              <div style="font-size: 12px; color: #bbb; margin-top: 4px;">${players} players • ${tc.rounds} rounds • Next: <span id="arenaCountdown">${formatArenaCountdown(timeUntilNext)}</span></div>
-            </div>
-            ${joinBtn}
+      let html = `
+        <div class="arena-schedule-header">
+          <div>
+            <div class="arena-schedule-eyebrow">🏆 24/7 Arena</div>
+            <div class="arena-schedule-title">Har soatda yangi turnir</div>
+            <div class="arena-schedule-subtitle">Rapid • Blitz • Bullet | Har bir turnir 60 daqiqa</div>
+          </div>
+          <div class="arena-schedule-summary">
+            <strong>24</strong>
+            <span>ta turnir</span>
           </div>
         </div>
+        <div class="arena-schedule-grid">
       `;
+
+      schedule.forEach(slot => {
+        const start = new Date(slot.slotStart);
+        const end = new Date(slot.slotEnd);
+        const isCurrent = slot.status === 'current' || (start.getTime() <= now && now < end.getTime());
+        const isPast = slot.status === 'completed' || end.getTime() <= now;
+        const isUpcoming = !isCurrent && !isPast;
+        const typeLabel = slot.type === 'rapid' ? 'Rapid' : (slot.type === 'blitz' ? 'Blitz' : 'Bullet');
+        const statusLabel = isCurrent
+          ? '<span class="arena-schedule-status live">LIVE</span>'
+          : (isPast
+            ? '<span class="arena-schedule-status">Tugagan</span>'
+            : `<span class="arena-schedule-status">${formatArenaDuration(start.getTime() - now)} keyin</span>`);
+        const currentContent = isCurrent
+          ? `<div class="arena-schedule-window">Keyingi turnir: <span class="arena-countdown">${formatArenaCountdown(timeUntilNext)}</span></div>
+             <div style="font-size: 10px; color: #b8c7c2; margin-top: 4px;">${livePlayers} o'yinchi ishtirok etmoqda</div>`
+          : `<div class="arena-schedule-window">${formatArenaHour(start)}–${formatArenaHour(end)}</div>`;
+        const joinBtn = isCurrent && currentArena
+          ? `<button class="form-submit arena-schedule-join" onclick="joinTournament('${currentArena.id}')">Arena</button>`
+          : '';
+
+        html += `
+          <article class="arena-schedule-card ${isCurrent ? 'current' : (isPast ? 'past' : 'upcoming')}">
+            <div class="arena-schedule-hour">${formatArenaHour(start)}</div>
+            <div class="arena-schedule-top">
+              <span class="arena-schedule-badge ${slot.type}">${typeLabel}</span>
+              ${statusLabel}
+            </div>
+            <div class="arena-schedule-name">${slot.icon} ${slot.name}</div>
+            <div class="arena-schedule-code">${slot.code} • ${slot.rounds} raund</div>
+            ${currentContent}
+            ${joinBtn}
+          </article>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
       startArenaCountdown(timeUntilNext);
     })
     .catch(err => {
-      console.error('Arena yuklash xatoligi:', err);
-      container.innerHTML = '';
+      console.error('Arena jadvali xatoligi:', err);
+      container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 20px;">Jadvalni yuklab bo\'lmadi</div>';
     });
 };
 
@@ -894,21 +878,32 @@ function formatArenaCountdown(ms) {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
+function formatArenaDuration(ms) {
+  const totalSec = Math.max(0, Math.floor(ms / 1000));
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  if (h > 0) return `${h} soat ${m} daqiqa`;
+  return `${m} daqiqa`;
+}
+
+function formatArenaHour(date) {
+  return `${String(date.getHours()).padStart(2, '0')}:00`;
+}
+
 let arenaCountdownInterval = null;
 function startArenaCountdown(initialMs) {
   if (arenaCountdownInterval) clearInterval(arenaCountdownInterval);
   let remaining = initialMs;
-  const el = document.getElementById('arenaCountdown');
+  const el = document.querySelector('.arena-countdown');
   if (!el) return;
   arenaCountdownInterval = setInterval(() => {
     remaining -= 1000;
     if (remaining <= 0) {
       clearInterval(arenaCountdownInterval);
-      if (typeof window.loadArenas === 'function') window.loadArenas();
       if (typeof window.loadTournaments === 'function') window.loadTournaments();
       return;
     }
-    const cdEl = document.getElementById('arenaCountdown');
+    const cdEl = document.querySelector('.arena-countdown');
     if (cdEl) cdEl.textContent = formatArenaCountdown(remaining);
   }, 1000);
 }
@@ -918,7 +913,6 @@ window.loadTournaments = function() {
   if (!container) return;
 
   if (typeof window.loadArenas === 'function') window.loadArenas();
-  if (typeof window.loadTeamTournaments === 'function') window.loadTeamTournaments();
 
   container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
    
@@ -1975,266 +1969,4 @@ window.reportTournamentMatchResult = function(tournamentId, matchId, result) {
       console.error('Match result xatoligi:', err);
       alert('Serverga ulanib bo\'lmadi!');
     });
-};
-
-// ===== JAMOA VS JAMOA (COUNTRY VS COUNTRY) =====
-
-window.showCreateTeamTournamentModal = function() {
-  if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
-    switchView('login');
-    return;
-  }
-
-  const selectA = document.getElementById('teamTournamentA');
-  const selectB = document.getElementById('teamTournamentB');
-  if (selectA && selectB) {
-    const allCountries = (typeof continentCountries !== 'undefined') ? continentCountries.All : [];
-    selectA.innerHTML = '';
-    selectB.innerHTML = '';
-    allCountries.forEach(c => {
-      selectA.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-      selectB.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-    });
-    if (selectB.options.length > 1) selectB.selectedIndex = 1;
-  }
-
-  const modal = document.getElementById('teamTournamentModal');
-  if (modal) modal.style.display = 'flex';
-};
-
-window.hideTeamTournamentModal = function() {
-  const modal = document.getElementById('teamTournamentModal');
-  if (modal) modal.style.display = 'none';
-};
-
-function getCountryMembers(countryName) {
-  const members = [];
-  const stored = JSON.parse(localStorage.getItem('justChessClubMembers_' + countryName) || '[]');
-  stored.forEach(m => { if (!members.includes(m.username)) members.push(m.username); });
-
-  const userClubs = JSON.parse(localStorage.getItem('justChessUserClubs') || '{}');
-  const currentUser = JSON.parse(localStorage.getItem('justChessCurrentUser'));
-  if (currentUser && (userClubs[currentUser.username] || []).includes(countryName) && !members.includes(currentUser.username)) {
-    members.push(currentUser.username);
-  }
-
-  const allUsers = JSON.parse(localStorage.getItem('justChessAllUsers') || '[]');
-  return members.map(username => {
-    const u = allUsers.find(x => x.username === username) || (currentUser && currentUser.username === username ? currentUser : null);
-    return { userId: username, username, rating: u ? (u.rating || 1500) : 1500 };
-  });
-}
-
-window.createTeamTournament = async function() {
-  const name = document.getElementById('teamTournamentName').value.trim();
-  const teamA = document.getElementById('teamTournamentA').value;
-  const teamB = document.getElementById('teamTournamentB').value;
-  const tc = document.getElementById('teamTournamentTC').value;
-
-  if (!name) { alert('Please enter a tournament name!'); return; }
-  if (!teamA || !teamB || teamA === teamB) { alert('Select both teams (different countries)!'); return; }
-
-  const membersA = getCountryMembers(teamA);
-  const membersB = getCountryMembers(teamB);
-  if (membersA.length === 0 || membersB.length === 0) {
-    alert('Each team must have at least 1 member (join a club first)!');
-    return;
-  }
-
-  let matchups = [];
-  try {
-    const res = await fetch('/api/tournaments/team-pairings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.authToken}` },
-      body: JSON.stringify({ teamA: membersA, teamB: membersB, round: 1 })
-    });
-    const data = await res.json();
-    matchups = data.success ? data.matchups : [];
-  } catch (err) {
-    console.error('Team pairings xatoligi:', err);
-  }
-
-  if (!matchups || matchups.length === 0) {
-    alert('Pairings could not be generated!');
-    return;
-  }
-
-  const tournament = {
-    id: 'team_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-    name,
-    teamA, teamB,
-    timeControl: tc,
-    round: 1,
-    status: 'active',
-    matchups: matchups.map(m => ({
-      board: m.board,
-      teamAPlayerId: m.teamAPlayerId,
-      teamBPlayerId: m.teamBPlayerId,
-      teamARating: m.teamARating,
-      teamBRating: m.teamBRating,
-      games: m.games.map(g => ({
-        matchId: g.matchId,
-        gameNum: g.gameNum,
-        whiteId: g.whiteId,
-        blackId: g.blackId,
-        result: null
-      }))
-    })),
-    teamScoreA: 0,
-    teamScoreB: 0
-  };
-
-  const list = JSON.parse(localStorage.getItem('justChessTeamTournaments') || '[]');
-  list.push(tournament);
-  localStorage.setItem('justChessTeamTournaments', JSON.stringify(list));
-
-  // Also store on server (for API listing)
-  fetch('/api/tournaments', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.authToken}` },
-    body: JSON.stringify({
-      name,
-      tournamentType: 'team',
-      timeControl: tc,
-      maxPlayers: membersA.length + membersB.length,
-      clubIdA: teamA,
-      clubIdB: teamB
-    })
-  }).catch(() => {});
-
-  hideTeamTournamentModal();
-  openTeamTournament(tournament.id);
-};
-
-window.openTeamTournament = function(tournamentId) {
-  const view = document.getElementById('teamTournamentView');
-  const container = document.getElementById('teamTournamentContainer');
-  if (!view || !container) return;
-
-  const list = JSON.parse(localStorage.getItem('justChessTeamTournaments') || '[]');
-  const tournament = list.find(t => t.id === tournamentId);
-  if (!tournament) {
-    alert('Tournament not found!');
-    switchView('tournaments');
-    return;
-  }
-
-  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
-  document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-  view.classList.add('active-view');
-  const navT = document.getElementById('navTournaments');
-  if (navT) navT.classList.add('active');
-
-  let matchupsHTML = '';
-  tournament.matchups.forEach((m, boardIdx) => {
-    const aName = m.teamAPlayerId || 'A';
-    const bName = m.teamBPlayerId || 'B';
-    let gamesHTML = '';
-    m.games.forEach((g, gameIdx) => {
-      const whiteName = g.whiteId || '?';
-      const blackName = g.blackId || '?';
-      let resultBtns = '';
-      if (!g.result) {
-        resultBtns = `
-          <div style="display: flex; gap: 6px; margin-top: 6px;">
-            <button class="action-btn" onclick="reportTeamGameResult('${tournamentId}', ${boardIdx}, ${gameIdx}, 'white')" style="flex:1; font-size: 10px; padding: 5px 3px;">${whiteName} wins</button>
-            <button class="action-btn" onclick="reportTeamGameResult('${tournamentId}', ${boardIdx}, ${gameIdx}, 'draw')" style="flex:1; font-size: 10px; padding: 5px 3px;">Draw</button>
-            <button class="action-btn" onclick="reportTeamGameResult('${tournamentId}', ${boardIdx}, ${gameIdx}, 'black')" style="flex:1; font-size: 10px; padding: 5px 3px;">${blackName} wins</button>
-          </div>`;
-      } else {
-        const winner = g.result === 'draw' ? 'Draw' : (g.result === 'white' ? whiteName : blackName);
-        resultBtns = `<div style="font-size: 11px; color: #81b64c; margin-top: 6px;">✓ ${winner}</div>`;
-      }
-      gamesHTML += `
-        <div style="background: rgba(255,255,255,0.04); padding: 8px 10px; border-radius: 6px; margin-top: 6px;">
-          <div style="font-size: 12px; color: #ccc;">Game ${g.gameNum}: <b style="color:#fff;">${whiteName}</b> (White) vs <b style="color:#fff;">${blackName}</b> (Black)</div>
-          ${resultBtns}
-        </div>`;
-    });
-
-    matchupsHTML += `
-      <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 10px;">
-        <div style="font-size: 13px; font-weight: bold; color: #81b64c; margin-bottom: 4px;">Board ${m.board}: ${aName} (${m.teamARating || 1500}) vs ${bName} (${m.teamBRating || 1500})</div>
-        ${gamesHTML}
-      </div>`;
-  });
-
-  if (tournament.matchups.length === 0) {
-    matchupsHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 15px;">No matchups</div>';
-  }
-
-  container.innerHTML = `
-    <div class="card-title" style="margin-bottom: 8px;">${tournament.name}</div>
-    <div style="display: flex; align-items: center; justify-content: space-around; margin-bottom: 15px; padding: 12px; background: rgba(129,182,76,0.08); border-radius: 10px;">
-      <div style="text-align: center;">
-        <div style="font-size: 14px; font-weight: bold; color: #fff;">${tournament.teamA}</div>
-        <div style="font-size: 28px; font-weight: bold; color: #81b64c;">${tournament.teamScoreA}</div>
-      </div>
-      <div style="font-size: 18px; color: #88a;">vs</div>
-      <div style="text-align: center;">
-        <div style="font-size: 14px; font-weight: bold; color: #fff;">${tournament.teamB}</div>
-        <div style="font-size: 28px; font-weight: bold; color: #e74c3c;">${tournament.teamScoreB}</div>
-      </div>
-    </div>
-    <div style="font-size: 12px; color: #88a; text-align: center; margin-bottom: 12px;">${tournament.timeControl} • 2 games per board</div>
-    <div style="margin-bottom: 15px;">
-      <button class="control-btn" onclick="switchView('tournaments'); loadTournaments();" style="padding: 6px 14px; font-size: 12px;">← Back to Tournaments</button>
-    </div>
-    <h4 style="color: #81b64c; font-size: 13px; margin: 0 0 10px 0; text-transform: uppercase;">Boards and Games</h4>
-    ${matchupsHTML}
-  `;
-};
-
-window.reportTeamGameResult = function(tournamentId, boardIdx, gameIdx, result) {
-  const list = JSON.parse(localStorage.getItem('justChessTeamTournaments') || '[]');
-  const tournament = list.find(t => t.id === tournamentId);
-  if (!tournament) return;
-
-  const game = tournament.matchups[boardIdx].games[gameIdx];
-  if (!game || game.result) return;
-  game.result = result;
-
-    // Recalculate team scores
-  let scoreA = 0, scoreB = 0;
-  tournament.matchups.forEach(m => {
-    m.games.forEach(g => {
-      if (!g.result) return;
-      if (g.result === 'draw') {
-        scoreA += 0.5; scoreB += 0.5;
-      } else if (g.result === 'white') {
-        if (g.whiteId === m.teamAPlayerId) scoreA += 1; else scoreB += 1;
-      } else if (g.result === 'black') {
-        if (g.blackId === m.teamAPlayerId) scoreA += 1; else scoreB += 1;
-      }
-    });
-  });
-  tournament.teamScoreA = scoreA;
-  tournament.teamScoreB = scoreB;
-
-  localStorage.setItem('justChessTeamTournaments', JSON.stringify(list));
-  openTeamTournament(tournamentId);
-};
-
-window.loadTeamTournaments = function() {
-  const container = document.getElementById('teamTournamentsListContainer');
-  if (!container) return;
-  const list = JSON.parse(localStorage.getItem('justChessTeamTournaments') || '[]');
-  if (list.length === 0) {
-    container.innerHTML = '';
-    return;
-  }
-    let html = '<div style="font-size: 13px; color: #81b64c; font-weight: bold; margin-bottom: 8px;">⚔️ Country vs Country tournaments</div>';
-  list.forEach(t => {
-    const winner = t.teamScoreA > t.teamScoreB ? t.teamA : (t.teamScoreB > t.teamScoreA ? t.teamB : null);
-    html += `
-      <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
-        <div>
-          <b style="font-size: 13px; color: #fff;">${t.teamA} ${t.teamScoreA} - ${t.teamScoreB} ${t.teamB}</b>
-          <span style="font-size: 11px; color: #88a; display: block;">${t.name} ${winner ? '• Winner: ' + winner : ''}</span>
-        </div>
-        <button class="control-btn" onclick="openTeamTournament('${t.id}')" style="padding: 5px 12px; font-size: 12px;">Open</button>
-      </div>`;
-  });
-  container.innerHTML = html;
 };

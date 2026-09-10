@@ -75,8 +75,7 @@ const translations = {
     pgnExport: "PGN eksport",
     pgnDownloaded: "PGN fayli yuklandi!",
     tournamentsTitle: "Turnirlar",
-    tournamentsDesc: "Faol turnirlar va musobaqalar",
-    btnCreateTournament: "+ Yanga Turnir Yaratish",
+    tournamentsDesc: "24 soat davomida har soatda arena turnirlari",
     friendsTitle: "Do'stlar",
     friendsDesc: "Do'stlar ro'yxati va so'rovlar",
     btnSendFriendRequest: "Do'stlik so'rash",
@@ -165,8 +164,7 @@ const translations = {
     pgnExport: "PGN Export",
     pgnDownloaded: "PGN file downloaded!",
     tournamentsTitle: "Tournaments",
-    tournamentsDesc: "Active tournaments and competitions",
-    btnCreateTournament: "+ Create Tournament",
+    tournamentsDesc: "Arena tournaments every hour for 24 hours",
     friendsTitle: "Friends",
     friendsDesc: "Friends list and requests",
     btnSendFriendRequest: "Send Request",
@@ -255,8 +253,7 @@ const translations = {
     pgnExport: "PGN экспорт",
     pgnDownloaded: "PGN файл загружен!",
     tournamentsTitle: "Турниры",
-    tournamentsDesc: "Активные турниры и соревнования",
-    btnCreateTournament: "+ Создать турнир",
+    tournamentsDesc: "Арена-турниры каждый час в течение 24 часов",
     friendsTitle: "Друзья",
     friendsDesc: "Список друзей и запросы",
     btnSendFriendRequest: "Отправить запрос",
@@ -345,8 +342,7 @@ const translations = {
     pgnExport: "Exportar PGN",
     pgnDownloaded: "¡Archivo PGN descargado!",
     tournamentsTitle: "Torneos",
-    tournamentsDesc: "Torneos y competiciones activas",
-    btnCreateTournament: "+ Crear Torneo",
+    tournamentsDesc: "Torneos arena cada hora durante 24 horas",
     friendsTitle: "Amigos",
     friendsDesc: "Lista de amigos y solicitudes",
     btnSendFriendRequest: "Enviar solicitud",
@@ -435,8 +431,7 @@ const translations = {
     pgnExport: "PGN Export",
     pgnDownloaded: "PGN Datei heruntergeladen!",
     tournamentsTitle: "Turniere",
-    tournamentsDesc: "Aktive Turniere und Wettbewerbe",
-    btnCreateTournament: "+ Turnier erstellen",
+    tournamentsDesc: "Arena-Turniere jede Stunde, 24 Stunden lang",
     friendsTitle: "Freunde",
     friendsDesc: "Freundesliste und Anfragen",
     btnSendFriendRequest: "Anfrage senden",
@@ -525,8 +520,7 @@ const translations = {
     pgnExport: "Exporter PGN",
     pgnDownloaded: "Fichier PGN téléchargé!",
     tournamentsTitle: "Tournois",
-    tournamentsDesc: "Tournois et compétitions actifs",
-    btnCreateTournament: "+ Créer un tournoi",
+    tournamentsDesc: "Tournois arena toutes les heures pendant 24 heures",
     friendsTitle: "Amis",
     friendsDesc: "Liste d'amis et demandes",
     btnSendFriendRequest: "Envoyer demande",
@@ -616,7 +610,6 @@ function updateUI() {
   
   const tournamentsCardTitle = document.getElementById("tournamentsCardTitle"); if (tournamentsCardTitle) tournamentsCardTitle.textContent = t('tournamentsTitle');
   const tournamentsDesc = document.getElementById("tournamentsDesc"); if (tournamentsDesc) tournamentsDesc.textContent = t('tournamentsDesc');
-  const btnCreateTournament = document.getElementById("btnCreateTournament"); if (btnCreateTournament) btnCreateTournament.textContent = t('btnCreateTournament');
   
   const friendsCardTitle = document.getElementById("friendsCardTitle"); if (friendsCardTitle) friendsCardTitle.textContent = t('friendsTitle');
   const friendsDesc = document.getElementById("friendsDesc"); if (friendsDesc) friendsDesc.textContent = t('friendsDesc');

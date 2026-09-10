@@ -881,10 +881,133 @@ window.renderChampionsLeague = function() {
 };
 
 window.openLeagueDetail = function(leagueKey) {
+  window.currentLeagueKey = leagueKey;
   const info = window.CONTINENTS[leagueKey];
   if (!info) return;
   const countries = (typeof continentCountries !== 'undefined' && continentCountries[leagueKey]) ? continentCountries[leagueKey] : [];
-  alert(info.name + '\n\n' + countries.length + ' ta jamoa\nRound-Robin tizimida har oy Bullet, Blitz va Rapid musobaqalari o\'tkaziladi!');
+  const participants = window.getLeagueParticipants(leagueKey);
+  const minParticipants = 10;
+  const isReady = participants.length >= minParticipants;
+  const schedule = window.generateRoundRobinSchedule(countries);
+
+  const modal = document.getElementById('leagueDetailModal');
+  if (!modal) return;
+
+  document.getElementById('leagueDetailIcon').textContent = info.flag;
+  document.getElementById('leagueDetailTitle').textContent = info.name;
+
+  const statusEl = document.getElementById('leagueDetailStatus');
+  if (statusEl) {
+    statusEl.innerHTML = `
+      <div class="league-detail-status">
+        <div class="league-detail-status-icon">${isReady ? '✅' : '⏳'}</div>
+        <div class="league-detail-status-text">
+          <b style="color: ${isReady ? '#81b64c' : '#f39c12'};">
+            ${isReady ? 'Liga startga tayyor' : 'Ishtirokchilar kutilmoqda (Minimum 10 ta kerak)'}
+          </b>
+          <div style="font-size: 12px; color: #88a; margin-top: 4px;">
+            ${participants.length} / ${minParticipants} ta ishtirokchi ro'yxatdan o'tgan
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  const progressEl = document.getElementById('leagueDetailProgress');
+  if (progressEl) {
+    const percentage = Math.min(100, (participants.length / minParticipants) * 100);
+    progressEl.innerHTML = `
+      <div style="display: flex; justify-content: space-between; font-size: 12px; color: #88a; margin-bottom: 6px;">
+        <span>Ro'yxatdan o'tganlar</span>
+        <span>${participants.length} / ${minParticipants}</span>
+      </div>
+      <div class="league-detail-progress-track">
+        <div class="league-detail-progress-bar" style="width: ${percentage}%;"></div>
+      </div>
+    `;
+  }
+
+  const scheduleEl = document.getElementById('leagueScheduleContainer');
+  if (scheduleEl) {
+    if (!schedule || schedule.length === 0) {
+      scheduleEl.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">Ishtirokchilar yetarli emas</div>';
+    } else {
+      let html = '<table class="league-detail-schedule-table"><thead><tr><th>Bosqich</th><th>Uy jamoasi</th><th>Mehmon jamoasi</th><th>Sana</th><th>Vaqt</th></tr></thead><tbody>';
+      schedule.forEach((match, index) => {
+        html += `<tr>
+          <td style="color: #88a; font-size: 11px;">${match.round}</td>
+          <td style="color: #fff; font-weight: bold;">${match.home}</td>
+          <td style="color: #fff; font-weight: bold;">${match.away}</td>
+          <td style="color: #88a; font-size: 11px;">${match.date}</td>
+          <td style="color: #88a; font-size: 11px;">${match.time}</td>
+        </tr>`;
+      });
+      html += '</tbody></table>';
+      scheduleEl.innerHTML = html;
+    }
+  }
+
+  const joinBtn = document.getElementById('joinLeagueBtn');
+  if (joinBtn) {
+    const alreadyJoined = participants.some(u => u.username === (window.currentUser ? window.currentUser.username : ''));
+    joinBtn.disabled = isReady || alreadyJoined;
+    joinBtn.style.opacity = isReady || alreadyJoined ? '0.5' : '1';
+    joinBtn.textContent = alreadyJoined ? 'Siz allaqachon qo\'shilgansiz' : (isReady ? 'Liga startga tayyor' : '📝 Ligaga qo\'shilish');
+  }
+
+  modal.style.display = 'flex';
+};
+
+window.closeLeagueDetail = function() {
+  const modal = document.getElementById('leagueDetailModal');
+  if (modal) modal.style.display = 'none';
+};
+
+window.getLeagueParticipants = function(leagueKey) {
+  try {
+    return JSON.parse(localStorage.getItem('justChessLeagueParticipants_' + leagueKey) || '[]');
+  } catch {
+    return [];
+  }
+};
+
+window.joinLeague = function(leagueKey) {
+  if (!window.currentUser) {
+    alert('Avval tizimga kirishingiz kerak!');
+    switchView('login');
+    return;
+  }
+  const participants = window.getLeagueParticipants(leagueKey);
+  if (!participants.some(u => u.username === window.currentUser.username)) {
+    participants.push({ username: window.currentUser.username, joinedAt: new Date().toISOString() });
+    localStorage.setItem('justChessLeagueParticipants_' + leagueKey, JSON.stringify(participants));
+    window.openLeagueDetail(leagueKey);
+  }
+};
+
+window.generateRoundRobinSchedule = function(teams) {
+  if (!teams || teams.length < 2) return [];
+  const schedule = [];
+  const n = teams.length;
+  const rounds = n - 1;
+  const matchesPerRound = Math.floor(n / 2);
+
+  for (let round = 0; round < rounds; round++) {
+    for (let match = 0; match < matchesPerRound; match++) {
+      const home = teams[(round + match) % n];
+      const away = teams[(round + n - 1 - match) % n];
+      const date = new Date();
+      date.setDate(date.getDate() + (round * 7) + 1);
+      schedule.push({
+        round: `${round + 1}-bosqich`,
+        home: home.name,
+        away: away.name,
+        date: date.toLocaleDateString('uz-UZ'),
+        time: '19:00'
+      });
+    }
+  }
+  return schedule;
 };
 
 window.playLeague = function(leagueKey, mode) {
@@ -1079,12 +1202,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  // League Detail Modal
+  const leagueDetailModal = document.getElementById("leagueDetailModal");
+  const closeLeagueDetailBtn = document.getElementById("closeLeagueDetailBtn");
+
+  if (closeLeagueDetailBtn && leagueDetailModal) {
+    closeLeagueDetailBtn.addEventListener("click", () => {
+      leagueDetailModal.style.display = "none";
+    });
+  }
+
+  if (leagueDetailModal) {
+    leagueDetailModal.addEventListener("click", (e) => {
+      if (e.target === leagueDetailModal) {
+        leagueDetailModal.style.display = "none";
+      }
+    });
+  }
+
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && profileModal && profileModal.style.display === "flex") {
       profileModal.style.display = "none";
     }
     if (e.key === "Escape" && languageModal && languageModal.style.display === "flex") {
       languageModal.style.display = "none";
+    }
+    if (e.key === "Escape" && leagueDetailModal && leagueDetailModal.style.display === "flex") {
+      leagueDetailModal.style.display = "none";
     }
   });
 

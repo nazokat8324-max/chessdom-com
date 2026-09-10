@@ -708,34 +708,63 @@ app.post('/api/matchmaking/leave', authMiddleware, async (req, res) => {
 
 // ==================== TOURNAMENT ENGINE ====================
 
-// 24/7 Arena time controls rotating every 15 minutes
-const TIME_CONTROLS = [
-  { name: '1 min Bullet', code: '1+0', type: 'bullet', rounds: 9, icon: '🔫' },
-  { name: '3 min Blitz', code: '3+0', type: 'blitz', rounds: 7, icon: '⚡' },
-  { name: '10 min Rapid', code: '10+0', type: 'rapid', rounds: 5, icon: '🚀' },
-  { name: '1+1 Bullet', code: '1+1', type: 'bullet', rounds: 9, icon: '🔫' },
-  { name: '3+2 Blitz', code: '3+2', type: 'blitz', rounds: 7, icon: '⚡' },
-  { name: '15+10 Rapid', code: '15+10', type: 'rapid', rounds: 5, icon: '🚀' },
-  { name: '2+1 Bullet', code: '2+1', type: 'bullet', rounds: 9, icon: '🔫' },
-  { name: '5 min Blitz', code: '5+0', type: 'blitz', rounds: 7, icon: '⚡' },
-  { name: '30 min Rapid', code: '30+0', type: 'rapid', rounds: 5, icon: '🚀' },
-  { name: '5+3 Blitz', code: '5+3', type: 'blitz', rounds: 7, icon: '⚡' },
-  { name: '10+5 Rapid', code: '10+5', type: 'rapid', rounds: 5, icon: '🚀' },
-  { name: '3 min Blitz', code: '3+0', type: 'blitz', rounds: 7, icon: '⚡' },
-  { name: '1 min Bullet', code: '1+0', type: 'bullet', rounds: 9, icon: '🔫' },
-  { name: '15 min Rapid', code: '15+0', type: 'rapid', rounds: 5, icon: '🚀' },
-  { name: '2+1 Bullet', code: '2+1', type: 'bullet', rounds: 9, icon: '🔫' },
-  { name: '3+2 Blitz', code: '3+2', type: 'blitz', rounds: 7, icon: '⚡' }
+// 24/7 Arena: har soatda yangi vaqt nazorati bilan avtomatik arena yaratish.
+const ARENA_SCHEDULE = [
+  { hour: 0, name: '10+5 Rapid', code: '10+5', type: 'rapid', rounds: 5, icon: '🚀' },
+  { hour: 1, name: '3+2 Blitz', code: '3+2', type: 'blitz', rounds: 7, icon: '⚡' },
+  { hour: 2, name: '1+1 Bullet', code: '1+1', type: 'bullet', rounds: 9, icon: '🔫' },
+  { hour: 3, name: '15+10 Rapid', code: '15+10', type: 'rapid', rounds: 5, icon: '🚀' },
+  { hour: 4, name: '5+3 Blitz', code: '5+3', type: 'blitz', rounds: 7, icon: '⚡' },
+  { hour: 5, name: '2+1 Bullet', code: '2+1', type: 'bullet', rounds: 9, icon: '🔫' },
+  { hour: 6, name: '10+0 Rapid', code: '10+0', type: 'rapid', rounds: 5, icon: '🚀' },
+  { hour: 7, name: '3+0 Blitz', code: '3+0', type: 'blitz', rounds: 7, icon: '⚡' },
+  { hour: 8, name: '1+0 Bullet', code: '1+0', type: 'bullet', rounds: 9, icon: '🔫' },
+  { hour: 9, name: '15+0 Rapid', code: '15+0', type: 'rapid', rounds: 5, icon: '🚀' },
+  { hour: 10, name: '5+0 Blitz', code: '5+0', type: 'blitz', rounds: 7, icon: '⚡' },
+  { hour: 11, name: '1+1 Bullet', code: '1+1', type: 'bullet', rounds: 9, icon: '🔫' },
+  { hour: 12, name: '10+5 Rapid', code: '10+5', type: 'rapid', rounds: 5, icon: '🚀' },
+  { hour: 13, name: '3+2 Blitz', code: '3+2', type: 'blitz', rounds: 7, icon: '⚡' },
+  { hour: 14, name: '2+1 Bullet', code: '2+1', type: 'bullet', rounds: 9, icon: '🔫' },
+  { hour: 15, name: '30+0 Rapid', code: '30+0', type: 'rapid', rounds: 5, icon: '🚀' },
+  { hour: 16, name: '5+3 Blitz', code: '5+3', type: 'blitz', rounds: 7, icon: '⚡' },
+  { hour: 17, name: '1+0 Bullet', code: '1+0', type: 'bullet', rounds: 9, icon: '🔫' },
+  { hour: 18, name: '15+10 Rapid', code: '15+10', type: 'rapid', rounds: 5, icon: '🚀' },
+  { hour: 19, name: '3+0 Blitz', code: '3+0', type: 'blitz', rounds: 7, icon: '⚡' },
+  { hour: 20, name: '10+0 Rapid', code: '10+0', type: 'rapid', rounds: 5, icon: '🚀' },
+  { hour: 21, name: '5+0 Blitz', code: '5+0', type: 'blitz', rounds: 7, icon: '⚡' },
+  { hour: 22, name: '1+1 Bullet', code: '1+1', type: 'bullet', rounds: 9, icon: '🔫' },
+  { hour: 23, name: '15+0 Rapid', code: '15+0', type: 'rapid', rounds: 5, icon: '🚀' }
 ];
+
+function getArenaSchedule() {
+  const now = new Date();
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
+  return ARENA_SCHEDULE.map(entry => {
+    const slotStart = new Date(today);
+    slotStart.setHours(entry.hour, 0, 0, 0);
+    const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
+    let status = 'upcoming';
+    if (slotEnd <= now) status = 'completed';
+    else if (slotStart <= now) status = 'current';
+
+    return {
+      ...entry,
+      slotStart: slotStart.toISOString(),
+      slotEnd: slotEnd.toISOString(),
+      status
+    };
+  });
+}
 
 function getCurrentTimeControl() {
   const now = new Date();
-  const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes();
-  const slotIndex = Math.floor(minutesSinceMidnight / 15) % TIME_CONTROLS.length;
-  const tc = TIME_CONTROLS[slotIndex];
+  const hour = now.getHours();
+  const tc = ARENA_SCHEDULE[hour];
   const slotStart = new Date(now);
-  slotStart.setHours(0, Math.floor(minutesSinceMidnight / 15) * 15, 0, 0);
-  const slotEnd = new Date(slotStart.getTime() + 15 * 60 * 1000);
+  slotStart.setHours(hour, 0, 0, 0);
+  const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
   const nextSlotStart = new Date(slotEnd.getTime());
   return {
     name: tc.name,
@@ -743,21 +772,20 @@ function getCurrentTimeControl() {
     type: tc.type,
     rounds: tc.rounds,
     icon: tc.icon,
+    hour,
     slotStart: slotStart.toISOString(),
     slotEnd: slotEnd.toISOString(),
     nextSlotStart: nextSlotStart.toISOString()
   };
 }
 
-// 24/7 Arena: har 15 daqiqada yangi time control bilan avtomatik arena yaratish.
-// Bir vaqtning o'zida faqat joriy slot uchun bitta arena mavjud bo'ladi.
+// 24/7 Arena: har soatda yangi vaqt nazorati bilan avtomatik arena yaratish.
+// Bir vaqtning o'zida faqat joriy soat uchun bitta arena mavjud bo'ladi.
 async function ensureCurrentArena(tc) {
   const now = new Date();
-  const minutesSinceMidnight = now.getHours() * 60 + now.getMinutes();
-  const slotIndex = Math.floor(minutesSinceMidnight / 15);
   const slotStart = new Date(now);
-  slotStart.setHours(0, slotIndex * 15, 0, 0);
-  const slotEnd = new Date(slotStart.getTime() + 15 * 60 * 1000);
+  slotStart.setHours(now.getHours(), 0, 0, 0);
+  const slotEnd = new Date(slotStart.getTime() + 60 * 60 * 1000);
 
   if (useDatabase) {
     const result = await pool.query(
@@ -806,10 +834,13 @@ async function ensureCurrentArena(tc) {
   }
 }
 
-// Eski (tugagan slot) arena-larini 'completed' holatiga o'tkazish
+// Eski (tugagan soat) arena-larini 'completed' holatiga o'tkazish
 async function closeStaleArenas() {
   try {
-    const cutoff = new Date(Date.now() - 15 * 60 * 1000);
+    const now = new Date();
+    const currentSlotStart = new Date(now);
+    currentSlotStart.setHours(now.getHours(), 0, 0, 0);
+    const cutoff = currentSlotStart;
     if (useDatabase) {
       await pool.query(
         "UPDATE tournaments SET status = 'completed', finished_at = $1 WHERE is_arena = true AND status = 'active' AND started_at < $2",
@@ -1145,10 +1176,11 @@ app.get('/api/tournaments/arenas', async (req, res) => {
   try {
     const currentTc = getCurrentTimeControl();
     const timeUntilNext = Math.max(0, new Date(currentTc.nextSlotStart).getTime() - Date.now());
+    const schedule = getArenaSchedule();
 
     const currentArena = await ensureCurrentArena(currentTc);
 
-    res.json({ success: true, currentArena, timeControl: currentTc, timeUntilNext });
+    res.json({ success: true, currentArena, timeControl: currentTc, timeUntilNext, schedule });
   } catch (err) {
     console.error('Arenas xatoligi:', err);
     res.status(500).json({ success: false, message: 'Server xatoligi!' });
@@ -1673,21 +1705,6 @@ app.post('/api/tournaments/:id/matches/:matchId/result', authMiddleware, async (
     res.json({ success: true, message: 'Natija saqlandi!', winnerId });
   } catch (err) {
     console.error('Match result xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-// Jamoa vs Jamoa (Country vs Country) uchun 2 o'yinli juftliklarni yaratish
-app.post('/api/tournaments/team-pairings', authMiddleware, async (req, res) => {
-  try {
-    const { teamA, teamB, round } = req.body;
-    if (!Array.isArray(teamA) || !Array.isArray(teamB)) {
-      return res.status(400).json({ success: false, message: 'Jamoa a\'zolari kerak!' });
-    }
-    const matchups = teamPairings(teamA, teamB, round || 1);
-    res.json({ success: true, matchups });
-  } catch (err) {
-    console.error('Team pairings xatoligi:', err);
     res.status(500).json({ success: false, message: 'Server xatoligi!' });
   }
 });
@@ -2359,7 +2376,6 @@ server.listen(PORT, () => {
   console.log('  POST /api/tournaments/:id/matches');
   console.log('  POST /api/tournaments/:id/pairings');
   console.log('  POST /api/tournaments/:id/matches/:matchId/result');
-  console.log('  POST /api/tournaments/team-pairings');
   console.log('  POST /api/friends/request');
   console.log('  POST /api/friends/accept');
   console.log('  GET  /api/friends');

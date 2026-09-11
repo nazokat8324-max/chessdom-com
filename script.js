@@ -130,14 +130,12 @@ window.updateGameHistoryView = function() {
     history = guestHistory;
   }
 
-  if (!history || history.length === 0) {
-    container.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #888; padding: 30px;">Hozircha o'yinlar tarixi mavjud emas</td></tr>`;
-    return;
-  }
-
-  window._allGameHistory = history;
+  window._allGameHistory = Array.isArray(history) ? history : [];
   window._currentHistoryFilter = 'all';
-  renderHistoryTable(history);
+  document.querySelectorAll('#historyView .mode-tab').forEach(tab => {
+    tab.classList.toggle('active', tab.dataset.filter === 'all');
+  });
+  renderHistoryTable(window._allGameHistory);
 };
 
 function renderHistoryTable(history) {
@@ -176,32 +174,37 @@ function renderHistoryTable(history) {
 }
 
 window.filterHistory = function(filterType) {
-  if (!window._allGameHistory) return;
+  if (!Array.isArray(window._allGameHistory)) {
+    window.updateGameHistoryView();
+  }
 
-  window._currentHistoryFilter = filterType;
+  const validFilters = ['all', 'win', 'loss', 'draw'];
+  const selectedFilter = validFilters.includes(filterType) ? filterType : 'all';
+  window._currentHistoryFilter = selectedFilter;
 
   document.querySelectorAll('#historyView .mode-tab').forEach(tab => {
-    tab.classList.remove('active');
+    tab.classList.toggle('active', tab.dataset.filter === selectedFilter);
   });
 
-  const tabMap = {
-    'all': 'allHistoryTab',
-    'win': 'winsHistoryTab',
-    'loss': 'lossesHistoryTab',
-    'draw': 'drawsHistoryTab'
-  };
-  const activeTab = document.getElementById(tabMap[filterType]);
-  if (activeTab) activeTab.classList.add('active');
+  const filteredHistory = selectedFilter === 'all'
+    ? window._allGameHistory
+    : window._allGameHistory.filter(game => game && game.result === selectedFilter);
 
-  if (filterType === 'all') {
-    renderHistoryTable(window._allGameHistory);
-  } else {
-    const filtered = window._allGameHistory.filter(game => game.result === filterType);
-    renderHistoryTable(filtered);
-  }
+  renderHistoryTable(filteredHistory);
+};
+
+window.setupHistoryFilters = function() {
+  document.querySelectorAll('#historyView .mode-tab').forEach(button => {
+    button.addEventListener('click', () => {
+      window.filterHistory(button.dataset.filter);
+    });
+  });
 };
 
 window.switchView = function(viewName) {
+  if (typeof window.closeTournamentDetail === 'function') {
+    window.closeTournamentDetail();
+  }
   if (typeof window.gameStartRequested !== 'undefined') {
     window.gameStartRequested = false;
   }
@@ -1171,6 +1174,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.updateStreakUI();
   window.updateAuthHeaderUI();
   window.updateTopPlayersList();
+  window.setupHistoryFilters();
 
   // Profile Modal
   const profileModal = document.getElementById("profileModal");

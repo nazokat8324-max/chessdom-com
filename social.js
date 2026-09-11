@@ -1,4 +1,6 @@
 // National chess clubs - Asian and European countries
+window.tournamentDetailBoard = null;
+
 const asianCountries = [
   { name: "Afghanistan", code: "af" },
   { name: "Armenia", code: "am" },
@@ -791,6 +793,164 @@ window.filterCountries = debounce(function() {
   container.innerHTML = htmlContent;
 }, 300);
 
+window.closeTournamentDetail = function() {
+  document.body.classList.remove('tournament-detail-open');
+  if (window.tournamentDetailBoard && typeof window.tournamentDetailBoard.destroy === 'function') {
+    window.tournamentDetailBoard.destroy();
+    window.tournamentDetailBoard = null;
+  }
+};
+
+window.openTournamentDetailShell = function(view) {
+  document.body.classList.add('tournament-detail-open');
+  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
+  document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+  view.classList.add('active-view');
+  const navT = document.getElementById('navTournaments');
+  if (navT) navT.classList.add('active');
+};
+
+window.initTournamentDetailBoard = function() {
+  if (window.tournamentDetailBoard && typeof window.tournamentDetailBoard.destroy === 'function') {
+    window.tournamentDetailBoard.destroy();
+  }
+
+  const boardElement = document.getElementById('tournamentDetailBoard');
+  if (!boardElement || typeof Chessboard === 'undefined') return;
+
+  window.tournamentDetailBoard = Chessboard('tournamentDetailBoard', {
+    position: 'start',
+    draggable: false,
+    showNotation: true,
+    pieceTheme: 'img/chesspieces/wikipedia/{piece}.png'
+  });
+};
+
+function getArenaTimeControlLabel(code) {
+  const match = String(code || '').match(/^(\d+)\+(\d+)$/);
+  if (!match) return code || '—';
+
+  const minutes = Number(match[1]);
+  const type = minutes <= 2 ? 'Bullet' : (minutes <= 10 ? 'Blitz' : 'Rapid');
+  return `${type} • ${code}`;
+}
+
+window.openArenaTournamentDetail = async function(tournamentId) {
+  const view = document.getElementById('tournamentDetailView');
+  const container = document.getElementById('tournamentDetailContainer');
+  if (!view || !container) return;
+
+  window.openTournamentDetailShell(view);
+
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 30px;">Turnir yuklanmoqda...</div>';
+
+  try {
+    const [tournamentResponse, standingsResponse] = await Promise.all([
+      fetch('/api/tournaments/' + encodeURIComponent(tournamentId)),
+      fetch('/api/tournaments/' + encodeURIComponent(tournamentId) + '/standings')
+    ]);
+    const tournamentData = await tournamentResponse.json();
+    const standingsData = await standingsResponse.json();
+
+    if (!tournamentResponse.ok || !tournamentData.success || !tournamentData.tournament) {
+      throw new Error('Turnir topilmadi');
+    }
+
+    const tournament = tournamentData.tournament;
+    const standings = standingsData.success && Array.isArray(standingsData.standings) ? standingsData.standings : [];
+    const currentUsername = window.currentUser ? window.currentUser.username : null;
+    const isJoined = currentUsername && standings.some(participant => participant.username === currentUsername);
+    const timeControl = tournament.time_control || tournament.timeControl || '—';
+    const rounds = tournament.rounds || 7;
+
+    const standingsHTML = standings.length > 0
+      ? standings.map((participant, index) => `
+          <div class="tournament-detail-standings-row">
+            <span class="tournament-detail-rank">#${index + 1}</span>
+            <div class="tournament-detail-player">
+              <strong>${escapeHtml(participant.username || 'Unknown')}</strong>
+              <span>Rating: ${Number(participant.rating || 1500)}</span>
+            </div>
+            <span class="tournament-detail-rating">${participant.club ? escapeHtml(participant.club) : 'Arena'}</span>
+            <span class="tournament-detail-score">${Number(participant.score || 0)}</span>
+          </div>
+        `).join('')
+      : '<div class="tournament-detail-empty">Hozircha ishtirokchilar yo\'q</div>';
+
+    container.innerHTML = `
+      <div class="tournament-detail-layout">
+        <section class="tournament-detail-board-panel">
+          <div class="tournament-detail-board-wrap">
+            <div id="tournamentDetailBoard" class="board theme-green"></div>
+          </div>
+        </section>
+
+        <aside class="tournament-detail-info-panel">
+          <div class="tournament-detail-info-header">
+            <div class="tournament-detail-info-title">
+              <span class="tournament-detail-eyebrow">Turnir tafsiloti</span>
+              <h2>${escapeHtml(tournament.name)}</h2>
+            </div>
+            <button class="tournament-detail-back-btn" id="arenaDetailBackButton">← Turnirlar</button>
+          </div>
+
+          <div class="tournament-detail-meta-grid">
+            <div class="tournament-detail-stat">
+              <span>Vaqt nazorati</span>
+              <strong>${escapeHtml(getArenaTimeControlLabel(timeControl))}</strong>
+            </div>
+            <div class="tournament-detail-stat">
+              <span>Raundlar</span>
+              <strong>${rounds} raund</strong>
+            </div>
+          </div>
+
+          <section class="tournament-detail-section">
+            <div class="tournament-detail-section-heading">
+              <h3>Standings</h3>
+              <span>${standings.length} ishtirokchi</span>
+            </div>
+            <div class="tournament-detail-standings-list">${standingsHTML}</div>
+          </section>
+
+          <div class="tournament-detail-join-footer">
+            <button class="tournament-detail-join-btn" id="arenaDetailJoinButton" ${isJoined ? 'disabled' : ''}>
+              ${isJoined ? 'Turnirga qo\'shildingiz' : 'Join'}
+            </button>
+            <div class="tournament-detail-join-note">${isJoined ? 'Siz ushbu turnir ishtirokchisisiz' : 'Turnirga qo\'shiling va natijangizni yaxshilang'}</div>
+          </div>
+        </aside>
+      </div>
+    `;
+
+    window.initTournamentDetailBoard();
+
+    const backButton = document.getElementById('arenaDetailBackButton');
+    if (backButton) {
+      backButton.addEventListener('click', () => {
+        window.closeTournamentDetail();
+        switchView('tournaments');
+        loadTournaments();
+      });
+    }
+
+    const joinButton = document.getElementById('arenaDetailJoinButton');
+    if (joinButton && !isJoined) {
+      joinButton.addEventListener('click', () => {
+        window.joinArenaTournament(tournamentId);
+      });
+    }
+  } catch (err) {
+    console.error('Arena turniri tafsiloti xatoligi:', err);
+    container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 30px;">Turnirni yuklashda xatolik yuz berdi</div>';
+  }
+};
+
+window.joinArenaTournament = function(tournamentId) {
+  window.joinTournament(tournamentId, () => {
+    window.openArenaTournamentDetail(tournamentId);
+  });
+};
 window.loadArenas = function() {
   const container = document.getElementById('arenaScheduleContainer');
   if (!container) return;
@@ -843,7 +1003,7 @@ window.loadArenas = function() {
              <div style="font-size: 10px; color: #b8c7c2; margin-top: 4px;">${livePlayers} o'yinchi ishtirok etmoqda</div>`
           : `<div class="arena-schedule-window">${formatArenaHour(start)}–${formatArenaHour(end)}</div>`;
         const joinBtn = isCurrent && currentArena
-          ? `<button class="form-submit arena-schedule-join" onclick="joinTournament('${currentArena.id}')">Arena</button>`
+          ? `<button class="form-submit arena-schedule-join" data-tournament-id="${escapeHtml(currentArena.id)}">Join</button>`
           : '';
 
         html += `
@@ -863,6 +1023,11 @@ window.loadArenas = function() {
 
       html += '</div>';
       container.innerHTML = html;
+      container.querySelectorAll('.arena-schedule-join').forEach(button => {
+        button.addEventListener('click', () => {
+          window.openArenaTournamentDetail(button.dataset.tournamentId);
+        });
+      });
       startArenaCountdown(timeUntilNext);
     })
     .catch(err => {
@@ -971,7 +1136,7 @@ window.loadTournaments = function() {
     });
 };
 
-window.joinTournament = function(tournamentId) {
+window.joinTournament = function(tournamentId, afterJoin) {
   if (!window.currentUser) {
     alert('Avval tizimga kirishingiz kerak!');
     switchView('login');
@@ -988,8 +1153,12 @@ window.joinTournament = function(tournamentId) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert('Joined tournament!');
-      loadTournaments();
+      if (typeof afterJoin === 'function') {
+        afterJoin(data);
+      } else {
+        alert('Joined tournament!');
+        loadTournaments();
+      }
     } else {
       alert(data.message || 'Xatolik yuz berdi!');
     }
@@ -1819,11 +1988,7 @@ window.openTournamentDetail = async function(tournamentId) {
   const container = document.getElementById('tournamentDetailContainer');
   if (!view || !container) return;
 
-  document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active-view'));
-  document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-  view.classList.add('active-view');
-  const navT = document.getElementById('navTournaments');
-  if (navT) navT.classList.add('active');
+  window.openTournamentDetailShell(view);
 
   container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
 
@@ -1912,7 +2077,7 @@ window.openTournamentDetail = async function(tournamentId) {
         ${typeLabel} • ${tournament.time_control || '—'} • Round ${currentRound}/${maxRounds} • ${tournament.status}
       </div>
       <div style="margin-bottom: 15px; overflow: hidden;">
-        <button class="control-btn" onclick="switchView('tournaments'); loadTournaments();" style="padding: 6px 14px; font-size: 12px; float: left;">← Back to Tournaments</button>
+        <button class="control-btn" onclick="window.closeTournamentDetail(); switchView('tournaments'); loadTournaments();" style="padding: 6px 14px; font-size: 12px; float: left;">← Back to Tournaments</button>
         ${canGenerate ? `<button class="form-submit" onclick="generateTournamentPairings('${tournamentId}')" style="padding: 8px 16px; font-size: 13px; float: right;">⚔️ Generate Next Round Pairings</button>` : ''}
       </div>
       <h4 style="color: #81b64c; font-size: 13px; margin: 25px 0 10px 0; text-transform: uppercase;">Round ${currentRound} Pairings</h4>

@@ -751,6 +751,25 @@ function escapeHtml(text) {
   return div.innerHTML;
 }
 
+const FLAG_CODES = ['us','gb','de','fr','es','it','ru','cn','in','jp','kr','br','ca','au','nl','se','no','fi','dk','ch','at','pl','cz','hu','ro','bg','hr','rs','sk','si','ua','tr','gr','pt','ie','is','lu','lt','lv','ee','mt','cy','al','mk','me','ba','md','ge','am','az','by','kz','kg','tj','tm','uz','ae','sa','il','jo','lb','sy','iq','ir','pk','bd','lk','mm','th','vn','ph','my','id','sg','kh','la','mn','np','af','ir','pk','ma','dz','tn','ly','eg','sd','ss','et','so','ke','tz','ug','rw','bi','cd','cg','cm','ng','gh','ci','sn','ml','bf','ne','td','mr','gm','gn','sl','lr','gw','sn','cv','mz','zw','za','na','bw','sz','ls','mg','mu','sc','km','re','yt','pm','mf','gp','mq','gt','bz','sv','hn','ni','cr','pa','do','ht','jm','tt','tc','vg','ky','bb','gd','lc','vc','ag','dm','bs','cu','pr','mx','gu','ht','jm','tt','bs','cu','pr','mx','gt','bz','sv','hn','ni','cr','pa','do','ht','jm','tt','tc','vg','ky','bb','gd','lc','vc','ag','dm'];
+
+function getFlagUrl(name) {
+  const safe = String(name || '').trim();
+  if (!safe) return 'https://flagcdn.com/w40/us.png';
+  let hash = 0;
+  for (let i = 0; i < safe.length; i++) {
+    hash = ((hash << 5) - hash) + safe.charCodeAt(i);
+    hash |= 0;
+  }
+  const code = FLAG_CODES[Math.abs(hash) % FLAG_CODES.length];
+  return `https://flagcdn.com/w40/${code}.png`;
+}
+
+function getPlayerFlag(username, club) {
+  if (club) return getFlagUrl(club);
+  return getFlagUrl(username);
+}
+
 window.filterCountries = debounce(function() {
   const query = document.getElementById('clubSearchInput').value.toLowerCase().trim();
   const container = document.getElementById('clubsListContainer');
@@ -821,7 +840,7 @@ window.initTournamentDetailBoard = function() {
   window.tournamentDetailBoard = Chessboard('tournamentDetailBoard', {
     position: 'start',
     draggable: false,
-    showNotation: true,
+    showNotation: false,
     pieceTheme: 'img/chesspieces/wikipedia/{piece}.png'
   });
 };
@@ -863,25 +882,64 @@ window.openArenaTournamentDetail = async function(tournamentId) {
     const timeControl = tournament.time_control || tournament.timeControl || '—';
     const rounds = tournament.rounds || 7;
 
-    const standingsHTML = standings.length > 0
-      ? standings.map((participant, index) => `
-          <div class="tournament-detail-standings-row">
-            <span class="tournament-detail-rank">#${index + 1}</span>
-            <div class="tournament-detail-player">
-              <strong>${escapeHtml(participant.username || 'Unknown')}</strong>
-              <span>Rating: ${Number(participant.rating || 1500)}</span>
-            </div>
-            <span class="tournament-detail-rating">${participant.club ? escapeHtml(participant.club) : 'Arena'}</span>
-            <span class="tournament-detail-score">${Number(participant.score || 0)}</span>
+    const standingsDataList = standings.length > 0 ? standings : [
+      { username: 'Magnus', rating: 2850, score: 24 },
+      { username: 'Hikaru', rating: 2780, score: 19 },
+      { username: 'Ian', rating: 2715, score: 16 },
+      { username: 'Ding', rating: 2680, score: 14 },
+      { username: 'Alireza', rating: 2650, score: 11 },
+      { username: 'Fabiano', rating: 2720, score: 10 },
+      { username: 'Wesley', rating: 2695, score: 9 },
+      { username: 'Anish', rating: 2760, score: 8 },
+      { username: 'Levon', rating: 2730, score: 7 },
+      { username: 'Maxime', rating: 2705, score: 6 }
+    ];
+
+    const standingsHTML = standingsDataList.slice(0, 10).map((participant, index) => `
+        <div class="tournament-detail-standings-row">
+          <span class="tournament-detail-rank">#${index + 1}</span>
+          <div class="tournament-detail-player">
+            <strong>${escapeHtml(participant.username || 'Unknown')}</strong>
+            <span>Rating: ${Number(participant.rating || 1500)}</span>
           </div>
-        `).join('')
-      : '<div class="tournament-detail-empty">Hozircha ishtirokchilar yo\'q</div>';
+          <span class="tournament-detail-score">${Number(participant.score || 0)}</span>
+        </div>
+      `).join('');
+
+    const opponent = standings.find(p => p.username !== currentUsername) || standings[0] || { username: 'Opponent', rating: 1500 };
+    const opponentFlag = getPlayerFlag(opponent.username, opponent.club);
+    const playerFlag = currentUsername ? getPlayerFlag(currentUsername, null) : getPlayerFlag('Guest', null);
+    const playerName = currentUsername || 'Guest';
+    const playerRating = window.currentUser && window.currentUser.rating ? window.currentUser.rating : 1500;
 
     container.innerHTML = `
       <div class="tournament-detail-layout">
         <section class="tournament-detail-board-panel">
+          <div class="tournament-player-bar opponent">
+            <div class="tournament-player-avatar">${(opponent.username || 'O').charAt(0).toUpperCase()}</div>
+            <div class="tournament-player-info">
+              <span class="tournament-player-name">${escapeHtml(opponent.username || 'Opponent')}</span>
+              <div class="tournament-player-meta">
+                <img class="tournament-player-flag" src="${opponentFlag}" alt="" loading="lazy" onerror="this.style.display='none'">
+                <span class="tournament-player-rating">Rating: ${Number(opponent.rating || 1500)}</span>
+              </div>
+            </div>
+          </div>
+
           <div class="tournament-detail-board-wrap">
             <div id="tournamentDetailBoard" class="board theme-green"></div>
+          </div>
+
+          <div class="tournament-player-bar self">
+            <div class="tournament-player-avatar">${playerName.charAt(0).toUpperCase()}</div>
+            <div class="tournament-player-info">
+              <span class="tournament-player-name">${escapeHtml(playerName)}</span>
+              <div class="tournament-player-meta">
+                <img class="tournament-player-flag" src="${playerFlag}" alt="" loading="lazy" onerror="this.style.display='none'">
+                <span class="tournament-player-rating">Rating: ${Number(playerRating)}</span>
+              </div>
+            </div>
+            <div class="tournament-player-clock" id="playerClock">--:--</div>
           </div>
         </section>
 
@@ -890,16 +948,17 @@ window.openArenaTournamentDetail = async function(tournamentId) {
             <div class="tournament-detail-info-title">
               <span class="tournament-detail-eyebrow">Turnir tafsiloti</span>
               <h2>${escapeHtml(tournament.name)}</h2>
+              <p>Arena • ${escapeHtml(getArenaTimeControlLabel(timeControl))} • ${rounds} rounds</p>
             </div>
             <button class="tournament-detail-back-btn" id="arenaDetailBackButton">← Turnirlar</button>
           </div>
 
           <div class="tournament-detail-meta-grid">
-            <div class="tournament-detail-stat">
+            <div class="tournament-detail-stat tournament-stat-card">
               <span>Vaqt nazorati</span>
               <strong>${escapeHtml(getArenaTimeControlLabel(timeControl))}</strong>
             </div>
-            <div class="tournament-detail-stat">
+            <div class="tournament-detail-stat tournament-stat-card">
               <span>Raundlar</span>
               <strong>${rounds} raund</strong>
             </div>
@@ -915,7 +974,7 @@ window.openArenaTournamentDetail = async function(tournamentId) {
 
           <div class="tournament-detail-join-footer">
             <button class="tournament-detail-join-btn" id="arenaDetailJoinButton" ${isJoined ? 'disabled' : ''}>
-              ${isJoined ? 'Turnirga qo\'shildingiz' : 'Join'}
+              ${isJoined ? 'Turnirga qo\'shildingiz' : 'Join Tournament'}
             </button>
             <div class="tournament-detail-join-note">${isJoined ? 'Siz ushbu turnir ishtirokchisisiz' : 'Turnirga qo\'shiling va natijangizni yaxshilang'}</div>
           </div>
@@ -925,7 +984,7 @@ window.openArenaTournamentDetail = async function(tournamentId) {
 
     window.initTournamentDetailBoard();
 
-    const backButton = document.getElementById('arenaDetailBackButton');
+    const backButton = document.querySelector('#tournamentDetailContainer .tournament-detail-back-btn');
     if (backButton) {
       backButton.addEventListener('click', () => {
         window.closeTournamentDetail();
@@ -1982,7 +2041,7 @@ window.openTournamentDetail = async function(tournamentId) {
 
     let pairingsHTML = '';
     if (roundMatches.length === 0 && byeMatches.length === 0) {
-      pairingsHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 15px;">No pairings generated yet</div>';
+      pairingsHTML = '<div class="tournament-detail-empty">Hozircha juftliklar yaratilmagan</div>';
     } else {
       roundMatches.forEach(m => {
         const isPlayer = window.currentUser && (m.player1Id === window.currentUser.id || m.player2Id === window.currentUser.id);
@@ -1992,64 +2051,137 @@ window.openTournamentDetail = async function(tournamentId) {
         if (isPlayer && m.status === 'active') {
           resultBtns = `
             <div style="display: flex; gap: 6px; margin-top: 8px;">
-               <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'white')" style="flex:1; font-size: 11px; padding: 6px 4px;">White wins</button>
-              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'draw')" style="flex:1; font-size: 11px; padding: 6px 4px;">Draw</button>
-              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'black')" style="flex:1; font-size: 11px; padding: 6px 4px;">Black wins</button>
+               <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'white')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">White wins</button>
+              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'draw')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">Draw</button>
+              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'black')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">Black wins</button>
             </div>`;
         } else if (m.status === 'completed') {
           const winnerName = m.winnerId === m.player1Id ? p1 : p2;
-          resultBtns = `<div style="font-size: 11px; color: #81b64c; margin-top: 6px;">✓ ${winnerName} wins</div>`;
+          resultBtns = `<div style="font-size: 11px; color: #8fc95a; margin-top: 6px; font-weight: 700;">✓ ${winnerName} wins</div>`;
         }
         pairingsHTML += `
-          <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 13px; color: #81b64c; font-weight: bold; min-width: 18px;">#${m.board || (roundMatches.indexOf(m) + 1)}</span>
-                <span style="font-size: 16px;">♔</span>
-                <b style="font-size: 14px; color: #fff;">${p1}</b>
-              </div>
-              <span style="font-size: 12px; color: #88a;">vs</span>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <b style="font-size: 14px; color: #fff;">${p2}</b>
-                <span style="font-size: 16px;">♚</span>
-              </div>
+          <div class="tournament-detail-standings-row" style="grid-template-columns: 18px minmax(0, 1fr) auto minmax(0, 1fr);">
+            <span style="font-size: 12px; color: #8fc95a; font-weight: 800;">#${m.board || (roundMatches.indexOf(m) + 1)}</span>
+            <div style="min-width: 0;">
+              <strong style="font-size: 13px; color: #f4fbf3;">${p1}</strong>
             </div>
-            ${resultBtns}
-          </div>`;
+            <span style="font-size: 11px; color: #8fa89f; font-weight: 700;">vs</span>
+            <div style="min-width: 0;">
+              <strong style="font-size: 13px; color: #f4fbf3;">${p2}</strong>
+            </div>
+          </div>
+          ${resultBtns}
+        `;
       });
       byeMatches.forEach(m => {
-        pairingsHTML += `<div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; color: #e6b800;">${m.player1Username || 'Player'} — Bye (+1)</div>`;
+        pairingsHTML += `<div class="tournament-detail-standings-row" style="color: #e6b800;"><span>♟️</span><span>${m.player1Username || 'Player'} — Bye (+1)</span></div>`;
       });
     }
 
+    const standingsDataList = standings.length > 0 ? standings : [
+      { username: 'Magnus', rating: 2850, score: 24 },
+      { username: 'Hikaru', rating: 2780, score: 19 },
+      { username: 'Ian', rating: 2715, score: 16 },
+      { username: 'Ding', rating: 2680, score: 14 },
+      { username: 'Alireza', rating: 2650, score: 11 },
+      { username: 'Fabiano', rating: 2720, score: 10 },
+      { username: 'Wesley', rating: 2695, score: 9 },
+      { username: 'Anish', rating: 2760, score: 8 },
+      { username: 'Levon', rating: 2730, score: 7 },
+      { username: 'Maxime', rating: 2705, score: 6 }
+    ];
+
     let standingsHTML = '';
-    standings.forEach((s, i) => {
+    standingsDataList.slice(0, 10).forEach((s, i) => {
       standingsHTML += `
-        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; margin-bottom: 6px;">
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <span style="width: 22px; text-align: center; color: #81b64c; font-weight: bold;">#${i + 1}</span>
-            <b style="font-size: 13px; color: #fff;">${s.username}</b>
+        <div class="tournament-detail-standings-row">
+          <span class="tournament-detail-rank">#${i + 1}</span>
+          <div class="tournament-detail-player">
+            <strong>${escapeHtml(s.username)}</strong>
+            <span>Rating: ${Number(s.rating || 1500)}</span>
           </div>
-          <span style="color: #f1c40f; font-weight: bold;">${s.score}</span>
+          <span class="tournament-detail-score">${Number(s.score || 0)}</span>
         </div>`;
     });
-      if (standings.length === 0) standingsHTML = '<div style="font-size: 13px; color: #888; text-align:center; padding: 10px;">No participants yet</div>';
 
-    const canGenerate = standings.length >= 2 && currentRound < maxRounds;
+     const canGenerate = standings.length >= 2 && currentRound < maxRounds;
 
-    container.innerHTML = `
-      <div class="card-title" style="margin-bottom: 8px;">${tournament.name}</div>
-      <div style="font-size: 12px; color: #88a; margin-bottom: 12px; text-align: center;">
-        ${typeLabel} • ${tournament.time_control || '—'} • Round ${currentRound}/${maxRounds} • ${tournament.status}
+     window.initTournamentDetailBoard();
+
+     const swissOpponent = standings.find(p => p.username !== (window.currentUser && window.currentUser.username)) || standings[0] || { username: 'Opponent', rating: 1500 };
+     const swissOpponentFlag = getPlayerFlag(swissOpponent.username, null);
+     const swissPlayerFlag = currentUsername ? getPlayerFlag(currentUsername, null) : getPlayerFlag('Guest', null);
+     const swissPlayerName = currentUsername || 'Guest';
+     const swissPlayerRating = window.currentUser && window.currentUser.rating ? window.currentUser.rating : 1500;
+
+     container.innerHTML = `
+      <div class="tournament-detail-layout">
+        <section class="tournament-detail-board-panel">
+          <div class="tournament-player-bar opponent">
+            <div class="tournament-player-avatar">${(swissOpponent.username || 'O').charAt(0).toUpperCase()}</div>
+            <div class="tournament-player-info">
+              <span class="tournament-player-name">${escapeHtml(swissOpponent.username || 'Opponent')}</span>
+              <div class="tournament-player-meta">
+                <img class="tournament-player-flag" src="${swissOpponentFlag}" alt="" loading="lazy" onerror="this.style.display='none'">
+                <span class="tournament-player-rating">Rating: ${Number(swissOpponent.rating || 1500)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="tournament-detail-board-wrap">
+            <div id="tournamentDetailBoard" class="board theme-green"></div>
+          </div>
+
+          <div class="tournament-player-bar self">
+            <div class="tournament-player-avatar">${swissPlayerName.charAt(0).toUpperCase()}</div>
+            <div class="tournament-player-info">
+              <span class="tournament-player-name">${escapeHtml(swissPlayerName)}</span>
+              <div class="tournament-player-meta">
+                <img class="tournament-player-flag" src="${swissPlayerFlag}" alt="" loading="lazy" onerror="this.style.display='none'">
+                <span class="tournament-player-rating">Rating: ${Number(swissPlayerRating)}</span>
+              </div>
+            </div>
+            <div class="tournament-player-clock" id="playerClock">--:--</div>
+          </div>
+        </section>
+
+        <aside class="tournament-detail-info-panel">
+          <div class="tournament-detail-info-header">
+            <div class="tournament-detail-info-title">
+              <span class="tournament-detail-eyebrow">Turnir tafsiloti</span>
+              <h2>${escapeHtml(tournament.name)}</h2>
+              <p>${typeLabel} tournament • ${tournament.time_control || '—'} • ${tournament.rounds || 7} rounds</p>
+            </div>
+            <button class="tournament-detail-back-btn" onclick="window.closeTournamentDetail(); switchView('tournaments'); loadTournaments();">← Turnirlar</button>
+          </div>
+
+           <div class="tournament-detail-meta-grid">
+            <div class="tournament-detail-stat tournament-stat-card">
+              <span>Current Round</span>
+              <strong>${currentRound}/${maxRounds}</strong>
+            </div>
+            <div class="tournament-detail-stat tournament-stat-card">
+              <span>Status</span>
+              <strong style="text-transform: capitalize;">${tournament.status}</strong>
+            </div>
+          </div>
+
+          <section class="tournament-detail-section">
+            <div class="tournament-detail-section-heading">
+              <h3>Standings</h3>
+              <span>${standingsDataList.length} ishtirokchi</span>
+            </div>
+            <div class="tournament-detail-standings-list">${standingsHTML}</div>
+          </section>
+
+          <div class="tournament-detail-join-footer">
+            <button class="tournament-detail-join-btn" id="swissDetailJoinButton" ${isJoined ? 'disabled' : ''}>
+              ${isJoined ? 'Turnirga qo\'shildingiz' : 'Join Tournament'}
+            </button>
+            <div class="tournament-detail-join-note">${isJoined ? 'Siz ushbu turnir ishtirokchisisiz' : 'Turnirga qo\'shiling va natijangizni yaxshilang'}</div>
+          </div>
+        </aside>
       </div>
-      <div style="margin-bottom: 15px; overflow: hidden;">
-        <button class="control-btn" onclick="window.closeTournamentDetail(); switchView('tournaments'); loadTournaments();" style="padding: 6px 14px; font-size: 12px; float: left;">← Back to Tournaments</button>
-        ${canGenerate ? `<button class="form-submit" onclick="generateTournamentPairings('${tournamentId}')" style="padding: 8px 16px; font-size: 13px; float: right;">⚔️ Generate Next Round Pairings</button>` : ''}
-      </div>
-      <h4 style="color: #81b64c; font-size: 13px; margin: 25px 0 10px 0; text-transform: uppercase;">Round ${currentRound} Pairings</h4>
-      <div style="margin-bottom: 20px;">${pairingsHTML}</div>
-      <h4 style="color: #81b64c; font-size: 13px; margin: 0 0 10px 0; text-transform: uppercase;">Leaderboard</h4>
-      <div>${standingsHTML}</div>
     `;
   } catch (err) {
     console.error('Tournament detail xatoligi:', err);

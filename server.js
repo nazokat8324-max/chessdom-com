@@ -537,7 +537,7 @@ app.get('/api/daily-winners', async (req, res) => {
         const gameDate = new Date(ts);
         return !isNaN(gameDate.getTime()) && gameDate >= cutoff;
       }).length;
-      return { username: u.username, dailyWins: wins };
+      return { username: u.username, dailyWins: wins, rating: u.rating || 1500 };
     }).filter(u => u.dailyWins > 0)
       .sort((a, b) => b.dailyWins - a.dailyWins)
       .slice(0, 5);

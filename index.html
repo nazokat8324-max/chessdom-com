@@ -1654,7 +1654,128 @@
         display: inline-block;
         margin-bottom: 8px;
       }
-    
+
+      .club-league-calendar {
+        width: 100%;
+        min-width: 0;
+      }
+      .club-league-calendar-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 13px 14px;
+        margin-bottom: 12px;
+        border-radius: 10px;
+        background: #182823;
+        border: 1px solid #283e37;
+      }
+      .club-league-calendar-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .club-league-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 34px;
+        height: 34px;
+        flex-shrink: 0;
+        border-radius: 9px;
+        background: rgba(129, 182, 76, 0.12);
+        font-size: 18px;
+      }
+      .club-league-calendar-title strong {
+        display: block;
+        color: #fff;
+        font-size: 13px;
+      }
+      .club-league-calendar-title span {
+        display: block;
+        margin-top: 2px;
+        color: #88a;
+        font-size: 10px;
+      }
+      .club-league-badge {
+        flex-shrink: 0;
+        padding: 5px 9px;
+        color: #81b64c;
+        background: rgba(129, 182, 76, 0.1);
+        border: 1px solid rgba(129, 182, 76, 0.25);
+        border-radius: 20px;
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+      .club-league-calendar-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+        border: 1px solid #20352e;
+        border-radius: 9px;
+      }
+      .club-league-calendar-table {
+        width: 100%;
+        min-width: 680px;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+      .club-league-calendar-table th {
+        padding: 9px 10px;
+        color: #88a;
+        background: #182823;
+        border-bottom: 1px solid #283e37;
+        font-size: 9px;
+        font-weight: 800;
+        text-align: left;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+      }
+      .club-league-calendar-table td {
+        padding: 10px;
+        color: #ccc;
+        background: #121e1a;
+        border-bottom: 1px solid #20352e;
+        white-space: nowrap;
+      }
+      .club-league-calendar-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+      .club-league-calendar-table tbody tr:hover td {
+        background: #1a2e28;
+      }
+      .club-league-calendar-table tbody tr.club-league-home td {
+        background: rgba(129, 182, 76, 0.08);
+      }
+      .club-league-calendar-table tbody tr.club-league-home:hover td {
+        background: rgba(129, 182, 76, 0.14);
+      }
+      .club-league-calendar-table td strong {
+        color: #fff;
+        font-size: 11px;
+      }
+      .club-league-round {
+        display: inline-block;
+        padding: 4px 7px;
+        color: #81b64c;
+        background: rgba(129, 182, 76, 0.1);
+        border: 1px solid rgba(129, 182, 76, 0.2);
+        border-radius: 5px;
+        font-size: 9px;
+        font-weight: 800;
+      }
+      .club-league-versus {
+        color: #667;
+        font-size: 10px;
+        font-weight: 800;
+      }
+      .club-league-venue {
+        color: #88a;
+        font-size: 10px;
+      }
       .stamp-perforation {
         width: 100%;
         height: 8px;
@@ -3685,7 +3806,7 @@
       </div>
     </div>
 
-    <!-- 10c. KLUB TURNIRLARI -->
+    <!-- 10c. KLUB LIGA TAQVIMI -->
     <div
       id="clubTournamentsView"
       class="view-section"
@@ -3693,14 +3814,14 @@
     >
       <div
         class="card-box"
-        style="width: 600px; max-height: 80vh; overflow-y: auto"
+        style="width: 900px; max-width: 95%; max-height: 82vh; overflow-y: auto"
       >
-        <div class="card-title" id="clubTournamentsTitle">Club Tournaments</div>
+        <div class="card-title" id="clubTournamentsTitle">Club League Calendar</div>
         <div
           style="font-size: 13px; color: #88a; margin-bottom: 15px"
           id="clubTournamentsDesc"
         >
-          List of this club's tournaments
+          Ushbu klub ishtirok etadigan liga o'yinlari
         </div>
         <div style="margin-bottom: 15px">
           <button
@@ -3711,18 +3832,9 @@
             ← Back
           </button>
         </div>
-        <div style="margin-bottom: 15px">
-          <button
-            class="form-submit"
-            onclick="showCreateClubTournamentModal()"
-            id="btnCreateClubTournament"
-            style="width: auto; padding: 10px 20px; font-size: 13px"
-          >
-            + Create Tournament
-          </button>
-        </div>
         <div
           id="clubTournamentsListContainer"
+          class="club-league-calendar"
           style="display: flex; flex-direction: column; gap: 8px"
         ></div>
       </div>

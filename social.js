@@ -1604,18 +1604,19 @@ window.switchViewToClubLeaderboard = function() {
   document.getElementById("navClubs").classList.add("active");
 };
 
-// Klub turnirlari - faqat bu klubga tegishli turnirlar
 window.showClubTournaments = function(countryName) {
   window.currentClubName = countryName;
   const container = document.getElementById("clubTournamentsListContainer");
   if (!container) return;
 
   const titleEl = document.getElementById("clubTournamentsTitle");
-  if (titleEl) titleEl.textContent = `${countryName} Club Tournaments`;
+  if (titleEl) titleEl.textContent = `${countryName} Club League Calendar`;
+
+  const descEl = document.getElementById("clubTournamentsDesc");
+  if (descEl) descEl.textContent = "Ushbu klub ishtirok etadigan liga o'yinlari";
 
   container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
-
-  loadClubTournaments(countryName, container);
+  window.loadClubLeagueCalendar(countryName, container);
   switchViewToClubTournaments();
 };
 
@@ -1626,109 +1627,74 @@ window.switchViewToClubTournaments = function() {
   document.getElementById("navClubs").classList.add("active");
 };
 
-window.loadClubTournaments = function(countryName, container) {
+function getClubLeagueKey(countryName) {
+  return Object.keys(continentCountries || {}).find(key =>
+    key !== 'All' && (continentCountries[key] || []).some(country => country.name === countryName)
+  ) || null;
+}
+
+window.loadClubLeagueCalendar = function(countryName, container) {
   if (!container) container = document.getElementById("clubTournamentsListContainer");
   if (!container) return;
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  const leagueKey = getClubLeagueKey(countryName);
+  const leagueInfo = leagueKey ? window.CONTINENTS[leagueKey] : null;
+  const teams = leagueKey ? (continentCountries[leagueKey] || []) : [];
+  const schedule = typeof window.generateRoundRobinSchedule === 'function'
+    ? window.generateRoundRobinSchedule(teams)
+    : [];
+  const clubSchedule = schedule.filter(match => match.home === countryName || match.away === countryName);
 
-  // localStorage'dan klub turnirlarini olish
-  const clubTournamentsKey = "justChessClubTournaments_" + countryName;
-  const clubTournaments = JSON.parse(localStorage.getItem(clubTournamentsKey) || "[]");
-
-  if (clubTournaments.length === 0) {
-    container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Bu klubda hali turnirlar yo\'q. Birinchi turnirni yarating!</div>';
+  if (clubSchedule.length === 0) {
+    container.innerHTML = "";
     return;
   }
 
-  let htmlContent = "";
-  clubTournaments.forEach(tournament => {
-    htmlContent += `
-      <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px 15px; border-radius: 8px;">
-        <div>
-          <b style="font-size: 14px; color: #fff; display: block;">${tournament.name}</b>
-          <span style="font-size: 11px; color: #88a;">${tournament.current_players || 0}/${tournament.max_players || 16} o\'yinchi • ${new Date(tournament.created_at).toLocaleDateString()}</span>
-        </div>
-        <button class="form-submit" onclick="joinClubTournament('${tournament.id}', '${countryName}')" style="padding: 6px 12px; font-size: 12px;">
-          ${tournament.status === 'active' ? 'Oynatuvchi' : 'Qo\'shilish'}
-        </button>
-      </div>
+  const rows = clubSchedule.map(match => {
+    const isHome = match.home === countryName;
+    const opponent = isHome ? match.away : match.home;
+    const venue = isHome ? 'Own club' : 'Away';
+    return `
+      <tr class="${isHome ? 'club-league-home' : ''}">
+        <td><span class="club-league-round">${escapeHtml(match.round)}</span></td>
+        <td><strong>${escapeHtml(countryName)}</strong></td>
+        <td><span class="club-league-versus">vs</span></td>
+        <td><strong>${escapeHtml(opponent)}</strong></td>
+        <td><span class="club-league-venue">${venue}</span></td>
+        <td>${escapeHtml(match.date)}</td>
+        <td>${escapeHtml(match.time)}</td>
+      </tr>
     `;
-  });
-  container.innerHTML = htmlContent;
-};
+  }).join('');
 
-window.showCreateClubTournamentModal = function() {
-  if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
-    switchView('login');
-    return;
-  }
-
-  const name = prompt('Enter tournament name:');
-  if (!name || name.trim().length < 3) {
-    alert('Tournament name must be at least 3 characters!');
-    return;
-  }
-  
-  const maxPlayers = prompt('Maximum number of players (2-64):', '16');
-  const maxPlayersNum = parseInt(maxPlayers) || 16;
-
-  const clubTournamentsKey = "justChessClubTournaments_" + window.currentClubName;
-  const clubTournaments = JSON.parse(localStorage.getItem(clubTournamentsKey) || "[]");
-
-  const tournament = {
-    id: 'club_t_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-    name: name.trim(),
-    description: '',
-    max_players: Math.max(2, Math.min(64, maxPlayersNum)),
-    current_players: 0,
-    status: 'waiting',
-    club_name: window.currentClubName,
-    created_at: new Date().toISOString()
-  };
-
-  clubTournaments.push(tournament);
-  localStorage.setItem(clubTournamentsKey, JSON.stringify(clubTournaments));
-
-  loadClubTournaments(window.currentClubName);
-   alert('Tournament created!');
-};
-
-window.joinClubTournament = function(tournamentId, countryName) {
-  if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
-    switchView('login');
-    return;
-  }
-
-  const clubTournamentsKey = "justChessClubTournaments_" + countryName;
-  const clubTournaments = JSON.parse(localStorage.getItem(clubTournamentsKey) || "[]");
-  const tournament = clubTournaments.find(t => t.id === tournamentId);
-
-  if (!tournament) return;
-
-  const participantsKey = "justChessClubTournamentParticipants_" + countryName;
-  const participants = JSON.parse(localStorage.getItem(participantsKey) || "[]");
-
-  if (participants.some(p => p.tournament_id === tournamentId && p.user_id === window.currentUser.id)) {
-    alert('Siz allaqachon turnirdasiz!');
-    return;
-  }
-
-  participants.push({
-    tournament_id: tournamentId,
-    user_id: window.currentUser.id,
-    username: window.currentUser.username,
-    joined_at: new Date().toISOString()
-  });
-  localStorage.setItem(participantsKey, JSON.stringify(participants));
-
-  tournament.current_players = (tournament.current_players || 0) + 1;
-  localStorage.setItem(clubTournamentsKey, JSON.stringify(clubTournaments));
-
-  loadClubTournaments(countryName);
-  alert('Turnirga qo\'shildingiz!');
+  container.innerHTML = `
+    <div class="club-league-calendar-header">
+      <div class="club-league-calendar-title">
+        <span class="club-league-icon">${escapeHtml(leagueInfo.flag)}</span>
+        <div>
+          <strong>${escapeHtml(leagueInfo.name)}</strong>
+          <span>Round-Robin • ${teams.length} jamoa</span>
+        </div>
+      </div>
+      <span class="club-league-badge">Liga taqvimi</span>
+    </div>
+    <div class="club-league-calendar-table-wrap">
+      <table class="club-league-calendar-table">
+        <thead>
+          <tr>
+            <th>Bosqich</th>
+            <th>Klub</th>
+            <th></th>
+            <th>Raqib</th>
+            <th>Maydon</th>
+            <th>Sana</th>
+            <th>Vaqt</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
 };
 
 // Klub chat - Chess.com uslubi

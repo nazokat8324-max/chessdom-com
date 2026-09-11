@@ -990,26 +990,36 @@ window.joinLeague = function(leagueKey) {
 
 window.generateRoundRobinSchedule = function(teams) {
   if (!teams || teams.length < 2) return [];
+
+  const hasBye = teams.length % 2 === 1;
+  const participants = hasBye ? [...teams, null] : [...teams];
+  const participantCount = participants.length;
+  const rounds = participantCount - 1;
+  const matchesPerRound = participantCount / 2;
   const schedule = [];
-  const n = teams.length;
-  const rounds = n - 1;
-  const matchesPerRound = Math.floor(n / 2);
 
   for (let round = 0; round < rounds; round++) {
     for (let match = 0; match < matchesPerRound; match++) {
-      const home = teams[(round + match) % n];
-      const away = teams[(round + n - 1 - match) % n];
-      const date = new Date();
-      date.setDate(date.getDate() + (round * 7) + 1);
-      schedule.push({
-        round: `${round + 1}-bosqich`,
-        home: home.name,
-        away: away.name,
-        date: date.toLocaleDateString('uz-UZ'),
-        time: '19:00'
-      });
+      const home = participants[match];
+      const away = participants[participantCount - 1 - match];
+
+      if (home && away) {
+        const date = new Date();
+        date.setDate(date.getDate() + (round * 7) + 1);
+        schedule.push({
+          round: `${round + 1}-bosqich`,
+          home: home.name,
+          away: away.name,
+          date: date.toLocaleDateString('uz-UZ'),
+          time: '19:00'
+        });
+      }
     }
+
+    const rotatedTeam = participants.pop();
+    participants.splice(1, 0, rotatedTeam);
   }
+
   return schedule;
 };
 

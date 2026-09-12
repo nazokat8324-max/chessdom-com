@@ -316,9 +316,13 @@ window.switchView = function(viewName) {
       if (window.currentUser) {
         window.updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
         window.updatePlayerInfo('black', 'Raqib', '⏳');
+        window.updatePlayerFlag('white', window.currentUser.country || window.currentUser.countryCode || null);
+        window.updatePlayerFlag('black', null);
       } else {
         window.updatePlayerInfo('white', 'Oq', 1500);
         window.updatePlayerInfo('black', 'Raqib', '⏳');
+        window.updatePlayerFlag('white', null);
+        window.updatePlayerFlag('black', null);
       }
     }
     
@@ -1393,6 +1397,121 @@ document.addEventListener("DOMContentLoaded", () => {
   if (!window.currentUser) {
     window.openLoginModal();
   }
+});
+
+window.toggleUsernameEdit = function() {
+  const editArea = document.getElementById("usernameEditArea");
+  const toggleBtn = document.getElementById("toggleUsernameEditBtn");
+  if (!editArea || !toggleBtn) return;
+  const isHidden = editArea.style.display === "none";
+  editArea.style.display = isHidden ? "block" : "none";
+  toggleBtn.textContent = isHidden ? "Bekor qilish" : "Tahrirlash";
+  if (isHidden && window.currentUser) {
+    const currentDisp = document.getElementById("currentUsernameDisplay");
+    const input = document.getElementById("newUsernameInput");
+    if (currentDisp) currentDisp.textContent = window.currentUser.username;
+    if (input) input.value = window.currentUser.username;
+  }
+};
+
+window.changeUsername = async function() {
+  const input = document.getElementById("newUsernameInput");
+  const errorEl = document.getElementById("usernameError");
+  const successEl = document.getElementById("usernameSuccess");
+  if (!input) return;
+
+  const newUsername = input.value.trim();
+
+  if (errorEl) errorEl.style.display = "none";
+  if (successEl) successEl.style.display = "none";
+
+  if (!newUsername) {
+    if (errorEl) { errorEl.textContent = "Username bo'sh bo'lishi mumkin emas!"; errorEl.style.display = "block"; }
+    return;
+  }
+
+  if (newUsername.length < 3 || newUsername.length > 30) {
+    if (errorEl) { errorEl.textContent = "Username 3-30 ta belgi bo'lishi kerak!"; errorEl.style.display = "block"; }
+    return;
+  }
+
+  if (window.currentUser && newUsername.toLowerCase() === window.currentUser.username.toLowerCase()) {
+    if (errorEl) { errorEl.textContent = "Siz allaqachon shu username ishlatiyapsiz!"; errorEl.style.display = "block"; }
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/profile/username', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.authToken}`
+      },
+      body: JSON.stringify({ newUsername })
+    });
+    const data = await res.json();
+
+    if (!data.success) {
+      if (errorEl) { errorEl.textContent = data.message || "Xatolik yuz berdi!"; errorEl.style.display = "block"; }
+      return;
+    }
+
+    window.currentUser = data.user;
+    window.authToken = data.token;
+    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+    localStorage.setItem("justChessAuthToken", window.authToken);
+
+    if (successEl) { successEl.textContent = "Username muvaffaqiyatli o'zgartirildi!"; successEl.style.display = "block"; }
+    if (errorEl) errorEl.style.display = "none";
+
+    setTimeout(() => {
+      window.updateAllUsernameDisplays();
+      if (successEl) successEl.style.display = "none";
+      const editArea = document.getElementById("usernameEditArea");
+      const toggleBtn = document.getElementById("toggleUsernameEditBtn");
+      if (editArea) editArea.style.display = "none";
+      if (toggleBtn) { toggleBtn.textContent = "Tahrirlash"; }
+      window.updateAuthHeaderUI();
+    }, 1500);
+  } catch (err) {
+    if (errorEl) { errorEl.textContent = "Serverga ulanib bo'lmadi!"; errorEl.style.display = "block"; }
+  }
+};
+
+window.updateAllUsernameDisplays = function() {
+  if (!window.currentUser) return;
+  const username = window.currentUser.username;
+  const firstLetter = username.charAt(0).toUpperCase();
+
+  const profileUsername = document.getElementById("profileUsernameDisplay");
+  if (profileUsername) profileUsername.textContent = username;
+
+  const profileAvatar = document.getElementById("profileAvatar");
+  if (profileAvatar) profileAvatar.textContent = firstLetter;
+
+  const currentUserDisp = document.getElementById("currentUsernameDisplay");
+  if (currentUserDisp) currentUserDisp.textContent = username;
+
+  const newUserInput = document.getElementById("newUsernameInput");
+  if (newUserInput) newUserInput.value = username;
+
+  if (typeof window.updateAuthHeaderUI === "function") {
+    window.updateAuthHeaderUI();
+  }
+
+  if (window.currentRoomId && typeof window.updatePlayerInfo === "function") {
+    window.updatePlayerInfo('white', username, window.currentUser.rating || 1500);
+  }
+  if (window.currentUser) {
+    window.updatePlayerFlag('white', window.currentUser.country || window.currentUser.countryCode || null);
+  }
+};
+
+document.addEventListener("DOMContentLoaded", () => {
+  const toggleBtn = document.getElementById("toggleUsernameEditBtn");
+  if (toggleBtn) toggleBtn.addEventListener("click", window.toggleUsernameEdit);
+  const saveBtn = document.getElementById("saveUsernameBtn");
+  if (saveBtn) saveBtn.addEventListener("click", window.changeUsername);
 });
 
 document.addEventListener("click", (event) => {

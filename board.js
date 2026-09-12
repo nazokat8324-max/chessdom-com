@@ -304,9 +304,13 @@ window.startNewGame = function() {
   if (window.currentUser) {
     updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
     updatePlayerInfo('black', 'Raqib', 1500);
+    window.updatePlayerFlag('white', window.currentUser.country || window.currentUser.countryCode || null);
+    window.updatePlayerFlag('black', null);
   } else {
     updatePlayerInfo('white', 'Oq', 1500);
     updatePlayerInfo('black', 'Qora', 1500);
+    window.updatePlayerFlag('white', null);
+    window.updatePlayerFlag('black', null);
   }
   setGameTime(initialTime);
 };
@@ -361,6 +365,23 @@ window.updatePlayerInfo = function(color, name, rating) {
   }
   if (ratingEl) {
     ratingEl.textContent = `Reyting: ${rating || 1500}`;
+  }
+};
+
+window.updatePlayerFlag = function(color, countryCode) {
+  const flagImg = document.getElementById(`${color}PlayerFlag`);
+  const fallback = document.getElementById(`${color}PlayerFlagFallback`);
+  if (!flagImg || !fallback) return;
+
+  if (countryCode && countryCode.length >= 2) {
+    const code = countryCode.toLowerCase().slice(0, 2);
+    flagImg.src = `https://flagcdn.com/w40/${code}.png`;
+    flagImg.style.display = '';
+    fallback.style.display = 'none';
+  } else {
+    flagImg.src = '';
+    flagImg.style.display = 'none';
+    fallback.style.display = '';
   }
 };
 

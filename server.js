@@ -18,7 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'justchess_secret_key_2024';
 const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/justchess',
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:zafar1717@localhost:5432/postgres',
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
@@ -50,7 +50,168 @@ async function checkDatabaseConnection() {
   }
 }
 
+async function migrateDatabase() {
+  if (!useDatabase) return;
+  try {
+    await pool.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS users (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      username VARCHAR(50) UNIQUE NOT NULL,
+      email VARCHAR(255) UNIQUE NOT NULL,
+      password_hash VARCHAR(255) NOT NULL,
+      rating INTEGER DEFAULT 1500,
+      stats JSONB DEFAULT '{"wins":0,"losses":0,"draws":0}'::jsonb,
+      stats_by_mode JSONB DEFAULT '{"rapid":{"wins":0,"losses":0,"draws":0},"blitz":{"wins":0,"losses":0,"draws":0},"bullet":{"wins":0,"losses":0,"draws":0}}'::jsonb,
+      history JSONB DEFAULT '[]'::jsonb,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS games (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      result VARCHAR(20) NOT NULL,
+      opponent VARCHAR(100) DEFAULT 'Online',
+      mode VARCHAR(50) DEFAULT 'Online o''yin',
+      time_control VARCHAR(20) DEFAULT 'blitz',
+      moves JSONB DEFAULT '[]'::jsonb,
+      date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS sessions (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      expires_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP + INTERVAL '7 days'
+    )`);
+
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(2) DEFAULT 'uz'`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS countryName VARCHAR(100) DEFAULT 'O''zbekiston'`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS clubs (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      name VARCHAR(255) NOT NULL,
+      description TEXT DEFAULT '',
+      icon VARCHAR(255) DEFAULT '♟️',
+      creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      current_members INTEGER DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS club_members (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      club_id UUID REFERENCES clubs(id) ON DELETE CASCADE,
+      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      role VARCHAR(20) DEFAULT 'member',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(club_id, user_id)
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS tournaments (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      name VARCHAR(255) NOT NULL,
+      description TEXT DEFAULT '',
+      max_players INTEGER DEFAULT 16,
+      creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      club_id UUID,
+      club_id_a UUID,
+      club_id_b UUID,
+      tournament_type VARCHAR(50) DEFAULT 'arena',
+      time_control VARCHAR(20) DEFAULT 'blitz',
+      rounds INTEGER DEFAULT 1,
+      current_round INTEGER DEFAULT 0,
+      is_arena BOOLEAN DEFAULT false,
+      status VARCHAR(20) DEFAULT 'waiting',
+      current_players INTEGER DEFAULT 0,
+      team_score_a INTEGER DEFAULT 0,
+      team_score_b INTEGER DEFAULT 0,
+      started_at TIMESTAMP,
+      finished_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS tournament_participants (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
+      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      score INTEGER DEFAULT 0,
+      club VARCHAR(100),
+      opponents JSONB DEFAULT '[]'::jsonb,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(tournament_id, user_id)
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS tournament_matches (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
+      round INTEGER DEFAULT 0,
+      board INTEGER DEFAULT 1,
+      game_num INTEGER DEFAULT 0,
+      player1_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      player2_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      team_a_player UUID REFERENCES users(id) ON DELETE CASCADE,
+      team_b_player UUID REFERENCES users(id) ON DELETE CASCADE,
+      white_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      black_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      winner_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS friend_requests (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      status VARCHAR(20) DEFAULT 'pending',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS friends (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      friend_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, friend_id)
+    )`);
+
+    await pool.query(`CREATE TABLE IF NOT EXISTS chat_messages (
+      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+      sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
+      room_id VARCHAR(255),
+      message TEXT,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`);
+
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(2) DEFAULT 'uz'`);
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS countryName VARCHAR(100) DEFAULT 'O''zbekiston'`);
+
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
+
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournaments_creator ON tournaments(creator_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournaments_status ON tournaments(status)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_participants_tournament ON tournament_participants(tournament_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_participants_user ON tournament_participants(user_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_matches_tournament ON tournament_matches(tournament_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_friend_requests_sender ON friend_requests(sender_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_friend_requests_receiver ON friend_requests(receiver_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_friends_user ON friends(user_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_friends_friend ON friends(friend_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_chat_messages_room ON chat_messages(room_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_club_members_club ON club_members(club_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_club_members_user ON club_members(user_id)`);
+
+    console.log('Migration muvaffaqiyatli yakunlandi! Barcha jadvallar yaratildi.');
+  } catch (err) {
+    console.error('Migration xatoligi:', err);
+  }
+}
+
 checkDatabaseConnection();
+migrateDatabase();
 
 async function ensureDataDir() {
   const fs = require('fs');
@@ -474,6 +635,48 @@ app.post('/api/auth/login', authLimiter, [
     });
   } catch (err) {
     console.error('Login xatoligi:', err);
+    res.status(500).json({ success: false, message: 'Server xatoligi!' });
+  }
+});
+
+app.put('/api/profile/username', authMiddleware, [
+  body('newUsername').trim().isLength({ min: 3, max: 30 }).withMessage('Username 3-30 ta belgi bolishi kerak')
+], async (req, res) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ success: false, message: errors.array()[0].msg });
+    }
+
+    const newUsername = req.body.newUsername.trim();
+
+    const existing = await getUserByUsername(newUsername);
+    if (existing && existing.id !== req.user.userId) {
+      return res.status(409).json({ success: false, message: 'Bu nomli foydalanuvchi allaqachon mavjud!' });
+    }
+
+    if (useDatabase) {
+      const result = await pool.query(
+        'UPDATE users SET username = $1 WHERE id = $2 RETURNING id, username, email, rating, stats, history, created_at',
+        [newUsername, req.user.userId]
+      );
+      const user = result.rows[0];
+      const newToken = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+      res.json({ success: true, message: 'Username muvaffaqiyatli o`zgartirildi!', user, token: newToken });
+    } else {
+      const users = await readJsonFile('users.json', []);
+      const idx = users.findIndex(u => u.id === req.user.userId);
+      if (idx === -1) {
+        return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      }
+      users[idx].username = newUsername;
+      await writeJsonFile('users.json', users);
+      const { passwordHash, ...userWithoutHash } = users[idx];
+      const newToken = jwt.sign({ userId: users[idx].id, username: users[idx].username }, JWT_SECRET, { expiresIn: '7d' });
+      res.json({ success: true, message: 'Username muvaffaqiyatli o`zgartirildi!', user: userWithoutHash, token: newToken });
+    }
+  } catch (err) {
+    console.error('Username o`zgartirish xatoligi:', err);
     res.status(500).json({ success: false, message: 'Server xatoligi!' });
   }
 });

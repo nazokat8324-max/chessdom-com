@@ -3035,7 +3035,8 @@
                   >Reyting: 1500</span
                 >
               </div>
-              <img class="player-flag" src="https://flagcdn.com/w40/us.png" alt="" loading="lazy" onerror="this.style.display='none'">
+              <img class="player-flag" id="blackPlayerFlag" src="" alt="">
+              <span class="player-flag-fallback" id="blackPlayerFlagFallback" style="display: none;">🌍</span>
               <div class="player-timer" id="blackTimer">05:00</div>
             </div>
             <div class="board-wrapper">
@@ -3067,7 +3068,8 @@
                   >Reyting: 1500</span
                 >
               </div>
-              <img class="player-flag" src="https://flagcdn.com/w40/us.png" alt="" loading="lazy" onerror="this.style.display='none'">
+              <img class="player-flag" id="whitePlayerFlag" src="" alt="">
+              <span class="player-flag-fallback" id="whitePlayerFlagFallback" style="display: none;">🌍</span>
               <div class="player-timer active" id="whiteTimer">05:00</div>
             </div>
           </div>
@@ -3313,6 +3315,21 @@
               <p id="profileEmailDisplay" style="color: #88a; font-size: 13px">
                 email@domain.com
               </p>
+            </div>
+          </div>
+          <div id="usernameChangeSection" style="margin-bottom: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+              <span style="color: #81b64c; font-size: 13px; font-weight: bold;">Username o'zgartirish</span>
+              <button id="toggleUsernameEditBtn" style="background: none; border: 1px solid #81b64c; color: #81b64c; padding: 4px 12px; border-radius: 6px; font-size: 12px; cursor: pointer;">Tahrirlash</button>
+            </div>
+            <div id="usernameEditArea" style="display: none;">
+              <div style="margin-bottom: 8px; font-size: 12px; color: #88a;">Joriy username:</div>
+              <div id="currentUsernameDisplay" style="color: #fff; font-size: 14px; font-weight: bold; margin-bottom: 12px; padding: 6px 10px; background: #1a2a28; border-radius: 6px;"></div>
+              <div style="margin-bottom: 6px; font-size: 12px; color: #88a;">Yangi username:</div>
+              <input type="text" id="newUsernameInput" style="width: 100%; padding: 8px 12px; background: #1a2a28; border: 1px solid #2a3e3b; border-radius: 6px; color: #fff; font-size: 13px; box-sizing: border-box; outline: none; margin-bottom: 8px;" maxlength="30" />
+              <div id="usernameError" style="color: #e74c3c; font-size: 12px; margin-bottom: 6px; display: none;"></div>
+              <div id="usernameSuccess" style="color: #81b64c; font-size: 12px; margin-bottom: 8px; display: none;"></div>
+              <button id="saveUsernameBtn" style="background: #81b64c; color: #0f1817; border: none; padding: 8px 16px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; width: 100%;">Saqlash</button>
             </div>
           </div>
           <div style="margin-bottom: 15px; font-size: 13px">

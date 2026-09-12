@@ -19,6 +19,22 @@ window.updateProfileViewData = function() {
   if (drawElem) drawElem.textContent = window.stats.draws;
   if (ratingElem) ratingElem.textContent = window.currentUser.rating || 1500;
 
+  const currentUserDisp = document.getElementById("currentUsernameDisplay");
+  if (currentUserDisp) currentUserDisp.textContent = window.currentUser.username;
+
+  const newUserInput = document.getElementById("newUsernameInput");
+  if (newUserInput) newUserInput.value = window.currentUser.username;
+
+  const errorEl = document.getElementById("usernameError");
+  if (errorEl) { errorEl.textContent = ""; errorEl.style.display = "none"; }
+  const successEl = document.getElementById("usernameSuccess");
+  if (successEl) { successEl.textContent = ""; successEl.style.display = "none"; }
+
+  const toggleBtn = document.getElementById("toggleUsernameEditBtn");
+  if (toggleBtn) { toggleBtn.textContent = "Tahrirlash"; }
+  const editArea = document.getElementById("usernameEditArea");
+  if (editArea) editArea.style.display = "none";
+
   window.renderProfileChart();
 };
 

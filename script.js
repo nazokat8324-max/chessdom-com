@@ -458,26 +458,36 @@ window.switchView = function(viewName) {
   }
 };
 
+window.openSettings = function() {
+  window.openSettingsModal();
+};
+
 window.updateAuthHeaderUI = function() {
   const container = document.getElementById("sidebarAuthContainer");
   if (!container) return;
 
   if (window.currentUser) {
     container.innerHTML = `
-      <div class="user-mini-profile" onclick="window.openProfileModal()">
-        <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}</div>
-        <div class="mini-info">
-          <b>${window.currentUser.username}</b>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <div class="user-mini-profile" onclick="window.openProfileModal()">
+          <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}</div>
+          <div class="mini-info">
+            <b>${window.currentUser.username}</b>
+          </div>
         </div>
+        <button id="settingsGearBtn" style="background: none; border: none; color: #88a; font-size: 18px; cursor: pointer; padding: 4px 6px; border-radius: 4px; line-height: 1;" onclick="window.openSettings()" title="Sozlamalar">&#9881;</button>
       </div>`;
   } else {
     container.innerHTML = `
-      <div class="user-mini-profile" onclick="switchView('login')">
-        <div class="mini-avatar">👤</div>
-        <div class="mini-info">
-          <b id="sidebarLoginText">Kirish</b>
-          <span>Profilga ulanish</span>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+        <div class="user-mini-profile" onclick="switchView('login')">
+          <div class="mini-avatar">👤</div>
+          <div class="mini-info">
+            <b id="sidebarLoginText">Kirish</b>
+            <span>Profilga ulanish</span>
+          </div>
         </div>
+        <button id="settingsGearBtn" style="background: none; border: none; color: #88a; font-size: 18px; cursor: pointer; padding: 4px 6px; border-radius: 4px; line-height: 1;" onclick="window.openSettings()" title="Sozlamalar">&#9881;</button>
       </div>`;
   }
 };
@@ -609,10 +619,30 @@ window.closeProfileModal = function() {
 };
 
 window.openProfileModal = function() {
-  updateProfileModalData();
+  window.updateProfileModalData();
   const profileModal = document.getElementById("profileModal");
   if (profileModal) {
     profileModal.style.display = "flex";
+  }
+};
+
+window.openSettingsModal = function() {
+  if (window.currentUser) {
+    window.updateSettingsModalData();
+    const settingsModal = document.getElementById("settingsModal");
+    if (settingsModal) {
+      settingsModal.style.display = "flex";
+      window.switchSettingsSection('profil');
+    }
+  } else {
+    window.switchView('login');
+  }
+};
+
+window.closeSettingsModal = function() {
+  const settingsModal = document.getElementById("settingsModal");
+  if (settingsModal) {
+    settingsModal.style.display = "none";
   }
 };
 
@@ -895,14 +925,6 @@ window.handleSignupModal = async function() {
   if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
 };
 
-window.openLanguageModal = function() {
-  const modal = document.getElementById("languageModal");
-  if (modal) {
-    modal.style.display = "flex";
-    renderLanguageCards();
-  }
-};
-
 window.closeLanguageModal = function() {
   const modal = document.getElementById("languageModal");
   if (modal) {
@@ -1086,23 +1108,14 @@ window.getLanguageInfo = function(code) {
   return window.LANGUAGES.find(l => l.code === code) || window.LANGUAGES[1];
 };
 
-window.updateLanguageButton = function(lang) {
-  const info = window.getLanguageInfo(lang);
-  const flagSpan = document.getElementById("langBtnFlag");
-  const textSpan = document.getElementById("langBtnText");
-  if (flagSpan) flagSpan.textContent = info.flag;
-  if (textSpan) textSpan.textContent = info.name;
-};
-
 window.selectLanguage = function(lang) {
   window.setLanguage(lang);
   localStorage.setItem("justChessLang", lang);
-  window.updateLanguageButton(lang);
   window.closeLanguageModal();
 };
 
-window.renderLanguageCards = function(filter = '') {
-  const grid = document.getElementById("languageGrid");
+window.renderLanguageCards = function(filter, containerId) {
+  const grid = document.getElementById(containerId || 'languageGrid');
   if (!grid) return;
 
   const languages = window.LANGUAGES;
@@ -1110,7 +1123,7 @@ window.renderLanguageCards = function(filter = '') {
   const currentLang = window.currentLang || localStorage.getItem("justChessLang") || 'uz';
 
   grid.innerHTML = languages
-    .filter(lang => 
+    .filter(lang =>
       lang.name.toLowerCase().includes(filter.toLowerCase()) ||
       lang.english.toLowerCase().includes(filter.toLowerCase())
     )
@@ -1127,7 +1140,6 @@ window.renderLanguageCards = function(filter = '') {
 window.updateProfileModalData = function() {
   if (!window.currentUser) return;
 
-  const usernameDisplay = document.getElementById("profileModalUsername");
   const handleDisplay = document.getElementById("profileModalHandle");
   const countryFlagEl = document.getElementById("profileModalCountryFlag");
   const countryNameEl = document.getElementById("profileModalCountryName");
@@ -1136,7 +1148,6 @@ window.updateProfileModalData = function() {
   const blitzRating = document.getElementById("statBlitz");
   const bulletRating = document.getElementById("statBullet");
 
-  if (usernameDisplay) usernameDisplay.textContent = window.currentUser.username;
   if (handleDisplay) handleDisplay.textContent = "@" + window.currentUser.username;
 
   const countryCode = (window.currentUser.country || 'uz').toLowerCase();
@@ -1163,30 +1174,81 @@ window.updateProfileModalData = function() {
   const debutEl = document.getElementById("statDebut");
   const clubEl = document.getElementById("statClub");
 
-  if (fideIdEl) fideIdEl.textContent = fideId;
-  if (goalEl) goalEl.textContent = goal;
-  if (debutEl) debutEl.textContent = debut;
-  if (clubEl) clubEl.textContent = club;
-
-  const inputFideId = document.getElementById("inputFideId");
-  const inputGoal = document.getElementById("inputGoal");
-  const inputDebut = document.getElementById("inputDebut");
-  const inputClub = document.getElementById("inputClub");
-  const inputRapid = document.getElementById("inputRapid");
-  const inputBlitz = document.getElementById("inputBlitz");
-  const inputBullet = document.getElementById("inputBullet");
-
-  if (inputFideId) inputFideId.value = fideId;
-  if (inputGoal) inputGoal.value = goal;
-  if (inputDebut) inputDebut.value = debut;
-  if (inputClub) inputClub.value = club;
-  if (inputRapid) inputRapid.value = rapid;
-  if (inputBlitz) inputBlitz.value = blitz;
-  if (inputBullet) inputBullet.value = bullet;
+  if (fideIdEl) fideIdEl.textContent = fideId || "—";
+  if (goalEl) goalEl.textContent = goal || "—";
+  if (debutEl) debutEl.textContent = debut || "—";
+  if (clubEl) clubEl.textContent = club || "—";
 };
 
-window.setProfileEditMode = function(enabled) {
-  const metaRows = document.querySelectorAll('.profile-meta-box .meta-row');
+window.switchSettingsSection = function(section) {
+  const profilContent = document.getElementById("settingsContentProfil");
+  const tilContent = document.getElementById("settingsContentTil");
+  const menuItems = document.querySelectorAll('.settings-menu-item');
+
+  if (profilContent) profilContent.style.display = section === 'profil' ? 'block' : 'none';
+  if (tilContent) tilContent.style.display = section === 'til' ? 'block' : 'none';
+
+  menuItems.forEach(item => {
+    item.classList.toggle('active', item.dataset.section === section);
+  });
+
+  if (section === 'til') {
+    setTimeout(() => {
+      const searchInput = document.getElementById("settingsLanguageSearch");
+      if (searchInput) searchInput.value = '';
+      window.renderLanguageCards('', 'settingsLanguageGrid');
+    }, 50);
+  } else {
+    window.setSettingsEditMode(false);
+  }
+};
+
+window.updateSettingsModalData = function() {
+  if (!window.currentUser) return;
+
+  const handleDisplay = document.getElementById("settingsModalHandle");
+  if (handleDisplay) handleDisplay.textContent = "Sozlamalar";
+
+  const profileData = JSON.parse(localStorage.getItem("justChessProfileData")) || {};
+  const fideId = profileData.fideId || '';
+  const goal = profileData.goal || '';
+  const debut = profileData.debut || '';
+  const club = profileData.club || '';
+  const rapid = profileData.rapid || (window.currentUser.rating || 1500);
+  const blitz = profileData.blitz || (window.currentUser.rating || 1500);
+  const bullet = profileData.bullet || (window.currentUser.rating || 1500);
+
+  const fideIdEl = document.getElementById("settingsFideId");
+  const goalEl = document.getElementById("settingsGoal");
+  const debutEl = document.getElementById("settingsDebut");
+  const clubEl = document.getElementById("settingsClub");
+
+  if (fideIdEl) fideIdEl.textContent = fideId || "—";
+  if (goalEl) goalEl.textContent = goal || "—";
+  if (debutEl) debutEl.textContent = debut || "—";
+  if (clubEl) clubEl.textContent = club || "—";
+
+  const rapidEl = document.getElementById("settingsStatRapid");
+  const blitzEl = document.getElementById("settingsStatBlitz");
+  const bulletEl = document.getElementById("settingsStatBullet");
+
+  if (rapidEl) rapidEl.textContent = rapid;
+  if (blitzEl) blitzEl.textContent = blitz;
+  if (bulletEl) bulletEl.textContent = bullet;
+
+  const fideIdInput = document.getElementById("settingsFideIdInput");
+  const goalInput = document.getElementById("settingsGoalInput");
+  const debutInput = document.getElementById("settingsDebutInput");
+  const clubInput = document.getElementById("settingsClubInput");
+
+  if (fideIdInput) fideIdInput.value = fideId;
+  if (goalInput) goalInput.value = goal;
+  if (debutInput) debutInput.value = debut;
+  if (clubInput) clubInput.value = club;
+};
+
+window.setSettingsEditMode = function(enabled) {
+  const metaRows = document.querySelectorAll('#settingsContentProfil .meta-row');
   metaRows.forEach(row => {
     const textSpan = row.querySelector('.editable-text');
     const input = row.querySelector('.editable-input');
@@ -1196,39 +1258,26 @@ window.setProfileEditMode = function(enabled) {
     }
   });
 
-  const statCards = document.querySelectorAll('.editable-card');
-  statCards.forEach(card => {
-    const textSpan = card.querySelector('.editable-text');
-    const input = card.querySelector('.editable-input');
-    if (textSpan && input) {
-      textSpan.style.display = enabled ? 'none' : 'block';
-      input.style.display = enabled ? 'block' : 'none';
-    }
-  });
-
-  const editBtn = document.getElementById("editProfileBtn");
-  const saveBtn = document.getElementById("saveProfileBtn");
-  const cancelBtn = document.getElementById("cancelProfileBtn");
+  const editBtn = document.getElementById("settingsEditBtn");
+  const saveBtn = document.getElementById("settingsSaveBtn");
+  const cancelBtn = document.getElementById("settingsCancelBtn");
 
   if (editBtn) editBtn.style.display = enabled ? 'none' : 'inline-block';
   if (saveBtn) saveBtn.style.display = enabled ? 'inline-block' : 'none';
   if (cancelBtn) cancelBtn.style.display = enabled ? 'inline-block' : 'none';
 };
 
-window.saveProfileData = function() {
+window.saveSettingsData = function() {
   const profileData = {
-    fideId: (document.getElementById("inputFideId")?.value || '').trim(),
-    goal: (document.getElementById("inputGoal")?.value || '').trim(),
-    debut: (document.getElementById("inputDebut")?.value || '').trim(),
-    club: (document.getElementById("inputClub")?.value || '').trim(),
-    rapid: parseInt(document.getElementById("inputRapid")?.value || '1500', 10) || 1500,
-    blitz: parseInt(document.getElementById("inputBlitz")?.value || '1500', 10) || 1500,
-    bullet: parseInt(document.getElementById("inputBullet")?.value || '1500', 10) || 1500
+    fideId: (document.getElementById("settingsFideIdInput")?.value || '').trim(),
+    goal: (document.getElementById("settingsGoalInput")?.value || '').trim(),
+    debut: (document.getElementById("settingsDebutInput")?.value || '').trim(),
+    club: (document.getElementById("settingsClubInput")?.value || '').trim()
   };
 
   localStorage.setItem("justChessProfileData", JSON.stringify(profileData));
-  window.updateProfileModalData();
-  window.setProfileEditMode(false);
+  window.updateSettingsModalData();
+  window.setSettingsEditMode(false);
   showToast("Ma'lumotlar saqlandi", "success");
 };
 
@@ -1290,6 +1339,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape" && profileModal && profileModal.style.display === "flex") {
       profileModal.style.display = "none";
     }
+    if (e.key === "Escape" && settingsModal && settingsModal.style.display === "flex") {
+      settingsModal.style.display = "none";
+    }
     if (e.key === "Escape" && languageModal && languageModal.style.display === "flex") {
       languageModal.style.display = "none";
     }
@@ -1298,20 +1350,40 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  const editProfileBtn = document.getElementById("editProfileBtn");
-  const saveProfileBtn = document.getElementById("saveProfileBtn");
-  const cancelProfileBtn = document.getElementById("cancelProfileBtn");
+  const settingsSaveBtn = document.getElementById("settingsSaveBtn");
+  const settingsCancelBtn = document.getElementById("settingsCancelBtn");
 
-  if (editProfileBtn) {
-    editProfileBtn.addEventListener("click", () => window.setProfileEditMode(true));
+  if (settingsSaveBtn) {
+    settingsSaveBtn.addEventListener("click", window.saveSettingsData);
   }
-  if (saveProfileBtn) {
-    saveProfileBtn.addEventListener("click", window.saveProfileData);
+  if (settingsCancelBtn) {
+    settingsCancelBtn.addEventListener("click", () => {
+      window.updateSettingsModalData();
+      window.setSettingsEditMode(false);
+    });
   }
-  if (cancelProfileBtn) {
-    cancelProfileBtn.addEventListener("click", () => {
-      window.updateProfileModalData();
-      window.setProfileEditMode(false);
+
+  const settingsModal = document.getElementById("settingsModal");
+  const closeSettingsBtn = document.getElementById("closeSettingsBtn");
+
+  if (closeSettingsBtn && settingsModal) {
+    closeSettingsBtn.addEventListener("click", () => {
+      settingsModal.style.display = "none";
+    });
+  }
+
+  if (settingsModal) {
+    settingsModal.addEventListener("click", (e) => {
+      if (e.target === settingsModal) {
+        settingsModal.style.display = "none";
+      }
+    });
+  }
+
+  const settingsLanguageSearch = document.getElementById("settingsLanguageSearch");
+  if (settingsLanguageSearch) {
+    settingsLanguageSearch.addEventListener("input", (e) => {
+      window.renderLanguageCards(e.target.value, 'settingsLanguageGrid');
     });
   }
 
@@ -1387,11 +1459,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
-
-  // Initialize language button
-  if (typeof window.updateLanguageButton === "function") {
-    window.updateLanguageButton(window.currentLang);
-  }
 
   // Auto-open login modal if not logged in
   if (!window.currentUser) {

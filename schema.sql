@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS users (
     stats JSONB DEFAULT '{"wins":0,"losses":0,"draws":0}'::jsonb,
     stats_by_mode JSONB DEFAULT '{"rapid":{"wins":0,"losses":0,"draws":0},"blitz":{"wins":0,"losses":0,"draws":0},"bullet":{"wins":0,"losses":0,"draws":0}}'::jsonb,
     history JSONB DEFAULT '[]'::jsonb,
+    is_admin BOOLEAN DEFAULT false,
+    banned BOOLEAN DEFAULT false,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

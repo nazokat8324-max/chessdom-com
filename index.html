@@ -2924,7 +2924,94 @@
         color: #fff;
         text-decoration: underline;
       }
-    
+      .admin-tab-btn {
+        background: #1e2e2b;
+        color: #8fc95a;
+        border: 1px solid rgba(143,201,90,0.3);
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .admin-tab-btn:hover {
+        background: rgba(143,201,90,0.15);
+      }
+      .admin-tab-btn.active {
+        background: #8fc95a;
+        color: #000;
+        font-weight: 600;
+        border-color: #8fc95a;
+      }
+      .admin-stat-card {
+        background: #1e2e2b;
+        border-radius: 10px;
+        padding: 16px 20px;
+        border-left: 4px solid #8fc95a;
+      }
+      .admin-stat-card .stat-number {
+        font-size: 28px;
+        font-weight: 700;
+        color: #8fc95a;
+      }
+      .admin-stat-card .stat-label {
+        font-size: 13px;
+        color: #88a;
+        margin-top: 4px;
+      }
+      .admin-action-btn {
+        background: rgba(143,201,90,0.15);
+        color: #8fc95a;
+        border: 1px solid rgba(143,201,90,0.3);
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        cursor: pointer;
+        margin-right: 4px;
+        transition: all 0.2s;
+      }
+      .admin-action-btn:hover {
+        background: rgba(143,201,90,0.3);
+      }
+      .admin-action-btn.danger {
+        color: #e74c3c;
+        background: rgba(231,76,60,0.15);
+        border-color: rgba(231,76,60,0.3);
+      }
+      .admin-action-btn.danger:hover {
+        background: rgba(231,76,60,0.3);
+      }
+      .admin-action-btn.warn {
+        color: #f39c12;
+        background: rgba(243,156,18,0.15);
+        border-color: rgba(243,156,18,0.3);
+      }
+      .admin-action-btn.warn:hover {
+        background: rgba(243,156,18,0.3);
+      }
+      .role-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+      }
+      .role-badge.admin {
+        background: rgba(241,196,15,0.2);
+        color: #f1c40f;
+      }
+      .role-badge.member {
+        background: rgba(136,170,170,0.2);
+        color: #88a;
+      }
+      .banned-yes {
+        color: #e74c3c;
+        font-weight: 600;
+      }
+      .banned-no {
+        color: #2ecc71;
+      }
+
     </style>
     <link
       rel="stylesheet"
@@ -2969,8 +3056,8 @@
             <span id="mLeagues">Ligalar</span>
           </a>
           <a class="menu-item admin-only" id="navAdmin" onclick="switchView('admin')" style="display: none">
-            <span class="icon">👑</span>
-            <span id="mAdmin">Foydalanuvchilar</span>
+            <span class="icon">♟️</span>
+            <span id="mAdmin">Chessdom 👑</span>
           </a>
           <a class="menu-item" id="navChampions" onclick="switchView('champions')">
             <span class="icon">⭐</span>
@@ -3614,7 +3701,7 @@
       </div>
     </div>
 
-    <!-- 7. ADMIN PANEL (Faqat site egasi) -->
+    <!-- 7. CHESSDOM SUPER ADMIN PANEL -->
     <div
       id="adminView"
       class="view-section"
@@ -3622,7 +3709,7 @@
     >
       <div
         class="card-box"
-        style="width: 900px; max-height: 90vh; overflow-y: auto"
+        style="width: min(1100px, 100%); max-height: 90vh; overflow-y: auto"
       >
         <div
           style="
@@ -3632,26 +3719,85 @@
             margin-bottom: 20px;
           "
         >
-          <div class="card-title">👑 Foydalanuvchilar</div>
+          <div class="card-title" style="color:#8fc95a; font-size:22px;">♟️ Chessdom 👑 Super Admin</div>
           <div id="adminUserCount" style="font-size: 13px; color: #88a;"></div>
         </div>
-        <div class="leaderboard-table-wrapper">
-          <table class="leaderboard-table" id="adminUsersTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Reyting</th>
-                <th>Viloyat</th>
-                <th>Ro'yxat</th>
-                <th>Oxirgi faol</th>
-              </tr>
-            </thead>
-            <tbody id="adminUsersBody">
-              <!-- JavaScript orqali yuklanadi -->
-            </tbody>
-          </table>
+        <div style="display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap;">
+          <button class="admin-tab-btn active" onclick="window.switchAdminTab('stats')" id="adminTab-stats">📊 Tizim statistikasi</button>
+          <button class="admin-tab-btn" onclick="window.switchAdminTab('users')" id="adminTab-users">👥 Boshqaruv</button>
+          <button class="admin-tab-btn" onclick="window.switchAdminTab('leagues')" id="adminTab-leagues">🏆 Ligalar</button>
+          <button class="admin-tab-btn" onclick="window.switchAdminTab('settings')" id="adminTab-settings">⚙️ Sozlamalar</button>
+        </div>
+        <div id="adminTabContent-stats" class="admin-tab-content">
+          <div id="adminStatsContent" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:14px;"></div>
+        </div>
+        <div id="adminTabContent-users" class="admin-tab-content" style="display:none;">
+          <div class="leaderboard-table-wrapper">
+            <table class="leaderboard-table" id="adminUsersTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Username</th>
+                  <th>Email</th>
+                  <th>Reyting</th>
+                  <th>Viloyat</th>
+                  <th>Rol</th>
+                  <th>Bloklangan</th>
+                  <th>Ro'yxat</th>
+                  <th>Oxirgi faol</th>
+                  <th>Amallar</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersBody">
+                <!-- JavaScript orqali yuklanadi -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="adminTabContent-leagues" class="admin-tab-content" style="display:none;">
+          <div style="margin-bottom:14px; display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="admin-tab-btn" onclick="window.openCreateLeague()" style="background:#8fc95a; color:#000; font-weight:600;">➕ Liga yaratish</button>
+          </div>
+          <div class="leaderboard-table-wrapper">
+            <table class="leaderboard-table" id="adminLeaguesTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Nomi</th>
+                  <th>Turi</th>
+                  <th>Vaqt nazorati</th>
+                  <th>Raundlar</th>
+                  <th>O'yinchilar</th>
+                  <th>Holat</th>
+                  <th>Yaratilgan</th>
+                  <th>Amallar</th>
+                </tr>
+              </thead>
+              <tbody id="adminLeaguesBody">
+                <!-- JavaScript orqali yuklanadi -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div id="adminTabContent-settings" class="admin-tab-content" style="display:none;">
+          <div class="card-box" style="width:100%; background:#14201e; padding:20px; border-radius:10px;">
+            <div class="card-title" style="margin-bottom:14px;">⚙️ Sayt sozlamalari</div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#1e2e2b; border-radius:8px;">
+                <div><strong>Server rejim:</strong> <span id="adminServerMode" style="color:#8fc95a;"></span></div>
+                <span style="color:#88a; font-size:13px;">Faol</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#1e2e2b; border-radius:8px;">
+                <div><strong>Ma'muriyat:</strong> <span id="adminAdminName" style="color:#8fc95a;">Sarvarovich_Zafar</span></div>
+                <span style="color:#88a; font-size:13px;">Maxsus</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px; background:#1e2e2b; border-radius:8px;">
+                <div><strong>Navbatdagi ta'mirlash:</strong> <span style="color:#e74c3c;">2026-09-20</span></div>
+                <span style="color:#88a; font-size:13px;">Rejalangan</span>
+              </div>
+              <button onclick="window.adminRefresh()" class="admin-tab-btn" style="background:#1e2e2b; color:#8fc95a;">🔄 Ma'lumotlarni yangilash</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

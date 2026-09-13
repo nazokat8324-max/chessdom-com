@@ -370,6 +370,7 @@ window.switchView = function(viewName) {
     const navEl = document.getElementById("navLeaderboard");
     if (navEl) navEl.classList.add("active");
   } else if (viewName === "admin") {
+    window.switchAdminTab('stats');
     if (typeof window.loadAdminUsers === "function") {
       window.loadAdminUsers();
     }
@@ -506,7 +507,7 @@ window.updateAuthHeaderUI = function() {
 
   const adminItem = document.getElementById("navAdmin");
   if (adminItem) {
-    adminItem.style.display = window.currentUser && window.currentUser.username === 'Sarvarovich_Zafar' ? 'block' : 'none';
+    adminItem.style.display = window.currentUser && window.currentUser.is_admin ? 'block' : 'none';
   }
 };
 
@@ -515,37 +516,372 @@ window.loadAdminUsers = async function() {
   const adminCount = document.getElementById("adminUserCount");
   if (!adminBody) return;
 
-  adminBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>';
+  adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>';
 
   try {
-    const res = await fetch('/api/admin/users', {
+    const res = await fetch('/api/admin/users-roles', {
       headers: { 'Authorization': `Bearer ${window.authToken}` }
     });
     const data = await res.json();
 
     if (!data.success || !Array.isArray(data.users)) {
-      adminBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c; padding: 20px;">Foydalanuvchilar yuklanmadi!</td></tr>';
+      adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Foydalanuvchilar yuklanmadi!</td></tr>';
       return;
     }
 
     if (adminCount) adminCount.textContent = `Jami: ${data.users.length} ta foydalanuvchi`;
 
-    const rows = data.users.map((user, index) => `
-      <tr>
-        <td>${index + 1}</td>
-        <td style="color: #fff; font-weight: bold;">${user.username || '—'}</td>
-        <td style="color: #88a;">${user.email || '—'}</td>
-        <td style="color: #81b64c; font-weight: 700;">${user.rating || 1500}</td>
-        <td style="color: #88a;">${user.countryName || user.country || '—'}</td>
-        <td style="color: #88a; font-size: 12px;">${user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}</td>
-        <td style="color: #88a; font-size: 12px;">${user.last_active ? new Date(user.last_active).toLocaleDateString() : '—'}</td>
-      </tr>
-    `).join('');
+    const rows = data.users.map((user, index) => {
+      const isAdmin = user.is_admin;
+      const isBanned = user.banned;
+      const roleLabel = isAdmin ? 'Admin' : 'Member';
+      const roleClass = isAdmin ? 'admin' : 'member';
+      const bannedClass = isBanned ? 'banned-yes' : 'banned-no';
+      const bannedLabel = isBanned ? 'Ha ✗' : 'Yo\'q ✓';
+      const blockedBtnClass = isBanned ? '' : 'danger';
+      const blockedBtnLabel = isBanned ? 'Blokdan chiqarish' : 'Bloklash';
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td style="color: #fff; font-weight: bold;">${user.username || '—'}</td>
+          <td style="color: #88a;">${user.email || '—'}</td>
+          <td style="color: #81b64c; font-weight: 700;">${user.rating || 1500}</td>
+          <td style="color: #88a;">${user.countryName || user.country || '—'}</td>
+          <td><span class="role-badge ${roleClass}">${roleLabel}</span></td>
+          <td class="${bannedClass}">${bannedLabel}</td>
+          <td style="color: #88a; font-size: 12px;">${user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}</td>
+          <td style="color: #88a; font-size: 12px;">${user.last_active ? new Date(user.last_active).toLocaleDateString() : '—'}</td>
+          <td>
+            <button class="admin-action-btn ${blockedBtnClass}" onclick="${isBanned ? "window.adminUnblockUser" : "window.adminToggleBlock"}('${user.id}')">${blockedBtnLabel}</button>
+            <button class="admin-action-btn ${isAdmin ? 'warn' : ''}" onclick="window.adminToggleRole('${user.id}', ${!isAdmin})">${isAdmin ? 'Aylantirish' : 'Admin qilish'}</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
 
     adminBody.innerHTML = rows;
   } catch (err) {
-    adminBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c; padding: 20px;">Server xatoligi!</td></tr>';
+    adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Server xatoligi!</td></tr>';
   }
+};
+
+window.switchAdminTab = function(tabName) {
+  const tabs = ['stats', 'users', 'leagues', 'settings'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`adminTab-${t}`);
+    const content = document.getElementById(`adminTabContent-${t}`);
+    if (btn) {
+      btn.classList.toggle('active', t === tabName);
+    }
+    if (content) {
+      content.style.display = t === tabName ? 'block' : 'none';
+    }
+  });
+  if (tabName === 'stats') window.loadAdminStats();
+  if (tabName === 'users') window.loadAdminUsers();
+  if (tabName === 'leagues') window.loadAdminLeagues();
+  if (tabName === 'settings') window.loadAdminSettings();
+};
+
+window.loadAdminStats = async function() {
+  const container = document.getElementById("adminStatsContent");
+  if (!container) return;
+  container.innerHTML = '<div style="color:#88a;">Yuklanmoqda...</div>';
+  try {
+    const res = await fetch('/api/admin/stats', {
+      headers: { 'Authorization': `Bearer ${window.authToken}` }
+    });
+    const data = await res.json();
+    if (!data.success) {
+      container.innerHTML = '<div style="color:#e74c3c;">Xatolik yuz berdi</div>';
+      return;
+    }
+    const s = data.stats;
+    container.innerHTML = `
+      <div class="admin-stat-card">
+        <div class="stat-number">${s.totalUsers}</div>
+        <div class="stat-label">Jami foydalanuvchilar</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="stat-number">${s.totalGames}</div>
+        <div class="stat-label">Jami o'yinlar</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="stat-number">${s.activeToday}</div>
+        <div class="stat-label">Bugun faol o'yinchilar</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="stat-number">${s.totalTournaments}</div>
+        <div class="stat-label">Jami turnirlar/Ligalar</div>
+      </div>
+    `;
+  } catch (err) {
+    container.innerHTML = '<div style="color:#e74c3c;">Server xatoligi!</div>';
+  }
+};
+
+window.loadAdminLeagues = async function() {
+  const adminBody = document.getElementById("adminLeaguesBody");
+  if (!adminBody) return;
+  adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>';
+  try {
+    const res = await fetch('/api/admin/leagues', {
+      headers: { 'Authorization': `Bearer ${window.authToken}` }
+    });
+    const data = await res.json();
+    if (!data.success || !Array.isArray(data.leagues)) {
+      adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Ligalar yuklanmadi!</td></tr>';
+      return;
+    }
+    const rows = data.leagues.map((league, index) => {
+      const statusClass = league.status === 'active' ? 'banned-no' : league.status === 'paused' ? 'banned-yes' : '';
+      const startBtn = league.status === 'waiting' ? `<button class="admin-action-btn" onclick="window.adminStartLeague('${league.id}')">Ishga tushirish</button>` : '';
+      const stopBtn = league.status === 'active' ? `<button class="admin-action-btn warn" onclick="window.adminStopLeague('${league.id}')">To'xtatish</button>` : '';
+      const deleteBtn = `<button class="admin-action-btn danger" onclick="window.adminDeleteLeague('${league.id}')">O'chirish</button>`;
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          <td style="color:#fff; font-weight:bold;">${league.name || '—'}</td>
+          <td style="color:#88a;">${league.tournament_type || '—'}</td>
+          <td style="color:#88a;">${league.time_control || '—'}</td>
+          <td style="color:#88a;">${league.rounds || '—'}</td>
+          <td style="color:#81b64c;">${league.current_players || 0}/${league.max_players || 16}</td>
+          <td class="${statusClass}" style="font-weight:600;">${league.status || 'waiting'}</td>
+          <td style="color:#88a; font-size:12px;">${league.created_at ? new Date(league.created_at).toLocaleDateString() : '—'}</td>
+          <td>${startBtn}${stopBtn}${deleteBtn}</td>
+        </tr>
+      `;
+    }).join('');
+    adminBody.innerHTML = rows;
+  } catch (err) {
+    adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Server xatoligi!</td></tr>';
+  }
+};
+
+window.openCreateLeague = function() {
+  const existing = document.getElementById("createLeagueModal");
+  if (existing) existing.remove();
+  const modal = document.createElement("div");
+  modal.id = "createLeagueModal";
+  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:9999;";
+  modal.innerHTML = `
+    <div class="card-box" style="width:480px;max-width:95%;background:#14201e;" onclick="event.stopPropagation()">
+      <div class="card-title" style="margin-bottom:18px;">➕ Liga yaratish</div>
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div>
+          <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Liga nomi</label>
+          <input id="clName" type="text" placeholder="Masalan: O'zbekiston Ligasi" style="width:100%;padding:8px 12px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;font-size:14px;" />
+        </div>
+        <div>
+          <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Tavsif</label>
+          <textarea id="clDesc" rows="2" placeholder="Liga haqida qisqacha ma'lumot" style="width:100%;padding:8px 12px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;font-size:14px;resize:vertical;"></textarea>
+        </div>
+        <div style="display:flex;gap:10px;">
+          <div style="flex:1;">
+            <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Tur</label>
+            <select id="clType" style="width:100%;padding:8px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;">
+              <option value="league">Liga</option>
+              <option value="arena">Arena</option>
+              <option value="team">Jamoa</option>
+            </select>
+          </div>
+          <div style="flex:1;">
+            <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Vaqt nazorati</label>
+            <select id="clTC" style="width:100%;padding:8px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;">
+              <option value="blitz">Blitz</option>
+              <option value="rapid">Rapid</option>
+              <option value="bullet">Bullet</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Raundlar soni</label>
+          <input id="clRounds" type="number" value="7" min="1" max="30" style="width:100%;padding:8px 12px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;font-size:14px;" />
+        </div>
+        <div>
+          <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Max o'yinchilar</label>
+          <input id="clMax" type="number" value="16" min="2" max="64" style="width:100%;padding:8px 12px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;font-size:14px;" />
+        </div>
+        <div style="display:flex;gap:10px;margin-top:6px;">
+          <button class="admin-tab-btn active" onclick="window.submitCreateLeague()" style="flex:1;">Yaratish</button>
+          <button class="admin-tab-btn" onclick="document.getElementById('createLeagueModal').remove()" style="flex:1;">Bekor qilish</button>
+        </div>
+      </div>
+    </div>
+  `;
+  modal.onclick = function() { modal.remove(); };
+  document.body.appendChild(modal);
+};
+
+window.submitCreateLeague = async function() {
+  const name = document.getElementById("clName").value.trim();
+  const description = document.getElementById("clDesc").value.trim();
+  const tournamentType = document.getElementById("clType").value;
+  const timeControl = document.getElementById("clTC").value;
+  const rounds = parseInt(document.getElementById("clRounds").value) || 7;
+  const maxPlayers = parseInt(document.getElementById("clMax").value) || 16;
+
+  if (!name) {
+    alert("Liga nomini kiriting!");
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/admin/leagues', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.authToken}`
+      },
+      body: JSON.stringify({ name, description, tournamentType, timeControl, rounds, maxPlayers })
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById("createLeagueModal").remove();
+      alert("Liga muvaffaqiyatli yaratildi!");
+      window.loadAdminLeagues();
+    } else {
+      alert(data.message || "Xatolik yuz berdi!");
+    }
+  } catch (err) {
+    alert("Serverga ulanib bo'lmadi!");
+  }
+};
+
+window.adminStartLeague = async function(leagueId) {
+  try {
+    const res = await fetch(`/api/admin/leagues/${leagueId}/start`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${window.authToken}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Liga ishga tushirildi!");
+      window.loadAdminLeagues();
+    } else {
+      alert(data.message || "Xatolik!");
+    }
+  } catch (err) {
+    alert("Server xatoligi!");
+  }
+};
+
+window.adminStopLeague = async function(leagueId) {
+  try {
+    const res = await fetch(`/api/admin/leagues/${leagueId}/stop`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${window.authToken}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Liga to'xtatildi!");
+      window.loadAdminLeagues();
+    } else {
+      alert(data.message || "Xatolik!");
+    }
+  } catch (err) {
+    alert("Server xatoligi!");
+  }
+};
+
+window.adminDeleteLeague = async function(leagueId) {
+  if (!confirm("Bu ligani o'chirishni xohlaysizmi?")) return;
+  try {
+    const res = await fetch(`/api/admin/leagues/${leagueId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${window.authToken}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Liga o'chirildi!");
+      window.loadAdminLeagues();
+    } else {
+      alert(data.message || "Xatolik!");
+    }
+  } catch (err) {
+    alert("Server xatoligi!");
+  }
+};
+
+window.adminToggleBlock = async function(userId) {
+  try {
+    const res = await fetch(`/api/admin/users/${userId}/block`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${window.authToken}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Foydalanuvchi bloklandi!");
+      window.loadAdminUsers();
+    } else {
+      alert(data.message || "Xatolik!");
+    }
+  } catch (err) {
+    alert("Server xatoligi!");
+  }
+};
+
+window.adminUnblockUser = async function(userId) {
+  try {
+    const res = await fetch(`/api/admin/users/${userId}/block`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${window.authToken}` }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert("Foydalanuvchi blokdan chiqarildi!");
+      window.loadAdminUsers();
+    } else {
+      alert(data.message || "Xatolik!");
+    }
+  } catch (err) {
+    alert("Server xatoligi!");
+  }
+};
+
+window.adminToggleRole = async function(userId, makeAdmin) {
+  try {
+    const res = await fetch(`/api/admin/users/${userId}/role`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${window.authToken}`
+      },
+      body: JSON.stringify({ is_admin: makeAdmin })
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`Foydalanuvchi ${makeAdmin ? 'admin qilindi!' : 'oddiy memberga aylandi!'}`);
+      window.loadAdminUsers();
+    } else {
+      alert(data.message || "Xatolik!");
+    }
+  } catch (err) {
+    alert("Server xatoligi!");
+  }
+};
+
+window.loadAdminSettings = async function() {
+  const modeEl = document.getElementById("adminServerMode");
+  const adminEl = document.getElementById("adminAdminName");
+  if (modeEl) {
+    try {
+      const res = await fetch('/api/admin/stats', {
+        headers: { 'Authorization': `Bearer ${window.authToken}` }
+      });
+      const data = await res.json();
+      modeEl.textContent = data.success ? 'Faol' : 'Noma\'lum';
+    } catch (e) {
+      modeEl.textContent = 'Faol';
+    }
+  }
+  if (adminEl) adminEl.textContent = 'Sarvarovich_Zafar';
+};
+
+window.adminRefresh = async function() {
+  const activeBtn = document.querySelector(".admin-tab-btn.active");
+  const tabName = activeBtn ? activeBtn.id.replace("adminTab-", "") : "stats";
+  window.switchAdminTab(tabName);
 };
 
 window.handleRegister = async function() {

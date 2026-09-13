@@ -90,8 +90,10 @@ async function migrateDatabase() {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(2) DEFAULT 'uz'`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS countryName VARCHAR(100) DEFAULT 'O''zbekiston'`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false`);
-    await pool.query(`UPDATE users SET is_admin = true WHERE username = 'Sarvarovich_Zafar'`);
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS banned BOOLEAN DEFAULT false`);
+
+    // Super adminlarni belgilash
+    await pool.query(`UPDATE users SET is_admin = true WHERE username IN ('chessdom', 'Sarvarovich_Zafar')`);
 
     // Migratsiya: 'chessdom' foydalanuvchidan boshqa barcha akkauntlarni o'chirish
     try {
@@ -224,6 +226,21 @@ async function migrateDatabase() {
 
 checkDatabaseConnection();
 migrateDatabase();
+
+async function ensureSuperAdmin() {
+  if (!useDatabase) return;
+  try {
+    const result = await pool.query("SELECT is_admin FROM users WHERE username = 'chessdom'");
+    if (result.rows.length > 0 && !result.rows[0].is_admin) {
+      await pool.query("UPDATE users SET is_admin = true WHERE username = 'chessdom'");
+      console.log("ensureSuperAdmin: chessdom is_admin=true belgildi.");
+    }
+  } catch (err) {
+    console.error("ensureSuperAdmin xatoligi:", err.message);
+  }
+}
+
+setTimeout(ensureSuperAdmin, 3000);
 
 async function ensureDataDir() {
   const fs = require('fs');
@@ -573,6 +590,10 @@ app.post('/api/auth/register', authLimiter, [
       );
 
       const user = result.rows[0];
+      if (user.username === 'chessdom' && !user.is_admin) {
+        await pool.query("UPDATE users SET is_admin = true WHERE username = 'chessdom'");
+        user.is_admin = true;
+      }
       const token = jwt.sign({ userId: user.id, username: user.username, is_admin: user.is_admin || false }, JWT_SECRET, { expiresIn: '7d' });
 
       res.json({
@@ -633,7 +654,12 @@ app.post('/api/auth/login', authLimiter, [
     if (!valid) {
       return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
     }
-    
+
+    if (user.username === 'chessdom' && !user.is_admin) {
+      await pool.query("UPDATE users SET is_admin = true WHERE username = 'chessdom'");
+      user.is_admin = true;
+    }
+
     const token = jwt.sign({ userId: user.id, username: user.username, is_admin: user.is_admin || false }, JWT_SECRET, { expiresIn: '7d' });
 
     if (useDatabase) {

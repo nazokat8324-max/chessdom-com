@@ -15,7 +15,7 @@ let opponentFound = false;
 window.setOpponentFound = function(found) {
   opponentFound = found;
   if (board) {
-    board.setOption('draggable', found);
+    board.position('start');
   }
   const overlay = document.getElementById('boardWaitingOverlay');
   if (overlay) {
@@ -297,7 +297,6 @@ window.startNewGame = function() {
   }
   
   if (board) {
-    board.setOption('draggable', true);
     board.position('start');
   }
   
@@ -445,7 +444,7 @@ function onSnapEnd() {
 }
 
 let config = {
-  draggable: false,
+  draggable: true,
   position: 'start',
   pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
   onDragStart: onDragStart,

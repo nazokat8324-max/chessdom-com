@@ -495,19 +495,8 @@ window.openClubDetail = function(countryName, countryCode) {
            font-size: 13px;
            cursor: pointer;
            transition: all 0.2s;
-         ">${isJoined ? 'Leave Club' : 'Join Club'}</button>
-         <button onclick="showClubLeaderboard('${countryName}')" style="
-           padding: 12px;
-           background: #2a3e3b;
-           color: #fff;
-           border: 1px solid #3d5a56;
-           border-radius: 8px;
-           font-weight: bold;
-           font-size: 13px;
-           cursor: pointer;
-           transition: all 0.2s;
-         ">📊 Leaderboard</button>
-         <button onclick="showClubTournaments('${countryName}')" style="
+          ">${isJoined ? 'Leave Club' : 'Join Club'}</button>
+          <button onclick="showClubTournaments('${countryName}')" style="
            padding: 12px;
            background: #2a3e3b;
            color: #fff;
@@ -529,18 +518,7 @@ window.openClubDetail = function(countryName, countryCode) {
             cursor: pointer;
             transition: all 0.2s;
           ">📜 History</button>
-         <button onclick="showClubChat('${countryName}', '${countryCode}')" style="
-           padding: 12px;
-           background: #2a3e3b;
-           color: #fff;
-           border: 1px solid #3d5a56;
-           border-radius: 8px;
-           font-weight: bold;
-           font-size: 13px;
-           cursor: pointer;
-           transition: all 0.2s;
-         ">💬 Club Chat</button>
-         <button onclick="switchView('clubs')" style="
+          <button onclick="switchView('clubs')" style="
            padding: 12px;
            background: #192825;
            color: #ccc;

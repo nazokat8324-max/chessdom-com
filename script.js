@@ -370,6 +370,11 @@ window.switchView = function(viewName) {
     const navEl = document.getElementById("navLeaderboard");
     if (navEl) navEl.classList.add("active");
   } else if (viewName === "admin") {
+    if (!window.authToken) {
+      alert('Avtorizatsiya kerak! Avval kirishingizni amalga oshiring.');
+      window.switchView('login');
+      return;
+    }
     window.switchAdminTab('stats');
     if (typeof window.loadAdminUsers === "function") {
       window.loadAdminUsers();
@@ -517,6 +522,10 @@ window.loadAdminUsers = async function() {
   if (!adminBody) return;
 
   adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>';
+  if (!window.authToken) {
+    adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Avtorizatsiya kerak! <a href="#" onclick="switchView(\'login\')">Kirish</a></td></tr>';
+    return;
+  }
 
   try {
     const res = await fetch('/api/admin/users-roles', {
@@ -524,8 +533,13 @@ window.loadAdminUsers = async function() {
     });
     const data = await res.json();
 
+    if (res.status === 401) {
+      adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Avtorizatsiya muddati o\'tdi! <a href="#" onclick="switchView(\'login\')">Qayta kirish</a></td></tr>';
+      return;
+    }
+
     if (!data.success || !Array.isArray(data.users)) {
-      adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Foydalanuvchilar yuklanmadi!</td></tr>';
+      adminBody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Xatolik: ${data.message || 'Foydalanuvchilar yuklanmadi'}</td></tr>`;
       return;
     }
 
@@ -587,13 +601,21 @@ window.loadAdminStats = async function() {
   const container = document.getElementById("adminStatsContent");
   if (!container) return;
   container.innerHTML = '<div style="color:#88a;">Yuklanmoqda...</div>';
+  if (!window.authToken) {
+    container.innerHTML = '<div style="color:#e74c3c;">Avtorizatsiya kerak! <a href="#" onclick="switchView(\'login\')">Kirish</a></div>';
+    return;
+  }
   try {
     const res = await fetch('/api/admin/stats', {
       headers: { 'Authorization': `Bearer ${window.authToken}` }
     });
     const data = await res.json();
+    if (res.status === 401) {
+      container.innerHTML = '<div style="color:#e74c3c;">Avtorizatsiya muddati o\'tdi! <a href="#" onclick="switchView(\'login\')">Qayta kirish</a></div>';
+      return;
+    }
     if (!data.success) {
-      container.innerHTML = '<div style="color:#e74c3c;">Xatolik yuz berdi</div>';
+      container.innerHTML = `<div style="color:#e74c3c;">Xatolik: ${data.message || 'Noma\'lum xatolik'}</div>`;
       return;
     }
     const s = data.stats;
@@ -624,13 +646,21 @@ window.loadAdminLeagues = async function() {
   const adminBody = document.getElementById("adminLeaguesBody");
   if (!adminBody) return;
   adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>';
+  if (!window.authToken) {
+    adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Avtorizatsiya kerak!</td></tr>';
+    return;
+  }
   try {
     const res = await fetch('/api/admin/leagues', {
       headers: { 'Authorization': `Bearer ${window.authToken}` }
     });
     const data = await res.json();
+    if (res.status === 401) {
+      adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Avtorizatsiya muddati o\'tdi!</td></tr>';
+      return;
+    }
     if (!data.success || !Array.isArray(data.leagues)) {
-      adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Ligalar yuklanmadi!</td></tr>';
+      adminBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Xatolik: ${data.message || 'Ligalar yuklanmadi'}</td></tr>`;
       return;
     }
     const rows = data.leagues.map((league, index) => {
@@ -865,14 +895,18 @@ window.loadAdminSettings = async function() {
   const modeEl = document.getElementById("adminServerMode");
   const adminEl = document.getElementById("adminAdminName");
   if (modeEl) {
+    if (!window.authToken) {
+      if (modeEl) modeEl.textContent = 'Avtorizatsiya kerak';
+      return;
+    }
     try {
       const res = await fetch('/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${window.authToken}` }
       });
       const data = await res.json();
-      modeEl.textContent = data.success ? 'Faol' : 'Noma\'lum';
+      if (modeEl) modeEl.textContent = data.success ? 'Faol' : 'Noma\'lum';
     } catch (e) {
-      modeEl.textContent = 'Faol';
+      if (modeEl) modeEl.textContent = 'Faol';
     }
   }
   if (adminEl) adminEl.textContent = 'Sarvarovich_Zafar';

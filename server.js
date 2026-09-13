@@ -52,6 +52,240 @@ async function checkDatabaseConnection() {
 
 checkDatabaseConnection();
 
+async function initializeDatabase() {
+  if (!useDatabase) {
+    console.log('PostgreSQL mavjud emas — localStorage/JSON rejimida ishlayapmiz. Jadvallar kerak emas.');
+    return;
+  }
+
+  const migrations = [
+    `-- Users table
+    CREATE TABLE IF NOT EXISTS users (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        username VARCHAR(50) UNIQUE NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password_hash VARCHAR(255) NOT NULL,
+        rating INTEGER DEFAULT 1500,
+        stats JSONB DEFAULT '{"wins":0,"losses":0,"draws":0}'::jsonb,
+        stats_by_mode JSONB DEFAULT '{"rapid":{"wins":0,"losses":0,"draws":0},"blitz":{"wins":0,"losses":0,"draws":0},"bullet":{"wins":0,"losses":0,"draws":0}}'::jsonb,
+        history JSONB DEFAULT '[]'::jsonb,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+
+    `-- Games table
+    CREATE TABLE IF NOT EXISTS games (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        result VARCHAR(20) NOT NULL,
+        opponent VARCHAR(100) DEFAULT 'Online',
+        mode VARCHAR(50) DEFAULT 'Online o\\'yin',
+        time_control VARCHAR(20) DEFAULT 'blitz',
+        moves JSONB DEFAULT '[]'::jsonb,
+        date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+
+    `-- Sessions table
+    CREATE TABLE IF NOT EXISTS sessions (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP + INTERVAL '7 days'
+    )`,
+
+    `-- Tournaments table
+    CREATE TABLE IF NOT EXISTS tournaments (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        max_players INTEGER DEFAULT 16,
+        current_players INTEGER DEFAULT 0,
+        status VARCHAR(20) DEFAULT 'waiting',
+        creator_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        tournament_type VARCHAR(20) DEFAULT 'arena',
+        time_control VARCHAR(20),
+        rounds INTEGER DEFAULT 7,
+        current_round INTEGER DEFAULT 0,
+        club_id UUID REFERENCES clubs(id) ON DELETE SET NULL,
+        club_id_a UUID REFERENCES clubs(id) ON DELETE SET NULL,
+        club_id_b UUID REFERENCES clubs(id) ON DELETE SET NULL,
+        is_arena BOOLEAN DEFAULT FALSE,
+        team_score_a INTEGER DEFAULT 0,
+        team_score_b INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        started_at TIMESTAMP,
+        finished_at TIMESTAMP
+    )`,
+
+    `-- Tournament Participants table
+    CREATE TABLE IF NOT EXISTS tournament_participants (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        score INTEGER DEFAULT 0,
+        position INTEGER,
+        club VARCHAR(100),
+        opponents JSONB DEFAULT '[]'::jsonb,
+        joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(tournament_id, user_id)
+    )`,
+
+    `-- Tournament Matches table
+    CREATE TABLE IF NOT EXISTS tournament_matches (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
+        round INTEGER DEFAULT 1,
+        board INTEGER,
+        game_num INTEGER,
+        player1_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        player2_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        team_a_player VARCHAR(100),
+        team_b_player VARCHAR(100),
+        white_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        black_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        winner_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        status VARCHAR(20) DEFAULT 'pending',
+        completed_at TIMESTAMP DEFAULT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+
+    `-- Friend Requests table
+    CREATE TABLE IF NOT EXISTS friend_requests (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        status VARCHAR(20) DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(sender_id, receiver_id)
+    )`,
+
+    `-- Friends table
+    CREATE TABLE IF NOT EXISTS friends (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        friend_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_id, friend_id)
+    )`,
+
+    `-- Chat Messages table
+    CREATE TABLE IF NOT EXISTS chat_messages (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        receiver_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        room_id VARCHAR(100),
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+
+    `-- Clubs table
+    CREATE TABLE IF NOT EXISTS clubs (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        name VARCHAR(255) NOT NULL UNIQUE,
+        description TEXT,
+        icon VARCHAR(10) DEFAULT '♟️',
+        creator_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        max_members INTEGER DEFAULT 50,
+        current_members INTEGER DEFAULT 1,
+        is_public BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+
+    `-- Club Members table
+    CREATE TABLE IF NOT EXISTS club_members (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        club_id UUID REFERENCES clubs(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        role VARCHAR(20) DEFAULT 'member',
+        joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(club_id, user_id)
+    )`
+  ];
+
+  for (let i = 0; i < migrations.length; i++) {
+    try {
+      await pool.query(migrations[i]);
+      console.log(`✅ Migration ${i + 1}/${migrations.length}: Jadval muvaffaqiyatli yaratildi.`);
+    } catch (err) {
+      console.error(`❌ Migration ${i + 1}/${migrations.length} xatoligi:`, err.message);
+    }
+  }
+
+  // Add new columns if they don't exist (safe migrations)
+  try {
+    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stats_by_mode JSONB DEFAULT '{"rapid":{"wins":0,"losses":0,"draws":0},"blitz":{"wins":0,"losses":0,"draws":0},"bullet":{"wins":0,"losses":0,"draws":0}}'::jsonb`);
+    console.log('✅ users.stats_by_mode ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ stats_by_mode migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE games ADD COLUMN IF NOT EXISTS time_control VARCHAR(20) DEFAULT 'blitz'`);
+    console.log('✅ games.time_control ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ time_control migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS started_at TIMESTAMP DEFAULT NULL`);
+    console.log('✅ tournaments.started_at ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ started_at migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS team_score_a INTEGER DEFAULT 0`);
+    console.log('✅ tournaments.team_score_a ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ team_score_a migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS team_score_b INTEGER DEFAULT 0`);
+    console.log('✅ tournaments.team_score_b ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ team_score_b migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS club_id_a UUID REFERENCES clubs(id) ON DELETE SET NULL`);
+    console.log('✅ tournaments.club_id_a ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ club_id_a migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS club_id_b UUID REFERENCES clubs(id) ON DELETE SET NULL`);
+    console.log('✅ tournaments.club_id_b ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ club_id_b migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE tournament_matches ADD COLUMN IF NOT EXISTS team_a_player VARCHAR(100)`);
+    console.log('✅ tournament_matches.team_a_player ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ team_a_player migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE tournament_matches ADD COLUMN IF NOT EXISTS team_b_player VARCHAR(100)`);
+    console.log('✅ tournament_matches.team_b_player ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ team_b_player migration xatoligi:', err.message);
+  }
+
+  try {
+    await pool.query(`ALTER TABLE tournament_matches ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP DEFAULT NULL`);
+    console.log('✅ tournament_matches.completed_at ustuni tekshirildi.');
+  } catch (err) {
+    console.error('❌ completed_at migration xatoligi:', err.message);
+  }
+
+  console.log('✅ Barcha database migratsiyalari tugatildi!');
+}
+
 async function ensureDataDir() {
   const fs = require('fs');
   const path = require('path');
@@ -2350,43 +2584,50 @@ io.on('connection', (socket) => {
 closeStaleArenas();
 setInterval(closeStaleArenas, 60 * 1000);
 
-server.listen(PORT, () => {
-  console.log('Server ishga tushdi: http://localhost:' + PORT);
-  console.log('API endpoint\'lari:');
-  console.log('  POST /api/auth/register');
-  console.log('  POST /api/auth/login');
-  console.log('  POST /api/auth/logout');
-  console.log('  GET  /api/leaderboard');
-  console.log('  GET  /api/daily-winners');
-  console.log('  GET  /api/stats/:username');
-  console.log('  GET  /api/users/:username/games');
-  console.log('  POST /api/games');
-  console.log('  POST /api/ratings/update');
-  console.log('  POST /api/matchmaking/join');
-  console.log('  POST /api/matchmaking/leave');
-  console.log('  POST /api/tournaments');
-  console.log('  GET  /api/tournaments');
-  console.log('  GET  /api/tournaments/arenas');
-  console.log('  GET  /api/tournaments/:id');
-  console.log('  POST /api/tournaments/:id/join');
-  console.log('  POST /api/tournaments/:id/start');
-  console.log('  GET  /api/tournaments/:id/standings');
-  console.log('  GET  /api/tournaments/:id/matches');
-  console.log('  GET  /api/tournaments/:id/participants');
-  console.log('  POST /api/tournaments/:id/matches');
-  console.log('  POST /api/tournaments/:id/pairings');
-  console.log('  POST /api/tournaments/:id/matches/:matchId/result');
-  console.log('  POST /api/friends/request');
-  console.log('  POST /api/friends/accept');
-  console.log('  GET  /api/friends');
-  console.log('  GET  /api/friends/requests');
-  console.log('  GET  /api/chat/messages');
-  console.log('  POST /api/chat/messages');
-  console.log('  POST /api/clubs');
-  console.log('  GET  /api/clubs');
-  console.log('  GET  /api/clubs/:id');
-  console.log('  POST /api/clubs/:id/join');
-  console.log('  GET  /api/clubs/:id/members');
+initializeDatabase().then(() => {
+  server.listen(PORT, () => {
+    console.log('Server ishga tushdi: http://localhost:' + PORT);
+    console.log('API endpoint\'lari:');
+    console.log('  POST /api/auth/register');
+    console.log('  POST /api/auth/login');
+    console.log('  POST /api/auth/logout');
+    console.log('  GET  /api/leaderboard');
+    console.log('  GET  /api/daily-winners');
+    console.log('  GET  /api/stats/:username');
+    console.log('  GET  /api/users/:username/games');
+    console.log('  POST /api/games');
+    console.log('  POST /api/ratings/update');
+    console.log('  POST /api/matchmaking/join');
+    console.log('  POST /api/matchmaking/leave');
+    console.log('  POST /api/tournaments');
+    console.log('  GET  /api/tournaments');
+    console.log('  GET  /api/tournaments/arenas');
+    console.log('  GET  /api/tournaments/:id');
+    console.log('  POST /api/tournaments/:id/join');
+    console.log('  POST /api/tournaments/:id/start');
+    console.log('  GET  /api/tournaments/:id/standings');
+    console.log('  GET  /api/tournaments/:id/matches');
+    console.log('  GET  /api/tournaments/:id/participants');
+    console.log('  POST /api/tournaments/:id/matches');
+    console.log('  POST /api/tournaments/:id/pairings');
+    console.log('  POST /api/tournaments/:id/matches/:matchId/result');
+    console.log('  POST /api/friends/request');
+    console.log('  POST /api/friends/accept');
+    console.log('  GET  /api/friends');
+    console.log('  GET  /api/friends/requests');
+    console.log('  GET  /api/chat/messages');
+    console.log('  POST /api/chat/messages');
+    console.log('  POST /api/clubs');
+    console.log('  GET  /api/clubs');
+    console.log('  GET  /api/clubs/:id');
+    console.log('  POST /api/clubs/:id/join');
+    console.log('  GET  /api/clubs/:id/members');
+  });
+}).catch(err => {
+  console.error('Database initialization error:', err);
+  server.listen(PORT, () => {
+    console.log('Server ishga tushdi (DB initialization failed): http://localhost:' + PORT);
+  });
 });
 
 module.exports = { app, server, io };

@@ -369,6 +369,19 @@ window.switchView = function(viewName) {
     }
     const navEl = document.getElementById("navLeaderboard");
     if (navEl) navEl.classList.add("active");
+  } else if (viewName === "admin") {
+    if (typeof window.loadAdminUsers === "function") {
+      window.loadAdminUsers();
+    }
+    const adminEl = document.getElementById("adminView");
+    if (adminEl) {
+      adminEl.classList.add("active-view");
+      if (typeof window.playAnimation === "function") {
+        window.playAnimation("adminView", "fadeIn");
+      }
+    }
+    const navEl = document.getElementById("navAdmin");
+    if (navEl) navEl.classList.add("active");
   } else if (viewName === "history") {
     if (typeof window.updateGameHistoryView === "function") {
       window.updateGameHistoryView();
@@ -489,6 +502,49 @@ window.updateAuthHeaderUI = function() {
         </div>
         <button id="settingsGearBtn" style="background: none; border: none; color: #88a; font-size: 18px; cursor: pointer; padding: 4px 6px; border-radius: 4px; line-height: 1;" onclick="window.openSettings()" title="Sozlamalar">&#9881;</button>
       </div>`;
+  }
+
+  const adminItem = document.getElementById("navAdmin");
+  if (adminItem) {
+    adminItem.style.display = window.currentUser && window.currentUser.username === 'Sarvarovich_Zafar' ? 'block' : 'none';
+  }
+};
+
+window.loadAdminUsers = async function() {
+  const adminBody = document.getElementById("adminUsersBody");
+  const adminCount = document.getElementById("adminUserCount");
+  if (!adminBody) return;
+
+  adminBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>';
+
+  try {
+    const res = await fetch('/api/admin/users', {
+      headers: { 'Authorization': `Bearer ${window.authToken}` }
+    });
+    const data = await res.json();
+
+    if (!data.success || !Array.isArray(data.users)) {
+      adminBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c; padding: 20px;">Foydalanuvchilar yuklanmadi!</td></tr>';
+      return;
+    }
+
+    if (adminCount) adminCount.textContent = `Jami: ${data.users.length} ta foydalanuvchi`;
+
+    const rows = data.users.map((user, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td style="color: #fff; font-weight: bold;">${user.username || '—'}</td>
+        <td style="color: #88a;">${user.email || '—'}</td>
+        <td style="color: #81b64c; font-weight: 700;">${user.rating || 1500}</td>
+        <td style="color: #88a;">${user.countryName || user.country || '—'}</td>
+        <td style="color: #88a; font-size: 12px;">${user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}</td>
+        <td style="color: #88a; font-size: 12px;">${user.last_active ? new Date(user.last_active).toLocaleDateString() : '—'}</td>
+      </tr>
+    `).join('');
+
+    adminBody.innerHTML = rows;
+  } catch (err) {
+    adminBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #e74c3c; padding: 20px;">Server xatoligi!</td></tr>';
   }
 };
 

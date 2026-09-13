@@ -2968,6 +2968,10 @@
             <span class="icon">🏆</span>
             <span id="mLeagues">Ligalar</span>
           </a>
+          <a class="menu-item admin-only" id="navAdmin" onclick="switchView('admin')" style="display: none">
+            <span class="icon">👑</span>
+            <span id="mAdmin">Foydalanuvchilar</span>
+          </a>
           <a class="menu-item" id="navChampions" onclick="switchView('champions')">
             <span class="icon">⭐</span>
             <span id="mChampions">Chempionlar</span>
@@ -3603,6 +3607,48 @@
               </tr>
             </thead>
             <tbody id="historyTableBody">
+              <!-- JavaScript orqali yuklanadi -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 7. ADMIN PANEL (Faqat site egasi) -->
+    <div
+      id="adminView"
+      class="view-section"
+      style="justify-content: center; align-items: flex-start; padding: 20px"
+    >
+      <div
+        class="card-box"
+        style="width: 900px; max-height: 90vh; overflow-y: auto"
+      >
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+          "
+        >
+          <div class="card-title">👑 Foydalanuvchilar</div>
+          <div id="adminUserCount" style="font-size: 13px; color: #88a;"></div>
+        </div>
+        <div class="leaderboard-table-wrapper">
+          <table class="leaderboard-table" id="adminUsersTable">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Reyting</th>
+                <th>Viloyat</th>
+                <th>Ro'yxat</th>
+                <th>Oxirgi faol</th>
+              </tr>
+            </thead>
+            <tbody id="adminUsersBody">
               <!-- JavaScript orqali yuklanadi -->
             </tbody>
           </table>

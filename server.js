@@ -720,6 +720,32 @@ app.get('/api/leaderboard', async (req, res) => {
   }
 });
 
+app.get('/api/admin/users', authMiddleware, async (req, res) => {
+  if (req.user.username !== 'Sarvarovich_Zafar') {
+    return res.status(403).json({ success: false, message: 'Faqat site egasi uchun ruxsat berilgan!' });
+  }
+
+  try {
+    let users = [];
+    if (useDatabase) {
+      const result = await pool.query(
+        'SELECT id, username, email, rating, stats, stats_by_mode, country, countryName, created_at, last_active FROM users ORDER BY created_at DESC'
+      );
+      users = result.rows;
+    } else {
+      const allUsers = await readJsonFile('users.json', []);
+      users = allUsers.map(u => {
+        const { passwordHash, ...rest } = u;
+        return rest;
+      });
+    }
+    res.json({ success: true, users });
+  } catch (err) {
+    console.error('Admin users xatoligi:', err);
+    res.status(500).json({ success: false, message: 'Server xatoligi!' });
+  }
+});
+
 app.get('/api/daily-winners', async (req, res) => {
   try {
     const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -2560,6 +2586,7 @@ server.listen(PORT, () => {
   console.log('  POST /api/auth/login');
   console.log('  POST /api/auth/logout');
   console.log('  GET  /api/leaderboard');
+  console.log('  GET  /api/admin/users');
   console.log('  GET  /api/daily-winners');
   console.log('  GET  /api/stats/:username');
   console.log('  GET  /api/users/:username/games');

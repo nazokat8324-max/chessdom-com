@@ -507,7 +507,7 @@ window.updateAuthHeaderUI = function() {
 
   const adminItem = document.getElementById("navAdmin");
   if (adminItem) {
-    adminItem.style.display = window.currentUser && window.currentUser.is_admin ? 'block' : 'none';
+    adminItem.style.display = window.currentUser && window.currentUser.username === 'Chessdom 👑' ? 'block' : 'none';
   }
 };
 

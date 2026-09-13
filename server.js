@@ -93,12 +93,12 @@ async function migrateDatabase() {
     await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS banned BOOLEAN DEFAULT false`);
 
     // Super adminlarni belgilash
-    await pool.query(`UPDATE users SET is_admin = true WHERE username IN ('chessdom', 'Sarvarovich_Zafar')`);
+    await pool.query(`UPDATE users SET is_admin = true WHERE username = 'Chessdom 👑'`);
 
-    // Migratsiya: 'chessdom' foydalanuvchidan boshqa barcha akkauntlarni o'chirish
+    // Migratsiya: 'Chessdom 👑' foydalanuvchidan boshqa barcha akkauntlarni o'chirish
     try {
-      await pool.query(`DELETE FROM users WHERE username != 'chessdom'`);
-      console.log('Migration: chessdom tashqari barcha foydalanuvchilar o\'chirildi.');
+      await pool.query(`DELETE FROM users WHERE username != 'Chessdom 👑'`);
+      console.log('Migration: Chessdom 👑 tashqari barcha foydalanuvchilar o\'chirildi.');
     } catch (e) {
       console.log('Migration: foydalanuvchilarni o\'chirish davom etdi (FK bilan bog\'liq muammo bo\'lishi mumkin).');
     }
@@ -230,10 +230,10 @@ migrateDatabase();
 async function ensureSuperAdmin() {
   if (!useDatabase) return;
   try {
-    const result = await pool.query("SELECT is_admin FROM users WHERE username = 'chessdom'");
+    const result = await pool.query("SELECT is_admin FROM users WHERE username = 'Chessdom 👑'");
     if (result.rows.length > 0 && !result.rows[0].is_admin) {
-      await pool.query("UPDATE users SET is_admin = true WHERE username = 'chessdom'");
-      console.log("ensureSuperAdmin: chessdom is_admin=true belgildi.");
+      await pool.query("UPDATE users SET is_admin = true WHERE username = 'Chessdom 👑'");
+      console.log("ensureSuperAdmin: Chessdom 👑 is_admin=true belgildi.");
     }
   } catch (err) {
     console.error("ensureSuperAdmin xatoligi:", err.message);
@@ -564,6 +564,10 @@ function authMiddleware(req, res, next) {
   }
 }
 
+function isSuperAdmin(req) {
+  return req.user && req.user.username === 'Chessdom 👑';
+}
+
 app.post('/api/auth/register', authLimiter, [
   body('username').isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters'),
   body('email').isEmail().withMessage('Invalid email'),
@@ -590,8 +594,8 @@ app.post('/api/auth/register', authLimiter, [
       );
 
       const user = result.rows[0];
-      if (user.username === 'chessdom' && !user.is_admin) {
-        await pool.query("UPDATE users SET is_admin = true WHERE username = 'chessdom'");
+      if (user.username === 'Chessdom 👑' && !user.is_admin) {
+        await pool.query("UPDATE users SET is_admin = true WHERE username = 'Chessdom 👑'");
         user.is_admin = true;
       }
       const token = jwt.sign({ userId: user.id, username: user.username, is_admin: user.is_admin || false }, JWT_SECRET, { expiresIn: '7d' });
@@ -655,8 +659,8 @@ app.post('/api/auth/login', authLimiter, [
       return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
     }
 
-    if (user.username === 'chessdom' && !user.is_admin) {
-      await pool.query("UPDATE users SET is_admin = true WHERE username = 'chessdom'");
+    if (user.username === 'Chessdom 👑' && !user.is_admin) {
+      await pool.query("UPDATE users SET is_admin = true WHERE username = 'Chessdom 👑'");
       user.is_admin = true;
     }
 
@@ -760,7 +764,7 @@ app.get('/api/leaderboard', async (req, res) => {
 });
 
 app.get('/api/admin/stats', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -792,7 +796,7 @@ app.get('/api/admin/stats', authMiddleware, async (req, res) => {
 });
 
 app.get('/api/admin/users-roles', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -817,7 +821,7 @@ app.get('/api/admin/users-roles', authMiddleware, async (req, res) => {
 });
 
 app.put('/api/admin/users/:userId/role', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -844,7 +848,7 @@ app.put('/api/admin/users/:userId/role', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/admin/users/:userId/block', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -866,7 +870,7 @@ app.post('/api/admin/users/:userId/block', authMiddleware, async (req, res) => {
 });
 
 app.delete('/api/admin/users/:userId/block', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -888,7 +892,7 @@ app.delete('/api/admin/users/:userId/block', authMiddleware, async (req, res) =>
 });
 
 app.get('/api/admin/leagues', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -909,7 +913,7 @@ app.get('/api/admin/leagues', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/admin/leagues', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -947,7 +951,7 @@ app.post('/api/admin/leagues', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/admin/leagues/:id/start', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -972,7 +976,7 @@ app.post('/api/admin/leagues/:id/start', authMiddleware, async (req, res) => {
 });
 
 app.post('/api/admin/leagues/:id/stop', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {
@@ -994,7 +998,7 @@ app.post('/api/admin/leagues/:id/stop', authMiddleware, async (req, res) => {
 });
 
 app.delete('/api/admin/leagues/:id', authMiddleware, async (req, res) => {
-  if (!req.user.is_admin) {
+  if (!isSuperAdmin(req)) {
     return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
   }
   try {

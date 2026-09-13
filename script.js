@@ -316,13 +316,9 @@ window.switchView = function(viewName) {
       if (window.currentUser) {
         window.updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
         window.updatePlayerInfo('black', 'Raqib', '⏳');
-        window.updatePlayerFlag('white', window.currentUser.country || window.currentUser.countryCode || null);
-        window.updatePlayerFlag('black', null);
       } else {
         window.updatePlayerInfo('white', 'Oq', 1500);
         window.updatePlayerInfo('black', 'Raqib', '⏳');
-        window.updatePlayerFlag('white', null);
-        window.updatePlayerFlag('black', null);
       }
     }
     
@@ -368,25 +364,6 @@ window.switchView = function(viewName) {
       }
     }
     const navEl = document.getElementById("navLeaderboard");
-    if (navEl) navEl.classList.add("active");
-  } else if (viewName === "admin") {
-    if (!window.authToken) {
-      alert('Avtorizatsiya kerak! Avval kirishingizni amalga oshiring.');
-      window.switchView('login');
-      return;
-    }
-    window.switchAdminTab('stats');
-    if (typeof window.loadAdminUsers === "function") {
-      window.loadAdminUsers();
-    }
-    const adminEl = document.getElementById("adminView");
-    if (adminEl) {
-      adminEl.classList.add("active-view");
-      if (typeof window.playAnimation === "function") {
-        window.playAnimation("adminView", "fadeIn");
-      }
-    }
-    const navEl = document.getElementById("navAdmin");
     if (navEl) navEl.classList.add("active");
   } else if (viewName === "history") {
     if (typeof window.updateGameHistoryView === "function") {
@@ -477,445 +454,28 @@ window.switchView = function(viewName) {
   }
 };
 
-window.openSettings = function() {
-  window.openSettingsModal();
-};
-
 window.updateAuthHeaderUI = function() {
   const container = document.getElementById("sidebarAuthContainer");
   if (!container) return;
 
   if (window.currentUser) {
     container.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-        <div class="user-mini-profile" onclick="window.openProfileModal()">
-          <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}</div>
-          <div class="mini-info">
-            <b>${window.currentUser.username}</b>
-          </div>
+      <div class="user-mini-profile" onclick="window.openProfileModal()">
+        <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}</div>
+        <div class="mini-info">
+          <b>${window.currentUser.username}</b>
         </div>
-        <button id="settingsGearBtn" style="background: none; border: none; color: #88a; font-size: 18px; cursor: pointer; padding: 4px 6px; border-radius: 4px; line-height: 1;" onclick="window.openSettings()" title="Sozlamalar">&#9881;</button>
       </div>`;
   } else {
     container.innerHTML = `
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
-        <div class="user-mini-profile" onclick="switchView('login')">
-          <div class="mini-avatar">👤</div>
-          <div class="mini-info">
-            <b id="sidebarLoginText">Kirish</b>
-            <span>Profilga ulanish</span>
-          </div>
+      <div class="user-mini-profile" onclick="switchView('login')">
+        <div class="mini-avatar">👤</div>
+        <div class="mini-info">
+          <b id="sidebarLoginText">Kirish</b>
+          <span>Profilga ulanish</span>
         </div>
-        <button id="settingsGearBtn" style="background: none; border: none; color: #88a; font-size: 18px; cursor: pointer; padding: 4px 6px; border-radius: 4px; line-height: 1;" onclick="window.openSettings()" title="Sozlamalar">&#9881;</button>
       </div>`;
   }
-
-  const adminItem = document.getElementById("navAdmin");
-  if (adminItem) {
-    adminItem.style.display = window.currentUser && window.currentUser.username === 'Chessdom 👑' ? 'block' : 'none';
-  }
-};
-
-window.loadAdminUsers = async function() {
-  const adminBody = document.getElementById("adminUsersBody");
-  const adminCount = document.getElementById("adminUserCount");
-  if (!adminBody) return;
-
-  adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>';
-  if (!window.authToken) {
-    adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Avtorizatsiya kerak! <a href="#" onclick="switchView(\'login\')">Kirish</a></td></tr>';
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/admin/users-roles', {
-      headers: { 'Authorization': `Bearer ${window.authToken}` }
-    });
-    const data = await res.json();
-
-    if (res.status === 401) {
-      adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Avtorizatsiya muddati o\'tdi! <a href="#" onclick="switchView(\'login\')">Qayta kirish</a></td></tr>';
-      return;
-    }
-
-    if (!data.success || !Array.isArray(data.users)) {
-      adminBody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Xatolik: ${data.message || 'Foydalanuvchilar yuklanmadi'}</td></tr>`;
-      return;
-    }
-
-    if (adminCount) adminCount.textContent = `Jami: ${data.users.length} ta foydalanuvchi`;
-
-    const rows = data.users.map((user, index) => {
-      const isAdmin = user.is_admin;
-      const isBanned = user.banned;
-      const roleLabel = isAdmin ? 'Admin' : 'Member';
-      const roleClass = isAdmin ? 'admin' : 'member';
-      const bannedClass = isBanned ? 'banned-yes' : 'banned-no';
-      const bannedLabel = isBanned ? 'Ha ✗' : 'Yo\'q ✓';
-      const blockedBtnClass = isBanned ? '' : 'danger';
-      const blockedBtnLabel = isBanned ? 'Blokdan chiqarish' : 'Bloklash';
-      return `
-        <tr>
-          <td>${index + 1}</td>
-          <td style="color: #fff; font-weight: bold;">${user.username || '—'}</td>
-          <td style="color: #88a;">${user.email || '—'}</td>
-          <td style="color: #81b64c; font-weight: 700;">${user.rating || 1500}</td>
-          <td style="color: #88a;">${user.countryName || user.country || '—'}</td>
-          <td><span class="role-badge ${roleClass}">${roleLabel}</span></td>
-          <td class="${bannedClass}">${bannedLabel}</td>
-          <td style="color: #88a; font-size: 12px;">${user.created_at ? new Date(user.created_at).toLocaleDateString() : '—'}</td>
-          <td style="color: #88a; font-size: 12px;">${user.last_active ? new Date(user.last_active).toLocaleDateString() : '—'}</td>
-          <td>
-            <button class="admin-action-btn ${blockedBtnClass}" onclick="${isBanned ? "window.adminUnblockUser" : "window.adminToggleBlock"}('${user.id}')">${blockedBtnLabel}</button>
-            <button class="admin-action-btn ${isAdmin ? 'warn' : ''}" onclick="window.adminToggleRole('${user.id}', ${!isAdmin})">${isAdmin ? 'Aylantirish' : 'Admin qilish'}</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    adminBody.innerHTML = rows;
-  } catch (err) {
-    adminBody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #e74c3c; padding: 20px;">Server xatoligi!</td></tr>';
-  }
-};
-
-window.switchAdminTab = function(tabName) {
-  const tabs = ['stats', 'users', 'leagues', 'settings'];
-  tabs.forEach(t => {
-    const btn = document.getElementById(`adminTab-${t}`);
-    const content = document.getElementById(`adminTabContent-${t}`);
-    if (btn) {
-      btn.classList.toggle('active', t === tabName);
-    }
-    if (content) {
-      content.style.display = t === tabName ? 'block' : 'none';
-    }
-  });
-  if (tabName === 'stats') window.loadAdminStats();
-  if (tabName === 'users') window.loadAdminUsers();
-  if (tabName === 'leagues') window.loadAdminLeagues();
-  if (tabName === 'settings') window.loadAdminSettings();
-};
-
-window.loadAdminStats = async function() {
-  const container = document.getElementById("adminStatsContent");
-  if (!container) return;
-  container.innerHTML = '<div style="color:#88a;">Yuklanmoqda...</div>';
-  if (!window.authToken) {
-    container.innerHTML = '<div style="color:#e74c3c;">Avtorizatsiya kerak! <a href="#" onclick="switchView(\'login\')">Kirish</a></div>';
-    return;
-  }
-  try {
-    const res = await fetch('/api/admin/stats', {
-      headers: { 'Authorization': `Bearer ${window.authToken}` }
-    });
-    const data = await res.json();
-    if (res.status === 401) {
-      container.innerHTML = '<div style="color:#e74c3c;">Avtorizatsiya muddati o\'tdi! <a href="#" onclick="switchView(\'login\')">Qayta kirish</a></div>';
-      return;
-    }
-    if (!data.success) {
-      container.innerHTML = `<div style="color:#e74c3c;">Xatolik: ${data.message || 'Noma\'lum xatolik'}</div>`;
-      return;
-    }
-    const s = data.stats;
-    container.innerHTML = `
-      <div class="admin-stat-card">
-        <div class="stat-number">${s.totalUsers}</div>
-        <div class="stat-label">Jami foydalanuvchilar</div>
-      </div>
-      <div class="admin-stat-card">
-        <div class="stat-number">${s.totalGames}</div>
-        <div class="stat-label">Jami o'yinlar</div>
-      </div>
-      <div class="admin-stat-card">
-        <div class="stat-number">${s.activeToday}</div>
-        <div class="stat-label">Bugun faol o'yinchilar</div>
-      </div>
-      <div class="admin-stat-card">
-        <div class="stat-number">${s.totalTournaments}</div>
-        <div class="stat-label">Jami turnirlar/Ligalar</div>
-      </div>
-    `;
-  } catch (err) {
-    container.innerHTML = '<div style="color:#e74c3c;">Server xatoligi!</div>';
-  }
-};
-
-window.loadAdminLeagues = async function() {
-  const adminBody = document.getElementById("adminLeaguesBody");
-  if (!adminBody) return;
-  adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #88a; padding: 20px;">Yuklanmoqda...</td></tr>';
-  if (!window.authToken) {
-    adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Avtorizatsiya kerak!</td></tr>';
-    return;
-  }
-  try {
-    const res = await fetch('/api/admin/leagues', {
-      headers: { 'Authorization': `Bearer ${window.authToken}` }
-    });
-    const data = await res.json();
-    if (res.status === 401) {
-      adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Avtorizatsiya muddati o\'tdi!</td></tr>';
-      return;
-    }
-    if (!data.success || !Array.isArray(data.leagues)) {
-      adminBody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Xatolik: ${data.message || 'Ligalar yuklanmadi'}</td></tr>`;
-      return;
-    }
-    const rows = data.leagues.map((league, index) => {
-      const statusClass = league.status === 'active' ? 'banned-no' : league.status === 'paused' ? 'banned-yes' : '';
-      const startBtn = league.status === 'waiting' ? `<button class="admin-action-btn" onclick="window.adminStartLeague('${league.id}')">Ishga tushirish</button>` : '';
-      const stopBtn = league.status === 'active' ? `<button class="admin-action-btn warn" onclick="window.adminStopLeague('${league.id}')">To'xtatish</button>` : '';
-      const deleteBtn = `<button class="admin-action-btn danger" onclick="window.adminDeleteLeague('${league.id}')">O'chirish</button>`;
-      return `
-        <tr>
-          <td>${index + 1}</td>
-          <td style="color:#fff; font-weight:bold;">${league.name || '—'}</td>
-          <td style="color:#88a;">${league.tournament_type || '—'}</td>
-          <td style="color:#88a;">${league.time_control || '—'}</td>
-          <td style="color:#88a;">${league.rounds || '—'}</td>
-          <td style="color:#81b64c;">${league.current_players || 0}/${league.max_players || 16}</td>
-          <td class="${statusClass}" style="font-weight:600;">${league.status || 'waiting'}</td>
-          <td style="color:#88a; font-size:12px;">${league.created_at ? new Date(league.created_at).toLocaleDateString() : '—'}</td>
-          <td>${startBtn}${stopBtn}${deleteBtn}</td>
-        </tr>
-      `;
-    }).join('');
-    adminBody.innerHTML = rows;
-  } catch (err) {
-    adminBody.innerHTML = '<tr><td colspan="9" style="text-align: center; color: #e74c3c; padding: 20px;">Server xatoligi!</td></tr>';
-  }
-};
-
-window.openCreateLeague = function() {
-  const existing = document.getElementById("createLeagueModal");
-  if (existing) existing.remove();
-  const modal = document.createElement("div");
-  modal.id = "createLeagueModal";
-  modal.style.cssText = "position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);display:flex;justify-content:center;align-items:center;z-index:9999;";
-  modal.innerHTML = `
-    <div class="card-box" style="width:480px;max-width:95%;background:#14201e;" onclick="event.stopPropagation()">
-      <div class="card-title" style="margin-bottom:18px;">➕ Liga yaratish</div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div>
-          <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Liga nomi</label>
-          <input id="clName" type="text" placeholder="Masalan: O'zbekiston Ligasi" style="width:100%;padding:8px 12px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;font-size:14px;" />
-        </div>
-        <div>
-          <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Tavsif</label>
-          <textarea id="clDesc" rows="2" placeholder="Liga haqida qisqacha ma'lumot" style="width:100%;padding:8px 12px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;font-size:14px;resize:vertical;"></textarea>
-        </div>
-        <div style="display:flex;gap:10px;">
-          <div style="flex:1;">
-            <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Tur</label>
-            <select id="clType" style="width:100%;padding:8px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;">
-              <option value="league">Liga</option>
-              <option value="arena">Arena</option>
-              <option value="team">Jamoa</option>
-            </select>
-          </div>
-          <div style="flex:1;">
-            <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Vaqt nazorati</label>
-            <select id="clTC" style="width:100%;padding:8px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;">
-              <option value="blitz">Blitz</option>
-              <option value="rapid">Rapid</option>
-              <option value="bullet">Bullet</option>
-            </select>
-          </div>
-        </div>
-        <div>
-          <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Raundlar soni</label>
-          <input id="clRounds" type="number" value="7" min="1" max="30" style="width:100%;padding:8px 12px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;font-size:14px;" />
-        </div>
-        <div>
-          <label style="font-size:13px;color:#88a;display:block;margin-bottom:4px;">Max o'yinchilar</label>
-          <input id="clMax" type="number" value="16" min="2" max="64" style="width:100%;padding:8px 12px;background:#1e2e2b;border:1px solid #334;color:#fff;border-radius:6px;font-size:14px;" />
-        </div>
-        <div style="display:flex;gap:10px;margin-top:6px;">
-          <button class="admin-tab-btn active" onclick="window.submitCreateLeague()" style="flex:1;">Yaratish</button>
-          <button class="admin-tab-btn" onclick="document.getElementById('createLeagueModal').remove()" style="flex:1;">Bekor qilish</button>
-        </div>
-      </div>
-    </div>
-  `;
-  modal.onclick = function() { modal.remove(); };
-  document.body.appendChild(modal);
-};
-
-window.submitCreateLeague = async function() {
-  const name = document.getElementById("clName").value.trim();
-  const description = document.getElementById("clDesc").value.trim();
-  const tournamentType = document.getElementById("clType").value;
-  const timeControl = document.getElementById("clTC").value;
-  const rounds = parseInt(document.getElementById("clRounds").value) || 7;
-  const maxPlayers = parseInt(document.getElementById("clMax").value) || 16;
-
-  if (!name) {
-    alert("Liga nomini kiriting!");
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/admin/leagues', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${window.authToken}`
-      },
-      body: JSON.stringify({ name, description, tournamentType, timeControl, rounds, maxPlayers })
-    });
-    const data = await res.json();
-    if (data.success) {
-      document.getElementById("createLeagueModal").remove();
-      alert("Liga muvaffaqiyatli yaratildi!");
-      window.loadAdminLeagues();
-    } else {
-      alert(data.message || "Xatolik yuz berdi!");
-    }
-  } catch (err) {
-    alert("Serverga ulanib bo'lmadi!");
-  }
-};
-
-window.adminStartLeague = async function(leagueId) {
-  try {
-    const res = await fetch(`/api/admin/leagues/${leagueId}/start`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${window.authToken}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Liga ishga tushirildi!");
-      window.loadAdminLeagues();
-    } else {
-      alert(data.message || "Xatolik!");
-    }
-  } catch (err) {
-    alert("Server xatoligi!");
-  }
-};
-
-window.adminStopLeague = async function(leagueId) {
-  try {
-    const res = await fetch(`/api/admin/leagues/${leagueId}/stop`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${window.authToken}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Liga to'xtatildi!");
-      window.loadAdminLeagues();
-    } else {
-      alert(data.message || "Xatolik!");
-    }
-  } catch (err) {
-    alert("Server xatoligi!");
-  }
-};
-
-window.adminDeleteLeague = async function(leagueId) {
-  if (!confirm("Bu ligani o'chirishni xohlaysizmi?")) return;
-  try {
-    const res = await fetch(`/api/admin/leagues/${leagueId}`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${window.authToken}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Liga o'chirildi!");
-      window.loadAdminLeagues();
-    } else {
-      alert(data.message || "Xatolik!");
-    }
-  } catch (err) {
-    alert("Server xatoligi!");
-  }
-};
-
-window.adminToggleBlock = async function(userId) {
-  try {
-    const res = await fetch(`/api/admin/users/${userId}/block`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${window.authToken}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Foydalanuvchi bloklandi!");
-      window.loadAdminUsers();
-    } else {
-      alert(data.message || "Xatolik!");
-    }
-  } catch (err) {
-    alert("Server xatoligi!");
-  }
-};
-
-window.adminUnblockUser = async function(userId) {
-  try {
-    const res = await fetch(`/api/admin/users/${userId}/block`, {
-      method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${window.authToken}` }
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert("Foydalanuvchi blokdan chiqarildi!");
-      window.loadAdminUsers();
-    } else {
-      alert(data.message || "Xatolik!");
-    }
-  } catch (err) {
-    alert("Server xatoligi!");
-  }
-};
-
-window.adminToggleRole = async function(userId, makeAdmin) {
-  try {
-    const res = await fetch(`/api/admin/users/${userId}/role`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${window.authToken}`
-      },
-      body: JSON.stringify({ is_admin: makeAdmin })
-    });
-    const data = await res.json();
-    if (data.success) {
-      alert(`Foydalanuvchi ${makeAdmin ? 'admin qilindi!' : 'oddiy memberga aylandi!'}`);
-      window.loadAdminUsers();
-    } else {
-      alert(data.message || "Xatolik!");
-    }
-  } catch (err) {
-    alert("Server xatoligi!");
-  }
-};
-
-window.loadAdminSettings = async function() {
-  const modeEl = document.getElementById("adminServerMode");
-  const adminEl = document.getElementById("adminAdminName");
-  if (modeEl) {
-    if (!window.authToken) {
-      if (modeEl) modeEl.textContent = 'Avtorizatsiya kerak';
-      return;
-    }
-    try {
-      const res = await fetch('/api/admin/stats', {
-        headers: { 'Authorization': `Bearer ${window.authToken}` }
-      });
-      const data = await res.json();
-      if (modeEl) modeEl.textContent = data.success ? 'Faol' : 'Noma\'lum';
-    } catch (e) {
-      if (modeEl) modeEl.textContent = 'Faol';
-    }
-  }
-  if (adminEl) adminEl.textContent = 'Sarvarovich_Zafar';
-};
-
-window.adminRefresh = async function() {
-  const activeBtn = document.querySelector(".admin-tab-btn.active");
-  const tabName = activeBtn ? activeBtn.id.replace("adminTab-", "") : "stats";
-  window.switchAdminTab(tabName);
 };
 
 window.handleRegister = async function() {
@@ -1045,30 +605,10 @@ window.closeProfileModal = function() {
 };
 
 window.openProfileModal = function() {
-  window.updateProfileModalData();
+  updateProfileModalData();
   const profileModal = document.getElementById("profileModal");
   if (profileModal) {
     profileModal.style.display = "flex";
-  }
-};
-
-window.openSettingsModal = function() {
-  if (window.currentUser) {
-    window.updateSettingsModalData();
-    const settingsModal = document.getElementById("settingsModal");
-    if (settingsModal) {
-      settingsModal.style.display = "flex";
-      window.switchSettingsSection('profil');
-    }
-  } else {
-    window.switchView('login');
-  }
-};
-
-window.closeSettingsModal = function() {
-  const settingsModal = document.getElementById("settingsModal");
-  if (settingsModal) {
-    settingsModal.style.display = "none";
   }
 };
 
@@ -1351,6 +891,14 @@ window.handleSignupModal = async function() {
   if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
 };
 
+window.openLanguageModal = function() {
+  const modal = document.getElementById("languageModal");
+  if (modal) {
+    modal.style.display = "flex";
+    renderLanguageCards();
+  }
+};
+
 window.closeLanguageModal = function() {
   const modal = document.getElementById("languageModal");
   if (modal) {
@@ -1534,14 +1082,23 @@ window.getLanguageInfo = function(code) {
   return window.LANGUAGES.find(l => l.code === code) || window.LANGUAGES[1];
 };
 
+window.updateLanguageButton = function(lang) {
+  const info = window.getLanguageInfo(lang);
+  const flagSpan = document.getElementById("langBtnFlag");
+  const textSpan = document.getElementById("langBtnText");
+  if (flagSpan) flagSpan.textContent = info.flag;
+  if (textSpan) textSpan.textContent = info.name;
+};
+
 window.selectLanguage = function(lang) {
   window.setLanguage(lang);
   localStorage.setItem("justChessLang", lang);
+  window.updateLanguageButton(lang);
   window.closeLanguageModal();
 };
 
-window.renderLanguageCards = function(filter, containerId) {
-  const grid = document.getElementById(containerId || 'languageGrid');
+window.renderLanguageCards = function(filter = '') {
+  const grid = document.getElementById("languageGrid");
   if (!grid) return;
 
   const languages = window.LANGUAGES;
@@ -1549,7 +1106,7 @@ window.renderLanguageCards = function(filter, containerId) {
   const currentLang = window.currentLang || localStorage.getItem("justChessLang") || 'uz';
 
   grid.innerHTML = languages
-    .filter(lang =>
+    .filter(lang => 
       lang.name.toLowerCase().includes(filter.toLowerCase()) ||
       lang.english.toLowerCase().includes(filter.toLowerCase())
     )
@@ -1566,6 +1123,7 @@ window.renderLanguageCards = function(filter, containerId) {
 window.updateProfileModalData = function() {
   if (!window.currentUser) return;
 
+  const usernameDisplay = document.getElementById("profileModalUsername");
   const handleDisplay = document.getElementById("profileModalHandle");
   const countryFlagEl = document.getElementById("profileModalCountryFlag");
   const countryNameEl = document.getElementById("profileModalCountryName");
@@ -1574,6 +1132,7 @@ window.updateProfileModalData = function() {
   const blitzRating = document.getElementById("statBlitz");
   const bulletRating = document.getElementById("statBullet");
 
+  if (usernameDisplay) usernameDisplay.textContent = window.currentUser.username;
   if (handleDisplay) handleDisplay.textContent = "@" + window.currentUser.username;
 
   const countryCode = (window.currentUser.country || 'uz').toLowerCase();
@@ -1600,81 +1159,30 @@ window.updateProfileModalData = function() {
   const debutEl = document.getElementById("statDebut");
   const clubEl = document.getElementById("statClub");
 
-  if (fideIdEl) fideIdEl.textContent = fideId || "—";
-  if (goalEl) goalEl.textContent = goal || "—";
-  if (debutEl) debutEl.textContent = debut || "—";
-  if (clubEl) clubEl.textContent = club || "—";
+  if (fideIdEl) fideIdEl.textContent = fideId;
+  if (goalEl) goalEl.textContent = goal;
+  if (debutEl) debutEl.textContent = debut;
+  if (clubEl) clubEl.textContent = club;
+
+  const inputFideId = document.getElementById("inputFideId");
+  const inputGoal = document.getElementById("inputGoal");
+  const inputDebut = document.getElementById("inputDebut");
+  const inputClub = document.getElementById("inputClub");
+  const inputRapid = document.getElementById("inputRapid");
+  const inputBlitz = document.getElementById("inputBlitz");
+  const inputBullet = document.getElementById("inputBullet");
+
+  if (inputFideId) inputFideId.value = fideId;
+  if (inputGoal) inputGoal.value = goal;
+  if (inputDebut) inputDebut.value = debut;
+  if (inputClub) inputClub.value = club;
+  if (inputRapid) inputRapid.value = rapid;
+  if (inputBlitz) inputBlitz.value = blitz;
+  if (inputBullet) inputBullet.value = bullet;
 };
 
-window.switchSettingsSection = function(section) {
-  const profilContent = document.getElementById("settingsContentProfil");
-  const tilContent = document.getElementById("settingsContentTil");
-  const menuItems = document.querySelectorAll('.settings-menu-item');
-
-  if (profilContent) profilContent.style.display = section === 'profil' ? 'block' : 'none';
-  if (tilContent) tilContent.style.display = section === 'til' ? 'block' : 'none';
-
-  menuItems.forEach(item => {
-    item.classList.toggle('active', item.dataset.section === section);
-  });
-
-  if (section === 'til') {
-    setTimeout(() => {
-      const searchInput = document.getElementById("settingsLanguageSearch");
-      if (searchInput) searchInput.value = '';
-      window.renderLanguageCards('', 'settingsLanguageGrid');
-    }, 50);
-  } else {
-    window.setSettingsEditMode(false);
-  }
-};
-
-window.updateSettingsModalData = function() {
-  if (!window.currentUser) return;
-
-  const handleDisplay = document.getElementById("settingsModalHandle");
-  if (handleDisplay) handleDisplay.textContent = "Sozlamalar";
-
-  const profileData = JSON.parse(localStorage.getItem("justChessProfileData")) || {};
-  const fideId = profileData.fideId || '';
-  const goal = profileData.goal || '';
-  const debut = profileData.debut || '';
-  const club = profileData.club || '';
-  const rapid = profileData.rapid || (window.currentUser.rating || 1500);
-  const blitz = profileData.blitz || (window.currentUser.rating || 1500);
-  const bullet = profileData.bullet || (window.currentUser.rating || 1500);
-
-  const fideIdEl = document.getElementById("settingsFideId");
-  const goalEl = document.getElementById("settingsGoal");
-  const debutEl = document.getElementById("settingsDebut");
-  const clubEl = document.getElementById("settingsClub");
-
-  if (fideIdEl) fideIdEl.textContent = fideId || "—";
-  if (goalEl) goalEl.textContent = goal || "—";
-  if (debutEl) debutEl.textContent = debut || "—";
-  if (clubEl) clubEl.textContent = club || "—";
-
-  const rapidEl = document.getElementById("settingsStatRapid");
-  const blitzEl = document.getElementById("settingsStatBlitz");
-  const bulletEl = document.getElementById("settingsStatBullet");
-
-  if (rapidEl) rapidEl.textContent = rapid;
-  if (blitzEl) blitzEl.textContent = blitz;
-  if (bulletEl) bulletEl.textContent = bullet;
-
-  const fideIdInput = document.getElementById("settingsFideIdInput");
-  const goalInput = document.getElementById("settingsGoalInput");
-  const debutInput = document.getElementById("settingsDebutInput");
-  const clubInput = document.getElementById("settingsClubInput");
-
-  if (fideIdInput) fideIdInput.value = fideId;
-  if (goalInput) goalInput.value = goal;
-  if (debutInput) debutInput.value = debut;
-  if (clubInput) clubInput.value = club;
-};
-
-window.setSettingsEditMode = function(enabled) {
-  const metaRows = document.querySelectorAll('#settingsContentProfil .meta-row');
+window.setProfileEditMode = function(enabled) {
+  const metaRows = document.querySelectorAll('.profile-meta-box .meta-row');
   metaRows.forEach(row => {
     const textSpan = row.querySelector('.editable-text');
     const input = row.querySelector('.editable-input');
@@ -1684,26 +1192,39 @@ window.setSettingsEditMode = function(enabled) {
     }
   });
 
-  const editBtn = document.getElementById("settingsEditBtn");
-  const saveBtn = document.getElementById("settingsSaveBtn");
-  const cancelBtn = document.getElementById("settingsCancelBtn");
+  const statCards = document.querySelectorAll('.editable-card');
+  statCards.forEach(card => {
+    const textSpan = card.querySelector('.editable-text');
+    const input = card.querySelector('.editable-input');
+    if (textSpan && input) {
+      textSpan.style.display = enabled ? 'none' : 'block';
+      input.style.display = enabled ? 'block' : 'none';
+    }
+  });
+
+  const editBtn = document.getElementById("editProfileBtn");
+  const saveBtn = document.getElementById("saveProfileBtn");
+  const cancelBtn = document.getElementById("cancelProfileBtn");
 
   if (editBtn) editBtn.style.display = enabled ? 'none' : 'inline-block';
   if (saveBtn) saveBtn.style.display = enabled ? 'inline-block' : 'none';
   if (cancelBtn) cancelBtn.style.display = enabled ? 'inline-block' : 'none';
 };
 
-window.saveSettingsData = function() {
+window.saveProfileData = function() {
   const profileData = {
-    fideId: (document.getElementById("settingsFideIdInput")?.value || '').trim(),
-    goal: (document.getElementById("settingsGoalInput")?.value || '').trim(),
-    debut: (document.getElementById("settingsDebutInput")?.value || '').trim(),
-    club: (document.getElementById("settingsClubInput")?.value || '').trim()
+    fideId: (document.getElementById("inputFideId")?.value || '').trim(),
+    goal: (document.getElementById("inputGoal")?.value || '').trim(),
+    debut: (document.getElementById("inputDebut")?.value || '').trim(),
+    club: (document.getElementById("inputClub")?.value || '').trim(),
+    rapid: parseInt(document.getElementById("inputRapid")?.value || '1500', 10) || 1500,
+    blitz: parseInt(document.getElementById("inputBlitz")?.value || '1500', 10) || 1500,
+    bullet: parseInt(document.getElementById("inputBullet")?.value || '1500', 10) || 1500
   };
 
   localStorage.setItem("justChessProfileData", JSON.stringify(profileData));
-  window.updateSettingsModalData();
-  window.setSettingsEditMode(false);
+  window.updateProfileModalData();
+  window.setProfileEditMode(false);
   showToast("Ma'lumotlar saqlandi", "success");
 };
 
@@ -1765,9 +1286,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.key === "Escape" && profileModal && profileModal.style.display === "flex") {
       profileModal.style.display = "none";
     }
-    if (e.key === "Escape" && settingsModal && settingsModal.style.display === "flex") {
-      settingsModal.style.display = "none";
-    }
     if (e.key === "Escape" && languageModal && languageModal.style.display === "flex") {
       languageModal.style.display = "none";
     }
@@ -1776,40 +1294,20 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  const settingsSaveBtn = document.getElementById("settingsSaveBtn");
-  const settingsCancelBtn = document.getElementById("settingsCancelBtn");
+  const editProfileBtn = document.getElementById("editProfileBtn");
+  const saveProfileBtn = document.getElementById("saveProfileBtn");
+  const cancelProfileBtn = document.getElementById("cancelProfileBtn");
 
-  if (settingsSaveBtn) {
-    settingsSaveBtn.addEventListener("click", window.saveSettingsData);
+  if (editProfileBtn) {
+    editProfileBtn.addEventListener("click", () => window.setProfileEditMode(true));
   }
-  if (settingsCancelBtn) {
-    settingsCancelBtn.addEventListener("click", () => {
-      window.updateSettingsModalData();
-      window.setSettingsEditMode(false);
-    });
+  if (saveProfileBtn) {
+    saveProfileBtn.addEventListener("click", window.saveProfileData);
   }
-
-  const settingsModal = document.getElementById("settingsModal");
-  const closeSettingsBtn = document.getElementById("closeSettingsBtn");
-
-  if (closeSettingsBtn && settingsModal) {
-    closeSettingsBtn.addEventListener("click", () => {
-      settingsModal.style.display = "none";
-    });
-  }
-
-  if (settingsModal) {
-    settingsModal.addEventListener("click", (e) => {
-      if (e.target === settingsModal) {
-        settingsModal.style.display = "none";
-      }
-    });
-  }
-
-  const settingsLanguageSearch = document.getElementById("settingsLanguageSearch");
-  if (settingsLanguageSearch) {
-    settingsLanguageSearch.addEventListener("input", (e) => {
-      window.renderLanguageCards(e.target.value, 'settingsLanguageGrid');
+  if (cancelProfileBtn) {
+    cancelProfileBtn.addEventListener("click", () => {
+      window.updateProfileModalData();
+      window.setProfileEditMode(false);
     });
   }
 
@@ -1886,125 +1384,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Initialize language button
+  if (typeof window.updateLanguageButton === "function") {
+    window.updateLanguageButton(window.currentLang);
+  }
+
   // Auto-open login modal if not logged in
   if (!window.currentUser) {
     window.openLoginModal();
   }
-});
-
-window.toggleUsernameEdit = function() {
-  const editArea = document.getElementById("usernameEditArea");
-  const toggleBtn = document.getElementById("toggleUsernameEditBtn");
-  if (!editArea || !toggleBtn) return;
-  const isHidden = editArea.style.display === "none";
-  editArea.style.display = isHidden ? "block" : "none";
-  toggleBtn.textContent = isHidden ? "Bekor qilish" : "Tahrirlash";
-  if (isHidden && window.currentUser) {
-    const currentDisp = document.getElementById("currentUsernameDisplay");
-    const input = document.getElementById("newUsernameInput");
-    if (currentDisp) currentDisp.textContent = window.currentUser.username;
-    if (input) input.value = window.currentUser.username;
-  }
-};
-
-window.changeUsername = async function() {
-  const input = document.getElementById("newUsernameInput");
-  const errorEl = document.getElementById("usernameError");
-  const successEl = document.getElementById("usernameSuccess");
-  if (!input) return;
-
-  const newUsername = input.value.trim();
-
-  if (errorEl) errorEl.style.display = "none";
-  if (successEl) successEl.style.display = "none";
-
-  if (!newUsername) {
-    if (errorEl) { errorEl.textContent = "Username bo'sh bo'lishi mumkin emas!"; errorEl.style.display = "block"; }
-    return;
-  }
-
-  if (newUsername.length < 3 || newUsername.length > 30) {
-    if (errorEl) { errorEl.textContent = "Username 3-30 ta belgi bo'lishi kerak!"; errorEl.style.display = "block"; }
-    return;
-  }
-
-  if (window.currentUser && newUsername.toLowerCase() === window.currentUser.username.toLowerCase()) {
-    if (errorEl) { errorEl.textContent = "Siz allaqachon shu username ishlatiyapsiz!"; errorEl.style.display = "block"; }
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/profile/username', {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${window.authToken}`
-      },
-      body: JSON.stringify({ newUsername })
-    });
-    const data = await res.json();
-
-    if (!data.success) {
-      if (errorEl) { errorEl.textContent = data.message || "Xatolik yuz berdi!"; errorEl.style.display = "block"; }
-      return;
-    }
-
-    window.currentUser = data.user;
-    window.authToken = data.token;
-    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
-    localStorage.setItem("justChessAuthToken", window.authToken);
-
-    if (successEl) { successEl.textContent = "Username muvaffaqiyatli o'zgartirildi!"; successEl.style.display = "block"; }
-    if (errorEl) errorEl.style.display = "none";
-
-    setTimeout(() => {
-      window.updateAllUsernameDisplays();
-      if (successEl) successEl.style.display = "none";
-      const editArea = document.getElementById("usernameEditArea");
-      const toggleBtn = document.getElementById("toggleUsernameEditBtn");
-      if (editArea) editArea.style.display = "none";
-      if (toggleBtn) { toggleBtn.textContent = "Tahrirlash"; }
-      window.updateAuthHeaderUI();
-    }, 1500);
-  } catch (err) {
-    if (errorEl) { errorEl.textContent = "Serverga ulanib bo'lmadi!"; errorEl.style.display = "block"; }
-  }
-};
-
-window.updateAllUsernameDisplays = function() {
-  if (!window.currentUser) return;
-  const username = window.currentUser.username;
-  const firstLetter = username.charAt(0).toUpperCase();
-
-  const profileUsername = document.getElementById("profileUsernameDisplay");
-  if (profileUsername) profileUsername.textContent = username;
-
-  const profileAvatar = document.getElementById("profileAvatar");
-  if (profileAvatar) profileAvatar.textContent = firstLetter;
-
-  const currentUserDisp = document.getElementById("currentUsernameDisplay");
-  if (currentUserDisp) currentUserDisp.textContent = username;
-
-  const newUserInput = document.getElementById("newUsernameInput");
-  if (newUserInput) newUserInput.value = username;
-
-  if (typeof window.updateAuthHeaderUI === "function") {
-    window.updateAuthHeaderUI();
-  }
-
-  if (window.currentRoomId && typeof window.updatePlayerInfo === "function") {
-    window.updatePlayerInfo('white', username, window.currentUser.rating || 1500);
-  }
-  if (window.currentUser) {
-    window.updatePlayerFlag('white', window.currentUser.country || window.currentUser.countryCode || null);
-  }
-};
-
-document.addEventListener("DOMContentLoaded", () => {
-  const toggleBtn = document.getElementById("toggleUsernameEditBtn");
-  if (toggleBtn) toggleBtn.addEventListener("click", window.toggleUsernameEdit);
-  const saveBtn = document.getElementById("saveUsernameBtn");
-  if (saveBtn) saveBtn.addEventListener("click", window.changeUsername);
 });
 
 document.addEventListener("click", (event) => {

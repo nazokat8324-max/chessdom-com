@@ -18,7 +18,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'justchess_secret_key_2024';
 const PORT = process.env.PORT || 3000;
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:zafar1717@localhost:5432/postgres',
+  connectionString: process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/justchess',
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
@@ -50,197 +50,7 @@ async function checkDatabaseConnection() {
   }
 }
 
-async function migrateDatabase() {
-  if (!useDatabase) return;
-  try {
-    await pool.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp"');
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS users (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      username VARCHAR(50) UNIQUE NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      password_hash VARCHAR(255) NOT NULL,
-      rating INTEGER DEFAULT 1500,
-      stats JSONB DEFAULT '{"wins":0,"losses":0,"draws":0}'::jsonb,
-      stats_by_mode JSONB DEFAULT '{"rapid":{"wins":0,"losses":0,"draws":0},"blitz":{"wins":0,"losses":0,"draws":0},"bullet":{"wins":0,"losses":0,"draws":0}}'::jsonb,
-      history JSONB DEFAULT '[]'::jsonb,
-      is_admin BOOLEAN DEFAULT false,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS games (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      result VARCHAR(20) NOT NULL,
-      opponent VARCHAR(100) DEFAULT 'Online',
-      mode VARCHAR(50) DEFAULT 'Online o''yin',
-      time_control VARCHAR(20) DEFAULT 'blitz',
-      moves JSONB DEFAULT '[]'::jsonb,
-      date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS sessions (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      expires_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP + INTERVAL '7 days'
-    )`);
-
-    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(2) DEFAULT 'uz'`);
-    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS countryName VARCHAR(100) DEFAULT 'O''zbekiston'`);
-    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT false`);
-    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS banned BOOLEAN DEFAULT false`);
-
-    // Super adminlarni belgilash
-    await pool.query(`UPDATE users SET is_admin = true WHERE username = 'Chessdom 👑'`);
-
-    // Migratsiya: 'Chessdom 👑' foydalanuvchidan boshqa barcha akkauntlarni o'chirish
-    try {
-      await pool.query(`DELETE FROM users WHERE username != 'Chessdom 👑'`);
-      console.log('Migration: Chessdom 👑 tashqari barcha foydalanuvchilar o\'chirildi.');
-    } catch (e) {
-      console.log('Migration: foydalanuvchilarni o\'chirish davom etdi (FK bilan bog\'liq muammo bo\'lishi mumkin).');
-    }
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS clubs (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      name VARCHAR(255) NOT NULL,
-      description TEXT DEFAULT '',
-      icon VARCHAR(255) DEFAULT '♟️',
-      creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      current_members INTEGER DEFAULT 1,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS club_members (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      club_id UUID REFERENCES clubs(id) ON DELETE CASCADE,
-      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      role VARCHAR(20) DEFAULT 'member',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(club_id, user_id)
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS tournaments (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      name VARCHAR(255) NOT NULL,
-      description TEXT DEFAULT '',
-      max_players INTEGER DEFAULT 16,
-      creator_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      club_id UUID,
-      club_id_a UUID,
-      club_id_b UUID,
-      tournament_type VARCHAR(50) DEFAULT 'arena',
-      time_control VARCHAR(20) DEFAULT 'blitz',
-      rounds INTEGER DEFAULT 1,
-      current_round INTEGER DEFAULT 0,
-      is_arena BOOLEAN DEFAULT false,
-      status VARCHAR(20) DEFAULT 'waiting',
-      current_players INTEGER DEFAULT 0,
-      team_score_a INTEGER DEFAULT 0,
-      team_score_b INTEGER DEFAULT 0,
-      started_at TIMESTAMP,
-      finished_at TIMESTAMP,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS tournament_participants (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
-      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      score INTEGER DEFAULT 0,
-      club VARCHAR(100),
-      opponents JSONB DEFAULT '[]'::jsonb,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(tournament_id, user_id)
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS tournament_matches (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      tournament_id UUID REFERENCES tournaments(id) ON DELETE CASCADE,
-      round INTEGER DEFAULT 0,
-      board INTEGER DEFAULT 1,
-      game_num INTEGER DEFAULT 0,
-      player1_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      player2_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      team_a_player UUID REFERENCES users(id) ON DELETE CASCADE,
-      team_b_player UUID REFERENCES users(id) ON DELETE CASCADE,
-      white_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      black_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      winner_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      status VARCHAR(20) DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS friend_requests (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      status VARCHAR(20) DEFAULT 'pending',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS friends (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      friend_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(user_id, friend_id)
-    )`);
-
-    await pool.query(`CREATE TABLE IF NOT EXISTS chat_messages (
-      id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-      sender_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      receiver_id UUID REFERENCES users(id) ON DELETE CASCADE,
-      room_id VARCHAR(255),
-      message TEXT,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`);
-
-    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS country VARCHAR(2) DEFAULT 'uz'`);
-    await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS countryName VARCHAR(100) DEFAULT 'O''zbekiston'`);
-
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
-
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournaments_creator ON tournaments(creator_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournaments_status ON tournaments(status)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_participants_tournament ON tournament_participants(tournament_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_participants_user ON tournament_participants(user_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tournament_matches_tournament ON tournament_matches(tournament_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_friend_requests_sender ON friend_requests(sender_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_friend_requests_receiver ON friend_requests(receiver_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_friends_user ON friends(user_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_friends_friend ON friends(friend_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_chat_messages_room ON chat_messages(room_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_club_members_club ON club_members(club_id)`);
-    await pool.query(`CREATE INDEX IF NOT EXISTS idx_club_members_user ON club_members(user_id)`);
-
-    console.log('Migration muvaffaqiyatli yakunlandi! Barcha jadvallar yaratildi.');
-  } catch (err) {
-    console.error('Migration xatoligi:', err);
-  }
-}
-
 checkDatabaseConnection();
-migrateDatabase();
-
-async function ensureSuperAdmin() {
-  if (!useDatabase) return;
-  try {
-    const result = await pool.query("SELECT is_admin FROM users WHERE username = 'Chessdom 👑'");
-    if (result.rows.length > 0 && !result.rows[0].is_admin) {
-      await pool.query("UPDATE users SET is_admin = true WHERE username = 'Chessdom 👑'");
-      console.log("ensureSuperAdmin: Chessdom 👑 is_admin=true belgildi.");
-    }
-  } catch (err) {
-    console.error("ensureSuperAdmin xatoligi:", err.message);
-  }
-}
-
-setTimeout(ensureSuperAdmin, 3000);
 
 async function ensureDataDir() {
   const fs = require('fs');
@@ -346,8 +156,7 @@ app.use(
 );
 app.use(cors({
   origin: true,
-  credentials: true,
-  allowedHeaders: ['Content-Type', 'Authorization']
+  credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(__dirname));
@@ -552,24 +361,17 @@ function validateMove(move) {
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    console.log('AUTH: No token on', req.path);
     return res.status(401).json({ success: false, message: 'No token provided' });
   }
   
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    console.log('AUTH: OK', decoded.username, req.path);
     req.user = decoded;
     next();
   } catch (err) {
-    console.log('AUTH: Invalid token on', req.path, err.message);
     return res.status(401).json({ success: false, message: 'Invalid or expired token' });
   }
-}
-
-function isSuperAdmin(req) {
-  return req.user && req.user.username === 'Chessdom 👑';
 }
 
 app.post('/api/auth/register', authLimiter, [
@@ -593,22 +395,18 @@ app.post('/api/auth/register', authLimiter, [
       
       const passwordHash = await bcrypt.hash(password, 10);
       const result = await pool.query(
-        'INSERT INTO users (username, email, password_hash, rating, stats, history) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, email, rating, stats, history, created_at, is_admin',
+        'INSERT INTO users (username, email, password_hash, rating, stats, history) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, username, email, rating, stats, history, created_at',
         [username, email, passwordHash, 1500, JSON.stringify({ wins: 0, losses: 0, draws: 0 }), JSON.stringify([])]
       );
-
+      
       const user = result.rows[0];
-      if (user.username === 'Chessdom 👑' && !user.is_admin) {
-        await pool.query("UPDATE users SET is_admin = true WHERE username = 'Chessdom 👑'");
-        user.is_admin = true;
-      }
-      const token = jwt.sign({ userId: user.id, username: user.username, is_admin: user.is_admin || false }, JWT_SECRET, { expiresIn: '7d' });
-
-      res.json({
-        success: true,
-        message: 'Muvaffaqiyatli ro\'yxatdan o\'tdingiz!',
-        user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, is_admin: user.is_admin || false },
-        token
+      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+      
+      res.json({ 
+        success: true, 
+        message: 'Muvaffaqiyatli ro\'yxatdan o\'tdingiz!', 
+        user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats },
+        token 
       });
     } else {
       const users = await readJsonFile('users.json', []);
@@ -625,7 +423,6 @@ app.post('/api/auth/register', authLimiter, [
         rating: 1500,
         stats: { wins: 0, losses: 0, draws: 0 },
         history: [],
-        is_admin: false,
         createdAt: new Date().toISOString()
       };
       
@@ -662,68 +459,21 @@ app.post('/api/auth/login', authLimiter, [
     if (!valid) {
       return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
     }
-
-    if (user.username === 'Chessdom 👑' && !user.is_admin) {
-      await pool.query("UPDATE users SET is_admin = true WHERE username = 'Chessdom 👑'");
-      user.is_admin = true;
-    }
-
-    const token = jwt.sign({ userId: user.id, username: user.username, is_admin: user.is_admin || false }, JWT_SECRET, { expiresIn: '7d' });
-
+    
+    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    
     if (useDatabase) {
       await pool.query('UPDATE users SET last_active = $1 WHERE id = $2', [new Date().toISOString(), user.id]);
     }
-
-    res.json({
-      success: true,
-      message: 'Muvaffaqiyatli kirildi!',
-      user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, is_admin: user.is_admin || false },
-      token
+    
+    res.json({ 
+      success: true, 
+      message: 'Muvaffaqiyatli kirildi!', 
+      user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats },
+      token 
     });
   } catch (err) {
     console.error('Login xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.put('/api/profile/username', authMiddleware, [
-  body('newUsername').trim().isLength({ min: 3, max: 30 }).withMessage('Username 3-30 ta belgi bolishi kerak')
-], async (req, res) => {
-  try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ success: false, message: errors.array()[0].msg });
-    }
-
-    const newUsername = req.body.newUsername.trim();
-
-    const existing = await getUserByUsername(newUsername);
-    if (existing && existing.id !== req.user.userId) {
-      return res.status(409).json({ success: false, message: 'Bu nomli foydalanuvchi allaqachon mavjud!' });
-    }
-
-    if (useDatabase) {
-      const result = await pool.query(
-        'UPDATE users SET username = $1 WHERE id = $2 RETURNING id, username, email, rating, stats, history, created_at, is_admin',
-        [newUsername, req.user.userId]
-      );
-      const user = result.rows[0];
-      const newToken = jwt.sign({ userId: user.id, username: user.username, is_admin: user.is_admin || false }, JWT_SECRET, { expiresIn: '7d' });
-      res.json({ success: true, message: 'Username muvaffaqiyatli o`zgartirildi!', user, token: newToken });
-    } else {
-      const users = await readJsonFile('users.json', []);
-      const idx = users.findIndex(u => u.id === req.user.userId);
-      if (idx === -1) {
-        return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      }
-      users[idx].username = newUsername;
-      await writeJsonFile('users.json', users);
-      const { passwordHash, ...userWithoutHash } = users[idx];
-      const newToken = jwt.sign({ userId: users[idx].id, username: users[idx].username, is_admin: users[idx].is_admin || false }, JWT_SECRET, { expiresIn: '7d' });
-      res.json({ success: true, message: 'Username muvaffaqiyatli o`zgartirildi!', user: userWithoutHash, token: newToken });
-    }
-  } catch (err) {
-    console.error('Username o`zgartirish xatoligi:', err);
     res.status(500).json({ success: false, message: 'Server xatoligi!' });
   }
 });
@@ -763,260 +513,6 @@ app.get('/api/leaderboard', async (req, res) => {
     res.json({ success: true, leaderboard });
   } catch (err) {
     console.error('Leaderboard xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.get('/api/admin/stats', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    let totalUsers = 0, totalGames = 0, activeToday = 0, totalTournaments = 0;
-    if (useDatabase) {
-      const uCount = await pool.query('SELECT COUNT(*) FROM users');
-      const gCount = await pool.query('SELECT COUNT(*) FROM games');
-      const tCount = await pool.query('SELECT COUNT(*) FROM tournaments');
-      const aCount = await pool.query("SELECT COUNT(*) FROM users WHERE last_active >= NOW() - INTERVAL '24 hours'");
-      totalUsers = parseInt(uCount.rows[0].count);
-      totalGames = parseInt(gCount.rows[0].count);
-      activeToday = parseInt(aCount.rows[0].count);
-      totalTournaments = parseInt(tCount.rows[0].count);
-    } else {
-      const users = await readJsonFile('users.json', []);
-      const games = await readJsonFile('games.json', []);
-      const tournaments = await readJsonFile('tournaments.json', []);
-      totalUsers = users.length;
-      totalGames = games.length;
-      totalTournaments = tournaments.length;
-      const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      activeToday = users.filter(u => new Date(u.last_active || u.createdAt).getTime() >= cutoff.getTime()).length;
-    }
-    res.json({ success: true, stats: { totalUsers, totalGames, activeToday, totalTournaments } });
-  } catch (err) {
-    console.error('Admin stats xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.get('/api/admin/users-roles', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    let users = [];
-    if (useDatabase) {
-      const result = await pool.query(
-        'SELECT id, username, email, rating, stats, stats_by_mode, country, countryName, is_admin, banned, created_at, last_active FROM users ORDER BY created_at DESC'
-      );
-      users = result.rows;
-    } else {
-      const allUsers = await readJsonFile('users.json', []);
-      users = allUsers.map(u => {
-        const { passwordHash, ...rest } = u;
-        return rest;
-      });
-    }
-    res.json({ success: true, users });
-  } catch (err) {
-    console.error('Admin users-roles xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.put('/api/admin/users/:userId/role', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    const { userId } = req.params;
-    const { is_admin } = req.body;
-    if (typeof is_admin !== 'boolean') {
-      return res.status(400).json({ success: false, message: 'is_admin qoldiq bo\'lishi kerak' });
-    }
-    if (useDatabase) {
-      await pool.query('UPDATE users SET is_admin = $1 WHERE id = $2', [is_admin, userId]);
-      res.json({ success: true, message: `Foydalanuvchi ${is_admin ? 'admin qilindi' : 'oddiy memberga aylandi'}` });
-    } else {
-      const users = await readJsonFile('users.json', []);
-      const idx = users.findIndex(u => u.id === userId);
-      if (idx === -1) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      users[idx].is_admin = is_admin;
-      await writeJsonFile('users.json', users);
-      res.json({ success: true, message: `Foydalanuvchi ${is_admin ? 'admin qilindi' : 'oddiy memberga aylandi'}` });
-    }
-  } catch (err) {
-    console.error('Admin role update xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.post('/api/admin/users/:userId/block', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    const { userId } = req.params;
-    if (useDatabase) {
-      await pool.query('UPDATE users SET banned = true WHERE id = $1', [userId]);
-    } else {
-      const users = await readJsonFile('users.json', []);
-      const idx = users.findIndex(u => u.id === userId);
-      if (idx === -1) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      users[idx].banned = true;
-      await writeJsonFile('users.json', users);
-    }
-    res.json({ success: true, message: 'Foydalanuvchi bloklandi' });
-  } catch (err) {
-    console.error('Admin block xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.delete('/api/admin/users/:userId/block', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    const { userId } = req.params;
-    if (useDatabase) {
-      await pool.query('UPDATE users SET banned = false WHERE id = $1', [userId]);
-    } else {
-      const users = await readJsonFile('users.json', []);
-      const idx = users.findIndex(u => u.id === userId);
-      if (idx === -1) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      users[idx].banned = false;
-      await writeJsonFile('users.json', users);
-    }
-    res.json({ success: true, message: 'Foydalanuvchi blokdan chiqarildi' });
-  } catch (err) {
-    console.error('Admin unblock xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.get('/api/admin/leagues', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    let leagues = [];
-    if (useDatabase) {
-      const result = await pool.query(
-        'SELECT id, name, description, tournament_type, time_control, rounds, status, current_players, max_players, creator_id, created_at FROM tournaments ORDER BY created_at DESC'
-      );
-      leagues = result.rows;
-    } else {
-      leagues = await readJsonFile('tournaments.json', []);
-    }
-    res.json({ success: true, leagues });
-  } catch (err) {
-    console.error('Admin leagues xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.post('/api/admin/leagues', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    const { name, description, tournamentType, timeControl, rounds, maxPlayers } = req.body;
-    const leagueId = require('uuid').v4();
-    if (useDatabase) {
-      await pool.query(
-        'INSERT INTO tournaments (id, name, description, max_players, creator_id, tournament_type, time_control, rounds, current_round, status, is_arena) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
-        [leagueId, name, description || '', maxPlayers || 16, req.user.userId, tournamentType || 'league', timeControl || 'blitz', rounds || 7, 0, 'waiting', false]
-      );
-    } else {
-      const tournaments = await readJsonFile('tournaments.json', []);
-      tournaments.push({
-        id: leagueId,
-        name,
-        description: description || '',
-        max_players: maxPlayers || 16,
-        current_players: 0,
-        status: 'waiting',
-        creator_id: req.user.userId,
-        tournament_type: tournamentType || 'league',
-        time_control: timeControl || 'blitz',
-        rounds: rounds || 7,
-        current_round: 0,
-        created_at: new Date().toISOString(),
-        is_arena: false
-      });
-      await writeJsonFile('tournaments.json', tournaments);
-    }
-    res.json({ success: true, message: 'Liga muvaffaqiyatli yaratildi', leagueId });
-  } catch (err) {
-    console.error('Admin create league xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.post('/api/admin/leagues/:id/start', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    const { id } = req.params;
-    if (useDatabase) {
-      const result = await pool.query('SELECT status FROM tournaments WHERE id = $1', [id]);
-      if (result.rows.length === 0) return res.status(404).json({ success: false, message: 'Liga topilmadi!' });
-      await pool.query("UPDATE tournaments SET status = 'active', current_round = 1 WHERE id = $1", [id]);
-    } else {
-      const tournaments = await readJsonFile('tournaments.json', []);
-      const idx = tournaments.findIndex(t => t.id === id);
-      if (idx === -1) return res.status(404).json({ success: false, message: 'Liga topilmadi!' });
-      tournaments[idx].status = 'active';
-      tournaments[idx].current_round = 1;
-      await writeJsonFile('tournaments.json', tournaments);
-    }
-    res.json({ success: true, message: 'Liga ishga tushirildi' });
-  } catch (err) {
-    console.error('Admin start league xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.post('/api/admin/leagues/:id/stop', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    const { id } = req.params;
-    if (useDatabase) {
-      await pool.query("UPDATE tournaments SET status = 'paused' WHERE id = $1", [id]);
-    } else {
-      const tournaments = await readJsonFile('tournaments.json', []);
-      const idx = tournaments.findIndex(t => t.id === id);
-      if (idx === -1) return res.status(404).json({ success: false, message: 'Liga topilmadi!' });
-      tournaments[idx].status = 'paused';
-      await writeJsonFile('tournaments.json', tournaments);
-    }
-    res.json({ success: true, message: 'Liga to\'xtatildi' });
-  } catch (err) {
-    console.error('Admin stop league xatoligi:', err);
-    res.status(500).json({ success: false, message: 'Server xatoligi!' });
-  }
-});
-
-app.delete('/api/admin/leagues/:id', authMiddleware, async (req, res) => {
-  if (!isSuperAdmin(req)) {
-    return res.status(403).json({ success: false, message: 'Faqat admin uchun ruxsat berilgan!' });
-  }
-  try {
-    const { id } = req.params;
-    if (useDatabase) {
-      await pool.query('DELETE FROM tournaments WHERE id = $1', [id]);
-    } else {
-      const tournaments = await readJsonFile('tournaments.json', []);
-      const filtered = tournaments.filter(t => t.id !== id);
-      await writeJsonFile('tournaments.json', filtered);
-    }
-    res.json({ success: true, message: 'Liga o\'chirildi' });
-  } catch (err) {
-    console.error('Admin delete league xatoligi:', err);
     res.status(500).json({ success: false, message: 'Server xatoligi!' });
   }
 });
@@ -2861,16 +2357,6 @@ server.listen(PORT, () => {
   console.log('  POST /api/auth/login');
   console.log('  POST /api/auth/logout');
   console.log('  GET  /api/leaderboard');
-  console.log('  GET  /api/admin/stats');
-  console.log('  GET  /api/admin/users-roles');
-  console.log('  PUT  /api/admin/users/:userId/role');
-  console.log('  POST /api/admin/users/:userId/block');
-  console.log('  DELETE /api/admin/users/:userId/block');
-  console.log('  GET  /api/admin/leagues');
-  console.log('  POST /api/admin/leagues');
-  console.log('  POST /api/admin/leagues/:id/start');
-  console.log('  POST /api/admin/leagues/:id/stop');
-  console.log('  DELETE /api/admin/leagues/:id');
   console.log('  GET  /api/daily-winners');
   console.log('  GET  /api/stats/:username');
   console.log('  GET  /api/users/:username/games');

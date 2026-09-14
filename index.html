@@ -160,6 +160,121 @@
         display: block;
         margin-top: -4px;
       }
+      .logo-tooltip {
+        position: absolute;
+        top: calc(100% + 12px);
+        left: 50%;
+        transform: translateX(-50%);
+        width: 280px;
+        padding: 16px 18px;
+        background: rgba(18, 30, 27, 0.97);
+        border: 1px solid rgba(129, 182, 76, 0.25);
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(129,182,76,0.08);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.35s ease, visibility 0.35s ease, transform 0.35s ease;
+        pointer-events: none;
+      }
+      .logo-area:hover .logo-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+      }
+      .logo-area .logo-tooltip {
+        transform: translateX(-50%) translateY(6px);
+      }
+      .logo-area:hover .logo-tooltip {
+        transform: translateX(-50%) translateY(0);
+      }
+      .tooltip-title {
+        font-size: 11px;
+        color: #81b64c;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        font-weight: 700;
+        opacity: 0.7;
+      }
+      .tooltip-gallery {
+        display: flex;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 18px;
+        height: 70px;
+      }
+      .tooltip-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+      }
+      .tooltip-item svg {
+        filter: drop-shadow(0 0 6px rgba(255,215,0,0.15));
+      }
+      .tooltip-label {
+        font-size: 9px;
+        color: #88a;
+        letter-spacing: 1px;
+      }
+      @keyframes ferrisRotate {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes ferrisCar {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-3px); }
+      }
+      @keyframes towerPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+      @keyframes knightBob {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25% { transform: translateY(-4px) rotate(1deg); }
+        75% { transform: translateY(-2px) rotate(-1deg); }
+      }
+      @keyframes kingGlow {
+        0%, 100% { filter: drop-shadow(0 0 4px rgba(255,215,0,0.2)); }
+        50% { filter: drop-shadow(0 0 10px rgba(255,215,0,0.5)); }
+      }
+      .ferris-wheel {
+        animation: ferrisRotate 6s linear infinite;
+        transform-origin: 30px 50px;
+      }
+      .ferris-car {
+        animation: ferrisCar 1.5s ease-in-out infinite;
+      }
+      .eiffel-tower {
+        animation: towerPulse 2.5s ease-in-out infinite;
+      }
+      .chess-knight {
+        animation: knightBob 2s ease-in-out infinite;
+      }
+      .chess-king {
+        animation: kingGlow 2.5s ease-in-out infinite;
+      }
+      .logo-shimmer {
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 50%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,215,0,0.06), transparent);
+        pointer-events: none;
+        transition: none;
+      }
+      .logo-area:hover .logo-shimmer {
+        animation: shimmerMove 1.2s ease-in-out;
+      }
+      @keyframes shimmerMove {
+        0% { left: -100%; }
+        100% { left: 200%; }
+      }
 
       .menu-list {
         display: flex;
@@ -3024,6 +3139,59 @@
           </div>
           <div class="chessdom-text">
             <span class="cd-letter" title="Charxpalak (Ferris Wheel)">C</span><span class="cd-letter" title="Temir minoralar (Towers)">h</span><span class="cd-letter" title="Eyfel minorasi">e</span><span class="cd-letter" title="Shaxmat taxtasi">s</span><span class="cd-letter" title="Shoh (King)">s</span><span class="cd-letter" title="Me'moriy inshoot">D</span><span class="cd-letter" title="Minoralar">o</span><span class="cd-letter" title="Shaxmat oti">m</span>
+          </div>
+          <div class="logo-shimmer"></div>
+          <div class="logo-tooltip">
+            <span class="tooltip-title">ChessDom</span>
+            <div class="tooltip-gallery">
+              <div class="tooltip-item">
+                <svg class="ferris-wheel" width="40" height="40" viewBox="0 0 60 50">
+                  <circle cx="30" cy="35" r="4" fill="#CD7F32"/>
+                  <line x1="30" y1="35" x2="30" y2="5" stroke="#FFD700" stroke-width="1.5" opacity="0.7"/>
+                  <circle cx="30" cy="5" r="14" fill="none" stroke="#81b64c" stroke-width="1.2" opacity="0.6"/>
+                  <line x1="30" y1="21" x2="30" y2="5" stroke="#81b64c" stroke-width="0.5" opacity="0.3"/>
+                  <line x1="16" y1="30" x2="44" y2="30" stroke="#81b64c" stroke-width="0.5" opacity="0.3"/>
+                  <circle cx="30" cy="5" r="3" fill="#FFD700" class="ferris-car"/>
+                  <circle cx="44" cy="30" r="3" fill="#81b64c" class="ferris-car"/>
+                  <circle cx="16" cy="30" r="3" fill="#CD7F32" class="ferris-car"/>
+                  <circle cx="30" cy="19" r="3" fill="#FFD700" class="ferris-car"/>
+                </svg>
+                <span class="tooltip-label">Charxpalak</span>
+              </div>
+              <div class="tooltip-item">
+                <svg class="eiffel-tower" width="30" height="50" viewBox="0 0 30 50">
+                  <polygon points="15,2 4,48 26,48" fill="none" stroke="#CD7F32" stroke-width="1" opacity="0.8"/>
+                  <line x1="15" y1="2" x2="15" y2="48" stroke="#CD7F32" stroke-width="0.5" opacity="0.4"/>
+                  <line x1="9" y1="16" x2="21" y2="16" stroke="#CD7F32" stroke-width="0.8"/>
+                  <line x1="6" y1="30" x2="24" y2="30" stroke="#CD7F32" stroke-width="0.8"/>
+                  <line x1="3" y1="44" x2="27" y2="44" stroke="#CD7F32" stroke-width="0.8"/>
+                  <circle cx="15" cy="2" r="2" fill="#FFD700"/>
+                </svg>
+                <span class="tooltip-label">Eyfel</span>
+              </div>
+              <div class="tooltip-item">
+                <svg class="chess-knight" width="32" height="34" viewBox="0 0 32 34">
+                  <path d="M22 4C22 2 20 1 18 1C14 1 12 4 12 8C12 10 13 12 14 13L10 18L8 22L6 30L10 30L12 24L16 22L20 24L24 22L22 14C24 12 25 10 25 8C25 6 24 4 22 4Z" fill="none" stroke="#81b64c" stroke-width="1.5"/>
+                  <circle cx="20" cy="6" r="1.5" fill="#FFD700"/>
+                  <line x1="14" y1="24" x2="14" y2="30" stroke="#81b64c" stroke-width="1.5"/>
+                  <line x1="18" y1="24" x2="18" y2="30" stroke="#81b64c" stroke-width="1.5"/>
+                </svg>
+                <span class="tooltip-label">Ot</span>
+              </div>
+              <div class="tooltip-item">
+                <svg class="chess-king" width="28" height="34" viewBox="0 0 28 34">
+                  <line x1="14" y1="1" x2="14" y2="6" stroke="#FFD700" stroke-width="1.5"/>
+                  <circle cx="14" cy="1" r="2" fill="#FFD700"/>
+                  <line x1="10" y1="6" x2="18" y2="6" stroke="#FFD700" stroke-width="1"/>
+                  <path d="M8 6L14 14L20 6" fill="none" stroke="#CD7F32" stroke-width="1.5"/>
+                  <line x1="9" y1="14" x2="19" y2="14" stroke="#CD7F32" stroke-width="1" opacity="0.5"/>
+                  <line x1="7" y1="14" x2="21" y2="14" stroke="#CD7F32" stroke-width="1" opacity="0.3"/>
+                  <path d="M10 14L8 30L20 30L18 14Z" fill="none" stroke="#81b64c" stroke-width="1.5"/>
+                  <line x1="8" y1="30" x2="20" y2="30" stroke="#81b64c" stroke-width="1.5"/>
+                </svg>
+                <span class="tooltip-label">Shoh</span>
+              </div>
+            </div>
           </div>
         </div>
         <div class="menu-list">

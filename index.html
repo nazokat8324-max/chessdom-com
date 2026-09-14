@@ -1132,6 +1132,101 @@
         transform: translateX(24px);
       }
 
+      /* Settings Page */
+      .settings-container {
+        width: 500px;
+        max-width: 90%;
+        max-height: 85vh;
+        overflow-y: auto;
+        background: #152220;
+        border: 1px solid #223330;
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+      }
+      .settings-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #20302e;
+      }
+      .settings-header h2 {
+        color: #81b64c;
+        font-size: 22px;
+        margin: 0;
+      }
+      .settings-header p {
+        color: #88a;
+        font-size: 12px;
+        margin: 4px 0 0;
+      }
+      .settings-section {
+        background: rgba(255,255,255,0.02);
+        border: 1px solid #20302e;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 12px;
+      }
+      .settings-section h3 {
+        font-size: 13px;
+        color: #cd7f32;
+        margin: 0 0 10px;
+        font-weight: 700;
+      }
+      .settings-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .settings-row label {
+        color: #b0c4de;
+        font-size: 13px;
+      }
+      .settings-select {
+        background: #1a2e28;
+        border: 1px solid #2d4a41;
+        color: #fff;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .settings-range {
+        flex: 1;
+        accent-color: #81b64c;
+      }
+      .settings-save-btn {
+        width: 100%;
+        padding: 10px;
+        background: #81b64c;
+        color: #111;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: bold;
+        cursor: pointer;
+        margin-top: 5px;
+      }
+      .settings-reset-btn {
+        width: 100%;
+        padding: 10px;
+        background: transparent;
+        color: #88a;
+        border: 1px solid #2d4a41;
+        border-radius: 8px;
+        font-size: 13px;
+        cursor: pointer;
+        margin-top: 5px;
+      }
+      .settings-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 10px;
+      }
+
       .start-game-btn {
         width: 100%;
         padding: 14px;
@@ -3225,6 +3320,10 @@
             <span class="icon">⭐</span>
             <span id="mChampions">Chempionlar</span>
           </a>
+          <a class="menu-item" id="navSettings" onclick="switchView('settings')">
+            <span class="icon">⚙️</span>
+            <span id="mSettings">Sozlamalar</span>
+          </a>
         </div>
       </div>
       <div class="sidebar-bottom" id="sidebarAuthContainer">
@@ -4364,6 +4463,95 @@
               Send
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. SOZLAMALAR -->
+    <div id="settingsView" class="view-section" style="justify-content: flex-start; align-items: center; padding: 30px">
+      <div class="settings-container">
+        <div class="settings-header">
+          <h2>Sozlamalar</h2>
+          <p>Sizning shaxsiy afzalliklaringiz</p>
+        </div>
+
+        <div class="settings-section">
+          <h3>🌍 Davlat bayrog'i</h3>
+          <div class="settings-row">
+            <label>Davlat kodi:</label>
+            <select id="settingsCountry" class="settings-select">
+              <option value="uz">🇺🇿 O'zbekiston</option>
+              <option value="us">🇺🇸 Amerika</option>
+              <option value="tr">🇹🇷 Turkiya</option>
+              <option value="ru">🇷🇺 Rossiya</option>
+              <option value="en">🇬🇧 Ingliz</option>
+              <option value="de">🇩🇪 Germaniya</option>
+              <option value="fr">🇫🇷 Fransiya</option>
+              <option value="es">🇪🇸 Ispaniya</option>
+              <option value="cn">🇨🇳 Xitoy</option>
+              <option value="jp">🇯🇵 Yaponiya</option>
+              <option value="kr">🇰🇷 Koreya</option>
+              <option value="in">🇮🇳 Hindiston</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>🗣️ Interfeys tili</h3>
+          <div class="settings-row">
+            <label>Til:</label>
+            <select id="settingsLanguage" class="settings-select">
+              <option value="uz">🇺🇿 O'zbekcha</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="ru">🇷🇺 Русский</option>
+              <option value="tr">🇹🇷 Türkçe</option>
+              <option value="es">🇪🇸 Español</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="fr">🇫🇷 Français</option>
+            </select>
+          </div>
+          <button class="settings-save-btn" onclick="window.saveSettings()">Tilmashlash</button>
+        </div>
+
+        <div class="settings-section">
+          <h3>🔊 Ovoz</h3>
+          <div class="settings-row">
+            <label>Ovozli:</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="settingsSound" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="settings-row">
+            <label>Volume:</label>
+            <input type="range" id="settingsVolume" min="0" max="100" value="80" class="settings-range">
+            <span id="settingsVolumeVal">80%</span>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <h3>🎨 Dizayn</h3>
+          <div class="settings-row">
+            <label>Taxta mavsu:</label>
+            <select id="settingsTheme" class="settings-select">
+              <option value="green">Yashil</option>
+              <option value="brown">Qo'k</option>
+              <option value="blue">Ko'k</option>
+              <option value="purple">Yashil</option>
+            </select>
+          </div>
+          <div class="settings-row">
+            <label>Koordinatalar:</label>
+            <label class="toggle-switch">
+              <input type="checkbox" id="settingsCoords" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="settings-actions">
+          <button class="settings-save-btn" onclick="window.saveSettings()">💾 Saqlash</button>
+          <button class="settings-reset-btn" onclick="window.resetSettings()">🔄 Qayta o'rnatish</button>
         </div>
       </div>
     </div>

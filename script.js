@@ -455,6 +455,17 @@ window.switchView = function(viewName) {
         window.loadChatMessages();
       }
     }
+  } else if (viewName === "settings") {
+    const settingsEl = document.getElementById("settingsView");
+    if (settingsEl) {
+      settingsEl.classList.add("active-view");
+      if (typeof window.playAnimation === "function") {
+        window.playAnimation("settingsView", "fadeIn");
+      }
+      if (typeof window.updateSettingsView === "function") {
+        window.updateSettingsView();
+      }
+    }
   }
 };
 
@@ -1273,7 +1284,59 @@ window.saveProfileData = function() {
   showToast("Ma'lumotlar saqlandi", "success");
 };
 
-document.addEventListener("DOMContentLoaded", () => {
+window.updateSettingsView = function() {
+  const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
+  const country = document.getElementById("settingsCountry");
+  const lang = document.getElementById("settingsLanguage");
+  const sound = document.getElementById("settingsSound");
+  const volume = document.getElementById("settingsVolume");
+  const theme = document.getElementById("settingsTheme");
+  const coords = document.getElementById("settingsCoords");
+  if (country) country.value = saved.country || "uz";
+  if (lang) lang.value = saved.language || "uz";
+  if (sound) sound.checked = saved.soundEnabled !== false;
+  if (volume) volume.value = Math.round((saved.volume || 0.8) * 100);
+  if (theme) theme.value = saved.boardTheme || "green";
+  if (coords) coords.checked = saved.showCoords !== false;
+  const volVal = document.getElementById("settingsVolumeVal");
+  if (volVal && volume) volVal.textContent = volume.value + "%";
+};
+
+window.saveSettings = function() {
+  const saved = {
+    country: (document.getElementById("settingsCountry")?.value || "uz"),
+    language: (document.getElementById("settingsLanguage")?.value || "uz"),
+    soundEnabled: document.getElementById("settingsSound")?.checked !== false,
+    volume: (parseInt(document.getElementById("settingsVolume")?.value || "80") / 100),
+    boardTheme: (document.getElementById("settingsTheme")?.value || "green"),
+    showCoords: document.getElementById("settingsCoords")?.checked !== false
+  };
+  localStorage.setItem("justChessSettings", JSON.stringify(saved));
+  showToast("Sozlamalar saqlandi", "success");
+};
+
+window.resetSettings = function() {
+  localStorage.removeItem("justChessSettings");
+  window.updateSettingsView();
+  showToast("Sozlamalar qayta o'rnatildi", "info");
+};
+
+  const soundEl = document.getElementById("settingsSound");
+  if (soundEl) {
+    soundEl.addEventListener("change", function() {
+      if (typeof window.applySoundToggle === "function") window.applySoundToggle(this.checked);
+    });
+  }
+  const volEl = document.getElementById("settingsVolume");
+  const volVal = document.getElementById("settingsVolumeVal");
+  if (volEl && volVal) {
+    volEl.addEventListener("input", function() {
+      volVal.textContent = this.value + "%";
+      if (typeof window.setSoundVolume === "function") window.setSoundVolume(this.value / 100);
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
   window.updateStreakUI();
   window.updateAuthHeaderUI();
   window.updateTopPlayersList();

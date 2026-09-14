@@ -19,6 +19,21 @@ window.updateProfileViewData = function() {
   if (drawElem) drawElem.textContent = window.stats.draws;
   if (ratingElem) ratingElem.textContent = window.currentUser.rating || 1500;
 
+  const cardFlag = document.getElementById("profileCardFlag");
+  const cardCountryName = document.getElementById("profileCardCountryName");
+  const cardCountryWrap = document.getElementById("profileCardCountry");
+  const countryCode = (window.currentUser.country || 'uz').toLowerCase();
+  const countryName = window.currentUser.countryName || '';
+  if (cardCountryWrap) {
+    if (countryName) {
+      cardCountryWrap.style.display = 'flex';
+    } else {
+      cardCountryWrap.style.display = 'none';
+    }
+  }
+  if (cardFlag) cardFlag.src = `https://flagcdn.com/w20/${countryCode}.png`;
+  if (cardCountryName) cardCountryName.textContent = countryName;
+
   window.renderProfileChart();
 };
 

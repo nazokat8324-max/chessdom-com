@@ -2510,6 +2510,17 @@
         box-sizing: border-box;
         margin-top: 5px;
       }
+      .rating-readonly .editable-text {
+        font-size: 24px;
+        font-weight: bold;
+        color: #FFD700;
+        text-shadow: 0 0 10px rgba(255,215,0,0.3);
+        cursor: not-allowed;
+      }
+      .rating-readonly .editable-input {
+        pointer-events: none;
+        opacity: 0.4;
+      }
       .edit-tab-btn {
         background: #223831;
         border: 1px solid #2d4a41;
@@ -3178,7 +3189,7 @@
                   >Reyting: 1500</span
                 >
               </div>
-              <img class="player-flag" src="https://flagcdn.com/w40/us.png" alt="" loading="lazy" onerror="this.style.display='none'">
+              <img class="player-flag" id="blackPlayerFlag" src="https://flagcdn.com/w40/uz.png" alt="" loading="lazy" onerror="this.style.display='none'">
               <div class="player-timer" id="blackTimer">05:00</div>
             </div>
             <div class="board-wrapper">
@@ -3210,7 +3221,7 @@
                   >Reyting: 1500</span
                 >
               </div>
-              <img class="player-flag" src="https://flagcdn.com/w40/us.png" alt="" loading="lazy" onerror="this.style.display='none'">
+              <img class="player-flag" id="whitePlayerFlag" src="https://flagcdn.com/w40/uz.png" alt="" loading="lazy" onerror="this.style.display='none'">
               <div class="player-timer active" id="whiteTimer">05:00</div>
             </div>
           </div>
@@ -3456,6 +3467,10 @@
               <p id="profileEmailDisplay" style="color: #88a; font-size: 13px">
                 email@domain.com
               </p>
+              <div id="profileCardCountry" style="display: none; margin-top: 6px; align-items: center; gap: 6px;">
+                <img id="profileCardFlag" src="" alt="" style="width: 20px; height: 14px; border-radius: 2px; vertical-align: middle;" />
+                <span id="profileCardCountryName" style="color: #81b64c; font-size: 12px;"></span>
+              </div>
             </div>
           </div>
           <div style="margin-bottom: 15px; font-size: 13px">
@@ -4542,7 +4557,7 @@
           </div>
 
           <div class="stats-grid">
-            <div class="stat-card editable-card">
+            <div class="stat-card editable-card rating-readonly">
               <span class="stat-title">RAPID REYTING</span>
               <span class="stat-value editable-text" id="statRapid">1500</span>
               <input
@@ -4551,9 +4566,10 @@
                 id="inputRapid"
                 value="1500"
                 style="display: none"
+                disabled
               />
             </div>
-            <div class="stat-card editable-card">
+            <div class="stat-card editable-card rating-readonly">
               <span class="stat-title">BLITZ REYTING</span>
               <span class="stat-value editable-text" id="statBlitz">1500</span>
               <input
@@ -4562,9 +4578,10 @@
                 id="inputBlitz"
                 value="1500"
                 style="display: none"
+                disabled
               />
             </div>
-            <div class="stat-card editable-card">
+            <div class="stat-card editable-card rating-readonly">
               <span class="stat-title">BULLET REYTING</span>
               <span class="stat-value editable-text" id="statBullet">1500</span>
               <input
@@ -4573,6 +4590,7 @@
                 id="inputBullet"
                 value="1500"
                 style="display: none"
+                disabled
               />
             </div>
             <div class="stat-card editable-card">

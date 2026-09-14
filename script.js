@@ -321,11 +321,15 @@ window.switchView = function(viewName) {
         window.updatePlayerInfo('black', 'Raqib', '⏳');
       }
     }
-    
+
     if (typeof window.updateTimersDisplay === 'function') {
       window.updateTimersDisplay();
     }
     
+    if (typeof window.updateGameFlags === 'function') {
+      window.updateGameFlags();
+    }
+
     if (typeof window.setOpponentFound === 'function') {
       window.setOpponentFound(false);
     }
@@ -617,6 +621,49 @@ function countryCodeToFlag(code) {
   const upper = code.toUpperCase();
   return upper.replace(/./g, ch => String.fromCharCode(127397 + ch.charCodeAt(0)));
 }
+
+// Current opponent data (for dynamic flag)
+window.currentOpponent = {};
+
+// Set opponent country/flag data
+window.setOpponentData = function(data) {
+  if (data) {
+    window.currentOpponent = {
+      country: data.country || 'uz',
+      countryName: data.countryName || '',
+      username: data.username || 'Raqib',
+      rating: data.rating || 1500
+    };
+  } else {
+    window.currentOpponent = {};
+  }
+  if (typeof window.updateGameFlags === 'function') {
+    window.updateGameFlags();
+  }
+};
+
+// Update game player flags dynamically
+window.updateGameFlags = function() {
+  const DEFAULT_FLAG = 'uz';
+  
+  const whiteFlagEl = document.getElementById('whitePlayerFlag');
+  const blackFlagEl = document.getElementById('blackPlayerFlag');
+  
+  if (whiteFlagEl) {
+    const playerCountry = (window.currentUser && window.currentUser.country)
+      ? window.currentUser.country.toLowerCase()
+      : DEFAULT_FLAG;
+    whiteFlagEl.src = `https://flagcdn.com/w40/${playerCountry}.png`;
+  }
+  
+  if (blackFlagEl) {
+    const opponent = window.currentOpponent || {};
+    const opponentCountry = opponent.country
+      ? opponent.country.toLowerCase()
+      : DEFAULT_FLAG;
+    blackFlagEl.src = `https://flagcdn.com/w40/${opponentCountry}.png`;
+  }
+};
 
 // Populate the signup country select with flag emojis
 window.populateCountrySelect = function() {
@@ -1194,6 +1241,7 @@ window.setProfileEditMode = function(enabled) {
 
   const statCards = document.querySelectorAll('.editable-card');
   statCards.forEach(card => {
+    if (card.classList.contains('rating-readonly')) return;
     const textSpan = card.querySelector('.editable-text');
     const input = card.querySelector('.editable-input');
     if (textSpan && input) {
@@ -1216,10 +1264,7 @@ window.saveProfileData = function() {
     fideId: (document.getElementById("inputFideId")?.value || '').trim(),
     goal: (document.getElementById("inputGoal")?.value || '').trim(),
     debut: (document.getElementById("inputDebut")?.value || '').trim(),
-    club: (document.getElementById("inputClub")?.value || '').trim(),
-    rapid: parseInt(document.getElementById("inputRapid")?.value || '1500', 10) || 1500,
-    blitz: parseInt(document.getElementById("inputBlitz")?.value || '1500', 10) || 1500,
-    bullet: parseInt(document.getElementById("inputBullet")?.value || '1500', 10) || 1500
+    club: (document.getElementById("inputClub")?.value || '').trim()
   };
 
   localStorage.setItem("justChessProfileData", JSON.stringify(profileData));

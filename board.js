@@ -291,15 +291,19 @@ function setGameTime(sec, btnElement) {
 window.startNewGame = function() {
   gameStarted = false;
   opponentFound = true;
-  
+
   if (typeof window.setOpponentFound === 'function') {
     window.setOpponentFound(true);
   }
-  
+
   if (board) {
     board.position('start');
   }
-  
+
+  if (typeof window.updateGameFlags === 'function') {
+    window.updateGameFlags();
+  }
+
   if (window.currentUser) {
     updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
     updatePlayerInfo('black', 'Raqib', 1500);

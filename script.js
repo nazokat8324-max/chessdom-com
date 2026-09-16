@@ -1313,6 +1313,9 @@ window.saveSettings = function() {
   };
   localStorage.setItem("justChessSettings", JSON.stringify(saved));
   showToast("Sozlamalar saqlandi", "success");
+  if (typeof window.setLanguage === "function") {
+    window.setLanguage(saved.language);
+  }
 };
 
 window.resetSettings = function() {
@@ -1491,11 +1494,6 @@ window.resetSettings = function() {
       }
     }
   });
-
-  // Initialize language button
-  if (typeof window.updateLanguageButton === "function") {
-    window.updateLanguageButton(window.currentLang);
-  }
 
   // Auto-open login modal if not logged in
   if (!window.currentUser) {

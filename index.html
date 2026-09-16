@@ -2754,24 +2754,6 @@
           opacity: 1;
         }
       }
-      .lang-select-btn {
-        background: #192825;
-        color: white;
-        border: 1px solid #2a3e3b;
-        padding: 6px 12px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: bold;
-        outline: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        transition: background 0.2s;
-      }
-      .lang-select-btn:hover {
-        background: #283e37;
-      }
       .language-modal-overlay {
         position: fixed;
         top: 0;
@@ -3345,14 +3327,6 @@
           style="font-size: 12px; color: #f39c12; display: none"
           >🔍 Qidirilmoqda...</span
         >
-        <button
-          class="lang-select-btn"
-          id="langSelectBtn"
-          onclick="window.openLanguageModal()"
-        >
-          <span id="langBtnFlag">🌐</span>
-          <span id="langBtnText">Til</span>
-        </button>
       </div>
 
       <!-- 1. BOSH SAHIFA (DASHBOARD) -->
@@ -4504,13 +4478,12 @@
               <option value="uz">🇺🇿 O'zbekcha</option>
               <option value="en">🇬🇧 English</option>
               <option value="ru">🇷🇺 Русский</option>
-              <option value="tr">🇹🇷 Türkçe</option>
               <option value="es">🇪🇸 Español</option>
               <option value="de">🇩🇪 Deutsch</option>
               <option value="fr">🇫🇷 Français</option>
             </select>
           </div>
-          <button class="settings-save-btn" onclick="window.saveSettings()">Tilmashlash</button>
+          <button class="settings-save-btn" onclick="window.saveSettings()">Tilni tanlash</button>
         </div>
 
         <div class="settings-section">

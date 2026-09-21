@@ -879,62 +879,56 @@
         border-color: #ff5555;
         color: #ff5555;
       }
-      .country-info-card {
-        background: rgba(255, 255, 255, 0.03);
+      .profile-country {
+        background: linear-gradient(145deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
         border: 1px solid #223330;
-        border-radius: 16px;
-        padding: 24px;
+        border-radius: 18px;
+        padding: 28px 24px;
         text-align: center;
-        margin-top: 18px;
+        margin-top: 20px;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         transition: all 0.3s ease;
         position: relative;
         overflow: hidden;
       }
-      .country-info-card::before {
+      .profile-country::before {
         content: "";
         position: absolute;
         top: 0;
         left: 0;
         right: 0;
         height: 3px;
-        background: linear-gradient(90deg, #81b64c, #3498db, #81b64c);
-        background-size: 200% 100%;
-        animation: gradientSlide 3s ease infinite;
+        background: linear-gradient(90deg, #81b64c, #3498db, #cd7f32, #81b64c);
+        background-size: 300% 100%;
+        animation: gradientSlide 4s ease infinite;
       }
       @keyframes gradientSlide {
         0% { background-position: 0% 50%; }
         50% { background-position: 100% 50%; }
         100% { background-position: 0% 50%; }
       }
-      .country-info-card:hover {
+      .profile-country:hover {
         border-color: rgba(129, 182, 76, 0.4);
-        box-shadow: 0 8px 30px rgba(129, 182, 76, 0.1);
-        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(129, 182, 76, 0.12), 0 0 0 1px rgba(129, 182, 76, 0.1);
+        transform: translateY(-3px);
       }
-      .country-info-flag {
-        width: 100px;
-        height: 65px;
-        border-radius: 10px;
+      .profile-country-flag {
+        width: 120px;
+        height: 75px;
+        border-radius: 12px;
         object-fit: cover;
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.12);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
       }
-      .country-info-label {
-        font-size: 10px;
-        color: #88a;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        font-weight: 700;
-      }
-      .country-info-name {
-        font-size: 22px;
+      .profile-country-name {
+        font-size: 24px;
         font-weight: 800;
         color: #fff;
         letter-spacing: 0.5px;
+        text-shadow: 0 2px 8px rgba(129, 182, 76, 0.3);
       }
       #chessBoard {
         width: 400px !important;
@@ -3860,10 +3854,9 @@
           </div>
 
           <!-- DAVLAT MA'LUMOTI -->
-          <div class="country-info-card" id="countryInfoCard" style="display: none;">
-            <img class="country-info-flag" id="countryInfoFlag" src="" alt="" />
-            <div class="country-info-label">Joylashuv</div>
-            <div class="country-info-name" id="countryInfoName"></div>
+          <div class="profile-country" id="profileCountry" style="display: none;">
+            <img class="profile-country-flag" id="profileCountryFlag" src="" alt="" />
+            <div class="profile-country-name" id="profileCountryName"></div>
           </div>
 
           <button class="logout-btn" id="btnLogout" onclick="handleLogout()">

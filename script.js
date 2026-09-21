@@ -676,22 +676,8 @@ window.updateGameFlags = function() {
   }
 };
 
-// Populate the signup country select with flag emojis
-window.populateCountrySelect = function() {
-  const select = document.getElementById("signupCountry");
-  if (!select) return;
-
-  let optionsHtml = '<option value="">Tanlang...</option>';
-
-  if (typeof allCountries !== 'undefined') {
-    allCountries.forEach(c => {
-      const flagEmoji = countryCodeToFlag(c.code);
-      optionsHtml += `<option value="${c.code}">${flagEmoji} ${c.name}</option>`;
-    });
-  }
-
-  select.innerHTML = optionsHtml;
-};
+// Country selection is now handled only in the Settings page
+window.populateCountrySelect = function() {};
 
 // --- Login Modal ---
 window.openLoginModal = function() {
@@ -874,11 +860,15 @@ window.handleLoginModal = async function() {
 window.handleSignupModal = async function() {
   const username = document.getElementById("signupUsername").value.trim();
   const password = document.getElementById("signupPassword").value.trim();
-  const countrySelect = document.getElementById("signupCountry");
-  const country = countrySelect ? countrySelect.value : '';
-  const countryName = countrySelect && countrySelect.options[countrySelect.selectedIndex]
-    ? countrySelect.options[countrySelect.selectedIndex].textContent.replace(/^\p{Emoji}\s*/u, '').trim()
-    : '';
+
+  const settings = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
+  const country = settings.country || "uz";
+  let countryName = "";
+  if (typeof allCountries !== 'undefined') {
+    const found = allCountries.find(c => c.code === country);
+    if (found) countryName = found.name;
+  }
+  if (!countryName && country === "uz") countryName = "O'zbekiston";
 
   const usernameError = document.getElementById("signupUsernameError");
   const usernameExistsError = document.getElementById("signupUsernameExistsError");
@@ -926,8 +916,8 @@ window.handleSignupModal = async function() {
       blitz: { wins: 0, losses: 0, draws: 0 },
       bullet: { wins: 0, losses: 0, draws: 0 }
     },
-    country: country || 'uz',
-    countryName: countryName || 'O\'zbekiston',
+    country: country,
+    countryName: countryName,
     history: []
   };
   window.stats = window.currentUser.stats;
@@ -1298,7 +1288,18 @@ window.updateSettingsView = function() {
   const volume = document.getElementById("settingsVolume");
   const theme = document.getElementById("settingsTheme");
   const coords = document.getElementById("settingsCoords");
-  if (country) country.value = saved.country || "uz";
+  if (country) {
+    if (country.options.length <= 1 && typeof allCountries !== 'undefined' && allCountries.length > 0) {
+      country.innerHTML = "";
+      allCountries.forEach(c => {
+        const option = document.createElement("option");
+        option.value = c.code;
+        option.textContent = c.code.toUpperCase() + " " + c.name;
+        country.appendChild(option);
+      });
+    }
+    country.value = saved.country || "uz";
+  }
   if (lang) lang.value = saved.language || "uz";
   if (sound) sound.checked = saved.soundEnabled !== false;
   if (volume) volume.value = Math.round((saved.volume || 0.8) * 100);

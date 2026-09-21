@@ -965,12 +965,12 @@ window.closeLanguageModal = function() {
 };
 
 window.LANGUAGES = [
-  { code: 'uz', name: "O'zbekcha", english: 'Uzbek', flag: '\u{1F1FA}\u{1F1FF}' },
-  { code: 'en', name: 'English', english: 'English', flag: '\u{1F1EC}\u{1F1E7}' },
-  { code: 'ru', name: 'Русский', english: 'Russian', flag: '\u{1F1F7}\u{1F1FA}' },
-  { code: 'es', name: 'Español', english: 'Spanish', flag: '\u{1F1EA}\u{1F1F8}' },
-  { code: 'de', name: 'Deutsch', english: 'German', flag: '\u{1F1E9}\u{1F1EA}' },
-  { code: 'fr', name: 'Français', english: 'French', flag: '\u{1F1EB}\u{1F1F7}' }
+  { code: 'UZ', name: "O'zbekcha", english: 'Uzbek', flag: '🇺🇿' },
+  { code: 'GB', name: 'English', english: 'English', flag: '🇬🇧' },
+  { code: 'RU', name: 'Русский', english: 'Russian', flag: '🇷🇺' },
+  { code: 'ES', name: 'Español', english: 'Spanish', flag: '🇪🇸' },
+  { code: 'DE', name: 'Deutsch', english: 'German', flag: '🇩🇪' },
+  { code: 'FR', name: 'Français', english: 'French', flag: '🇫🇷' }
 ];
 
 // --- Leagues Data ---
@@ -1137,15 +1137,16 @@ window.playLeague = function(leagueKey, mode) {
 };
 
 window.getLanguageInfo = function(code) {
-  return window.LANGUAGES.find(l => l.code === code) || window.LANGUAGES[1];
+  return window.LANGUAGES.find(l => l.code.toLowerCase() === code.toLowerCase()) || window.LANGUAGES[1];
 };
 
 window.updateLanguageButton = function(lang) {
   const info = window.getLanguageInfo(lang);
-  const flagSpan = document.getElementById("langBtnFlag");
-  const textSpan = document.getElementById("langBtnText");
-  if (flagSpan) flagSpan.textContent = info.flag;
-  if (textSpan) textSpan.textContent = info.name;
+  const settingsBtn = document.getElementById("settingsLanguageBtn");
+  if (settingsBtn) {
+    settingsBtn.textContent = `${info.flag} ${info.name}`;
+    settingsBtn.classList.add("saved");
+  }
 };
 
 window.selectLanguage = function(lang) {
@@ -1161,21 +1162,26 @@ window.renderLanguageCards = function(filter = '') {
 
   const languages = window.LANGUAGES;
 
-  const currentLang = window.currentLang || localStorage.getItem("justChessLang") || 'uz';
+  const currentLang = (window.currentLang || localStorage.getItem("justChessLang") || 'uz').toUpperCase();
 
   grid.innerHTML = languages
-    .filter(lang => 
+    .filter(lang =>
       lang.name.toLowerCase().includes(filter.toLowerCase()) ||
-      lang.english.toLowerCase().includes(filter.toLowerCase())
+      lang.english.toLowerCase().includes(filter.toLowerCase()) ||
+      lang.code.toLowerCase().includes(filter.toLowerCase())
     )
-    .map(lang => `
-      <div class="language-card ${lang.code === currentLang ? 'active' : ''}" onclick="selectLanguage('${lang.code}')">
-        <div class="language-card-check">✓</div>
-        <div class="language-card-flag">${lang.flag}</div>
-        <div class="language-card-name">${lang.name}</div>
-        <div class="language-card-english">${lang.english}</div>
-      </div>
-    `).join('');
+    .map(lang => {
+      const isActive = lang.code.toUpperCase() === currentLang;
+      return `
+        <div class="language-card ${isActive ? 'active' : ''}" onclick="selectLanguage('${lang.code.toLowerCase()}')">
+          <span class="language-card-check">✓</span>
+          <div class="language-card-flag">${lang.flag}</div>
+          <div class="language-card-code">${lang.code}</div>
+          <div class="language-card-name">${lang.name}</div>
+          <div class="language-card-english">${lang.english}</div>
+        </div>
+      `;
+    }).join('');
 };
 
 window.updateProfileModalData = function() {
@@ -1313,9 +1319,6 @@ window.saveSettings = function() {
   };
   localStorage.setItem("justChessSettings", JSON.stringify(saved));
   showToast("Sozlamalar saqlandi", "success");
-  if (typeof window.setLanguage === "function") {
-    window.setLanguage(saved.language);
-  }
 };
 
 window.resetSettings = function() {
@@ -1494,6 +1497,11 @@ window.resetSettings = function() {
       }
     }
   });
+
+  // Initialize language button
+  if (typeof window.updateLanguageButton === "function") {
+    window.updateLanguageButton(window.currentLang);
+  }
 
   // Auto-open login modal if not logged in
   if (!window.currentUser) {

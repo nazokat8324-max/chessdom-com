@@ -879,6 +879,63 @@
         border-color: #ff5555;
         color: #ff5555;
       }
+      .country-info-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid #223330;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        margin-top: 18px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .country-info-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #81b64c, #3498db, #81b64c);
+        background-size: 200% 100%;
+        animation: gradientSlide 3s ease infinite;
+      }
+      @keyframes gradientSlide {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .country-info-card:hover {
+        border-color: rgba(129, 182, 76, 0.4);
+        box-shadow: 0 8px 30px rgba(129, 182, 76, 0.1);
+        transform: translateY(-2px);
+      }
+      .country-info-flag {
+        width: 100px;
+        height: 65px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      }
+      .country-info-label {
+        font-size: 10px;
+        color: #88a;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-weight: 700;
+      }
+      .country-info-name {
+        font-size: 22px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: 0.5px;
+      }
       #chessBoard {
         width: 400px !important;
         height: 400px !important;
@@ -3800,6 +3857,13 @@
           <!-- DIAGRAMMA UCHUN JOY -->
           <div style="width: 100%; max-width: 220px; margin: 0 auto 15px auto">
             <canvas id="profileStatsChart"></canvas>
+          </div>
+
+          <!-- DAVLAT MA'LUMOTI -->
+          <div class="country-info-card" id="countryInfoCard" style="display: none;">
+            <img class="country-info-flag" id="countryInfoFlag" src="" alt="" />
+            <div class="country-info-label">Joylashuv</div>
+            <div class="country-info-name" id="countryInfoName"></div>
           </div>
 
           <button class="logout-btn" id="btnLogout" onclick="handleLogout()">

@@ -34,6 +34,15 @@ window.updateProfileViewData = function() {
   if (cardFlag) cardFlag.src = `https://flagcdn.com/w20/${countryCode}.png`;
   if (cardCountryName) cardCountryName.textContent = countryName;
 
+  const countryInfoCard = document.getElementById("countryInfoCard");
+  const countryInfoFlag = document.getElementById("countryInfoFlag");
+  const countryInfoName = document.getElementById("countryInfoName");
+  if (countryName && countryInfoCard) {
+    countryInfoCard.style.display = 'flex';
+    if (countryInfoFlag) countryInfoFlag.src = `https://flagcdn.com/w160/${countryCode}.png`;
+    if (countryInfoName) countryInfoName.textContent = countryName;
+  }
+
   window.renderProfileChart();
 };
 

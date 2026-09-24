@@ -93,6 +93,20 @@ const translations = {
     colGames: "O'yinlar",
     colWinPercent: "G'alaba %",
     colPlayer: "O'yinchi",
+    mLeagues: "Ligalar",
+    mChampions: "Chempionlar",
+    mSettings: "Sozlamalar",
+    waitingSearching: "Raqib qidirilmoqda...",
+    waitingPlease: "Iltimos, kuting",
+    historyPanelHeader: "Yurishlar tarixi",
+    ratedLabel: "Reytingli",
+    ratedSublabel: "O'yin rejimi",
+    btnDrawText: "Durrang",
+    btnPgnText: "PGN",
+    btnStartGameText: "O'yinni boshlash",
+    timerLabelJudaTez: "Juda tez",
+    timerLabelBlits: "Blits",
+    timerLabelTezkor: "Tezkor",
   },
   en: {
     mHome: "Home",
@@ -188,6 +202,20 @@ const translations = {
     colGames: "Games",
     colWinPercent: "Win %",
     colPlayer: "Player",
+    mLeagues: "Leagues",
+    mChampions: "Champions",
+    mSettings: "Settings",
+    waitingSearching: "Searching for opponent...",
+    waitingPlease: "Please wait",
+    historyPanelHeader: "Move History",
+    ratedLabel: "Rated",
+    ratedSublabel: "Game mode",
+    btnDrawText: "Draw",
+    btnPgnText: "PGN",
+    btnStartGameText: "Start Game",
+    timerLabelJudaTez: "Bullet",
+    timerLabelBlits: "Blitz",
+    timerLabelTezkor: "Rapid",
   },
   ru: {
     mHome: "Главная",
@@ -283,6 +311,20 @@ const translations = {
     colGames: "Игры",
     colWinPercent: "% побед",
     colPlayer: "Игрок",
+    mLeagues: "Лиги",
+    mChampions: "Чемпионы",
+    mSettings: "Настройки",
+    waitingSearching: "Поиск соперника...",
+    waitingPlease: "Пожалуйста, подождите",
+    historyPanelHeader: "История ходов",
+    ratedLabel: "Рейтинговая",
+    ratedSublabel: "Режим игры",
+    btnDrawText: "Ничья",
+    btnPgnText: "PGN",
+    btnStartGameText: "Начать игру",
+    timerLabelJudaTez: "Пуля",
+    timerLabelBlits: "Блиц",
+    timerLabelTezkor: "Рапид",
   },
   es: {
     mHome: "Inicio",
@@ -352,7 +394,7 @@ const translations = {
     drawDeclined: "¡Empate rechazado!",
     pgnExport: "Exportar PGN",
     pgnDownloaded: "¡Archivo PGN descargado!",
-    tournamentsTitle: "Torneos",
+tournamentsTitle: "Torneos",
     tournamentsDesc: "Torneos arena cada hora durante 24 horas",
     clubsTitle: "Clubes",
     clubsDesc: "Clubes de ajedrez y comunidades",
@@ -364,7 +406,7 @@ const translations = {
     playOnlineBtn: "Jugar en línea",
     tabPlayers: "Jugadores",
     tabClubs: "Clubes",
-    searchCountry: "Buscar un país...",
+    searchCountry: " Buscar un país...",
     filterAll: "Todos",
     filterRapid: "Rápidas",
     filterBlitz: "Blitz",
@@ -378,6 +420,20 @@ const translations = {
     colGames: "Partidas",
     colWinPercent: "% Victorias",
     colPlayer: "Jugador",
+    mLeagues: "Ligas",
+    mChampions: "Campeones",
+    mSettings: "Ajustes",
+    waitingSearching: "Buscando oponente...",
+    waitingPlease: "Por favor espera",
+    historyPanelHeader: "Historial de jugadas",
+    ratedLabel: "Clasificatoria",
+    ratedSublabel: "Modo de juego",
+    btnDrawText: "Tablas",
+    btnPgnText: "PGN",
+    btnStartGameText: "Empezar partida",
+    timerLabelJudaTez: "Bala",
+    timerLabelBlits: "Blitz",
+    timerLabelTezkor: "Rápidas",
   },
   de: {
     mHome: "Startseite",
@@ -473,6 +529,20 @@ const translations = {
     colGames: "Spiele",
     colWinPercent: "Sieg %",
     colPlayer: "Spieler",
+    mLeagues: "Ligen",
+    mChampions: "Champions",
+    mSettings: "Einstellungen",
+    waitingSearching: "Gegner wird gesucht...",
+    waitingPlease: "Bitte warten",
+    historyPanelHeader: "Zugverlauf",
+    ratedLabel: "Gewertet",
+    ratedSublabel: "Spielmodus",
+    btnDrawText: "Remis",
+    btnPgnText: "PGN",
+    btnStartGameText: "Spiel starten",
+    timerLabelJudaTez: "Bullet",
+    timerLabelBlits: "Blitz",
+    timerLabelTezkor: "Rapid",
   },
   fr: {
     mHome: "Accueil",
@@ -568,6 +638,20 @@ const translations = {
     colGames: "Parties",
     colWinPercent: "% Victoires",
     colPlayer: "Joueur",
+    mLeagues: "Ligues",
+    mChampions: "Champions",
+    mSettings: "Paramètres",
+    waitingSearching: "Recherche d'adversaire...",
+    waitingPlease: "Veuillez patienter",
+    historyPanelHeader: "Historique des coups",
+    ratedLabel: "Classée",
+    ratedSublabel: "Mode de jeu",
+    btnDrawText: "Nulle",
+    btnPgnText: "PGN",
+    btnStartGameText: "Démarrer la partie",
+    timerLabelJudaTez: "Bullet",
+    timerLabelBlits: "Blitz",
+    timerLabelTezkor: "Cadence",
   }
 };
 
@@ -669,6 +753,22 @@ function updateUI() {
   const colGames = document.getElementById("colGames"); if (colGames) colGames.textContent = t('colGames');
   const colWinPercent = document.getElementById("colWinPercent"); if (colWinPercent) colWinPercent.textContent = t('colWinPercent');
   const colPlayer = document.getElementById("colPlayer"); if (colPlayer) colPlayer.textContent = t('colPlayer');
+
+  const mLeagues = document.getElementById("mLeagues"); if (mLeagues) mLeagues.textContent = t('mLeagues');
+  const mChampions = document.getElementById("mChampions"); if (mChampions) mChampions.textContent = t('mChampions');
+  const mSettings = document.getElementById("mSettings"); if (mSettings) mSettings.textContent = t('mSettings');
+  const waitingSearching = document.getElementById("waitingSearching"); if (waitingSearching) waitingSearching.textContent = t('waitingSearching');
+  const waitingPlease = document.getElementById("waitingPlease"); if (waitingPlease) waitingPlease.textContent = t('waitingPlease');
+  const historyPanelHeader = document.getElementById("historyPanelHeader"); if (historyPanelHeader) historyPanelHeader.textContent = t('historyPanelHeader');
+  const ratedLabel = document.getElementById("ratedLabel"); if (ratedLabel) ratedLabel.textContent = t('ratedLabel');
+  const ratedSublabel = document.getElementById("ratedSublabel"); if (ratedSublabel) ratedSublabel.textContent = t('ratedSublabel');
+  const btnDrawText = document.getElementById("btnDrawText"); if (btnDrawText) btnDrawText.textContent = t('btnDrawText');
+  const btnResignText = document.getElementById("btnResignText"); if (btnResignText) btnResignText.textContent = t('btnResign');
+  const btnPgnText = document.getElementById("btnPgnText"); if (btnPgnText) btnPgnText.textContent = t('btnPgnText');
+  const btnStartGameText = document.getElementById("btnStartGameText"); if (btnStartGameText) btnStartGameText.textContent = t('btnStartGameText');
+  const timerLabelJudaTez = document.getElementById("timerLabelJudaTez"); if (timerLabelJudaTez) timerLabelJudaTez.textContent = t('timerLabelJudaTez');
+  const timerLabelBlits = document.getElementById("timerLabelBlits"); if (timerLabelBlits) timerLabelBlits.textContent = t('timerLabelBlits');
+  const timerLabelTezkor = document.getElementById("timerLabelTezkor"); if (timerLabelTezkor) timerLabelTezkor.textContent = t('timerLabelTezkor');
 
   if (typeof window.updateTopPlayersList === 'function') window.updateTopPlayersList();
 

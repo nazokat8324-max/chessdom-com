@@ -250,9 +250,7 @@
               <div class="player-avatar" id="blackPlayerAvatar">♚</div>
               <div class="player-info">
                 <span class="player-name" id="blackPlayerName">Qora</span>
-                <span class="player-rating" id="blackPlayerRating"
-                  >Reyting: 1500</span
-                >
+                <span class="player-rating" id="blackPlayerRating"><span id="blackRatingLabel">Reyting:</span> <span id="blackRatingValue">1500</span></span>
               </div>
               <img class="player-flag" id="blackPlayerFlag" src="https://flagcdn.com/w40/uz.png" alt="" loading="lazy" onerror="this.style.display='none'">
               <div class="player-timer" id="blackTimer">05:00</div>
@@ -262,8 +260,8 @@
               <div id="boardWaitingOverlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); border-radius: 12px; display: flex; align-items: center; justify-content: center; z-index: 10;">
                 <div style="text-align: center; color: #fff;">
                   <div style="font-size: 48px; margin-bottom: 10px;">⏳</div>
-                  <div style="font-size: 16px; font-weight: bold;">Raqib qidirilmoqda...</div>
-                  <div style="font-size: 12px; color: #88a; margin-top: 5px;">Iltimos, kuting</div>
+                  <div style="font-size: 16px; font-weight: bold;" id="waitingSearching">Raqib qidirilmoqda...</div>
+                  <div style="font-size: 12px; color: #88a; margin-top: 5px;" id="waitingPlease">Iltimos, kuting</div>
                 </div>
               </div>
             </div>
@@ -271,7 +269,7 @@
               class="panel"
               style="width: 100%; height: 120px; margin-top: 8px"
             >
-              <div class="panel-header">📊 Yurishlar tarixi</div>
+              <div class="panel-header" id="historyPanelHeader">📊 Yurishlar tarixi</div>
               <div
                 class="panel-content"
                 id="historyList"
@@ -282,9 +280,7 @@
               <div class="player-avatar" id="whitePlayerAvatar">♔</div>
               <div class="player-info">
                 <span class="player-name" id="whitePlayerName">Oq</span>
-                <span class="player-rating" id="whitePlayerRating"
-                  >Reyting: 1500</span
-                >
+                <span class="player-rating" id="whitePlayerRating"><span id="whiteRatingLabel">Reyting:</span> <span id="whiteRatingValue">1500</span></span>
               </div>
               <img class="player-flag" id="whitePlayerFlag" src="https://flagcdn.com/w40/uz.png" alt="" loading="lazy" onerror="this.style.display='none'">
               <div class="player-timer active" id="whiteTimer">05:00</div>
@@ -294,7 +290,7 @@
           <div class="control-panel">
             <div class="time-controls">
               <div class="time-group">
-                <div class="time-label">Juda tez</div>
+                <div class="time-label" id="timerLabelJudaTez">Juda tez</div>
                 <div class="time-grid">
                   <button class="time-btn" onclick="setGameTime(60, this)">
                     1 Min
@@ -308,7 +304,7 @@
                 </div>
               </div>
               <div class="time-group">
-                <div class="time-label">Blits</div>
+                <div class="time-label" id="timerLabelBlits">Blits</div>
                 <div class="time-grid">
                   <button class="time-btn" onclick="setGameTime(180, this)">
                     3 Min
@@ -322,7 +318,7 @@
                 </div>
               </div>
               <div class="time-group">
-                <div class="time-label">Tezkor</div>
+                <div class="time-label" id="timerLabelTezkor">Tezkor</div>
                 <div class="time-grid">
                   <button class="time-btn" onclick="setGameTime(600, this)">
                     10 Min
@@ -340,7 +336,7 @@
             <div class="rated-toggle">
               <div>
                 <div class="rated-label" id="ratedLabel">Reytingli</div>
-                <div class="rated-sublabel">O'yin rejimi</div>
+                <div class="rated-sublabel" id="ratedSublabel">O'yin rejimi</div>
               </div>
               <label class="toggle-switch">
                 <input
@@ -358,7 +354,7 @@
               onclick="handleStartGame()"
               id="btnStartGame"
             >
-              O'yinni boshlash
+              <span id="btnStartGameText">O'yinni boshlash</span>
             </button>
 
             <div
@@ -374,7 +370,7 @@
                 id="btnDraw"
                 style="font-size: 11px; padding: 8px 4px"
               >
-                🤝 Durrang
+                🤝 <span id="btnDrawText">Durrang</span>
               </button>
               <button
                 class="control-btn"
@@ -388,7 +384,7 @@
                   border-color: #522b2b;
                 "
               >
-                🏳️ Taslim
+                🏳️ <span id="btnResignText">Taslim</span>
               </button>
               <button
                 class="control-btn"
@@ -396,7 +392,7 @@
                 id="btnPgn"
                 style="font-size: 11px; padding: 8px 4px"
               >
-                📄 PGN
+                📄 <span id="btnPgnText">PGN</span>
               </button>
             </div>
 

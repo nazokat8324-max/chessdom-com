@@ -114,9 +114,9 @@ window.updateTopPlayersList = async function() {
         <thead>
           <tr>
             <th>#</th>
-            <th>Username</th>
-            <th>Rating</th>
-            <th>Win Points</th>
+            <th id="colUsername">Username</th>
+            <th id="colRating">Rating</th>
+            <th id="colWinPoints">Win Points</th>
           </tr>
         </thead>
         <tbody>${tableRows}</tbody>
@@ -129,9 +129,9 @@ window.updateTopPlayersList = async function() {
         <thead>
           <tr>
             <th>#</th>
-            <th>Username</th>
-            <th>Rating</th>
-            <th>Win Points</th>
+            <th id="colUsername">Username</th>
+            <th id="colRating">Rating</th>
+            <th id="colWinPoints">Win Points</th>
           </tr>
         </thead>
         <tbody>
@@ -956,7 +956,7 @@ window.closeLanguageModal = function() {
 
 window.LANGUAGES = [
   { code: 'UZ', name: "O'zbekcha", english: 'Uzbek', flag: '🇺🇿' },
-  { code: 'GB', name: 'English', english: 'English', flag: '🇬🇧' },
+  { code: 'EN', name: 'English', english: 'English', flag: '🇬🇧' },
   { code: 'RU', name: 'Русский', english: 'Russian', flag: '🇷🇺' },
   { code: 'ES', name: 'Español', english: 'Spanish', flag: '🇪🇸' },
   { code: 'DE', name: 'Deutsch', english: 'German', flag: '🇩🇪' },
@@ -1140,9 +1140,12 @@ window.updateLanguageButton = function(lang) {
 };
 
 window.selectLanguage = function(lang) {
-  window.setLanguage(lang);
-  localStorage.setItem("justChessLang", lang);
-  window.updateLanguageButton(lang);
+  const langLower = lang.toLowerCase();
+  const langMap = { 'gb': 'en', 'us': 'en', 'uk': 'en' };
+  const mappedLang = langMap[langLower] || langLower;
+  window.setLanguage(mappedLang);
+  localStorage.setItem("justChessLang", mappedLang);
+  window.updateLanguageButton(mappedLang);
   window.closeLanguageModal();
 };
 

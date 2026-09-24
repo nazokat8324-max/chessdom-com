@@ -711,10 +711,10 @@ window.loadClubs = function() {
         <div class="stamp-inner">
           <div class="stamp-flag"><img src="https://flagcdn.com/w80/${country.code}.png" alt="${country.name}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
           <div class="stamp-country-name">${country.name}</div>
-          <div class="stamp-members">${stats.members} members</div>
+          <div class="stamp-members">${stats.members} ${typeof i18next !== 'undefined' ? i18next.t('membersLabel') : 'a\'zo'}</div>
         </div>
         <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${country.name}', '${country.code}')">
-          View
+          ${typeof i18next !== 'undefined' ? i18next.t('btnView') : 'Ko\'rish'}
         </button>
       </div>
     `;
@@ -778,10 +778,10 @@ window.filterCountries = debounce(function() {
         <div class="stamp-inner">
           <div class="stamp-flag"><img src="https://flagcdn.com/w80/${safeCode}.png" alt="${safeName}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
           <div class="stamp-country-name">${safeName}</div>
-          <div class="stamp-members">${stats.members} members</div>
+          <div class="stamp-members">${stats.members} ${typeof i18next !== 'undefined' ? i18next.t('membersLabel') : 'a\'zo'}</div>
         </div>
         <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${safeName}', '${safeCode}')">
-          View
+          ${typeof i18next !== 'undefined' ? i18next.t('btnView') : 'Ko\'rish'}
         </button>
       </div>
     `;

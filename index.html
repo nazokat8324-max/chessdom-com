@@ -169,8 +169,9 @@
                 switchView('game');
                 window.pendingOnlineMatchmaking = true;
               "
-            >
-              ⚡ Play Online (Matchmaking)
+             id="playOnlineBtn"
+             >
+               ⚡ Play Online (Matchmaking)
              </button>
              <button class="play-sub-btn" onclick="switchView('clubs')">
               🛡️ Klublar
@@ -637,6 +638,7 @@
 
         <div class="leaderboard-filters" id="leaderboardFilters">
           <button
+            id="filterAll"
             class="filter-tab active"
             data-filter="all"
             onclick="filterLeaderboard('all')"
@@ -644,6 +646,7 @@
             All
           </button>
           <button
+            id="filterRapid"
             class="filter-tab"
             data-filter="rapid"
             onclick="filterLeaderboard('rapid')"
@@ -651,6 +654,7 @@
             Rapid
           </button>
           <button
+            id="filterBlitz"
             class="filter-tab"
             data-filter="blitz"
             onclick="filterLeaderboard('blitz')"
@@ -658,6 +662,7 @@
             Blitz
           </button>
           <button
+            id="filterBullet"
             class="filter-tab"
             data-filter="bullet"
             onclick="filterLeaderboard('bullet')"
@@ -671,10 +676,10 @@
             <thead>
               <tr id="leaderboardTableHead">
                 <th>#</th>
-                <th>Player</th>
-                <th>Wins</th>
-                <th>Games</th>
-                <th>Win %</th>
+                <th id="colPlayer">Player</th>
+                <th id="colWins">Wins</th>
+                <th id="colGames">Games</th>
+                <th id="colWinPercent">Win %</th>
               </tr>
             </thead>
             <tbody id="leaderboardTableBody">

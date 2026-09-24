@@ -2,7 +2,6 @@ const translations = {
   uz: {
     mHome: "Bosh sahifa",
     mPlay: "O'yin",
-    mPuzzles: "Boshqotirmalar",
     mLeaderboard: "Reyting",
     mHistory: "O'yinlar tarixi",
     loginText: "Kirish",
@@ -10,8 +9,6 @@ const translations = {
     dashWelcomeTitle: "Xush kelibsiz, Shaxmat ixlosmandi!",
     dashDesc: "Professional darajada shaxmat o'ynang, statistikalaringizni kuzating va o'z reytingingizni oshiring.",
     dashStartBtn: "O'yinni boshlash",
-    dashDailyTitle: "Kunlik Boshqotirma",
-    dashDailyDesc: "Har kuni yangi taktik topishmoqlar yeching va mahoratingizni oshiring.",
     streakText: "Kunlik ketma-ketlik",
     panelStatsHeader: "Statistika",
     labelWhiteWins: "Oq g'alaba:",
@@ -64,10 +61,6 @@ const translations = {
     joinRoom: "Xonaga qo'shilish",
     roomCode: "Xona kodi",
     enterRoomCode: "Xona kodini kiriting",
-    playWithFriend: "Do'stga qarshi o'ynash",
-    peerId: "Mening ID:",
-    connectPeer: "Do'stga ulanish",
-    friendPeerId: "Do'stingiz ID si",
     drawOffer: "Durrang taklifi",
     drawOffered: "Raqib sizga durrang taklif qildi!",
     drawAccepted: "Durrang qabul qilindi!",
@@ -76,10 +69,6 @@ const translations = {
     pgnDownloaded: "PGN fayli yuklandi!",
     tournamentsTitle: "Turnirlar",
     tournamentsDesc: "24 soat davomida har soatda arena turnirlari",
-    friendsTitle: "Do'stlar",
-    friendsDesc: "Do'stlar ro'yxati va so'rovlar",
-    btnSendFriendRequest: "Do'stlik so'rash",
-    btnViewRequests: "So'rovlar",
     clubsTitle: "Klublar",
     clubsDesc: "Shaxmat klublari va hamjamiyatlar",
     btnCreateClub: "+ Yanga Klub Yaratish",
@@ -87,11 +76,27 @@ const translations = {
     chatDesc: "Xabarlar va suhbatlar",
     btnSendChatMessage: "Yuborish",
     mChat: "Chat",
+    playOnlineBtn: "Onlayn o'ynash",
+    tabPlayers: "O'yinchilar",
+    tabClubs: "Klublar",
+    searchCountry: "Davlatni qidiring...",
+    filterAll: "Barchasi",
+    filterRapid: "Rapid",
+    filterBlitz: "Blits",
+    filterBullet: "Bullet",
+    btnView: "Ko'rish",
+    membersLabel: "a'zo",
+    colUsername: "Foydalanuvchi",
+    colRating: "Reyting",
+    colWinPoints: "G'alaba ochkosi",
+    colWins: "G'alabalar",
+    colGames: "O'yinlar",
+    colWinPercent: "G'alaba %",
+    colPlayer: "O'yinchi",
   },
   en: {
     mHome: "Home",
     mPlay: "Play",
-    mPuzzles: "Puzzles",
     mLeaderboard: "Leaderboard",
     mHistory: "Game History",
     loginText: "Login",
@@ -99,8 +104,6 @@ const translations = {
     dashWelcomeTitle: "Welcome, Chess Enthusiast!",
     dashDesc: "Play professional chess, track your stats, and boost your rating.",
     dashStartBtn: "Start Playing",
-    dashDailyTitle: "Daily Puzzle",
-    dashDailyDesc: "Solve new tactical puzzles every day to improve your skills.",
     streakText: "Days Streak",
     panelStatsHeader: "Statistics",
     labelWhiteWins: "White Wins:",
@@ -153,10 +156,6 @@ const translations = {
     joinRoom: "Join Room",
     roomCode: "Room code",
     enterRoomCode: "Enter room code",
-    playWithFriend: "Play with Friend",
-    peerId: "My ID:",
-    connectPeer: "Connect to Friend",
-    friendPeerId: "Friend's Peer ID",
     drawOffer: "Draw offer",
     drawOffered: "Opponent offered a draw!",
     drawAccepted: "Draw accepted!",
@@ -165,10 +164,6 @@ const translations = {
     pgnDownloaded: "PGN file downloaded!",
     tournamentsTitle: "Tournaments",
     tournamentsDesc: "Arena tournaments every hour for 24 hours",
-    friendsTitle: "Friends",
-    friendsDesc: "Friends list and requests",
-    btnSendFriendRequest: "Send Request",
-    btnViewRequests: "Requests",
     clubsTitle: "Clubs",
     clubsDesc: "Chess clubs and communities",
     btnCreateClub: "+ Create Club",
@@ -176,11 +171,27 @@ const translations = {
     chatDesc: "Messages and conversations",
     btnSendChatMessage: "Send",
     mChat: "Chat",
+    playOnlineBtn: "Play Online",
+    tabPlayers: "Players",
+    tabClubs: "Clubs",
+    searchCountry: "Search for a country...",
+    filterAll: "All",
+    filterRapid: "Rapid",
+    filterBlitz: "Blitz",
+    filterBullet: "Bullet",
+    btnView: "View",
+    membersLabel: "members",
+    colUsername: "Username",
+    colRating: "Rating",
+    colWinPoints: "Win Points",
+    colWins: "Wins",
+    colGames: "Games",
+    colWinPercent: "Win %",
+    colPlayer: "Player",
   },
   ru: {
     mHome: "Главная",
     mPlay: "Играть",
-    mPuzzles: "Головоломки",
     mLeaderboard: "Рейтинг",
     mHistory: "История игр",
     loginText: "Войти",
@@ -188,8 +199,6 @@ const translations = {
     dashWelcomeTitle: "Добро пожаловать, любитель шахмат!",
     dashDesc: "Играйте в шахматы, отслеживайте статистику и повышайте свой рейтинг.",
     dashStartBtn: "Начать игру",
-    dashDailyTitle: "Ежедневная задача",
-    dashDailyDesc: "Решайте тактические задачи каждый день.",
     streakText: "Дней подряд",
     panelStatsHeader: "Статистика",
     labelWhiteWins: "Победы белых:",
@@ -242,10 +251,6 @@ const translations = {
     joinRoom: "Присоединиться",
     roomCode: "Код комнаты",
     enterRoomCode: "Введите код комнаты",
-    playWithFriend: "Играть с другом",
-    peerId: "Мой ID:",
-    connectPeer: "Подключиться к другу",
-    friendPeerId: "Peer ID друга",
     drawOffer: "Предложение ничьей",
     drawOffered: "Соперник предложил ничью!",
     drawAccepted: "Ничья принята!",
@@ -254,10 +259,6 @@ const translations = {
     pgnDownloaded: "PGN файл загружен!",
     tournamentsTitle: "Турниры",
     tournamentsDesc: "Арена-турниры каждый час в течение 24 часов",
-    friendsTitle: "Друзья",
-    friendsDesc: "Список друзей и запросы",
-    btnSendFriendRequest: "Отправить запрос",
-    btnViewRequests: "Запросы",
     clubsTitle: "Клубы",
     clubsDesc: "Шахматные клубы и сообщества",
     btnCreateClub: "+ Создать клуб",
@@ -265,11 +266,27 @@ const translations = {
     chatDesc: "Сообщения и разговоры",
     btnSendChatMessage: "Отправить",
     mChat: "Чат",
+    playOnlineBtn: "Играть онлайн",
+    tabPlayers: "Игроки",
+    tabClubs: "Клубы",
+    searchCountry: "Поиск страны...",
+    filterAll: "Все",
+    filterRapid: "Рапид",
+    filterBlitz: "Блиц",
+    filterBullet: "Пуля",
+    btnView: "Просмотр",
+    membersLabel: "участников",
+    colUsername: "Имя пользователя",
+    colRating: "Рейтинг",
+    colWinPoints: "Очки побед",
+    colWins: "Победы",
+    colGames: "Игры",
+    colWinPercent: "% побед",
+    colPlayer: "Игрок",
   },
   es: {
     mHome: "Inicio",
     mPlay: "Jugar",
-    mPuzzles: "Puzzles",
     mLeaderboard: "Clasificación",
     mHistory: "Historial",
     loginText: "Entrar",
@@ -277,8 +294,6 @@ const translations = {
     dashWelcomeTitle: "¡Bienvenido, entusiasta del ajedrez!",
     dashDesc: "Juega al ajedrez profesional, sigue tus estadísticas y mejora tu clasificación.",
     dashStartBtn: "Empezar a jugar",
-    dashDailyTitle: "Puzzle diario",
-    dashDailyDesc: "Resuelve nuevos puzzles tácticos cada día.",
     streakText: "Días seguidos",
     panelStatsHeader: "Estadísticas",
     labelWhiteWins: "Victorias blancas:",
@@ -331,10 +346,6 @@ const translations = {
     joinRoom: "Unirse",
     roomCode: "Código de sala",
     enterRoomCode: "Ingresa el código",
-    playWithFriend: "Jugar con amigo",
-    peerId: "Mi ID:",
-    connectPeer: "Conectar con amigo",
-    friendPeerId: "Peer ID del amigo",
     drawOffer: "Ofrecer empate",
     drawOffered: "¡El oponente ofreció empate!",
     drawAccepted: "¡Empate aceptado!",
@@ -343,10 +354,6 @@ const translations = {
     pgnDownloaded: "¡Archivo PGN descargado!",
     tournamentsTitle: "Torneos",
     tournamentsDesc: "Torneos arena cada hora durante 24 horas",
-    friendsTitle: "Amigos",
-    friendsDesc: "Lista de amigos y solicitudes",
-    btnSendFriendRequest: "Enviar solicitud",
-    btnViewRequests: "Solicitudes",
     clubsTitle: "Clubes",
     clubsDesc: "Clubes de ajedrez y comunidades",
     btnCreateClub: "+ Crear Club",
@@ -354,11 +361,27 @@ const translations = {
     chatDesc: "Mensajes y conversaciones",
     btnSendChatMessage: "Enviar",
     mChat: "Chat",
+    playOnlineBtn: "Jugar en línea",
+    tabPlayers: "Jugadores",
+    tabClubs: "Clubes",
+    searchCountry: "Buscar un país...",
+    filterAll: "Todos",
+    filterRapid: "Rápidas",
+    filterBlitz: "Blitz",
+    filterBullet: "Bala",
+    btnView: "Ver",
+    membersLabel: "miembros",
+    colUsername: "Usuario",
+    colRating: "Clasificación",
+    colWinPoints: "Puntos de victoria",
+    colWins: "Victorias",
+    colGames: "Partidas",
+    colWinPercent: "% Victorias",
+    colPlayer: "Jugador",
   },
   de: {
     mHome: "Startseite",
     mPlay: "Spielen",
-    mPuzzles: "Puzzles",
     mLeaderboard: "Rangliste",
     mHistory: "Verlauf",
     loginText: "Anmelden",
@@ -366,8 +389,6 @@ const translations = {
     dashWelcomeTitle: "Willkommen, Schachliebhaber!",
     dashDesc: "Spiele professionelles Schach, verfolge deine Statistiken und steigere deine Bewertung.",
     dashStartBtn: "Spiel starten",
-    dashDailyTitle: "Tägliches Puzzle",
-    dashDailyDesc: "Löse täglich neue taktische Puzzles.",
     streakText: "Tage in Folge",
     panelStatsHeader: "Statistiken",
     labelWhiteWins: "Weiße Siege:",
@@ -420,10 +441,6 @@ const translations = {
     joinRoom: "Beitreten",
     roomCode: "Raumcode",
     enterRoomCode: "Raumcode eingeben",
-    playWithFriend: "Mit Freund spielen",
-    peerId: "Meine ID:",
-    connectPeer: "Mit Freund verbinden",
-    friendPeerId: "Peer-ID des Freundes",
     drawOffer: "Unentschieden anbieten",
     drawOffered: "Gegner bietet Unentschieden an!",
     drawAccepted: "Unentschieden angenommen!",
@@ -432,10 +449,6 @@ const translations = {
     pgnDownloaded: "PGN Datei heruntergeladen!",
     tournamentsTitle: "Turniere",
     tournamentsDesc: "Arena-Turniere jede Stunde, 24 Stunden lang",
-    friendsTitle: "Freunde",
-    friendsDesc: "Freundesliste und Anfragen",
-    btnSendFriendRequest: "Anfrage senden",
-    btnViewRequests: "Anfragen",
     clubsTitle: "Clubs",
     clubsDesc: "Schachclubs und Gemeinschaften",
     btnCreateClub: "+ Club erstellen",
@@ -443,11 +456,27 @@ const translations = {
     chatDesc: "Nachrichten und Gespräche",
     btnSendChatMessage: "Senden",
     mChat: "Chat",
+    playOnlineBtn: "Online spielen",
+    tabPlayers: "Spieler",
+    tabClubs: "Clubs",
+    searchCountry: "Land suchen...",
+    filterAll: "Alle",
+    filterRapid: "Rapid",
+    filterBlitz: "Blitz",
+    filterBullet: "Bullet",
+    btnView: "Ansehen",
+    membersLabel: "Mitglieder",
+    colUsername: "Benutzername",
+    colRating: "Bewertung",
+    colWinPoints: "Siegpunkte",
+    colWins: "Siege",
+    colGames: "Spiele",
+    colWinPercent: "Sieg %",
+    colPlayer: "Spieler",
   },
   fr: {
     mHome: "Accueil",
     mPlay: "Jouer",
-    mPuzzles: "Puzzles",
     mLeaderboard: "Classement",
     mHistory: "Historique",
     loginText: "Connexion",
@@ -455,8 +484,6 @@ const translations = {
     dashWelcomeTitle: "Bienvenue, amateur d'échecs!",
     dashDesc: "Jouez aux échecs professionnels, suivez vos statistiques et améliorez votre classement.",
     dashStartBtn: "Commencer à jouer",
-    dashDailyTitle: "Puzzle quotidien",
-    dashDailyDesc: "Résolvez de nouveaux puzzles tactiques chaque jour.",
     streakText: "Jours consécutifs",
     panelStatsHeader: "Statistiques",
     labelWhiteWins: "Victoires blancs:",
@@ -509,10 +536,6 @@ const translations = {
     joinRoom: "Rejoindre",
     roomCode: "Code de salle",
     enterRoomCode: "Entrez le code",
-    playWithFriend: "Jouer avec un ami",
-    peerId: "Mon ID:",
-    connectPeer: "Se connecter à un ami",
-    friendPeerId: "Peer ID de l'ami",
     drawOffer: "Offrir match nul",
     drawOffered: "L'adversaire propose un match nul!",
     drawAccepted: "Match nul accepté!",
@@ -521,10 +544,6 @@ const translations = {
     pgnDownloaded: "Fichier PGN téléchargé!",
     tournamentsTitle: "Tournois",
     tournamentsDesc: "Tournois arena toutes les heures pendant 24 heures",
-    friendsTitle: "Amis",
-    friendsDesc: "Liste d'amis et demandes",
-    btnSendFriendRequest: "Envoyer demande",
-    btnViewRequests: "Demandes",
     clubsTitle: "Clubs",
     clubsDesc: "Clubs d'échecs et communautés",
     btnCreateClub: "+ Créer un club",
@@ -532,12 +551,30 @@ const translations = {
     chatDesc: "Messages et conversations",
     btnSendChatMessage: "Envoyer",
     mChat: "Chat",
+    playOnlineBtn: "Jouer en ligne",
+    tabPlayers: "Joueurs",
+    tabClubs: "Clubs",
+    searchCountry: "Rechercher un pays...",
+    filterAll: "Tous",
+    filterRapid: "Cadence",
+    filterBlitz: "Blitz",
+    filterBullet: "Bullet",
+    btnView: "Voir",
+    membersLabel: "membres",
+    colUsername: "Nom d'utilisateur",
+    colRating: "Classement",
+    colWinPoints: "Points de victoire",
+    colWins: "Victoires",
+    colGames: "Parties",
+    colWinPercent: "% Victoires",
+    colPlayer: "Joueur",
   }
 };
 
 i18next.init({
   lng: localStorage.getItem("justChessLang") || "uz",
-  debug: false,
+  fallbackLng: "uz",
+  debug: true,
   resources: {
     uz: { translation: translations.uz },
     en: { translation: translations.en },
@@ -556,22 +593,20 @@ function leaderboardAlertText() {
 
 function updateUI() {
   const t = (key) => i18next.t(key);
-  
+
   const mHome = document.getElementById("mHome"); if (mHome) mHome.textContent = t('mHome');
   const mPlay = document.getElementById("mPlay"); if (mPlay) mPlay.textContent = t('mPlay');
   const mLeaderboard = document.getElementById("mLeaderboard"); if (mLeaderboard) mLeaderboard.textContent = t('mLeaderboard');
   const mHistory = document.getElementById("mHistory"); if (mHistory) mHistory.textContent = t('mHistory');
   const mTournaments = document.getElementById("mTournaments"); if (mTournaments) mTournaments.textContent = t('tournamentsTitle');
   const mClubs = document.getElementById("mClubs"); if (mClubs) mClubs.textContent = t('clubsTitle');
-  
+
   const dashWelcomeTitle = document.getElementById("dashWelcomeTitle"); if (dashWelcomeTitle) dashWelcomeTitle.textContent = t('dashWelcomeTitle');
   const dashDesc = document.getElementById("dashDesc"); if (dashDesc) dashDesc.textContent = t('dashDesc');
   const dashStartBtn = document.getElementById("dashStartBtn"); if (dashStartBtn) dashStartBtn.textContent = t('dashStartBtn');
-  const dashDailyTitle = document.getElementById("dashDailyTitle"); if (dashDailyTitle) dashDailyTitle.textContent = t('dashDailyTitle');
-  const dashDailyDesc = document.getElementById("dashDailyDesc"); if (dashDailyDesc) dashDailyDesc.textContent = t('dashDailyDesc');
   const dashPlayerTitle = document.getElementById("dashPlayerTitle"); if (dashPlayerTitle) dashPlayerTitle.textContent = t('dashPlayerTitle');
   const dashPlayerDesc = document.getElementById("dashPlayerDesc"); if (dashPlayerDesc) dashPlayerDesc.textContent = t('dashPlayerDesc');
-  
+
   const panelStatsHeader = document.getElementById("panelStatsHeader"); if (panelStatsHeader) panelStatsHeader.textContent = t('panelStatsHeader');
   const labelWhiteWins = document.getElementById("labelWhiteWins"); if (labelWhiteWins) labelWhiteWins.textContent = t('labelWhiteWins');
   const labelBlackWins = document.getElementById("labelBlackWins"); if (labelBlackWins) labelBlackWins.textContent = t('labelBlackWins');
@@ -580,7 +615,7 @@ function updateUI() {
   const btnNewGame = document.getElementById("btnNewGame"); if (btnNewGame) btnNewGame.textContent = t('btnNewGame');
   const btnResign = document.getElementById("btnResign"); if (btnResign) btnResign.textContent = t('btnResign');
   const panelHistoryHeader = document.getElementById("panelHistoryHeader"); if (panelHistoryHeader) panelHistoryHeader.textContent = t('panelHistoryHeader');
-  
+
   const loginCardTitle = document.getElementById("loginCardTitle"); if (loginCardTitle) loginCardTitle.textContent = t('loginCardTitle');
   const labelLoginUsername = document.getElementById("labelLoginUsername"); if (labelLoginUsername) labelLoginUsername.textContent = t('labelLoginUsername');
   const labelLoginPassword = document.getElementById("labelLoginPassword"); if (labelLoginPassword) labelLoginPassword.textContent = t('labelLoginPassword');
@@ -595,7 +630,7 @@ function updateUI() {
   const btnRegSubmit = document.getElementById("btnRegSubmit"); if (btnRegSubmit) btnRegSubmit.textContent = t('btnRegSubmit');
   const hasAccountText = document.getElementById("hasAccountText"); if (hasAccountText) hasAccountText.textContent = t('hasAccountText');
   const goToLoginLink = document.getElementById("goToLoginLink"); if (goToLoginLink) goToLoginLink.textContent = t('goToLoginLink');
-  
+
   const profileCardTitle = document.getElementById("profileCardTitle"); if (profileCardTitle) profileCardTitle.textContent = t('profileCardTitle');
   const profLabelWins = document.getElementById("profLabelWins"); if (profLabelWins) profLabelWins.textContent = t('profLabelWins');
   const profLabelLosses = document.getElementById("profLabelLosses"); if (profLabelLosses) profLabelLosses.textContent = t('profLabelLosses');
@@ -607,22 +642,35 @@ function updateUI() {
   const leaderboardDesc = document.getElementById("leaderboardDesc"); if (leaderboardDesc) leaderboardDesc.textContent = t('leaderboardDesc');
   const historyCardTitle = document.getElementById("historyCardTitle"); if (historyCardTitle) historyCardTitle.textContent = t('historyTitle');
   const historyDesc = document.getElementById("historyDesc"); if (historyDesc) historyDesc.textContent = t('historyDesc');
-  
+
   const tournamentsCardTitle = document.getElementById("tournamentsCardTitle"); if (tournamentsCardTitle) tournamentsCardTitle.textContent = t('tournamentsTitle');
   const tournamentsDesc = document.getElementById("tournamentsDesc"); if (tournamentsDesc) tournamentsDesc.textContent = t('tournamentsDesc');
-  
-  const friendsCardTitle = document.getElementById("friendsCardTitle"); if (friendsCardTitle) friendsCardTitle.textContent = t('friendsTitle');
-  const friendsDesc = document.getElementById("friendsDesc"); if (friendsDesc) friendsDesc.textContent = t('friendsDesc');
-  const btnSendFriendRequest = document.getElementById("btnSendFriendRequest"); if (btnSendFriendRequest) btnSendFriendRequest.textContent = t('btnSendFriendRequest');
-  const btnViewRequests = document.getElementById("btnViewRequests"); if (btnViewRequests) btnViewRequests.textContent = t('btnViewRequests');
-  
+
   const clubsCardTitle = document.getElementById("clubsCardTitle"); if (clubsCardTitle) clubsCardTitle.textContent = t('clubsTitle');
   const clubsDesc = document.getElementById("clubsDesc"); if (clubsDesc) clubsDesc.textContent = t('clubsDesc');
   const btnCreateClub = document.getElementById("btnCreateClub"); if (btnCreateClub) btnCreateClub.textContent = t('btnCreateClub');
-  
+
   const chatCardTitle = document.getElementById("chatCardTitle"); if (chatCardTitle) chatCardTitle.textContent = t('chatTitle');
   const chatDesc = document.getElementById("chatDesc"); if (chatDesc) chatDesc.textContent = t('chatDesc');
   const btnSendChatMessage = document.getElementById("btnSendChatMessage"); if (btnSendChatMessage) btnSendChatMessage.textContent = t('btnSendChatMessage');
+
+  const playOnlineBtn = document.getElementById("playOnlineBtn"); if (playOnlineBtn) playOnlineBtn.textContent = t('playOnlineBtn');
+  const tabPlayers = document.getElementById("playersTab"); if (tabPlayers) tabPlayers.textContent = t('tabPlayers');
+  const tabClubs = document.getElementById("clubsTab"); if (tabClubs) tabClubs.textContent = t('tabClubs');
+  const searchCountry = document.getElementById("clubSearchInput"); if (searchCountry) searchCountry.placeholder = t('searchCountry');
+  const filterAll = document.getElementById("filterAll"); if (filterAll) filterAll.textContent = t('filterAll');
+  const filterRapid = document.getElementById("filterRapid"); if (filterRapid) filterRapid.textContent = t('filterRapid');
+  const filterBlitz = document.getElementById("filterBlitz"); if (filterBlitz) filterBlitz.textContent = t('filterBlitz');
+  const filterBullet = document.getElementById("filterBullet"); if (filterBullet) filterBullet.textContent = t('filterBullet');
+  const colUsername = document.getElementById("colUsername"); if (colUsername) colUsername.textContent = t('colUsername');
+  const colRating = document.getElementById("colRating"); if (colRating) colRating.textContent = t('colRating');
+  const colWinPoints = document.getElementById("colWinPoints"); if (colWinPoints) colWinPoints.textContent = t('colWinPoints');
+  const colWins = document.getElementById("colWins"); if (colWins) colWins.textContent = t('colWins');
+  const colGames = document.getElementById("colGames"); if (colGames) colGames.textContent = t('colGames');
+  const colWinPercent = document.getElementById("colWinPercent"); if (colWinPercent) colWinPercent.textContent = t('colWinPercent');
+  const colPlayer = document.getElementById("colPlayer"); if (colPlayer) colPlayer.textContent = t('colPlayer');
+
+  if (typeof window.updateTopPlayersList === 'function') window.updateTopPlayersList();
 
   if (typeof window.updateAuthHeaderUI === 'function') window.updateAuthHeaderUI();
   if (typeof window.updateStreakUI === 'function') window.updateStreakUI();

@@ -107,6 +107,30 @@ const translations = {
     timerLabelJudaTez: "Juda tez",
     timerLabelBlits: "Blits",
     timerLabelTezkor: "Tezkor",
+    historyAllText: "Barchasi",
+    historyWinsText: "G'alabalar",
+    historyLossesText: "Mag'lubiyatlar",
+    historyDrawsText: "Duranglar",
+    colDate: "Sana",
+    colOpponent: "Raqib",
+    colMode: "Rejim",
+    colTime: "Vaqt",
+    colResult: "Natija",
+    leaguesDesc: "Har oyda yangilanadigan kontinental musobaqalar",
+    leagueAsia: "Osiyo Ligasi",
+    leagueEurope: "Yevropa Ligasi",
+    leagueAfrica: "Afrika Ligasi",
+    leagueSouthAmerica: "Janubiy Amerika",
+    leagueNorthAmerica: "Shimoliy Amerika",
+    leagueOceania: "Okeaniya Ligasi",
+    championWinnerLabel: "G'olib: Jamoa nomi",
+    championsTitle: "Chempionlar Ligasi",
+    championsSubtitle: "6 ta mintaqaviy liganing g'oliblari bosh sovrin uchun kurashadi",
+    tournamentFormatTitle: "Turnir formati (Round-Robin)",
+    roundRobinRule1: "Har bir ligada mintaqasidagi barcha jamoalar Round-Robin tizimida o'ynaydi",
+    roundRobinRule2: "Barcha jamoalar bir-biri bilan 1 marta o'ynaydi (jami 28 o'yin)",
+    roundRobinRule3: "G'alaba: +3 ochko, Durang: +1 ochko, Mag'lubiyat: +0 ochko",
+    roundRobinRule4: "Eng ko'p ochko to'plagan jamoa ligani chempioni bo'ladi",
   },
   en: {
     mHome: "Home",
@@ -216,6 +240,30 @@ const translations = {
     timerLabelJudaTez: "Bullet",
     timerLabelBlits: "Blitz",
     timerLabelTezkor: "Rapid",
+    historyAllText: "All",
+    historyWinsText: "Wins",
+    historyLossesText: "Losses",
+    historyDrawsText: "Draws",
+    colDate: "Date",
+    colOpponent: "Opponent",
+    colMode: "Mode",
+    colTime: "Time",
+    colResult: "Result",
+    leaguesDesc: "Continental tournaments refreshed monthly",
+    leagueAsia: "Asia League",
+    leagueEurope: "Europe League",
+    leagueAfrica: "Africa League",
+    leagueSouthAmerica: "South America",
+    leagueNorthAmerica: "North America",
+    leagueOceania: "Oceania League",
+    championWinnerLabel: "Winner: Team name",
+    championsTitle: "Champions League",
+    championsSubtitle: "6 continental league winners compete for the grand prize",
+    tournamentFormatTitle: "Tournament Format (Round-Robin)",
+    roundRobinRule1: "All teams in each league play in Round-Robin format",
+    roundRobinRule2: "All teams play each other once (28 games total)",
+    roundRobinRule3: "Win: +3 points, Draw: +1 point, Loss: +0 points",
+    roundRobinRule4: "The team with the most points becomes league champion",
   },
   ru: {
     mHome: "Главная",
@@ -325,6 +373,30 @@ const translations = {
     timerLabelJudaTez: "Пуля",
     timerLabelBlits: "Блиц",
     timerLabelTezkor: "Рапид",
+    historyAllText: "Все",
+    historyWinsText: "Победы",
+    historyLossesText: "Поражения",
+    historyDrawsText: "Ничьи",
+    colDate: "Дата",
+    colOpponent: "Соперник",
+    colMode: "Режим",
+    colTime: "Время",
+    colResult: "Результат",
+    leaguesDesc: "Континентальные турниры каждый месяц",
+    leagueAsia: "Азиатская лига",
+    leagueEurope: "Европейская лига",
+    leagueAfrica: "Африканская лига",
+    leagueSouthAmerica: "Южная Америка",
+    leagueNorthAmerica: "Северная Америка",
+    leagueOceania: "Океанская лига",
+    championWinnerLabel: "Победитель: название команды",
+    championsTitle: "Чемпионы",
+    championsSubtitle: "6 победителей лиг борются за большой приз",
+    tournamentFormatTitle: "Формат турнира (Round-Robin)",
+    roundRobinRule1: "Все команды каждой лиги играют в формате Round-Robin",
+    roundRobinRule2: "Все команды играют друг с другом по одному разу (28 игр всего)",
+    roundRobinRule3: "Победа: +3 очка, Ничья: +1 очко, Поражение: +0 очков",
+    roundRobinRule4: "Команда, набрашая больше всего очков, становится чемпионом лиги",
   },
   es: {
     mHome: "Inicio",
@@ -434,6 +506,30 @@ tournamentsTitle: "Torneos",
     timerLabelJudaTez: "Bala",
     timerLabelBlits: "Blitz",
     timerLabelTezkor: "Rápidas",
+    historyAllText: "Todo",
+    historyWinsText: "Victorias",
+    historyLossesText: "Derrotas",
+    historyDrawsText: "Tablas",
+    colDate: "Fecha",
+    colOpponent: "Oponente",
+    colMode: "Modo",
+    colTime: "Tiempo",
+    colResult: "Resultado",
+    leaguesDesc: "Torneos continentales actualizados mensualmente",
+    leagueAsia: "Liga de Asia",
+    leagueEurope: "Liga de Europa",
+    leagueAfrica: "Liga de África",
+    leagueSouthAmerica: "Sudamérica",
+    leagueNorthAmerica: "Norteamérica",
+    leagueOceania: "Liga de Oceanía",
+    championWinnerLabel: "Ganador: Nombre del equipo",
+    championsTitle: "Liga de Campeones",
+    championsSubtitle: "6 ganadores de ligas continentales compiten por el gran premio",
+    tournamentFormatTitle: "Formato de Torneo (Round-Robin)",
+    roundRobinRule1: "Todos los equipos de cada liga juegan en formato Round-Robin",
+    roundRobinRule2: "Todos los equipos juegan entre sí una vez (28 partidas en total)",
+    roundRobinRule3: "Victoria: +3 puntos, Empate: +1 punto, Derrota: +0 puntos",
+    roundRobinRule4: "El equipo con más puntos se corona campeón de la liga",
   },
   de: {
     mHome: "Startseite",
@@ -543,6 +639,30 @@ tournamentsTitle: "Torneos",
     timerLabelJudaTez: "Bullet",
     timerLabelBlits: "Blitz",
     timerLabelTezkor: "Rapid",
+    historyAllText: "Alle",
+    historyWinsText: "Siege",
+    historyLossesText: "Niederlagen",
+    historyDrawsText: "Unentschieden",
+    colDate: "Datum",
+    colOpponent: "Gegner",
+    colMode: "Modus",
+    colTime: "Zeit",
+    colResult: "Ergebnis",
+    leaguesDesc: "Kontinentale Turniere monatlich aktualisiert",
+    leagueAsia: "Asien-Liga",
+    leagueEurope: "Europa-Liga",
+    leagueAfrica: "Afrika-Liga",
+    leagueSouthAmerica: "Südamerika",
+    leagueNorthAmerica: "Nordamerika",
+    leagueOceania: "Ozeanien-Liga",
+    championWinnerLabel: "Sieger: Mannschaftsname",
+    championsTitle: "Champions League",
+    championsSubtitle: "6 kontinentale Ligasieger kämpfen um den Großen Preis",
+    tournamentFormatTitle: "Turnierformat (Round-Robin)",
+    roundRobinRule1: "Alle Mannschaften jeder Liga spielen im Round-Robin-Format",
+    roundRobinRule2: "Alle Mannschaften spielen einander einmal aus (28 Spiele insgesamt)",
+    roundRobinRule3: "Sieg: +3 Punkte, Unentschieden: +1 Punkt, Niederlage: +0 Punkte",
+    roundRobinRule4: "Die Mannschaft mit den meisten Punkten wird Ligameister",
   },
   fr: {
     mHome: "Accueil",
@@ -652,13 +772,37 @@ tournamentsTitle: "Torneos",
     timerLabelJudaTez: "Bullet",
     timerLabelBlits: "Blitz",
     timerLabelTezkor: "Cadence",
+    historyAllText: "Tous",
+    historyWinsText: "Victoires",
+    historyLossesText: "Défaites",
+    historyDrawsText: "Nuls",
+    colDate: "Date",
+    colOpponent: "Adversaire",
+    colMode: "Mode",
+    colTime: "Temps",
+    colResult: "Résultat",
+    leaguesDesc: "Tournois continentaux mis à jour mensuellement",
+    leagueAsia: "Ligue d'Asie",
+    leagueEurope: "Ligue d'Europe",
+    leagueAfrica: "Ligue d'Afrique",
+    leagueSouthAmerica: "Amérique du Sud",
+    leagueNorthAmerica: "Amérique du Nord",
+    leagueOceania: "Ligue d'Océanie",
+    championWinnerLabel: "Gagnant: Nom de l'équipe",
+    championsTitle: "Ligue des Champions",
+    championsSubtitle: "6 champions de ligues continentales pour le grand prix",
+    tournamentFormatTitle: "Format de Tournoi (Round-Robin)",
+    roundRobinRule1: "Toutes les équipes de chaque ligue jouent en Round-Robin",
+    roundRobinRule2: "Toutes les équipes se jouent une fois (28 matchs au total)",
+    roundRobinRule3: "Victoire: +3 points, Nul: +1 point, Défaite: +0 points",
+    roundRobinRule4: "L'équipe avec le plus de points devient champion de ligue",
   }
 };
 
 i18next.init({
   lng: localStorage.getItem("justChessLang") || "uz",
   fallbackLng: "uz",
-  debug: true,
+  debug: false,
   resources: {
     uz: { translation: translations.uz },
     en: { translation: translations.en },
@@ -769,6 +913,36 @@ function updateUI() {
   const timerLabelJudaTez = document.getElementById("timerLabelJudaTez"); if (timerLabelJudaTez) timerLabelJudaTez.textContent = t('timerLabelJudaTez');
   const timerLabelBlits = document.getElementById("timerLabelBlits"); if (timerLabelBlits) timerLabelBlits.textContent = t('timerLabelBlits');
   const timerLabelTezkor = document.getElementById("timerLabelTezkor"); if (timerLabelTezkor) timerLabelTezkor.textContent = t('timerLabelTezkor');
+
+  const historyAllText = document.getElementById("historyAllText"); if (historyAllText) historyAllText.textContent = t('historyAllText');
+  const historyWinsText = document.getElementById("historyWinsText"); if (historyWinsText) historyWinsText.textContent = t('historyWinsText');
+  const historyLossesText = document.getElementById("historyLossesText"); if (historyLossesText) historyLossesText.textContent = t('historyLossesText');
+  const historyDrawsText = document.getElementById("historyDrawsText"); if (historyDrawsText) historyDrawsText.textContent = t('historyDrawsText');
+  const colDate = document.getElementById("colDate"); if (colDate) colDate.textContent = t('colDate');
+  const colOpponent = document.getElementById("colOpponent"); if (colOpponent) colOpponent.textContent = t('colOpponent');
+  const colMode = document.getElementById("colMode"); if (colMode) colMode.textContent = t('colMode');
+  const colTime = document.getElementById("colTime"); if (colTime) colTime.textContent = t('colTime');
+  const colResult = document.getElementById("colResult"); if (colResult) colResult.textContent = t('colResult');
+  const leaguesDesc = document.getElementById("leaguesDesc"); if (leaguesDesc) leaguesDesc.textContent = t('leaguesDesc');
+  const leagueAsia = document.getElementById("leagueAsia"); if (leagueAsia) leagueAsia.textContent = t('leagueAsia');
+  const leagueEurope = document.getElementById("leagueEurope"); if (leagueEurope) leagueEurope.textContent = t('leagueEurope');
+  const leagueAfrica = document.getElementById("leagueAfrica"); if (leagueAfrica) leagueAfrica.textContent = t('leagueAfrica');
+  const leagueSouthAmerica = document.getElementById("leagueSouthAmerica"); if (leagueSouthAmerica) leagueSouthAmerica.textContent = t('leagueSouthAmerica');
+  const leagueNorthAmerica = document.getElementById("leagueNorthAmerica"); if (leagueNorthAmerica) leagueNorthAmerica.textContent = t('leagueNorthAmerica');
+  const leagueOceania = document.getElementById("leagueOceania"); if (leagueOceania) leagueOceania.textContent = t('leagueOceania');
+  const championWinnerAsia = document.getElementById("championWinnerAsia"); if (championWinnerAsia) championWinnerAsia.textContent = t('championWinnerLabel');
+  const championWinnerEurope = document.getElementById("championWinnerEurope"); if (championWinnerEurope) championWinnerEurope.textContent = t('championWinnerLabel');
+  const championWinnerAfrica = document.getElementById("championWinnerAfrica"); if (championWinnerAfrica) championWinnerAfrica.textContent = t('championWinnerLabel');
+  const championWinnerSouthAmerica = document.getElementById("championWinnerSouthAmerica"); if (championWinnerSouthAmerica) championWinnerSouthAmerica.textContent = t('championWinnerLabel');
+  const championWinnerNorthAmerica = document.getElementById("championWinnerNorthAmerica"); if (championWinnerNorthAmerica) championWinnerNorthAmerica.textContent = t('championWinnerLabel');
+  const championWinnerOceania = document.getElementById("championWinnerOceania"); if (championWinnerOceania) championWinnerOceania.textContent = t('championWinnerLabel');
+  const championsTitle = document.getElementById("championsTitle"); if (championsTitle) championsTitle.textContent = t('championsTitle');
+  const championsSubtitle = document.getElementById("championsSubtitle"); if (championsSubtitle) championsSubtitle.textContent = t('championsSubtitle');
+  const tournamentFormatTitle = document.getElementById("tournamentFormatTitle"); if (tournamentFormatTitle) tournamentFormatTitle.textContent = t('tournamentFormatTitle');
+  const roundRobinRule1 = document.getElementById("roundRobinRule1"); if (roundRobinRule1) roundRobinRule1.textContent = t('roundRobinRule1');
+  const roundRobinRule2 = document.getElementById("roundRobinRule2"); if (roundRobinRule2) roundRobinRule2.textContent = t('roundRobinRule2');
+  const roundRobinRule3 = document.getElementById("roundRobinRule3"); if (roundRobinRule3) roundRobinRule3.textContent = t('roundRobinRule3');
+  const roundRobinRule4 = document.getElementById("roundRobinRule4"); if (roundRobinRule4) roundRobinRule4.textContent = t('roundRobinRule4');
 
   if (typeof window.updateTopPlayersList === 'function') window.updateTopPlayersList();
 

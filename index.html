@@ -712,28 +712,28 @@
               id="allHistoryTab"
               data-filter="all"
             >
-              Barchasi
+              <span id="historyAllText">Barchasi</span>
             </button>
             <button
               class="mode-tab"
               id="winsHistoryTab"
               data-filter="win"
             >
-              G'alabalar
+              <span id="historyWinsText">G'alabalar</span>
             </button>
             <button
               class="mode-tab"
               id="lossesHistoryTab"
               data-filter="loss"
             >
-              Mag'lubiyatlar
+              <span id="historyLossesText">Mag'lubiyatlar</span>
             </button>
             <button
               class="mode-tab"
               id="drawsHistoryTab"
               data-filter="draw"
             >
-              Duranglar
+              <span id="historyDrawsText">Duranglar</span>
             </button>
           </div>
         </div>
@@ -743,11 +743,11 @@
             <thead>
               <tr>
                 <th>#</th>
-                <th>Sana</th>
-                <th>Raqib</th>
-                <th>Rejim</th>
-                <th>Vaqt</th>
-                <th>Natija</th>
+                <th id="colDate">Sana</th>
+                <th id="colOpponent">Raqib</th>
+                <th id="colMode">Rejim</th>
+                <th id="colTime">Vaqt</th>
+                <th id="colResult">Natija</th>
               </tr>
             </thead>
             <tbody id="historyTableBody">
@@ -974,6 +974,7 @@
             margin-bottom: 20px;
             text-align: center;
           "
+          id="leaguesDesc"
         >
           Har oyda yangilanadigan kontinental musobaqalar
         </div>
@@ -998,56 +999,56 @@
     >
       <div style="width: 900px; max-width: 95%">
         <!-- Sarlavha -->
-        <div class="card-title" style="margin-bottom: 15px; text-align: center;">
+        <div class="card-title" style="margin-bottom: 15px; text-align: center;" id="championsTitle">
           🏆 Chempionlar Ligasi
         </div>
-        <div style="font-size: 13px; color: #88a; margin-bottom: 20px; text-align: center;">
+        <div style="font-size: 13px; color: #88a; margin-bottom: 20px; text-align: center;" id="championsSubtitle">
           6 ta mintaqaviy liganing g'oliblari bosh sovrin uchun kurashadi
         </div>
 
         <!-- 6 ta liganing g'oliblari -->
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
-          <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
-            <div style="font-size: 28px; margin-bottom: 8px;">🌏</div>
-            <div style="font-size: 13px; color: #fff; font-weight: bold;">Osiyo Ligasi</div>
-            <div style="font-size: 11px; color: #88a; margin-top: 4px;">G'olib: Jamoa nomi</div>
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px;">
+            <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
+              <div style="font-size: 28px; margin-bottom: 8px;">🌏</div>
+              <div style="font-size: 13px; color: #fff; font-weight: bold;" id="leagueAsia">Osiyo Ligasi</div>
+              <div style="font-size: 11px; color: #88a; margin-top: 4px;" id="championWinnerAsia">G'olib: Jamoa nomi</div>
+            </div>
+            <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
+              <div style="font-size: 28px; margin-bottom: 8px;">🌍</div>
+              <div style="font-size: 13px; color: #fff; font-weight: bold;" id="leagueEurope">Yevropa Ligasi</div>
+              <div style="font-size: 11px; color: #88a; margin-top: 4px;" id="championWinnerEurope">G'olib: Jamoa nomi</div>
+            </div>
+            <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
+              <div style="font-size: 28px; margin-bottom: 8px;">🌍</div>
+              <div style="font-size: 13px; color: #fff; font-weight: bold;" id="leagueAfrica">Afrika Ligasi</div>
+              <div style="font-size: 11px; color: #88a; margin-top: 4px;" id="championWinnerAfrica">G'olib: Jamoa nomi</div>
+            </div>
+            <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
+              <div style="font-size: 28px; margin-bottom: 8px;">🌎</div>
+              <div style="font-size: 13px; color: #fff; font-weight: bold;" id="leagueSouthAmerica">Janubiy Amerika</div>
+              <div style="font-size: 11px; color: #88a; margin-top: 4px;" id="championWinnerSouthAmerica">G'olib: Jamoa nomi</div>
+            </div>
+            <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
+              <div style="font-size: 28px; margin-bottom: 8px;">🌎</div>
+              <div style="font-size: 13px; color: #fff; font-weight: bold;" id="leagueNorthAmerica">Shimoliy Amerika</div>
+              <div style="font-size: 11px; color: #88a; margin-top: 4px;" id="championWinnerNorthAmerica">G'olib: Jamoa nomi</div>
+            </div>
+            <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
+              <div style="font-size: 28px; margin-bottom: 8px;">🌏</div>
+              <div style="font-size: 13px; color: #fff; font-weight: bold;" id="leagueOceania">Okeaniya Ligasi</div>
+              <div style="font-size: 11px; color: #88a; margin-top: 4px;" id="championWinnerOceania">G'olib: Jamoa nomi</div>
+            </div>
           </div>
-          <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
-            <div style="font-size: 28px; margin-bottom: 8px;">🌍</div>
-            <div style="font-size: 13px; color: #fff; font-weight: bold;">Yevropa Ligasi</div>
-            <div style="font-size: 11px; color: #88a; margin-top: 4px;">G'olib: Jamoa nomi</div>
-          </div>
-          <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
-            <div style="font-size: 28px; margin-bottom: 8px;">🌍</div>
-            <div style="font-size: 13px; color: #fff; font-weight: bold;">Afrika Ligasi</div>
-            <div style="font-size: 11px; color: #88a; margin-top: 4px;">G'olib: Jamoa nomi</div>
-          </div>
-          <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
-            <div style="font-size: 28px; margin-bottom: 8px;">🌎</div>
-            <div style="font-size: 13px; color: #fff; font-weight: bold;">Janubiy Amerika</div>
-            <div style="font-size: 11px; color: #88a; margin-top: 4px;">G'olib: Jamoa nomi</div>
-          </div>
-          <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
-            <div style="font-size: 28px; margin-bottom: 8px;">🌎</div>
-            <div style="font-size: 13px; color: #fff; font-weight: bold;">Shimoliy Amerika</div>
-            <div style="font-size: 11px; color: #88a; margin-top: 4px;">G'olib: Jamoa nomi</div>
-          </div>
-          <div style="background: #121e1a; border: 1px solid #20352e; border-radius: 8px; padding: 15px; text-align: center;">
-            <div style="font-size: 28px; margin-bottom: 8px;">🌏</div>
-            <div style="font-size: 13px; color: #fff; font-weight: bold;">Okeaniya Ligasi</div>
-            <div style="font-size: 11px; color: #88a; margin-top: 4px;">G'olib: Jamoa nomi</div>
-          </div>
-        </div>
 
         <!-- Turnir formati -->
         <div style="background: #1a2a28; border: 1px solid #2a3e3b; border-radius: 10px; padding: 18px;">
-          <div style="font-size: 14px; color: #81b64c; font-weight: bold; margin-bottom: 10px;">Turnir formati (Round-Robin)</div>
-          <div style="font-size: 12px; color: #88a; line-height: 1.7;">
-            <p style="margin: 0 0 6px 0;">• Har bir ligada mintaqasidagi barcha jamoalar Round-Robin tizimida o'ynaydi</p>
-            <p style="margin: 0 0 6px 0;">• Barcha jamoalar bir-biri bilan 1 marta o'ynaydi (jami 28 o'yin)</p>
-            <p style="margin: 0 0 6px 0;">• G'alaba: +3 ochko, Durang: +1 ochko, Mag'lubiyat: +0 ochko</p>
-            <p style="margin: 0;">• Eng ko'p ochko to'plagan jamoa liganing chempioni bo'ladi</p>
-          </div>
+<div style="font-size: 14px; color: #81b64c; font-weight: bold; margin-bottom: 10px;" id="tournamentFormatTitle">Turnir formati (Round-Robin)</div>
+            <div style="font-size: 12px; color: #88a; line-height: 1.7;">
+              <p style="margin: 0 0 6px 0;" id="roundRobinRule1">• Har bir ligada mintaqasidagi barcha jamoalar Round-Robin tizimida o'ynaydi</p>
+              <p style="margin: 0 0 6px 0;" id="roundRobinRule2">• Barcha jamoalar bir-biri bilan 1 marta o'ynaydi (jami 28 o'yin)</p>
+              <p style="margin: 0 0 6px 0;" id="roundRobinRule3">• G'alaba: +3 ochko, Durang: +1 ochko, Mag'lubiyat: +0 ochko</p>
+              <p style="margin: 0;" id="roundRobinRule4">• Eng ko'p ochko to'plagan jamoa ligani chempioni bo'ladi</p>
+            </div>
         </div>
       </div>
     </div>

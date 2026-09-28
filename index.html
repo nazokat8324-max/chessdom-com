@@ -1276,14 +1276,14 @@
     <div id="settingsView" class="view-section" style="justify-content: flex-start; align-items: center; padding: 30px">
       <div class="settings-container">
         <div class="settings-header">
-          <h2>Sozlamalar</h2>
-          <p>Sizning shaxsiy afzalliklaringiz</p>
+          <h2 id="settingsTitle">Sozlamalar</h2>
+          <p id="settingsSubtitle">Sizning shaxsiy afzalliklaringiz</p>
         </div>
 
         <div class="settings-section">
-          <h3>🌍 Davlat bayrog'i</h3>
+          <h3 id="settingsCountryTitle">🌍 Davlat bayrog'i</h3>
           <div class="settings-row">
-            <label>Davlat kodi:</label>
+            <label id="settingsCountryLabel">Davlat kodi:</label>
             <select id="settingsCountry" class="settings-select">
               <option value="">Barcha davlatlar yuklanmoqda…</option>
             </select>
@@ -1291,33 +1291,33 @@
         </div>
 
         <div class="settings-section">
-          <h3>🗣️ Interfeys tili</h3>
+          <h3 id="settingsLanguageTitle">🗣️ Interfeys tili</h3>
           <div class="settings-row">
-            <label>Til:</label>
+            <label id="settingsLanguageLabel">Til:</label>
             <button class="settings-language-btn" id="settingsLanguageBtn" onclick="window.openLanguageModal()">Tilni tanlash</button>
           </div>
         </div>
 
         <div class="settings-section">
-          <h3>🔊 Ovoz</h3>
+          <h3 id="settingsSoundTitle">🔊 Ovoz</h3>
           <div class="settings-row">
-            <label>Ovozli:</label>
+            <label id="settingsSoundLabel">Ovozli:</label>
             <label class="toggle-switch">
               <input type="checkbox" id="settingsSound" checked>
               <span class="toggle-slider"></span>
             </label>
           </div>
           <div class="settings-row">
-            <label>Volume:</label>
+            <label id="settingsVolumeLabel">Volume:</label>
             <input type="range" id="settingsVolume" min="0" max="100" value="80" class="settings-range">
             <span id="settingsVolumeVal">80%</span>
           </div>
         </div>
 
         <div class="settings-section">
-          <h3>🎨 Dizayn</h3>
+          <h3 id="settingsDesignTitle">🎨 Dizayn</h3>
           <div class="settings-row">
-            <label>Taxta mavsu:</label>
+            <label id="settingsThemeLabel">Taxta mavsu:</label>
             <select id="settingsTheme" class="settings-select">
               <option value="green">Yashil</option>
               <option value="brown">Qo'k</option>
@@ -1326,7 +1326,7 @@
             </select>
           </div>
           <div class="settings-row">
-            <label>Koordinatalar:</label>
+            <label id="settingsCoordsLabel">Koordinatalar:</label>
             <label class="toggle-switch">
               <input type="checkbox" id="settingsCoords" checked>
               <span class="toggle-slider"></span>
@@ -1335,8 +1335,8 @@
         </div>
 
         <div class="settings-actions">
-          <button class="settings-save-btn" onclick="window.saveSettings()">💾 Saqlash</button>
-          <button class="settings-reset-btn" onclick="window.resetSettings()">🔄 Qayta o'rnatish</button>
+          <button class="settings-save-btn" id="settingsSaveBtn" onclick="window.saveSettings()">💾 Saqlash</button>
+          <button class="settings-reset-btn" id="settingsResetBtn" onclick="window.resetSettings()">🔄 Qayta o'rnatish</button>
         </div>
       </div>
     </div>

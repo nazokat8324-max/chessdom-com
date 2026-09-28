@@ -131,6 +131,20 @@ const translations = {
     roundRobinRule2: "Barcha jamoalar bir-biri bilan 1 marta o'ynaydi (jami 28 o'yin)",
     roundRobinRule3: "G'alaba: +3 ochko, Durang: +1 ochko, Mag'lubiyat: +0 ochko",
     roundRobinRule4: "Eng ko'p ochko to'plagan jamoa ligani chempioni bo'ladi",
+    settingsTitle: "Sozlamalar",
+    settingsSubtitle: "Sizning shaxsiy afzalliklaringiz",
+    settingsCountryTitle: "🌍 Davlat bayrog'i",
+    settingsCountryLabel: "Davlat kodi:",
+    settingsLanguageTitle: "🗣️ Interfeys tili",
+    settingsLanguageLabel: "Til:",
+    settingsSoundTitle: "🔊 Ovoz",
+    settingsSoundLabel: "Ovozli:",
+    settingsVolumeLabel: "Volume:",
+    settingsDesignTitle: "🎨 Dizayn",
+    settingsThemeLabel: "Taxta mavsu:",
+    settingsCoordsLabel: "Koordinatalar:",
+    settingsSaveBtn: "Saqlash",
+    settingsResetBtn: "Qayta o'rnatish",
   },
   en: {
     mHome: "Home",
@@ -264,6 +278,20 @@ const translations = {
     roundRobinRule2: "All teams play each other once (28 games total)",
     roundRobinRule3: "Win: +3 points, Draw: +1 point, Loss: +0 points",
     roundRobinRule4: "The team with the most points becomes league champion",
+    settingsTitle: "Settings",
+    settingsSubtitle: "Your personal preferences",
+    settingsCountryTitle: "🌍 Country flag",
+    settingsCountryLabel: "Country code:",
+    settingsLanguageTitle: "🗣️ Interface language",
+    settingsLanguageLabel: "Language:",
+    settingsSoundTitle: "🔊 Sound",
+    settingsSoundLabel: "Sound:",
+    settingsVolumeLabel: "Volume:",
+    settingsDesignTitle: "🎨 Design",
+    settingsThemeLabel: "Board theme:",
+    settingsCoordsLabel: "Coordinates:",
+    settingsSaveBtn: "Save",
+    settingsResetBtn: "Reset",
   },
   ru: {
     mHome: "Главная",
@@ -397,6 +425,20 @@ const translations = {
     roundRobinRule2: "Все команды играют друг с другом по одному разу (28 игр всего)",
     roundRobinRule3: "Победа: +3 очка, Ничья: +1 очко, Поражение: +0 очков",
     roundRobinRule4: "Команда, набрашая больше всего очков, становится чемпионом лиги",
+    settingsTitle: "Настройки",
+    settingsSubtitle: "Ваши личные предпочтения",
+    settingsCountryTitle: "🌍 Флаг страны",
+    settingsCountryLabel: "Код страны:",
+    settingsLanguageTitle: "🗣️ Язык интерфейса",
+    settingsLanguageLabel: "Язык:",
+    settingsSoundTitle: "🔊 Звук",
+    settingsSoundLabel: "Звук:",
+    settingsVolumeLabel: "Громкость:",
+    settingsDesignTitle: "🎨 Дизайн",
+    settingsThemeLabel: "Тема доски:",
+    settingsCoordsLabel: "Координаты:",
+    settingsSaveBtn: "Сохранить",
+    settingsResetBtn: "Сброс",
   },
   es: {
     mHome: "Inicio",
@@ -530,6 +572,20 @@ tournamentsTitle: "Torneos",
     roundRobinRule2: "Todos los equipos juegan entre sí una vez (28 partidas en total)",
     roundRobinRule3: "Victoria: +3 puntos, Empate: +1 punto, Derrota: +0 puntos",
     roundRobinRule4: "El equipo con más puntos se corona campeón de la liga",
+    settingsTitle: "Ajustes",
+    settingsSubtitle: "Tus preferencias personales",
+    settingsCountryTitle: "🌍 Bandera del país",
+    settingsCountryLabel: "Código de país:",
+    settingsLanguageTitle: "🗣️ Idioma de la interfaz",
+    settingsLanguageLabel: "Idioma:",
+    settingsSoundTitle: "🔊 Sonido",
+    settingsSoundLabel: "Sonido:",
+    settingsVolumeLabel: "Volumen:",
+    settingsDesignTitle: "🎨 Diseño",
+    settingsThemeLabel: "Tema del tablero:",
+    settingsCoordsLabel: "Coordenadas:",
+    settingsSaveBtn: "Guardar",
+    settingsResetBtn: "Reiniciar",
   },
   de: {
     mHome: "Startseite",
@@ -663,6 +719,20 @@ tournamentsTitle: "Torneos",
     roundRobinRule2: "Alle Mannschaften spielen einander einmal aus (28 Spiele insgesamt)",
     roundRobinRule3: "Sieg: +3 Punkte, Unentschieden: +1 Punkt, Niederlage: +0 Punkte",
     roundRobinRule4: "Die Mannschaft mit den meisten Punkten wird Ligameister",
+    settingsTitle: "Einstellungen",
+    settingsSubtitle: "Ihre persönlichen Vorlieben",
+    settingsCountryTitle: "🌍 Länderflagge",
+    settingsCountryLabel: "Ländercode:",
+    settingsLanguageTitle: "🗣️ Sprache der Oberfläche",
+    settingsLanguageLabel: "Sprache:",
+    settingsSoundTitle: "🔊 Sound",
+    settingsSoundLabel: "Sound:",
+    settingsVolumeLabel: "Lautstärke:",
+    settingsDesignTitle: "🎨 Design",
+    settingsThemeLabel: "Brettthema:",
+    settingsCoordsLabel: "Koordinaten:",
+    settingsSaveBtn: "Speichern",
+    settingsResetBtn: "Zurücksetzen",
   },
   fr: {
     mHome: "Accueil",
@@ -796,6 +866,20 @@ tournamentsTitle: "Torneos",
     roundRobinRule2: "Toutes les équipes se jouent une fois (28 matchs au total)",
     roundRobinRule3: "Victoire: +3 points, Nul: +1 point, Défaite: +0 points",
     roundRobinRule4: "L'équipe avec le plus de points devient champion de ligue",
+    settingsTitle: "Paramètres",
+    settingsSubtitle: "Vos préférences personnelles",
+    settingsCountryTitle: "🌍 Drapeau du pays",
+    settingsCountryLabel: "Code du pays:",
+    settingsLanguageTitle: "🗣️ Langue de l'interface",
+    settingsLanguageLabel: "Langue:",
+    settingsSoundTitle: "🔊 Son",
+    settingsSoundLabel: "Son:",
+    settingsVolumeLabel: "Volume:",
+    settingsDesignTitle: "🎨 Design",
+    settingsThemeLabel: "Thème du tableau:",
+    settingsCoordsLabel: "Coordonnées:",
+    settingsSaveBtn: "Enregistrer",
+    settingsResetBtn: "Réinitialiser",
   }
 };
 
@@ -943,6 +1027,21 @@ function updateUI() {
   const roundRobinRule2 = document.getElementById("roundRobinRule2"); if (roundRobinRule2) roundRobinRule2.textContent = t('roundRobinRule2');
   const roundRobinRule3 = document.getElementById("roundRobinRule3"); if (roundRobinRule3) roundRobinRule3.textContent = t('roundRobinRule3');
   const roundRobinRule4 = document.getElementById("roundRobinRule4"); if (roundRobinRule4) roundRobinRule4.textContent = t('roundRobinRule4');
+
+  const settingsTitle = document.getElementById("settingsTitle"); if (settingsTitle) settingsTitle.textContent = t('settingsTitle');
+  const settingsSubtitle = document.getElementById("settingsSubtitle"); if (settingsSubtitle) settingsSubtitle.textContent = t('settingsSubtitle');
+  const settingsCountryTitle = document.getElementById("settingsCountryTitle"); if (settingsCountryTitle) settingsCountryTitle.textContent = t('settingsCountryTitle');
+  const settingsCountryLabel = document.getElementById("settingsCountryLabel"); if (settingsCountryLabel) settingsCountryLabel.textContent = t('settingsCountryLabel');
+  const settingsLanguageTitle = document.getElementById("settingsLanguageTitle"); if (settingsLanguageTitle) settingsLanguageTitle.textContent = t('settingsLanguageTitle');
+  const settingsLanguageLabel = document.getElementById("settingsLanguageLabel"); if (settingsLanguageLabel) settingsLanguageLabel.textContent = t('settingsLanguageLabel');
+  const settingsSoundTitle = document.getElementById("settingsSoundTitle"); if (settingsSoundTitle) settingsSoundTitle.textContent = t('settingsSoundTitle');
+  const settingsSoundLabel = document.getElementById("settingsSoundLabel"); if (settingsSoundLabel) settingsSoundLabel.textContent = t('settingsSoundLabel');
+  const settingsVolumeLabel = document.getElementById("settingsVolumeLabel"); if (settingsVolumeLabel) settingsVolumeLabel.textContent = t('settingsVolumeLabel');
+  const settingsDesignTitle = document.getElementById("settingsDesignTitle"); if (settingsDesignTitle) settingsDesignTitle.textContent = t('settingsDesignTitle');
+  const settingsThemeLabel = document.getElementById("settingsThemeLabel"); if (settingsThemeLabel) settingsThemeLabel.textContent = t('settingsThemeLabel');
+  const settingsCoordsLabel = document.getElementById("settingsCoordsLabel"); if (settingsCoordsLabel) settingsCoordsLabel.textContent = t('settingsCoordsLabel');
+  const settingsSaveBtn = document.getElementById("settingsSaveBtn"); if (settingsSaveBtn) settingsSaveBtn.textContent = t('settingsSaveBtn');
+  const settingsResetBtn = document.getElementById("settingsResetBtn"); if (settingsResetBtn) settingsResetBtn.textContent = t('settingsResetBtn');
 
   if (typeof window.updateTopPlayersList === 'function') window.updateTopPlayersList();
 

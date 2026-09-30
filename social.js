@@ -533,7 +533,7 @@ window.openClubDetail = function(countryName, countryCode) {
         align-items: center;
         gap: 6px;
         z-index: 10;
-      ">← ${tr('clubDetailBack', 'Back')}</button>
+      ">← ${tr('clubDetailBack', "Orqaga")}</button>
       
       <!-- Club info on banner -->
       <div style="
@@ -1785,13 +1785,18 @@ window.showClubTournaments = function(countryName) {
   const container = document.getElementById("clubTournamentsListContainer");
   if (!container) return;
 
+  const localizedCountry = window.countryName ? window.countryName(countryName, null) : countryName;
+
   const titleEl = document.getElementById("clubTournamentsTitle");
-  if (titleEl) titleEl.textContent = `${countryName} Club League Calendar`;
+  if (titleEl) titleEl.textContent = tr('clubLeagueTitle', "{country} liga kalendari").replace('{country}', localizedCountry);
 
   const descEl = document.getElementById("clubTournamentsDesc");
-  if (descEl) descEl.textContent = "Ushbu klub ishtirok etadigan liga o'yinlari";
+  if (descEl) descEl.textContent = tr('clubLeagueDesc', "Ushbu klub ishtirok etadigan liga o'yinlari");
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  const backBtn = document.getElementById("clubTournamentsBackBtn");
+  if (backBtn) backBtn.textContent = `\u2190 ${tr('clubDetailBack', "Orqaga")}`;
+
+  container.innerHTML = `<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">${tr('loadingText', "Yuklanmoqda...")}</div>`;
   window.loadClubLeagueCalendar(countryName, container);
   switchViewToClubTournaments();
 };
@@ -1829,7 +1834,7 @@ window.loadClubLeagueCalendar = function(countryName, container) {
   const rows = clubSchedule.map(match => {
     const isHome = match.home === countryName;
     const opponent = isHome ? match.away : match.home;
-    const venue = isHome ? 'Own club' : 'Away';
+    const venue = isHome ? tr('clubLeagueHome', "O'z maydonida") : tr('clubLeagueAway', "Mehmonda");
     return `
       <tr class="${isHome ? 'club-league-home' : ''}">
         <td><span class="club-league-round">${escapeHtml(match.round)}</span></td>
@@ -1849,22 +1854,22 @@ window.loadClubLeagueCalendar = function(countryName, container) {
         <span class="club-league-icon">${escapeHtml(leagueInfo.flag)}</span>
         <div>
           <strong>${escapeHtml(leagueInfo.name)}</strong>
-          <span>Round-Robin • ${teams.length} jamoa</span>
+          <span>${tr('clubLeagueRoundRobin', 'Round-Robin • {count} jamoa').replace('{count}', teams.length)}</span>
         </div>
       </div>
-      <span class="club-league-badge">Liga taqvimi</span>
+      <span class="club-league-badge">${tr('clubLeagueBadge', "Liga taqvimi")}</span>
     </div>
     <div class="club-league-calendar-table-wrap">
       <table class="club-league-calendar-table">
         <thead>
           <tr>
-            <th>Bosqich</th>
-            <th>Klub</th>
+            <th>${tr('clubLeagueRound', "Bosqich")}</th>
+            <th>${tr('clubLeagueClub', "Klub")}</th>
             <th></th>
-            <th>Raqib</th>
-            <th>Maydon</th>
-            <th>Sana</th>
-            <th>Vaqt</th>
+            <th>${tr('clubLeagueOpponent', "Raqib")}</th>
+            <th>${tr('clubLeagueVenue', "Maydon")}</th>
+            <th>${tr('clubLeagueDate', "Sana")}</th>
+            <th>${tr('clubLeagueTime', "Vaqt")}</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
@@ -2007,13 +2012,21 @@ window.sendClubChatMessage = function() {
 // Klubdagi a'zolar va ularning klubga qo'shilgan sanalari
 window.showClubHistory = function(countryName) {
   window.currentClubName = countryName;
+  const localizedCountry = window.countryName ? window.countryName(countryName, null) : countryName;
+
   const titleEl = document.getElementById("clubHistoryTitle");
-  if (titleEl) titleEl.textContent = `${countryName} - A'zolar Tarixi`;
+  if (titleEl) titleEl.textContent = tr('clubHistoryTitle', "{country} - A'zolar tarixi").replace('{country}', localizedCountry);
+
+  const descEl = document.getElementById("clubHistoryDesc");
+  if (descEl) descEl.textContent = tr('clubHistoryDesc', "Klub a'zolari va ularning qo'shilgan sanalari");
+
+  const backBtn = document.getElementById("clubHistoryBackBtn");
+  if (backBtn) backBtn.textContent = `\u2190 ${tr('clubDetailBack', "Orqaga")}`;
 
   const container = document.getElementById("clubHistoryContainer");
   if (!container) return;
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  container.innerHTML = `<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">${tr('loadingText', "Yuklanmoqda...")}</div>`;
 
   loadClubHistory(countryName, container);
   switchViewToClubHistory();
@@ -2059,7 +2072,7 @@ window.loadClubHistory = function(countryName, container) {
   });
 
   if (storedMembers.length === 0) {
-    container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Hali klubga a\'zolar yo\'q</div>';
+    container.innerHTML = `<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">${tr('clubHistoryEmpty', "Hali klubga a'zolar yo'q")}</div>`;
     return;
   }
 
@@ -2071,15 +2084,15 @@ window.loadClubHistory = function(countryName, container) {
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
         <div style="background: rgba(129, 182, 76, 0.08); border: 1px solid rgba(129, 182, 76, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #81b64c;">${storedMembers.length}</div>
-          <div style="font-size: 11px; color: #88a;">A'zolar</div>
+          <div style="font-size: 11px; color: #88a;">${tr('clubDetailMembersCard', "A'zolar")}</div>
         </div>
         <div style="background: rgba(52, 152, 219, 0.08); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #3498db;">${stats.events}</div>
-          <div style="font-size: 11px; color: #88a;">O'yinlar</div>
+          <div style="font-size: 11px; color: #88a;">${tr('clubHistoryGamesCard', "O'yinlar")}</div>
         </div>
         <div style="background: rgba(241, 196, 15, 0.08); border: 1px solid rgba(241, 196, 15, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #f1c40f;">${stats.points}</div>
-          <div style="font-size: 11px; color: #88a;">Ballar</div>
+          <div style="font-size: 11px; color: #88a;">${tr('clubDetailPointsCard', "Klub ballari")}</div>
         </div>
       </div>
     </div>
@@ -2088,7 +2101,7 @@ window.loadClubHistory = function(countryName, container) {
   // A'zolar ro'yxati
   htmlContent += `
     <div style="font-size: 13px; color: #88a; margin-bottom: 12px; font-weight: bold;">
-      ${storedMembers.length} ta a'zolar (yangidan eskiyga)
+      ${tr('clubHistoryMembersList', "{count} ta a'zo (yangidan eskiyga)").replace('{count}', storedMembers.length)}
     </div>
   `;
 
@@ -2096,7 +2109,7 @@ window.loadClubHistory = function(countryName, container) {
     const firstLetter = member.username ? member.username.charAt(0).toUpperCase() : "?";
     const joinDate = member.joinedAt
       ? new Date(member.joinedAt).toLocaleDateString('uz-UZ')
-      : "Aniqlanmagan";
+      : tr('clubHistoryJoinUnknown', "Aniqlanmagan");
     const user = allUsers.find(u => u.username === member.username) || (currentUser && currentUser.username === member.username ? currentUser : null);
     const memberRating = user ? (user.rating || 1500) : 1500;
     const memberStats = user ? (user.stats || { wins: 0, losses: 0, draws: 0 }) : { wins: 0, losses: 0, draws: 0 };
@@ -2110,10 +2123,10 @@ window.loadClubHistory = function(countryName, container) {
             ${index === 0 ? '<span style="font-size: 11px; color: #f1c40f;">🥇</span>' : ''}
           </div>
           <div style="font-size: 11px; color: #88a;">
-            Reyting: ${memberRating} • 🏆 ${memberStats.wins || 0} • ❌ ${memberStats.losses || 0} • 🤝 ${memberStats.draws || 0}
+            ${tr('profLabelRating', "Reyting:")} ${memberRating} • 🏆 ${memberStats.wins || 0} • ❌ ${memberStats.losses || 0} • 🤝 ${memberStats.draws || 0}
           </div>
           <div style="font-size: 10px; color: #666; margin-top: 2px;">
-            Joined: ${joinDate}
+            ${tr('clubHistoryJoined', "Qo'shilgan:")} ${joinDate}
           </div>
         </div>
       </div>

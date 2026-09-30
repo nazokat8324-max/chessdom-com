@@ -973,6 +973,23 @@ window.CONTINENTS = {
   Oceania: { name: "Okeaniya Ligasi", flag: "🌏", color: "#1abc9c" }
 };
 
+window.LEAGUE_I18N_KEYS = {
+  "Asia": "leagueAsia",
+  "Europe": "leagueEurope",
+  "Africa": "leagueAfrica",
+  "South America": "leagueSouthAmerica",
+  "North America": "leagueNorthAmerica",
+  "Oceania": "leagueOceania"
+};
+
+window.getLeagueI18nName = function(leagueKey, fallbackName) {
+  const i18nKey = window.LEAGUE_I18N_KEYS[leagueKey];
+  if (i18nKey && typeof i18next !== 'undefined' && i18next.isInitialized) {
+    return i18next.t(i18nKey, { defaultValue: fallbackName });
+  }
+  return fallbackName;
+};
+
 window.renderLeagues = function() {
   const container = document.getElementById("leaguesListContainer");
   if (!container) return;
@@ -984,19 +1001,26 @@ window.renderLeagues = function() {
     const info = window.CONTINENTS[key];
     const countries = (typeof continentCountries !== 'undefined' && continentCountries[key]) ? continentCountries[key] : [];
     const teamCount = countries.length;
+    const leagueName = escapeHtml(window.getLeagueI18nName(key, info.name));
+    const teamsLabel = escapeHtml(i18next.isInitialized
+      ? i18next.t('leagueCardTeams', { defaultValue: "{count} jamoa • Round-Robin" }).replace('{count}', teamCount)
+      : teamCount + ' jamoa • Round-Robin');
+    const descLabel = escapeHtml(i18next.isInitialized
+      ? i18next.t('leagueCardDesc', { defaultValue: "Barcha jamoalar o'zaro o'ynaydi. Eng ko'p ochko to'plagan jamoa g'olib!" })
+      : "Barcha jamoalar o'zaro o'ynaydi. Eng ko'p ochko to'plagan jamoa g'olib!");
     html += `
       <div class="league-card" onclick="window.openLeagueDetail('${key}')">
         <div class="league-card-icon">${info.flag}</div>
-        <div class="league-card-title">${info.name}</div>
+        <div class="league-card-title">${leagueName}</div>
         <div class="league-card-modes">
           <span class="league-mode-btn" onclick="event.stopPropagation(); window.playLeague('${key}', 'bullet')">⚡ Bullet</span>
           <span class="league-mode-btn" onclick="event.stopPropagation(); window.playLeague('${key}', 'blitz')">🔥 Blitz</span>
           <span class="league-mode-btn" onclick="event.stopPropagation(); window.playLeague('${key}', 'rapid')">⏱️ Rapid</span>
         </div>
         <div class="league-card-info">
-          <span class="league-card-teams">${teamCount} jamoa • Round-Robin</span>
+          <span class="league-card-teams">${teamsLabel}</span>
         </div>
-        <div class="league-card-desc">Barcha jamoalar o'zaro o'ynaydi. Eng ko'p ochko to'plagan jamoa g'olib!</div>
+        <div class="league-card-desc">${descLabel}</div>
       </div>
     `;
   });
@@ -1018,7 +1042,14 @@ window.openLeagueDetail = function(leagueKey) {
   const modal = document.getElementById('leagueDetailModal');
   if (!modal) return;
 
-  document.getElementById('leagueDetailTitle').textContent = info.name;
+  document.getElementById('leagueDetailTitle').textContent = window.getLeagueI18nName(leagueKey, info.name);
+
+  const standingsTitleEl = document.getElementById('leagueStandingsTitle');
+  if (standingsTitleEl) {
+    standingsTitleEl.textContent = (typeof i18next !== 'undefined' && i18next.isInitialized)
+      ? i18next.t('leagueStandingsTitle', { defaultValue: "Turnir jadvali" })
+      : "Turnir jadvali";
+  }
 
   const standingsEl = document.getElementById('leagueStandingsContainer');
   if (standingsEl) {
@@ -1035,13 +1066,19 @@ window.openLeagueDetail = function(leagueKey) {
       };
     }).sort((a, b) => b.points - a.points);
 
-    let html = '<table class="league-detail-schedule-table"><thead><tr><th>O\'rin</th><th>Jamoa</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead><tbody>';
+    const hasI18n = typeof i18next !== 'undefined' && i18next.isInitialized;
+    const rankHead = hasI18n ? i18next.t('leagueTableRank', { defaultValue: "O'RIN" }) : "O'RIN";
+    const teamHead = hasI18n ? i18next.t('leagueTableTeam', { defaultValue: "JAMOA" }) : "JAMOA";
+    let html = '<table class="league-detail-schedule-table"><thead><tr><th>' + escapeHtml(rankHead) + '</th><th>' + escapeHtml(teamHead) + '</th><th>P</th><th>W</th><th>D</th><th>L</th><th>Pts</th></tr></thead><tbody>';
     teams.forEach((team, index) => {
       const rankColor = index === 0 ? '#f1c40f' : index === 1 ? '#bdc3c7' : index === 2 ? '#e67e22' : '#fff';
+      const localizedTeamName = (typeof window.countryName === 'function')
+        ? window.countryName(team.name, null)
+        : team.name;
       html += `<tr>
         <td style="color: ${rankColor}; font-weight: 800; font-size: 12px;">${index + 1}</td>
         <td style="color: #fff; font-weight: bold; font-size: 12px;">
-          <span style="margin-right: 6px;">${team.flag}</span>${team.name}
+          <span style="margin-right: 6px;">${team.flag}</span>${escapeHtml(localizedTeamName)}
         </td>
         <td style="color: #88a; font-size: 11px;">${team.played}</td>
         <td style="color: #81b64c; font-size: 11px; font-weight: 700;">${team.wins}</td>
@@ -1123,7 +1160,14 @@ window.playLeague = function(leagueKey, mode) {
   const info = window.CONTINENTS[leagueKey];
   if (!info) return;
   const countries = (typeof continentCountries !== 'undefined' && continentCountries[leagueKey]) ? continentCountries[leagueKey] : [];
-  alert(info.name + ' - ' + mode.toUpperCase() + ' Ligasi\n\n' + countries.length + ' ta jamoa istagona o\'ynaydi!');
+  const leagueName = window.getLeagueI18nName(leagueKey, info.name);
+  const hasI18n = typeof i18next !== 'undefined' && i18next.isInitialized;
+  const message = hasI18n
+    ? i18next.t('leaguePlayAlert', { defaultValue: "{mode} - Liga • {count} ta jamoa istagona o'ynaydi!" })
+        .replace('{mode}', mode.toUpperCase())
+        .replace('{count}', countries.length)
+    : mode.toUpperCase() + ' - ' + leagueName + '\n\n' + countries.length + ' ta jamoa istagona o\'ynaydi!';
+  alert(leagueName + ' - ' + message);
 };
 
 window.getLanguageInfo = function(code) {

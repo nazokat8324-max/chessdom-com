@@ -2202,7 +2202,7 @@
 
           <div class="profile-meta-box">
             <div class="meta-row">
-              <span>FIDE ID</span>
+              <span id="profFideIdLabel">FIDE ID</span>
               <div class="meta-value">
                 <span class="editable-text" id="profileFideId"></span>
                 <input
@@ -2215,7 +2215,7 @@
               </div>
             </div>
             <div class="meta-row">
-              <span>Maqsad</span>
+              <span id="profGoalLabel">Maqsad</span>
               <div class="meta-value">
                 <span class="editable-text" id="profileGoal"></span>
                 <input
@@ -2243,7 +2243,7 @@
 
         <div class="profile-stats-content">
           <div class="profile-tabs">
-            <button class="tab-btn active">📊 Reytinglar</button>
+            <button class="tab-btn active" id="profRatingsTab">📊 Reytinglar</button>
             <button class="tab-btn edit-tab-btn" id="editProfileBtn">
               ✏️ Tahrirlash
             </button>
@@ -2265,7 +2265,7 @@
 
           <div class="stats-grid">
             <div class="stat-card editable-card rating-readonly">
-              <span class="stat-title">RAPID REYTING</span>
+              <span class="stat-title" id="profStatRapidTitle">RAPID REYTING</span>
               <span class="stat-value editable-text" id="statRapid">1500</span>
               <input
                 type="number"
@@ -2277,7 +2277,7 @@
               />
             </div>
             <div class="stat-card editable-card rating-readonly">
-              <span class="stat-title">BLITZ REYTING</span>
+              <span class="stat-title" id="profStatBlitzTitle">BLITZ REYTING</span>
               <span class="stat-value editable-text" id="statBlitz">1500</span>
               <input
                 type="number"
@@ -2289,7 +2289,7 @@
               />
             </div>
             <div class="stat-card editable-card rating-readonly">
-              <span class="stat-title">BULLET REYTING</span>
+              <span class="stat-title" id="profStatBulletTitle">BULLET REYTING</span>
               <span class="stat-value editable-text" id="statBullet">1500</span>
               <input
                 type="number"
@@ -2301,7 +2301,7 @@
               />
             </div>
             <div class="stat-card editable-card">
-              <span class="stat-title">ENG KUCHLI DEBYUT</span>
+              <span class="stat-title" id="profStatDebutTitle">ENG KUCHLI DEBYUT</span>
               <span
                 class="stat-value editable-text"
                 id="statDebut"
@@ -2316,7 +2316,7 @@
               />
             </div>
             <div class="stat-card editable-card">
-              <span class="stat-title">KLUB</span>
+              <span class="stat-title" id="profStatClubTitle">KLUB</span>
               <span
                 class="stat-value editable-text"
                 id="statClub"
@@ -2331,9 +2331,10 @@
               />
             </div>
             <div class="stat-card">
-              <span class="stat-title">STATUS</span>
+              <span class="stat-title" id="profStatStatusTitle">STATUS</span>
               <span
                 class="stat-value win"
+                id="profStatusActive"
                 style="font-size: 16px; margin-top: 5px"
                 >Faol o'yinchi</span
               >

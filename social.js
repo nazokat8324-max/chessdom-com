@@ -460,6 +460,9 @@ window.openClubDetail = function(countryName, countryCode) {
   const clubPoints = stats.points;
   const isJoined = userClubs.includes(countryName);
   const localizedCountry = window.countryName(countryName, countryCode);
+  const aboutText = tr('clubDetailAboutText',
+    "Welcome to the official {country} Chess Club! We are a community of passionate chess players dedicated to improving our skills, organizing tournaments, and promoting chess in {country}. Join us to compete, learn, and connect!"
+  ).replace(/\{country\}/g, localizedCountry);
 
   // Top Players HTML generatsiya qilish
   const medals = ['🥇', '🥈', '🥉'];
@@ -467,7 +470,7 @@ window.openClubDetail = function(countryName, countryCode) {
   
   let topPlayersHTML = '';
   if (topPlayers.length === 0) {
-    topPlayersHTML = '<div style="color: #888; font-size: 13px; text-align: center; padding: 15px;">No members yet. Be the first to join!</div>';
+    topPlayersHTML = `<div style="color: #888; font-size: 13px; text-align: center; padding: 15px;">${tr('clubDetailNoMembers', "Hali a'zolar yo'q. Birinchi bo'lib qo'shiling!")}</div>`;
   } else {
     topPlayers.forEach((player, index) => {
       topPlayersHTML += `
@@ -488,7 +491,7 @@ window.openClubDetail = function(countryName, countryCode) {
     <!-- Banner -->
     <div style="
       position: relative;
-      height: 150px;
+      min-height: 180px;
       background: linear-gradient(135deg, #2c3e50 0%, #1a2a28 50%, #2c3e50 100%);
       overflow: hidden;
       width: 100%;
@@ -502,8 +505,8 @@ window.openClubDetail = function(countryName, countryCode) {
         bottom: 0;
         background-image: url('https://flagcdn.com/w320/${countryCode}.png');
         background-size: cover;
-        background-position: center;
-        opacity: 0.25;
+        background-position: right center;
+        opacity: 0.35;
       "></div>
       <div style="
         position: absolute;
@@ -519,18 +522,18 @@ window.openClubDetail = function(countryName, countryCode) {
         position: absolute;
         top: 15px;
         left: 15px;
-        background: rgba(0,0,0,0.5);
+        background: rgba(0,0,0,0.4);
         border: 1px solid rgba(255,255,255,0.2);
         color: #fff;
         font-size: 13px;
         cursor: pointer;
-        padding: 8px 14px;
+        padding: 8px 16px;
         border-radius: 6px;
         display: flex;
         align-items: center;
         gap: 6px;
         z-index: 10;
-      ">← Back</button>
+      ">← ${tr('clubDetailBack', 'Back')}</button>
       
       <!-- Club info on banner -->
       <div style="
@@ -546,15 +549,16 @@ window.openClubDetail = function(countryName, countryCode) {
         text-align: center;
       ">
         <img src="https://flagcdn.com/w80/${countryCode}.png" alt="${localizedCountry}" style="
-          width: 56px;
-          height: 38px;
-          border-radius: 6px;
+          width: 70px;
+          height: 70px;
+          border-radius: 50%;
+          object-fit: cover;
           box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
           border: 2px solid rgba(255, 255, 255, 0.2);
         ">
         <div>
           <h2 style="color: #fff; font-size: 24px; margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5);">${localizedCountry} Chess Club</h2>
-          <span style="color: #81b64c; font-size: 13px; margin-top: 3px; display: block;">${memberCount} members • ${eventsPlayed} events</span>
+          <span style="color: #81b64c; font-size: 13px; margin-top: 3px; display: block;">${memberCount} ${tr('clubDetailMembersCount', "a'zo")} • ${eventsPlayed} ${tr('clubDetailEventsCount', "musobaqa")}</span>
         </div>
       </div>
     </div>
@@ -579,7 +583,7 @@ window.openClubDetail = function(countryName, countryCode) {
           text-align: center;
         ">
           <div style="font-size: 32px; font-weight: bold; color: #81b64c;">${memberCount}</div>
-          <div style="font-size: 12px; color: #88a; margin-top: 5px;">Members</div>
+          <div style="font-size: 12px; color: #88a; margin-top: 5px;">${tr('clubDetailMembersCard', "A'zolar")}</div>
         </div>
         <div style="
           background: rgba(52, 152, 219, 0.08);
@@ -589,7 +593,7 @@ window.openClubDetail = function(countryName, countryCode) {
           text-align: center;
         ">
           <div style="font-size: 32px; font-weight: bold; color: #3498db;">${eventsPlayed}</div>
-          <div style="font-size: 12px; color: #88a; margin-top: 5px;">Events Played</div>
+          <div style="font-size: 12px; color: #88a; margin-top: 5px;">${tr('clubDetailEventsCard', "O'tkazilgan musobaqalar")}</div>
         </div>
         <div style="
           background: rgba(241, 196, 15, 0.08);
@@ -599,15 +603,15 @@ window.openClubDetail = function(countryName, countryCode) {
           text-align: center;
         ">
           <div style="font-size: 32px; font-weight: bold; color: #f1c40f;">${clubPoints}</div>
-          <div style="font-size: 12px; color: #88a; margin-top: 5px;">Club Points</div>
+          <div style="font-size: 12px; color: #88a; margin-top: 5px;">${tr('clubDetailPointsCard', "Klub ballari")}</div>
         </div>
       </div>
 
       <!-- Description -->
       <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid #2a3e3b; margin-bottom: 25px; max-width: 900px; margin-left: auto; margin-right: auto;">
-        <h4 style="color: #81b64c; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">About Club</h4>
+        <h4 style="color: #81b64c; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">${tr('clubDetailAboutTitle', "Klub haqida")}</h4>
         <p style="color: #bbb; font-size: 13px; line-height: 1.6; margin: 0;">
-          Welcome to the official ${localizedCountry} Chess Club! We are a community of passionate chess players dedicated to improving our skills, organizing tournaments, and promoting chess in ${localizedCountry}. Join us to compete, learn, and connect!
+          ${aboutText}
         </p>
       </div>
 
@@ -623,7 +627,7 @@ window.openClubDetail = function(countryName, countryCode) {
            font-size: 13px;
            cursor: pointer;
            transition: all 0.2s;
-          ">${isJoined ? 'Leave Club' : 'Join Club'}</button>
+          ">${isJoined ? tr('clubDetailLeaveBtn', 'Leave Club') : tr('clubDetailJoinBtn', "Klubga qo'shilish")}</button>
           <button onclick="showClubTournaments('${countryName}')" style="
            padding: 12px;
            background: #2a3e3b;
@@ -634,7 +638,7 @@ window.openClubDetail = function(countryName, countryCode) {
            font-size: 13px;
            cursor: pointer;
            transition: all 0.2s;
-         ">🏆 Tournaments</button>
+         ">🏆 ${tr('clubDetailTournamentsBtn', "Turnirlar")}</button>
           <button onclick="showClubHistory('${countryName}')" style="
             padding: 12px;
             background: #2a3e3b;
@@ -645,7 +649,7 @@ window.openClubDetail = function(countryName, countryCode) {
             font-size: 13px;
             cursor: pointer;
             transition: all 0.2s;
-          ">📜 History</button>
+          ">📜 ${tr('clubDetailHistoryBtn', "Tarix")}</button>
           <button onclick="switchView('clubs')" style="
            padding: 12px;
            background: #192825;
@@ -656,12 +660,12 @@ window.openClubDetail = function(countryName, countryCode) {
            font-size: 13px;
            cursor: pointer;
            transition: all 0.2s;
-         ">📋 All Clubs</button>
+         ">📋 ${tr('clubDetailAllClubsBtn', "Barcha klublar")}</button>
        </div>
 
         <!-- Top Players -->
         <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid #2a3e3b; max-width: 900px; margin: 0 auto;">
-          <h4 style="color: #81b64c; font-size: 13px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px;">Top Players</h4>
+          <h4 style="color: #81b64c; font-size: 13px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px;">${tr('clubDetailTopPlayersTitle', "Eng kuchli o'yinchilar")}</h4>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             ${topPlayersHTML}
           </div>

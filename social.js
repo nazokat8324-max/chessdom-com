@@ -1835,12 +1835,14 @@ window.loadClubLeagueCalendar = function(countryName, container) {
     const isHome = match.home === countryName;
     const opponent = isHome ? match.away : match.home;
     const venue = isHome ? tr('clubLeagueHome', "O'z maydonida") : tr('clubLeagueAway', "Mehmonda");
+    const clubLabel = escapeHtml(window.countryName ? window.countryName(countryName, null) : countryName);
+    const opponentLabel = escapeHtml(window.countryName ? window.countryName(opponent, null) : opponent);
     return `
       <tr class="${isHome ? 'club-league-home' : ''}">
         <td><span class="club-league-round">${escapeHtml(match.round)}</span></td>
-        <td><strong>${escapeHtml(countryName)}</strong></td>
+        <td><strong>${clubLabel}</strong></td>
         <td><span class="club-league-versus">vs</span></td>
-        <td><strong>${escapeHtml(opponent)}</strong></td>
+        <td><strong>${opponentLabel}</strong></td>
         <td><span class="club-league-venue">${venue}</span></td>
         <td>${escapeHtml(match.date)}</td>
         <td>${escapeHtml(match.time)}</td>

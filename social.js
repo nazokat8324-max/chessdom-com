@@ -1,6 +1,133 @@
 // National chess clubs - Asian and European countries
 window.tournamentDetailBoard = null;
 
+// i18next yordamchi funksiyasi - dinamik HTML shablonlarida foydalanish uchun
+const tr = (key, fallback, opts) => (typeof i18next !== 'undefined' && i18next.isInitialized) ? i18next.t(key, { defaultValue: fallback, ...opts }) : fallback;
+
+// O'zbekcha kirill -> lotin transliteratsiyasi
+function cyrillicToLatinUz(text) {
+  const map = {
+    'А':'A','Б':'B','В':'V','Г':'G','Д':'D','Е':'Ye','Ё':'Yo','Ж':'J','З':'Z',
+    'И':'I','Й':'Y','К':'K','Л':'L','М':'M','Н':'N','О':'O','П':'P','Р':'R',
+    'С':'S','Т':'T','У':'U','Ф':'F','Х':'X','Ц':'S','Ч':'Ch','Ш':'Sh','Ъ':'\'',
+    'Ы':'I','Ь':'','Э':'E','Ю':'Yu','Я':'Ya','Қ':'Q','ғ':'G\'','ў':'O\'','Ҳ':'H',
+    'а':'a','б':'b','в':'v','г':'g','д':'d','е':'ye','ё':'yo','ж':'j','з':'z',
+    'и':'i','й':'y','к':'k','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r',
+    'с':'s','т':'t','у':'u','ф':'f','х':'x','ц':'s','ч':'ch','ш':'sh','ъ':'\'',
+    'ы':'i','ь':'','э':'e','ю':'yu','я':'ya','қ':'q','ғ':'g\'','ў':'o\'','ҳ':'h'
+  };
+  return text.split('').map(ch => map[ch] !== undefined ? map[ch] : ch).join('');
+}
+
+// Inglizcha davlat nomi -> o'zbekcha nom lug'ati
+const uzCountryNames = {
+  "Afghanistan": "Afg'oniston", "Armenia": "Armaniston", "Azerbaijan": "Ozarbayjon",
+  "Bahrain": "Bahrayn", "Bangladesh": "Bangladesh", "Bhutan": "Butan",
+  "Brunei": "Bruney", "Cambodia": "Kambodja", "China": "Xitoy", "Cyprus": "Kipr",
+  "Georgia": "Gruziya", "India": "Hindiston", "Indonesia": "Indoneziya",
+  "Iran": "Eron", "Iraq": "Iroq", "Israel": "Isroil", "Japan": "Yaponiya",
+  "Jordan": "Iordaniya", "Kazakhstan": "Qozog'iston", "Kuwait": "Quvayt",
+  "Kyrgyzstan": "Qirg'iziston", "Laos": "Laos", "Lebanon": "Livan",
+  "Malaysia": "Malayziya", "Maldives": "Maldiv orollari", "Mongolia": "Mo'g'uliston",
+  "Myanmar": "Myanma", "Nepal": "Nepal", "North Korea": "Shimoliy Koreya",
+  "Oman": "Ummon", "Pakistan": "Pokiston", "Palestine": "Falastin",
+  "Philippines": "Filippin", "Qatar": "Qatar", "Saudi Arabia": "Saudiya Arabistoni",
+  "Singapore": "Singapur", "South Korea": "Janubiy Koreya", "Sri Lanka": "Shri-Lanka",
+  "Syria": "Suriya", "Tajikistan": "Tojikiston", "Thailand": "Tailand",
+  "Timor-Leste": "Sharqiy Timor", "Türkiye": "Turkiya", "Turkey": "Turkiya",
+  "Turkmenistan": "Turkmaniston",
+  "United Arab Emirates": "Birlashgan Arab Amirliklari", "Uzbekistan": "O'zbekiston",
+  "Vietnam": "Vetnam", "Yemen": "Yaman",
+  "Albania": "Albaniya", "Andorra": "Andorra", "Austria": "Avstriya",
+  "Belarus": "Belarus", "Belgium": "Belgiya",
+  "Bosnia and Herzegovina": "Bosniya va Gertsegovina",
+  "Bosnia & Herzegovina": "Bosniya va Gertsegovina",
+  "Bulgaria": "Bolgariya", "Croatia": "Xorvatiya",
+  "Czechia": "Chexiya", "Czech Republic": "Chexiya",
+  "Denmark": "Daniya", "Estonia": "Estoniya", "Finland": "Finlyandiya",
+  "France": "Fransiya", "Germany": "Germaniya", "Greece": "Gretsiya",
+  "Hungary": "Vengriya", "Iceland": "Islandiya", "Ireland": "Irlandiya",
+  "Italy": "Italiya", "Latvia": "Latviya", "Liechtenstein": "Lixtenshteyn",
+  "Lithuania": "Litva", "Luxembourg": "Lyuksemburg", "Malta": "Malta",
+  "Moldova": "Moldova", "Monaco": "Monako", "Montenegro": "Chernogoriya",
+  "Netherlands": "Niderlandiya", "North Macedonia": "Shimoliy Makedoniya",
+  "Norway": "Norvegiya", "Poland": "Polsha", "Portugal": "Portugaliya",
+  "Romania": "Ruminiya", "Russia": "Rossiya", "San Marino": "San-Marino",
+  "Serbia": "Serbiya", "Slovakia": "Slovakiya", "Slovenia": "Sloveniya",
+  "Spain": "Ispaniya", "Sweden": "Shvetsiya", "Switzerland": "Shveytsariya",
+  "Ukraine": "Ukraina", "United Kingdom": "Buyuk Britaniya", "Vatican City": "Vatikan",
+  "Algeria": "Jazoir", "Angola": "Angola", "Benin": "Benin",
+  "Botswana": "Botsvana", "Burkina Faso": "Burkina-Faso", "Burundi": "Burundi",
+  "Cameroon": "Kamerun", "Central African Republic": "Markaziy Afrika Respublikasi",
+  "Chad": "Chad", "Comoros": "Komor orollari", "Congo": "Kongo (Brazzavil)",
+  "Congo - Brazzaville": "Kongo (Brazzavil)", "Côte d'Ivoire": "Kot-d'Ivuar",
+  "Côte d’Ivoire": "Kot-d'Ivuar",
+  "Ivory Coast": "Kot-d'Ivuar", "Egypt": "Misr", "Equatorial Guinea": "Ekvatorial Gvineya",
+  "Eritrea": "Eritreya", "Eswatini": "Esvatini", "Ethiopia": "Efiopiya",
+  "Gabon": "Gabon", "Gambia": "Gambiya", "Ghana": "Gana", "Kenya": "Keniya",
+  "Lesotho": "Lesoto", "Liberia": "Liberiya", "Libya": "Liviya",
+  "Madagascar": "Madagaskar", "Malawi": "Malavi", "Mali": "Mali",
+  "Mauritania": "Mavritaniya", "Mauritius": "Mavrikiy", "Morocco": "Marokash",
+  "Mozambique": "Mozambik", "Namibia": "Namibiya", "Niger": "Niger",
+  "Nigeria": "Nigeriya", "Rwanda": "Ruanda",
+  "São Tomé & Príncipe": "San-Tome va Prinsipi", "Sao Tome and Principe": "San-Tome va Prinsipi",
+  "Senegal": "Senegal", "Seychelles": "Seyshel orollari", "Sierra Leone": "Serra-Leone",
+  "Somalia": "Somali", "South Africa": "Janubiy Afrika", "South Sudan": "Janubiy Sudan",
+  "Sudan": "Sudan", "Tanzania": "Tanzaniya", "Togo": "Togo", "Tunisia": "Tunis",
+  "Uganda": "Uganda", "Zambia": "Zambiya", "Zimbabwe": "Zimbabve",
+  "Argentina": "Argentina", "Bolivia": "Boliviya", "Brazil": "Braziliya",
+  "Chile": "Chili", "Colombia": "Kolumbiya", "Ecuador": "Ekvador",
+  "Guyana": "Gayana", "Paraguay": "Paragvay", "Peru": "Peru",
+  "Suriname": "Surinam", "Uruguay": "Urugvay", "Venezuela": "Venesuela",
+  "Antigua and Barbuda": "Antigua va Barbuda", "Antigua & Barbuda": "Antigua va Barbuda",
+  "Bahamas": "Bagama orollari",
+  "Barbados": "Barbados", "Belize": "Beliz", "Canada": "Kanada",
+  "Costa Rica": "Kosta-Rika", "Cuba": "Kuba", "Dominica": "Dominika",
+  "Dominican Republic": "Dominikan Respublikasi", "El Salvador": "Salvador",
+  "Grenada": "Grenada", "Guatemala": "Gvatemala", "Haiti": "Gaiti",
+  "Honduras": "Gonduras", "Jamaica": "Yamayka", "Mexico": "Meksika",
+  "Nicaragua": "Nikaragua", "Panama": "Panama",
+  "Saint Kitts and Nevis": "Sent-Kits va Nevis", "St. Kitts & Nevis": "Sent-Kits va Nevis",
+  "Saint Lucia": "Sent-Lyusiya", "St. Lucia": "Sent-Lyusiya",
+  "Saint Vincent and the Grenadines": "Sent-Vinsent va Grenadinlar",
+  "St. Vincent & Grenadines": "Sent-Vinsent va Grenadinlar",
+  "Trinidad and Tobago": "Trinidad va Tobago", "Trinidad & Tobago": "Trinidad va Tobago",
+  "United States": "AQSH",
+  "Australia": "Avstraliya", "Fiji": "Fiji", "Kiribati": "Kiribati",
+  "Marshall Islands": "Marshall orollari", "Micronesia": "Mikroneziya",
+  "Nauru": "Nauru", "New Zealand": "Yangi Zelandiya", "Palau": "Palau",
+  "Papua New Guinea": "Papua-Yangi Gvineya", "Samoa": "Samoa",
+  "Solomon Islands": "Solomon orollari", "Tonga": "Tonga", "Tuvalu": "Tuvalu",
+  "Vanuatu": "Vanuatu"
+};
+
+// Davlat nomini tanlangan tilga qaytarish
+const countryName = (name, fallbackCode) => {
+  if (!name) return '';
+  let locale = (typeof i18next !== 'undefined' && i18next.language) || 'uz';
+  locale = String(locale).toLowerCase().split('-')[0];
+
+  if (locale === 'uz') {
+    return uzCountryNames[name] || name;
+  }
+
+  try {
+    let code = fallbackCode;
+    if (!code && typeof allCountries !== 'undefined') {
+      const found = allCountries.find(c => c.name === name);
+      code = found ? found.code : null;
+    }
+    if (!code) return name;
+    const n = new Intl.DisplayNames([locale], { type: 'region', fallback: 'none' })
+      .of(String(code).toUpperCase());
+    return n || name;
+  } catch (e) {
+    return name;
+  }
+};
+
+window.countryName = countryName;
+
 const asianCountries = [
   { name: "Afghanistan", code: "af" },
   { name: "Armenia", code: "am" },
@@ -332,6 +459,7 @@ window.openClubDetail = function(countryName, countryCode) {
   const eventsPlayed = stats.events;
   const clubPoints = stats.points;
   const isJoined = userClubs.includes(countryName);
+  const localizedCountry = window.countryName(countryName, countryCode);
 
   // Top Players HTML generatsiya qilish
   const medals = ['🥇', '🥈', '🥉'];
@@ -417,7 +545,7 @@ window.openClubDetail = function(countryName, countryCode) {
         z-index: 5;
         text-align: center;
       ">
-        <img src="https://flagcdn.com/w80/${countryCode}.png" alt="${countryName}" style="
+        <img src="https://flagcdn.com/w80/${countryCode}.png" alt="${localizedCountry}" style="
           width: 56px;
           height: 38px;
           border-radius: 6px;
@@ -425,7 +553,7 @@ window.openClubDetail = function(countryName, countryCode) {
           border: 2px solid rgba(255, 255, 255, 0.2);
         ">
         <div>
-          <h2 style="color: #fff; font-size: 24px; margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5);">${countryName} Chess Club</h2>
+          <h2 style="color: #fff; font-size: 24px; margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5);">${localizedCountry} Chess Club</h2>
           <span style="color: #81b64c; font-size: 13px; margin-top: 3px; display: block;">${memberCount} members • ${eventsPlayed} events</span>
         </div>
       </div>
@@ -479,7 +607,7 @@ window.openClubDetail = function(countryName, countryCode) {
       <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid #2a3e3b; margin-bottom: 25px; max-width: 900px; margin-left: auto; margin-right: auto;">
         <h4 style="color: #81b64c; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">About Club</h4>
         <p style="color: #bbb; font-size: 13px; line-height: 1.6; margin: 0;">
-          Welcome to the official ${countryName} Chess Club! We are a community of passionate chess players dedicated to improving our skills, organizing tournaments, and promoting chess in ${countryName}. Join us to compete, learn, and connect!
+          Welcome to the official ${localizedCountry} Chess Club! We are a community of passionate chess players dedicated to improving our skills, organizing tournaments, and promoting chess in ${localizedCountry}. Join us to compete, learn, and connect!
         </p>
       </div>
 
@@ -703,18 +831,21 @@ window.loadClubs = function() {
   getActiveCountries().forEach(country => {
     const stats = getClubStats(country.name);
     const isJoined = userClubs.includes(country.name);
+    const safeName = escapeHtml(country.name);
+    const safeCode = escapeHtml(country.code);
+    const displayName = escapeHtml(countryName(country.name, country.code));
 
     htmlContent += `
-      <div class="country-stamp ${isJoined ? 'joined' : ''}" onclick="openClubDetail('${country.name}', '${country.code}')">
+      <div class="country-stamp ${isJoined ? 'joined' : ''}" onclick="openClubDetail('${safeName}', '${safeCode}')">
         <div class="stamp-perforation"></div>
         ${isJoined ? '<div class="stamp-badge">✓</div>' : ''}
         <div class="stamp-inner">
-          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${country.code}.png" alt="${country.name}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
-          <div class="stamp-country-name">${country.name}</div>
-          <div class="stamp-members">${stats.members} ${typeof i18next !== 'undefined' ? i18next.t('membersLabel') : 'a\'zo'}</div>
+          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${safeCode}.png" alt="${displayName}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
+          <div class="stamp-country-name">${displayName}</div>
+          <div class="stamp-members">${stats.members} ${tr('membersLabel', "a'zo")}</div>
         </div>
-        <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${country.name}', '${country.code}')">
-          ${typeof i18next !== 'undefined' ? i18next.t('btnView') : 'Ko\'rish'}
+        <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${safeName}', '${safeCode}')">
+          ${tr('btnView', "Ko'rish")}
         </button>
       </div>
     `;
@@ -756,11 +887,14 @@ window.filterCountries = debounce(function() {
   const userClubs = getUserClubs();
   const baseCountries = getActiveCountries();
   const filtered = query
-    ? baseCountries.filter(c => c.name.toLowerCase().includes(query))
+    ? baseCountries.filter(c => {
+        const localName = countryName(c.name, c.code).toLowerCase();
+        return localName.includes(query) || c.name.toLowerCase().includes(query);
+      })
     : baseCountries;
 
   if (filtered.length === 0) {
-    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; padding: 30px;">No countries found</div>';
+    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; padding: 30px;">' + tr('searchNoResults', "Hech qanday davlat topilmadi") + '</div>';
     return;
   }
 
@@ -770,18 +904,19 @@ window.filterCountries = debounce(function() {
     const isJoined = userClubs.includes(country.name);
     const safeName = escapeHtml(country.name);
     const safeCode = escapeHtml(country.code);
+    const displayName = escapeHtml(countryName(country.name, country.code));
 
     htmlContent += `
       <div class="country-stamp ${isJoined ? 'joined' : ''}" onclick="openClubDetail('${safeName}', '${safeCode}')">
         <div class="stamp-perforation"></div>
         ${isJoined ? '<div class="stamp-badge">✓</div>' : ''}
         <div class="stamp-inner">
-          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${safeCode}.png" alt="${safeName}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
-          <div class="stamp-country-name">${safeName}</div>
-          <div class="stamp-members">${stats.members} ${typeof i18next !== 'undefined' ? i18next.t('membersLabel') : 'a\'zo'}</div>
+          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${safeCode}.png" alt="${displayName}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
+          <div class="stamp-country-name">${displayName}</div>
+          <div class="stamp-members">${stats.members} ${tr('membersLabel', "a'zo")}</div>
         </div>
         <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${safeName}', '${safeCode}')">
-          ${typeof i18next !== 'undefined' ? i18next.t('btnView') : 'Ko\'rish'}
+          ${tr('btnView', "Ko'rish")}
         </button>
       </div>
     `;

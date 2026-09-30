@@ -145,6 +145,13 @@ const translations = {
     settingsCoordsLabel: "Koordinatalar:",
     settingsSaveBtn: "Saqlash",
     settingsResetBtn: "Qayta o'rnatish",
+    continentAll: "Barchasi",
+    continentAsia: "Osiyo",
+    continentEurope: "Yevropa",
+    continentAfrica: "Afrika",
+    continentSouthAmerica: "Janubiy Amerika",
+    continentNorthAmerica: "Shimoliy Amerika",
+    continentOceania: "Okeaniya",
   },
   en: {
     mHome: "Home",
@@ -292,6 +299,13 @@ const translations = {
     settingsCoordsLabel: "Coordinates:",
     settingsSaveBtn: "Save",
     settingsResetBtn: "Reset",
+    continentAll: "All",
+    continentAsia: "Asia",
+    continentEurope: "Europe",
+    continentAfrica: "Africa",
+    continentSouthAmerica: "South America",
+    continentNorthAmerica: "North America",
+    continentOceania: "Oceania",
   },
   ru: {
     mHome: "Главная",
@@ -439,6 +453,13 @@ const translations = {
     settingsCoordsLabel: "Координаты:",
     settingsSaveBtn: "Сохранить",
     settingsResetBtn: "Сброс",
+    continentAll: "Все",
+    continentAsia: "Азия",
+    continentEurope: "Европа",
+    continentAfrica: "Африка",
+    continentSouthAmerica: "Южная Америка",
+    continentNorthAmerica: "Северная Америка",
+    continentOceania: "Океания",
   },
   es: {
     mHome: "Inicio",
@@ -586,6 +607,13 @@ tournamentsTitle: "Torneos",
     settingsCoordsLabel: "Coordenadas:",
     settingsSaveBtn: "Guardar",
     settingsResetBtn: "Reiniciar",
+    continentAll: "Todos",
+    continentAsia: "Asia",
+    continentEurope: "Europa",
+    continentAfrica: "África",
+    continentSouthAmerica: "Sudamérica",
+    continentNorthAmerica: "Norteamérica",
+    continentOceania: "Oceanía",
   },
   de: {
     mHome: "Startseite",
@@ -733,6 +761,13 @@ tournamentsTitle: "Torneos",
     settingsCoordsLabel: "Koordinaten:",
     settingsSaveBtn: "Speichern",
     settingsResetBtn: "Zurücksetzen",
+    continentAll: "Alle",
+    continentAsia: "Asien",
+    continentEurope: "Europa",
+    continentAfrica: "Afrika",
+    continentSouthAmerica: "Südamerika",
+    continentNorthAmerica: "Nordamerika",
+    continentOceania: "Ozeanien",
   },
   fr: {
     mHome: "Accueil",
@@ -880,6 +915,13 @@ tournamentsTitle: "Torneos",
     settingsCoordsLabel: "Coordonnées:",
     settingsSaveBtn: "Enregistrer",
     settingsResetBtn: "Réinitialiser",
+    continentAll: "Tous",
+    continentAsia: "Asie",
+    continentEurope: "Europe",
+    continentAfrica: "Afrique",
+    continentSouthAmerica: "Amérique du Sud",
+    continentNorthAmerica: "Amérique du Nord",
+    continentOceania: "Océanie",
   }
 };
 
@@ -1042,6 +1084,22 @@ function updateUI() {
   const settingsCoordsLabel = document.getElementById("settingsCoordsLabel"); if (settingsCoordsLabel) settingsCoordsLabel.textContent = t('settingsCoordsLabel');
   const settingsSaveBtn = document.getElementById("settingsSaveBtn"); if (settingsSaveBtn) settingsSaveBtn.textContent = t('settingsSaveBtn');
   const settingsResetBtn = document.getElementById("settingsResetBtn"); if (settingsResetBtn) settingsResetBtn.textContent = t('settingsResetBtn');
+
+  const continentTabAll = document.getElementById("continentTabAll"); if (continentTabAll) continentTabAll.textContent = t('continentAll');
+  const continentTabAsia = document.getElementById("continentTabAsia"); if (continentTabAsia) continentTabAsia.textContent = t('continentAsia');
+  const continentTabEurope = document.getElementById("continentTabEurope"); if (continentTabEurope) continentTabEurope.textContent = t('continentEurope');
+  const continentTabAfrica = document.getElementById("continentTabAfrica"); if (continentTabAfrica) continentTabAfrica.textContent = t('continentAfrica');
+  const continentTabSouthAmerica = document.getElementById("continentTabSouthAmerica"); if (continentTabSouthAmerica) continentTabSouthAmerica.textContent = t('continentSouthAmerica');
+  const continentTabNorthAmerica = document.getElementById("continentTabNorthAmerica"); if (continentTabNorthAmerica) continentTabNorthAmerica.textContent = t('continentNorthAmerica');
+  const continentTabOceania = document.getElementById("continentTabOceania"); if (continentTabOceania) continentTabOceania.textContent = t('continentOceania');
+
+  // Agar Klublar sahifasi ochiq bo'lsa, ro'yxatni qayta chizish
+  const clubsView = document.getElementById('clubsView');
+  if (clubsView && clubsView.classList.contains('active-view')) {
+    if (typeof window.loadClubs === 'function') window.loadClubs();
+  }
+
+  const dashClubsBtn = document.getElementById("dashClubsBtn"); if (dashClubsBtn) dashClubsBtn.textContent = t('clubsTitle');
 
   if (typeof window.updateTopPlayersList === 'function') window.updateTopPlayersList();
 

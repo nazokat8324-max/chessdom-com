@@ -2970,6 +2970,9 @@
         border-color: #81b64c;
         color: #111;
       }
+      .mode-tab-icon {
+        margin-right: 6px;
+      }
       .leaderboard-filters {
         display: flex;
         gap: 8px;

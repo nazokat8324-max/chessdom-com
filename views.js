@@ -3,6 +3,12 @@ window.leaderboardFilter = 'all';
 window.playersLeaderboardData = [];
 window.clubsLeaderboardData = [];
 
+// views.js doirasida i18next yordamchisi (global tr() social.js da e'lon qilingan)
+const tCol = (key, fallback) =>
+  (typeof i18next !== 'undefined' && i18next.isInitialized)
+    ? i18next.t(key, { defaultValue: fallback })
+    : fallback;
+
 window.switchLeaderboardMode = function(mode) {
   window.leaderboardMode = mode;
   
@@ -16,15 +22,15 @@ window.switchLeaderboardMode = function(mode) {
     if (playersTab) playersTab.classList.add('active');
     if (clubsTab) clubsTab.classList.remove('active');
     if (filters) filters.style.display = 'flex';
-    if (cardTitle) cardTitle.textContent = "O'yinchilar Reytingi";
-    
+    if (cardTitle) cardTitle.textContent = tCol('leaderboardTitle', "O'yinchilar Reytingi");
+
     if (tableHead) {
       tableHead.innerHTML = `
         <th>#</th>
-        <th>Player</th>
-        <th>Wins</th>
-        <th>Games</th>
-        <th>Win %</th>
+        <th>${tCol('colPlayer', 'Player')}</th>
+        <th>${tCol('colWins', 'Wins')}</th>
+        <th>${tCol('colGames', 'Games')}</th>
+        <th>${tCol('colWinPercent', 'Win %')}</th>
       `;
     }
     
@@ -33,16 +39,16 @@ window.switchLeaderboardMode = function(mode) {
     if (playersTab) playersTab.classList.remove('active');
     if (clubsTab) clubsTab.classList.add('active');
     if (filters) filters.style.display = 'none';
-    if (cardTitle) cardTitle.textContent = "Klublar Reytingi";
-    
+    if (cardTitle) cardTitle.textContent = tCol('clubRankTitle', "Klublar Reytingi");
+
     if (tableHead) {
       tableHead.innerHTML = `
         <th>#</th>
-        <th>Clan</th>
-        <th>Games</th>
-        <th>Wins</th>
-        <th>Losses</th>
-        <th>Win %</th>
+        <th>${tCol('clubRankClan', 'Club')}</th>
+        <th>${tCol('colGames', 'Games')}</th>
+        <th>${tCol('colWins', 'Wins')}</th>
+        <th>${tCol('clubRankLosses', 'Losses')}</th>
+        <th>${tCol('colWinPercent', 'Win %')}</th>
       `;
     }
     
@@ -68,7 +74,7 @@ window.renderPlayersTable = function(players, filter) {
   if (!tbody) return;
   
   if (!players || players.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #88a; padding: 30px;">Hozircha ro'yxatda o'yinchilar yo'q</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: #88a; padding: 30px;">${tCol('clubRankEmptyPlayers', "Hozircha ro'yxatda o'yinchilar yo'q")}</td></tr>`;
     return;
   }
   
@@ -142,7 +148,7 @@ window.renderClubsTable = function(clubs) {
   if (!tbody) return;
   
   if (!clubs || clubs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #88a; padding: 30px;">Hozircha klublar ro'yxati bo'sh</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: #88a; padding: 30px;">${tCol('clubRankEmptyClubs', "Hozircha klublar ro'yxati bo'sh")}</td></tr>`;
     return;
   }
   

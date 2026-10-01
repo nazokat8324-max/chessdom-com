@@ -2203,6 +2203,10 @@
         color: #88a;
         font-size: 10px;
       }
+      .club-league-calendar-title .club-league-icon {
+        display: inline-flex;
+        font-size: 28px;
+      }
       .club-league-badge {
         flex-shrink: 0;
         padding: 5px 9px;

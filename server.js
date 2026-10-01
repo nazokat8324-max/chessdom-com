@@ -372,6 +372,11 @@ async function start() {
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  app.get('/api/clubs/leaderboard', apiLimiter, async (req, res) => {
+    try { const data = await db.getClubLeaderboard(); res.json(data); }
+    catch (err) { console.error('Club leaderboard xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.get('/api/clubs/:id', async (req, res) => {
     try { const club = await db.getClubById(req.params.id); if (!club) return res.status(404).json({ success: false, message: 'Klub topilmadi!' }); res.json({ success: true, club }); }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -385,11 +390,6 @@ async function start() {
   app.get('/api/clubs/:id/members', async (req, res) => {
     try { const members = await db.getClubMembers(req.params.id); res.json({ success: true, members }); }
     catch (err) { console.error('Club members xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/clubs/leaderboard', apiLimiter, async (req, res) => {
-    try { const data = await db.getClubLeaderboard(); res.json(data); }
-    catch (err) { console.error('Club leaderboard xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   io.on('connection', (socket) => {

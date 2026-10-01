@@ -1546,6 +1546,12 @@ function updateUI() {
   // Klub liga kalendari ekrani ochiq bo'lsa, qayta chizish
   if (typeof window.refreshClubTournaments === 'function') window.refreshClubTournaments();
 
+  // Sozlamalar sahifasi ochiq bo'lsa, faqat davlat ro'yxatini yangilash
+  const settingsView = document.getElementById('settingsView');
+  if (settingsView && settingsView.classList.contains('active-view')) {
+    if (typeof window.populateSettingsCountries === 'function') window.populateSettingsCountries();
+  }
+
   if (typeof window.updateTopPlayersList === 'function') window.updateTopPlayersList();
 
   if (typeof window.updateAuthHeaderUI === 'function') window.updateAuthHeaderUI();

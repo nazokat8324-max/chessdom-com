@@ -1347,6 +1347,30 @@ window.saveProfileData = function() {
   showToast("Ma'lumotlar saqlandi", "success");
 };
 
+window.populateSettingsCountries = function() {
+  const country = document.getElementById("settingsCountry");
+  if (!country) return;
+  if (typeof allCountries === 'undefined' || !allCountries.length) return;
+
+  const keep = country.value;
+  const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
+
+  const fragment = document.createDocumentFragment();
+  allCountries.forEach(c => {
+    const option = document.createElement("option");
+    option.value = c.code;
+    const displayName = (typeof window.countryName === 'function')
+      ? window.countryName(c.name, c.code)
+      : c.name;
+    option.textContent = c.code.toUpperCase() + " " + displayName;
+    fragment.appendChild(option);
+  });
+
+  country.innerHTML = "";
+  country.appendChild(fragment);
+  country.value = keep || saved.country || "uz";
+};
+
 window.updateSettingsView = function() {
   const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
   const country = document.getElementById("settingsCountry");
@@ -1356,16 +1380,8 @@ window.updateSettingsView = function() {
   const theme = document.getElementById("settingsTheme");
   const coords = document.getElementById("settingsCoords");
   if (country) {
-    if (country.options.length <= 1 && typeof allCountries !== 'undefined' && allCountries.length > 0) {
-      country.innerHTML = "";
-      allCountries.forEach(c => {
-        const option = document.createElement("option");
-        option.value = c.code;
-        option.textContent = c.code.toUpperCase() + " " + c.name;
-        country.appendChild(option);
-      });
-    }
-    country.value = saved.country || "uz";
+    window.populateSettingsCountries();
+    country.value = saved.country || country.value || "uz";
   }
   if (lang) lang.value = saved.language || "uz";
   if (sound) sound.checked = saved.soundEnabled !== false;

@@ -1377,6 +1377,10 @@ window.updateSettingsView = function() {
 };
 
 window.saveSettings = function() {
+  const tSettings = (key, fallback) =>
+    (typeof i18next !== 'undefined' && i18next.isInitialized)
+      ? i18next.t(key, { defaultValue: fallback })
+      : fallback;
   const saved = {
     country: (document.getElementById("settingsCountry")?.value || "uz"),
     language: (document.getElementById("settingsLanguage")?.value || "uz"),
@@ -1386,13 +1390,17 @@ window.saveSettings = function() {
     showCoords: document.getElementById("settingsCoords")?.checked !== false
   };
   localStorage.setItem("justChessSettings", JSON.stringify(saved));
-  showToast("Sozlamalar saqlandi", "success");
+  showToast(tSettings('settingsSavedToast', "Sozlamalar saqlandi"), "success");
 };
 
 window.resetSettings = function() {
+  const tSettings = (key, fallback) =>
+    (typeof i18next !== 'undefined' && i18next.isInitialized)
+      ? i18next.t(key, { defaultValue: fallback })
+      : fallback;
   localStorage.removeItem("justChessSettings");
   window.updateSettingsView();
-  showToast("Sozlamalar qayta o'rnatildi", "info");
+  showToast(tSettings('settingsResetToast', "Sozlamalar qayta o'rnatildi"), "info");
 };
 
   const soundEl = document.getElementById("settingsSound");

@@ -1785,6 +1785,14 @@ window.showClubTournaments = function(countryName) {
   const container = document.getElementById("clubTournamentsListContainer");
   if (!container) return;
 
+  applyClubTournamentsHeader(countryName);
+
+  container.innerHTML = `<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">${tr('loadingText', "Yuklanmoqda...")}</div>`;
+  window.loadClubLeagueCalendar(countryName, container);
+  switchViewToClubTournaments();
+};
+
+function applyClubTournamentsHeader(countryName) {
   const localizedCountry = window.countryName ? window.countryName(countryName, null) : countryName;
 
   const titleEl = document.getElementById("clubTournamentsTitle");
@@ -1795,10 +1803,13 @@ window.showClubTournaments = function(countryName) {
 
   const backBtn = document.getElementById("clubTournamentsBackBtn");
   if (backBtn) backBtn.textContent = `\u2190 ${tr('clubDetailBack', "Orqaga")}`;
+}
 
-  container.innerHTML = `<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">${tr('loadingText', "Yuklanmoqda...")}</div>`;
-  window.loadClubLeagueCalendar(countryName, container);
-  switchViewToClubTournaments();
+window.refreshClubTournaments = function() {
+  const container = document.getElementById("clubTournamentsListContainer");
+  if (!container || !container.children.length || !window.currentClubName) return;
+  applyClubTournamentsHeader(window.currentClubName);
+  window.loadClubLeagueCalendar(window.currentClubName, container);
 };
 
 window.switchViewToClubTournaments = function() {
@@ -1839,7 +1850,7 @@ window.loadClubLeagueCalendar = function(countryName, container) {
     const opponentLabel = escapeHtml(window.countryName ? window.countryName(opponent, null) : opponent);
     return `
       <tr class="${isHome ? 'club-league-home' : ''}">
-        <td><span class="club-league-round">${escapeHtml(match.round)}</span></td>
+        <td><span class="club-league-round">${escapeHtml(tr('roundLabel', "{round}-bosqich").replace('{round}', match.round))}</span></td>
         <td><strong>${clubLabel}</strong></td>
         <td><span class="club-league-versus">vs</span></td>
         <td><strong>${opponentLabel}</strong></td>
@@ -1855,7 +1866,7 @@ window.loadClubLeagueCalendar = function(countryName, container) {
       <div class="club-league-calendar-title">
         <span class="club-league-icon">${escapeHtml(leagueInfo.flag)}</span>
         <div>
-          <strong>${escapeHtml(leagueInfo.name)}</strong>
+          <strong>${escapeHtml(window.getLeagueI18nName ? window.getLeagueI18nName(leagueKey, leagueInfo.name) : leagueInfo.name)}</strong>
           <span>${tr('clubLeagueRoundRobin', 'Round-Robin • {count} jamoa').replace('{count}', teams.length)}</span>
         </div>
       </div>

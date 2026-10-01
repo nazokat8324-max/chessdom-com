@@ -1160,7 +1160,7 @@ window.generateRoundRobinSchedule = function(teams) {
         const date = new Date();
         date.setDate(date.getDate() + (round * 7) + 1);
         schedule.push({
-          round: `${round + 1}-bosqich`,
+          round: round + 1,
           home: home.name,
           away: away.name,
           date: date.toLocaleDateString('uz-UZ'),

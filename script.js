@@ -57,22 +57,42 @@ window.checkAndUpdateStreak = function() {
 
 window.currentStreak = window.checkAndUpdateStreak();
 
+// Ketma-ketlik sonini tilga mos so'z bilan chiqarish (son-ot mosligi bilan)
+function getStreakText(n) {
+  const count = Number(n) || 0;
+  const lang = String(window.currentLang || 'uz').toLowerCase().split('-')[0];
+  const num = Math.abs(count) % 100;
+  const last = num % 10;
+
+  if (lang === 'uz') return count + ' kun';
+  if (lang === 'en') return count === 1 ? '1 day' : count + ' days';
+  if (lang === 'ru') {
+    // 1, 21, 31... -> день; 2-4, 22-24... -> дня; qolgani -> дней
+    if (num > 10 && num < 20) return count + ' дней';
+    if (last === 1) return count + ' день';
+    if (last >= 2 && last <= 4) return count + ' дня';
+    return count + ' дней';
+  }
+  if (lang === 'es') return count === 1 ? '1 día' : count + ' días';
+  if (lang === 'de') return count === 1 ? '1 Tag' : count + ' Tage';
+  if (lang === 'fr') return count === 1 ? '1 jour' : count + ' jours';
+  return count === 1 ? '1 day' : count + ' days';
+}
+
 window.updateStreakUI = function() {
   const streakElem = document.getElementById("streakDisplayText");
   if (!streakElem) return;
-
-  const daysWord =
-    window.currentLang === "uz"
-      ? "kun"
-      : window.currentLang === "ru"
-        ? "дней подряд"
-        : "days streak";
-  streakElem.textContent = `🔥 ${window.currentStreak} ${daysWord}`;
+  streakElem.textContent = `🔥 ${getStreakText(window.currentStreak)}`;
 };
 
 window.updateTopPlayersList = async function() {
   const container = document.getElementById("topPlayersContainer");
   if (!container) return;
+
+  const tCol = (key, fallback) =>
+    (typeof i18next !== 'undefined' && i18next.isInitialized)
+      ? i18next.t(key, { defaultValue: fallback })
+      : fallback;
 
   container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 10px;">Yuklanmoqda...</div>';
   
@@ -114,9 +134,9 @@ window.updateTopPlayersList = async function() {
         <thead>
           <tr>
             <th>#</th>
-            <th id="colUsername">Username</th>
-            <th id="colRating">Rating</th>
-            <th id="colWinPoints">Win Points</th>
+            <th id="colUsername">${tCol('colUsername', 'Username')}</th>
+            <th id="colRating">${tCol('colRating', 'Rating')}</th>
+            <th id="colWinPoints">${tCol('colWinPoints', 'Win Points')}</th>
           </tr>
         </thead>
         <tbody>${tableRows}</tbody>
@@ -129,9 +149,9 @@ window.updateTopPlayersList = async function() {
         <thead>
           <tr>
             <th>#</th>
-            <th id="colUsername">Username</th>
-            <th id="colRating">Rating</th>
-            <th id="colWinPoints">Win Points</th>
+            <th id="colUsername">${tCol('colUsername', 'Username')}</th>
+            <th id="colRating">${tCol('colRating', 'Rating')}</th>
+            <th id="colWinPoints">${tCol('colWinPoints', 'Win Points')}</th>
           </tr>
         </thead>
         <tbody>

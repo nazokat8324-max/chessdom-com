@@ -377,13 +377,36 @@
             >
               ⚡ Play Online (Matchmaking)
             </button>
-            <button
-              class="play-sub-btn"
-              id="dashClubsBtn"
-              onclick="switchView('clubs')"
-            >
-              🛡️ Klublar
-            </button>
+            <div class="dash-info-btns">
+              <button
+                class="play-sub-btn"
+                id="dashAboutBtn"
+                onclick="openInfoModal('about')"
+              >
+                📖 Sayt haqida
+              </button>
+              <button
+                class="play-sub-btn"
+                id="dashGoalBtn"
+                onclick="openInfoModal('goal')"
+              >
+                🎯 Maqsadimiz
+              </button>
+              <button
+                class="play-sub-btn"
+                id="dashPlanBtn"
+                onclick="openInfoModal('plan')"
+              >
+                🚀 Kelajak rejalari
+              </button>
+              <button
+                class="play-sub-btn"
+                id="dashTechBtn"
+                onclick="openInfoModal('tech')"
+              >
+                🧭 Sayt tuzilishi
+              </button>
+            </div>
           </div>
           <!-- O'rtadagi mini taxta bloki -->
           <div
@@ -2150,6 +2173,20 @@
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
+
+    <div
+      id="infoModal"
+      class="info-modal-overlay"
+      role="dialog"
+      aria-modal="true"
+      style="display: none"
+    >
+      <div class="info-modal-container">
+        <button class="info-modal-close-btn" id="closeInfoModal">&larr;</button>
+        <h2 id="infoModalTitle"></h2>
+        <div class="info-modal-body" id="infoModalBody"></div>
+      </div>
+    </div>
 
     <!-- Profile Modal -->
     <div id="profileModal" class="profile-modal-overlay" style="display: none">

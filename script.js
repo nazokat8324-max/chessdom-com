@@ -647,6 +647,98 @@ window.openProfileModal = function() {
   }
 };
 
+// --- Info Modal (Sayt haqida / Maqsad / Rejalar / Tuzilma) ---
+const INFO_SECTIONS = {
+  about: { titleKey: "infoAboutTitle", paragraphs: ["infoAboutText1", "infoAboutText2"], lists: [] },
+  goal:  { titleKey: "infoGoalTitle",  paragraphs: ["infoGoalText1", "infoGoalText2", "infoGoalText3"], lists: [] },
+  plan:  { titleKey: "infoPlanTitle",  paragraphs: ["infoPlanIntro"], lists: ["infoPlanItem1", "infoPlanItem2", "infoPlanItem3", "infoPlanItem4"] },
+  tech:  {
+    titleKey: "infoTechTitle",
+    paragraphs: [],
+    cards: [
+      { titleKey: "mPlay",         textKey: "infoTechText1" },
+      { titleKey: "mLeaderboard",  textKey: "infoTechText2" },
+      { titleKey: "clubsTitle",    textKey: "infoTechText3" },
+      { titleKey: "mLeagues",      textKey: "infoTechText4" },
+      { titleKey: "mChampions",    textKey: "infoTechText5" },
+      { titleKey: "mSettings",     textKey: "infoTechText6" }
+    ],
+    lists: []
+  }
+};
+
+window.renderInfoModal = function(section) {
+  const cfg = INFO_SECTIONS[section];
+  const titleEl = document.getElementById("infoModalTitle");
+  const bodyEl = document.getElementById("infoModalBody");
+  if (!cfg || !titleEl || !bodyEl) return;
+
+  const t = (key, fallback) =>
+    (typeof i18next !== 'undefined' && i18next.isInitialized)
+      ? i18next.t(key, { defaultValue: fallback })
+      : fallback;
+
+  titleEl.textContent = t(cfg.titleKey, section);
+
+  bodyEl.textContent = "";
+
+  (cfg.paragraphs || []).forEach(key => {
+    const p = document.createElement("p");
+    p.textContent = t(key, "");
+    bodyEl.appendChild(p);
+  });
+
+  (cfg.lists || []).forEach(key => {
+    const li = document.createElement("div");
+    li.className = "info-list-item";
+    li.textContent = t(key, "");
+    bodyEl.appendChild(li);
+  });
+
+  if (cfg.cards && cfg.cards.length) {
+    const grid = document.createElement("div");
+    grid.className = "info-card-grid";
+    cfg.cards.forEach(card => {
+      const box = document.createElement("div");
+      box.className = "info-card";
+
+      const title = document.createElement("div");
+      title.className = "info-card-title";
+      title.textContent = t(card.titleKey, "");
+      box.appendChild(title);
+
+      const text = document.createElement("div");
+      text.className = "info-card-text";
+      text.textContent = t(card.textKey, "");
+      box.appendChild(text);
+
+      grid.appendChild(box);
+    });
+    bodyEl.appendChild(grid);
+  }
+};
+
+window.openInfoModal = function(section) {
+  const infoModal = document.getElementById("infoModal");
+  if (!infoModal) return;
+
+  // Profil oynasi ochiq bo'lsa, info oynasi ochilmasin
+  const profileModal = document.getElementById("profileModal");
+  if (profileModal && profileModal.style.display === "flex") return;
+
+  window.currentInfoSection = section;
+  window.renderInfoModal(section);
+  infoModal.style.display = "flex";
+};
+
+window.closeInfoModal = function() {
+  const infoModal = document.getElementById("infoModal");
+  if (infoModal) {
+    infoModal.style.display = "none";
+  }
+  window.currentInfoSection = null;
+};
+
 // Country flag helper
 function countryCodeToFlag(code) {
   const upper = code.toUpperCase();
@@ -1470,6 +1562,24 @@ window.resetSettings = function() {
     });
   }
 
+  // Info Modal
+  const infoModal = document.getElementById("infoModal");
+  const closeInfoModalBtn = document.getElementById("closeInfoModal");
+
+  if (closeInfoModalBtn && infoModal) {
+    closeInfoModalBtn.addEventListener("click", () => {
+      window.closeInfoModal();
+    });
+  }
+
+  if (infoModal) {
+    infoModal.addEventListener("click", (e) => {
+      if (e.target === infoModal) {
+        window.closeInfoModal();
+      }
+    });
+  }
+
   // League Detail Modal
   const leagueDetailModal = document.getElementById("leagueDetailModal");
   const closeLeagueDetailBtn = document.getElementById("closeLeagueDetailBtn");
@@ -1491,6 +1601,9 @@ window.resetSettings = function() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && profileModal && profileModal.style.display === "flex") {
       profileModal.style.display = "none";
+    }
+    if (e.key === "Escape" && infoModal && infoModal.style.display === "flex") {
+      window.closeInfoModal();
     }
     if (e.key === "Escape" && languageModal && languageModal.style.display === "flex") {
       languageModal.style.display = "none";

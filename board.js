@@ -25,13 +25,14 @@ window.setOpponentFound = function(found) {
 window.updateGameStatusText = function() {
   const statusEl = document.getElementById('gameStatusText');
   if (!statusEl) return;
-  if (opponentFound) {
+  const searching = window.isSearchingOpponent === true;
+  if (!searching || opponentFound) {
     statusEl.textContent = '';
     return;
   }
   statusEl.textContent = (typeof i18next !== 'undefined' && i18next.isInitialized)
     ? i18next.t('opponentStatusSearching', { defaultValue: 'Qidirilmoqda...' })
-: 'Qidirilmoqda...';
+    : 'Qidirilmoqda...';
 };
 
 window.currentGameTimeControl = 'blitz';

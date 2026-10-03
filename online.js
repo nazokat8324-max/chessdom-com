@@ -3,6 +3,7 @@ const socket = io(window.location.origin);
 let currentRoomId = null;
 let isOnlineMode = false;
 let gameStartRequested = false;
+window.isSearchingOpponent = false;
 
 socket.on('connect', () => {
   console.log('Serverga ulandi:', socket.id);
@@ -43,6 +44,10 @@ socket.on('opponent-disconnected', () => {
   alert('Raqib ulanishni uzdi!');
   currentRoomId = null;
   isOnlineMode = false;
+  window.isSearchingOpponent = false;
+  if (typeof window.updateGameStatusText === 'function') {
+    window.updateGameStatusText();
+  }
   updateOnlineStatus(false);
 });
 
@@ -77,6 +82,10 @@ function leaveOnlineGame() {
     currentRoomId = null;
   }
   isOnlineMode = false;
+  window.isSearchingOpponent = false;
+  if (typeof window.updateGameStatusText === 'function') {
+    window.updateGameStatusText();
+  }
   updateOnlineStatus(false);
 }
 
@@ -121,6 +130,11 @@ window.startMatchmaking = async function() {
     statusEl.style.display = 'inline';
   }
 
+  window.isSearchingOpponent = true;
+  if (typeof window.updateGameStatusText === 'function') {
+    window.updateGameStatusText();
+  }
+
   if (typeof window.setOpponentFound === 'function') {
     window.setOpponentFound(false);
   }
@@ -140,6 +154,10 @@ window.startMatchmaking = async function() {
     const data = await res.json();
     
     if (data.success && data.matched) {
+      window.isSearchingOpponent = false;
+      if (typeof window.updateGameStatusText === 'function') {
+        window.updateGameStatusText();
+      }
       if (statusEl) statusEl.style.display = 'none';
       window.currentRoomId = data.roomId;
       isOnlineMode = true;
@@ -153,13 +171,22 @@ window.startMatchmaking = async function() {
   } catch (err) {
     console.error('Matchmaking xatoligi:', err);
     alert('Matchmaking xatoligi yuz berdi!');
+    window.isSearchingOpponent = false;
+    if (typeof window.updateGameStatusText === 'function') {
+      window.updateGameStatusText();
+    }
     if (statusEl) statusEl.style.display = 'none';
   }
 };
 
 window.stopMatchmaking = async function() {
   if (!window.currentUser) return;
-  
+
+  window.isSearchingOpponent = false;
+  if (typeof window.updateGameStatusText === 'function') {
+    window.updateGameStatusText();
+  }
+
   try {
     await fetch('/api/matchmaking/leave', {
       method: 'POST',

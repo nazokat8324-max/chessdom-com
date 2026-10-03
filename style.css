@@ -1014,6 +1014,11 @@
         color: #88a;
         display: block;
       }
+      .player-bar .player-status {
+        font-size: 11px;
+        color: #f39c12;
+        display: block;
+      }
 
       .player-timer {
         font-size: 18px;

@@ -17,11 +17,23 @@ window.setOpponentFound = function(found) {
   if (board) {
     board.position('start');
   }
-  const overlay = document.getElementById('boardWaitingOverlay');
-  if (overlay) {
-    overlay.style.display = found ? 'none' : 'flex';
+  if (typeof window.updateGameStatusText === 'function') {
+    window.updateGameStatusText();
   }
 };
+
+window.updateGameStatusText = function() {
+  const statusEl = document.getElementById('gameStatusText');
+  if (!statusEl) return;
+  if (opponentFound) {
+    statusEl.textContent = '';
+    return;
+  }
+  statusEl.textContent = (typeof i18next !== 'undefined' && i18next.isInitialized)
+    ? i18next.t('opponentStatusSearching', { defaultValue: 'Qidirilmoqda...' })
+: 'Qidirilmoqda...';
+};
+
 window.currentGameTimeControl = 'blitz';
 
 function getGameModeFromTime(sec) {

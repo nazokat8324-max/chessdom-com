@@ -32,6 +32,26 @@ const matchmakingQueue = [];
 
 function generateRoomId() { return Math.random().toString(36).substring(2, 8).toUpperCase(); }
 
+function createRoom() { return { players: [], gameState: null, turn: 'w', colorMap: {} }; }
+
+function colorForRoom(room, socketId) {
+  if (room.colorMap && room.colorMap[socketId]) return room.colorMap[socketId];
+  return room.players.length === 0 ? 'w' : 'b';
+}
+
+function findPlayer(room, socketId) { return room.players.find(p => p.socketId === socketId); }
+
+function removePlayerFromRoom(room) {
+  if (room.players.length === 0) return;
+  room.turn = room.players[0].color;
+}
+
+function notifyRoomPlayers(roomId, room, event, extra) {
+  for (const player of room.players) {
+    io.to(player.socketId).emit(event, { roomId, color: player.color, ...(extra || {}) });
+  }
+}
+
 function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ success: false, message: 'No token provided' });
@@ -150,16 +170,20 @@ async function start() {
 
   app.post('/api/matchmaking/join', authMiddleware, async (req, res) => {
     try {
-      const { username, rating } = req.body;
+      const { username, rating, socketId } = req.body;
       const userIndex = matchmakingQueue.findIndex(u => u.username === username);
       if (userIndex !== -1) return res.status(400).json({ success: false, message: 'Already in queue' });
-      matchmakingQueue.push({ username, rating: rating || 1500, joinedAt: Date.now() });
+      matchmakingQueue.push({ username, rating: rating || 1500, joinedAt: Date.now(), socketId: socketId || null });
       if (matchmakingQueue.length >= 2) {
         const player1 = matchmakingQueue.shift();
         const player2 = matchmakingQueue.shift();
         const roomId = generateRoomId();
-        rooms.set(roomId, { players: [], gameState: null });
-        res.json({ success: true, matched: true, roomId, opponent: player2 });
+        const room = createRoom();
+        if (player1.socketId) room.colorMap[player1.socketId] = 'w';
+        if (player2.socketId) room.colorMap[player2.socketId] = 'b';
+        rooms.set(roomId, room);
+        const { socketId: opponentSocketId, ...opponentInfo } = player2;
+        res.json({ success: true, matched: true, roomId, opponent: opponentInfo, color: 'w' });
       } else { res.json({ success: true, matched: false, position: matchmakingQueue.length }); }
     } catch (err) { console.error('Matchmaking xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -396,22 +420,40 @@ async function start() {
     console.log('Yangi o\'yinchi ulandi:', socket.id);
     socket.on('join-club-room', (clubRoomId) => { socket.join(clubRoomId); console.log(`Klub xonasiga qo'shildi: ${clubRoomId}`); });
     socket.on('join-room', (roomId) => {
-      if (!rooms.has(roomId)) { rooms.set(roomId, { players: [], gameState: null }); }
+      if (!rooms.has(roomId)) { rooms.set(roomId, createRoom()); }
       const room = rooms.get(roomId);
       if (room.players.length >= 2) { socket.emit('error', { message: 'Room is full' }); return; }
-      room.players.push(socket.id); socket.join(roomId); socket.emit('room-joined', roomId); socket.to(roomId).emit('opponent-connected');
+      if (findPlayer(room, socket.id)) return;
+      const color = colorForRoom(room, socket.id);
+      room.players.push({ socketId: socket.id, color });
+      socket.join(roomId);
+      socket.emit('room-joined', { roomId, color });
+      notifyRoomPlayers(roomId, room, 'opponent-connected');
     });
-    socket.on('create-room', () => { const roomId = generateRoomId(); socket.join(roomId); rooms.set(roomId, { players: [socket.id], gameState: null }); socket.emit('room-created', roomId); });
+    socket.on('create-room', () => { const roomId = generateRoomId(); socket.join(roomId); const room = createRoom(); room.players.push({ socketId: socket.id, color: 'w' }); rooms.set(roomId, room); socket.emit('room-created', { roomId, color: 'w' }); });
     socket.on('join-random-room', () => {
       const availableRooms = Array.from(rooms.entries()).filter(([id, room]) => room.players.length < 2);
-      if (availableRooms.length > 0) { const [roomId, room] = availableRooms[0]; room.players.push(socket.id); socket.join(roomId); socket.emit('room-joined', roomId); socket.to(roomId).emit('opponent-connected'); }
-      else { const roomId = generateRoomId(); rooms.set(roomId, { players: [socket.id], gameState: null }); socket.join(roomId); socket.emit('waiting-for-opponent', roomId); }
+      if (availableRooms.length > 0) {
+        const [roomId, room] = availableRooms[0];
+        const color = colorForRoom(room, socket.id);
+        room.players.push({ socketId: socket.id, color });
+        socket.join(roomId);
+        socket.emit('room-joined', { roomId, color });
+        notifyRoomPlayers(roomId, room, 'opponent-connected');
+      }
+      else { const roomId = generateRoomId(); const room = createRoom(); room.players.push({ socketId: socket.id, color: 'w' }); rooms.set(roomId, room); socket.join(roomId); socket.emit('waiting-for-opponent', { roomId, color: 'w' }); }
     });
     socket.on('make-move', (data) => {
       const { roomId, move } = data;
       if (!rooms.has(roomId)) { socket.emit('error', { message: 'Room not found' }); return; }
+      const room = rooms.get(roomId);
+      const player = findPlayer(room, socket.id);
+      if (!player) { socket.emit('move-rejected', { reason: 'not_in_room', error: 'Socket is not in this room' }); return; }
+      if (room.players.length < 2) { socket.emit('move-rejected', { reason: 'waiting_for_opponent', error: 'Opponent has not joined yet' }); return; }
+      if (player.color !== room.turn) { socket.emit('move-rejected', { reason: 'not_your_turn', error: 'Not your turn' }); return; }
       const validation = validateMove(move);
-      if (!validation.valid) { socket.emit('move-rejected', { error: validation.error }); return; }
+      if (!validation.valid) { socket.emit('move-rejected', { reason: 'invalid_move', error: validation.error }); return; }
+      room.turn = player.color === 'w' ? 'b' : 'w';
       socket.to(roomId).emit('opponent-move', move);
     });
     socket.on('offer-draw', (data) => { socket.to(data.roomId).emit('draw-offered', { roomId: data.roomId }); });
@@ -420,7 +462,7 @@ async function start() {
     socket.on('game-over', (data) => { socket.to(data.roomId).emit('game-ended', data.result); });
     socket.on('leave-room', (roomId) => {
       socket.leave(roomId); socket.to(roomId).emit('opponent-disconnected');
-      if (rooms.has(roomId)) { const room = rooms.get(roomId); const index = room.players.indexOf(socket.id); if (index !== -1) { room.players.splice(index, 1); } if (room.players.length === 0) { rooms.delete(roomId); } }
+      if (rooms.has(roomId)) { const room = rooms.get(roomId); const index = room.players.findIndex(p => p.socketId === socket.id); if (index !== -1) { room.players.splice(index, 1); } if (room.players.length === 0) { rooms.delete(roomId); } else { removePlayerFromRoom(room); } }
     });
     socket.on('join-tournament-room', (tournamentId) => { socket.join(`tournament_${tournamentId}`); console.log(`O'yinchi ${socket.id} turnir xonasiga qo'shildi: ${tournamentId}`); });
     socket.on('join-chat-room', (roomId) => { socket.join(roomId); console.log(`O'yinchi ${socket.id} chat xonasiga qo'shildi: ${roomId}`); });
@@ -431,7 +473,7 @@ async function start() {
     });
     socket.on('disconnect', () => {
       console.log('O\'yinchi chiqib ketdi:', socket.id);
-      for (const [roomId, room] of rooms.entries()) { const index = room.players.indexOf(socket.id); if (index !== -1) { room.players.splice(index, 1); socket.to(roomId).emit('opponent-disconnected'); if (room.players.length === 0) { rooms.delete(roomId); } break; } }
+      for (const [roomId, room] of rooms.entries()) { const index = room.players.findIndex(p => p.socketId === socket.id); if (index !== -1) { room.players.splice(index, 1); socket.to(roomId).emit('opponent-disconnected'); if (room.players.length === 0) { rooms.delete(roomId); } else { removePlayerFromRoom(room); } break; } }
     });
   });
 

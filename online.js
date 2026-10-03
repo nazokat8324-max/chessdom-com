@@ -3,6 +3,7 @@ const socket = io(window.location.origin);
 let currentRoomId = null;
 let isOnlineMode = false;
 let gameStartRequested = false;
+let lastSentMove = null;
 window.isSearchingOpponent = false;
 
 socket.on('connect', () => {
@@ -17,22 +18,34 @@ socket.on('chat-message', (data) => {
   }
 });
 
-socket.on('room-joined', (roomId) => {
-  currentRoomId = roomId;
+socket.on('room-joined', (data) => {
+  const payload = (typeof data === 'string') ? { roomId: data } : (data || {});
+  currentRoomId = payload.roomId;
   isOnlineMode = true;
   updateOnlineStatus(true);
+  if (typeof window.applyMyColor === 'function') {
+    window.applyMyColor(payload.color);
+  }
   if (!gameStartRequested && typeof startNewGame === 'function') {
     gameStartRequested = true;
     startNewGame();
   }
 });
 
-socket.on('waiting-for-opponent', (roomId) => {
-  currentRoomId = roomId;
+socket.on('waiting-for-opponent', (data) => {
+  const payload = (typeof data === 'string') ? { roomId: data } : (data || {});
+  currentRoomId = payload.roomId;
+  if (typeof window.applyMyColor === 'function') {
+    window.applyMyColor(payload.color);
+  }
   showToast('Raqib kutilmoqda...', 'info');
 });
 
-socket.on('opponent-connected', () => {
+socket.on('opponent-connected', (data) => {
+  const payload = data || {};
+  if (typeof window.applyMyColor === 'function' && payload.color) {
+    window.applyMyColor(payload.color);
+  }
   showToast('Raqib topildi! O\'yin boshlanishi...', 'success');
   if (!gameStartRequested && typeof startNewGame === 'function') {
     gameStartRequested = true;
@@ -47,6 +60,9 @@ socket.on('opponent-disconnected', () => {
   window.isSearchingOpponent = false;
   if (typeof window.updateGameStatusText === 'function') {
     window.updateGameStatusText();
+  }
+  if (typeof window.clearMyColor === 'function') {
+    window.clearMyColor();
   }
   updateOnlineStatus(false);
 });
@@ -67,6 +83,7 @@ socket.on('offer-draw', (data) => {
 });
 
 socket.on('opponent-move', (move) => {
+  lastSentMove = null;
   if (typeof game !== 'undefined' && typeof board !== 'undefined') {
     game.move(move);
     board.position(game.fen());
@@ -76,6 +93,24 @@ socket.on('opponent-move', (move) => {
   }
 });
 
+socket.on('move-rejected', (data) => {
+  const reason = (data && data.reason) ? data.reason : 'invalid_move';
+  const messages = {
+    not_in_room: 'Xona topilmadi yoki siz bu xonada emasmisiz.',
+    waiting_for_opponent: 'Raqib hali ulanmagan.',
+    not_your_turn: 'Navbat sizda emas.',
+    invalid_move: 'Yurish rad etildi.'
+  };
+  showToast(messages[reason] || messages.invalid_move, 'warning');
+
+  if (lastSentMove && typeof game !== 'undefined' && game.history().length > 0) {
+    game.undo();
+    if (typeof board !== 'undefined') board.position(game.fen());
+    if (typeof updateHistory === 'function') updateHistory();
+  }
+  lastSentMove = null;
+});
+
 function leaveOnlineGame() {
   if (currentRoomId) {
     socket.emit('leave-room', currentRoomId);
@@ -83,14 +118,19 @@ function leaveOnlineGame() {
   }
   isOnlineMode = false;
   window.isSearchingOpponent = false;
+  lastSentMove = null;
   if (typeof window.updateGameStatusText === 'function') {
     window.updateGameStatusText();
+  }
+  if (typeof window.clearMyColor === 'function') {
+    window.clearMyColor();
   }
   updateOnlineStatus(false);
 }
 
 function sendMove(moveData) {
   if (socket && currentRoomId && isOnlineMode) {
+    lastSentMove = moveData;
     socket.emit('make-move', { roomId: currentRoomId, move: moveData });
   }
 }
@@ -148,7 +188,8 @@ window.startMatchmaking = async function() {
       },
       body: JSON.stringify({ 
         username: window.currentUser.username, 
-        rating: window.currentUser.rating || 1500 
+        rating: window.currentUser.rating || 1500,
+        socketId: (typeof socket !== 'undefined' && socket.id) ? socket.id : null
       })
     });
     const data = await res.json();
@@ -157,6 +198,9 @@ window.startMatchmaking = async function() {
       window.isSearchingOpponent = false;
       if (typeof window.updateGameStatusText === 'function') {
         window.updateGameStatusText();
+      }
+      if (typeof window.applyMyColor === 'function') {
+        window.applyMyColor(data.color);
       }
       if (statusEl) statusEl.style.display = 'none';
       window.currentRoomId = data.roomId;

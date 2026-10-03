@@ -35,6 +35,22 @@ window.updateGameStatusText = function() {
     : 'Qidirilmoqda...';
 };
 
+window.myColor = null;
+
+window.applyMyColor = function(color) {
+  window.myColor = (color === 'w' || color === 'b') ? color : null;
+  if (board && typeof board.orientation === 'function') {
+    board.orientation(window.myColor === 'b' ? 'black' : 'white');
+  }
+};
+
+window.clearMyColor = function() {
+  window.myColor = null;
+  if (board && typeof board.orientation === 'function') {
+    board.orientation('white');
+  }
+};
+
 window.currentGameTimeControl = 'blitz';
 
 function getGameModeFromTime(sec) {
@@ -433,7 +449,11 @@ function onDrop(source, target) {
   if (game.game_over()) {
     clearInterval(timerInterval);
     playSound('gameEnd');
-    
+
+    if (typeof window.clearMyColor === 'function') {
+      window.clearMyColor();
+    }
+
     if (typeof confetti === 'function') {
       confetti({
         particleCount: 150,

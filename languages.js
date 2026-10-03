@@ -1693,7 +1693,7 @@ function updateUI() {
     if (typeof window.populateSettingsCountries === 'function') window.populateSettingsCountries();
   }
 
-  if (typeof window.updateTopPlayersList === 'function') window.updateTopPlayersList();
+  if (typeof window.renderTopPlayersList === 'function') window.renderTopPlayersList();
 
   if (typeof window.updateAuthHeaderUI === 'function') window.updateAuthHeaderUI();
   if (typeof window.updateStreakUI === 'function') window.updateStreakUI();

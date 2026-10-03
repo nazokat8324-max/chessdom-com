@@ -85,135 +85,127 @@ window.updateStreakUI = function() {
   streakElem.textContent = `🔥 ${getStreakText(window.currentStreak)}`;
 };
 
-window.updateTopPlayersList = async function() {
+window._topPlayersState = null;
+
+function topPlayersText(key, fallback) {
+  return (typeof i18next !== 'undefined' && i18next.isInitialized)
+    ? i18next.t(key, { defaultValue: fallback })
+    : fallback;
+}
+
+function topPlayersEsc(value) {
+  if (typeof escapeHtml === 'function') return escapeHtml(value);
+  const div = document.createElement('div');
+  div.textContent = (value === null || value === undefined) ? '' : String(value);
+  return div.innerHTML;
+}
+
+function topPlayersTableHead() {
+  return `
+      <thead>
+        <tr>
+          <th>#</th>
+          <th id="colUsername">${topPlayersEsc(topPlayersText('colUsername', 'Username'))}</th>
+          <th id="colRating">${topPlayersEsc(topPlayersText('colRating', 'Rating'))}</th>
+          <th id="colWinPoints">${topPlayersEsc(topPlayersText('colWinPoints', 'Win Points'))}</th>
+        </tr>
+      </thead>`;
+}
+
+function topPlayersMessage(className, key, fallback, colspan) {
+  const message = topPlayersEsc(topPlayersText(key, fallback));
+  const cell = colspan
+    ? `<td class="${className}" colspan="${colspan}">${message}</td>`
+    : `<div class="${className}">${message}</div>`;
+  return `
+      <table class="top-winners-table">
+        ${topPlayersTableHead()}
+        <tbody>
+          <tr>${cell}</tr>
+        </tbody>
+      </table>
+    `;
+}
+
+window.renderTopPlayersList = function() {
   const container = document.getElementById("topPlayersContainer");
   if (!container) return;
 
-  const tCol = (key, fallback) =>
-    (typeof i18next !== 'undefined' && i18next.isInitialized)
-      ? i18next.t(key, { defaultValue: fallback })
-      : fallback;
+  const state = window._topPlayersState;
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 10px;">Yuklanmoqda...</div>';
-  
-  try {
-    const res = await fetch('/api/daily-winners');
-    if (!res.ok) throw new Error('Failed to fetch');
-    const data = await res.json();
+  // Hali yuklanmagan
+  if (!state) {
+    container.innerHTML = `<div class="top-winners-empty">${topPlayersEsc(topPlayersText('loadingText', 'Yuklanmoqda...'))}</div>`;
+    return;
+  }
 
-    const winners = (data.success && Array.isArray(data.winners) && data.winners.length > 0)
-      ? data.winners.slice(0, 5)
-      : [
-          { username: 'Magnus', dailyWins: 24, rating: 2850 },
-          { username: 'Hikaru', dailyWins: 19, rating: 2780 },
-          { username: 'Ian', dailyWins: 16, rating: 2715 },
-          { username: 'Ding', dailyWins: 14, rating: 2680 },
-          { username: 'Alireza', dailyWins: 11, rating: 2650 }
-        ];
+  // Yuklash xatoligi
+  if (state.status === 'error') {
+    container.innerHTML = topPlayersMessage('top-winners-empty', 'topPlayersError', 'Reytingni yuklab bo\'lmadi', 4);
+    return;
+  }
 
-    const tableRows = winners
-      .map(
-        (user, index) => `
+  const winners = Array.isArray(state.winners) ? state.winners : [];
+
+  // Soxta ma'lumot yo'q - bo'sh holat
+  if (state.status === 'empty' || winners.length === 0) {
+    container.innerHTML = topPlayersMessage('top-winners-empty', 'topPlayersEmpty', 'Oxirgi 24 soatda hali g\'alaba yo\'q', 4);
+    return;
+  }
+
+  const tableRows = winners
+    .map((user, index) => {
+      const name = (user && user.username) ? String(user.username) : '';
+      const initial = name.charAt(0).toUpperCase() || 'U';
+      const rating = Number(user && user.rating);
+      const wins = Number(user && user.dailyWins);
+      return `
           <tr class="top-winners-row">
             <td class="top-winners-rank">${index + 1}</td>
             <td class="top-winners-user">
               <div class="top-winners-user-cell">
-                <div class="mini-avatar">${(user.username || 'U').charAt(0).toUpperCase()}</div>
-                <span class="top-winners-name">${user.username}</span>
+                <div class="mini-avatar">${topPlayersEsc(initial)}</div>
+                <span class="top-winners-name">${topPlayersEsc(name)}</span>
               </div>
             </td>
-            <td class="top-winners-rating">${Number(user.rating || 1500)}</td>
-            <td class="top-winners-wins">${user.dailyWins || 0}</td>
+            <td class="top-winners-rating">${Number.isFinite(rating) ? rating : 1500}</td>
+            <td class="top-winners-wins">${Number.isFinite(wins) ? wins : 0}</td>
           </tr>
-        `
-      )
-      .join('');
+        `;
+    })
+    .join('');
 
-    container.innerHTML = `
+  container.innerHTML = `
       <table class="top-winners-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th id="colUsername">${tCol('colUsername', 'Username')}</th>
-            <th id="colRating">${tCol('colRating', 'Rating')}</th>
-            <th id="colWinPoints">${tCol('colWinPoints', 'Win Points')}</th>
-          </tr>
-        </thead>
+        ${topPlayersTableHead()}
         <tbody>${tableRows}</tbody>
       </table>
     `;
+};
+
+window.loadTopPlayers = async function() {
+  const container = document.getElementById("topPlayersContainer");
+  if (!container) return;
+
+  window._topPlayersState = null;
+  window.renderTopPlayersList();
+
+  try {
+    const res = await fetch('/api/daily-winners');
+    if (!res.ok) throw new Error('Failed to fetch');
+    const data = await res.json();
+    if (!data || data.success !== true) throw new Error('Invalid response');
+
+    const winners = (Array.isArray(data.winners) ? data.winners : []).slice(0, 5);
+    window._topPlayersState = winners.length > 0
+      ? { status: 'ok', winners }
+      : { status: 'empty', winners: [] };
   } catch (err) {
     console.error('Top players yuklash xatoligi:', err);
-    container.innerHTML = `
-      <table class="top-winners-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th id="colUsername">${tCol('colUsername', 'Username')}</th>
-            <th id="colRating">${tCol('colRating', 'Rating')}</th>
-            <th id="colWinPoints">${tCol('colWinPoints', 'Win Points')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="top-winners-row">
-            <td class="top-winners-rank">1</td>
-            <td class="top-winners-user">
-              <div class="top-winners-user-cell">
-                <div class="mini-avatar">M</div>
-                <span class="top-winners-name">Magnus</span>
-              </div>
-            </td>
-            <td class="top-winners-rating">2850</td>
-            <td class="top-winners-wins">24</td>
-          </tr>
-          <tr class="top-winners-row">
-            <td class="top-winners-rank">2</td>
-            <td class="top-winners-user">
-              <div class="top-winners-user-cell">
-                <div class="mini-avatar">H</div>
-                <span class="top-winners-name">Hikaru</span>
-              </div>
-            </td>
-            <td class="top-winners-rating">2780</td>
-            <td class="top-winners-wins">19</td>
-          </tr>
-          <tr class="top-winners-row">
-            <td class="top-winners-rank">3</td>
-            <td class="top-winners-user">
-              <div class="top-winners-user-cell">
-                <div class="mini-avatar">I</div>
-                <span class="top-winners-name">Ian</span>
-              </div>
-            </td>
-            <td class="top-winners-rating">2715</td>
-            <td class="top-winners-wins">16</td>
-          </tr>
-          <tr class="top-winners-row">
-            <td class="top-winners-rank">4</td>
-            <td class="top-winners-user">
-              <div class="top-winners-user-cell">
-                <div class="mini-avatar">D</div>
-                <span class="top-winners-name">Ding</span>
-              </div>
-            </td>
-            <td class="top-winners-rating">2680</td>
-            <td class="top-winners-wins">14</td>
-          </tr>
-          <tr class="top-winners-row">
-            <td class="top-winners-rank">5</td>
-            <td class="top-winners-user">
-              <div class="top-winners-user-cell">
-                <div class="mini-avatar">A</div>
-                <span class="top-winners-name">Alireza</span>
-              </div>
-            </td>
-            <td class="top-winners-rating">2650</td>
-            <td class="top-winners-wins">11</td>
-          </tr>
-        </tbody>
-      </table>
-    `;
+    window._topPlayersState = { status: 'error', winners: [] };
   }
+
+  window.renderTopPlayersList();
 };
 
 window.updateGameHistoryView = function() {
@@ -322,7 +314,7 @@ window.switchView = function(viewName) {
       window.playAnimation("homeView", "fadeIn");
     }
     if (navEl) navEl.classList.add("active");
-    window.updateTopPlayersList();
+    window.loadTopPlayers();
   } else if (viewName === "game") {
     const gameEl = document.getElementById("gameView");
     const navEl = document.getElementById("navPlay");
@@ -545,7 +537,6 @@ window.handleRegister = async function() {
     alert(t ? t.t('regSuccess') : data.message);
     if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
     window.updateAuthHeaderUI();
-    window.updateTopPlayersList();
     window.switchView("home");
   } catch (err) {
     alert("Serverga ulanib bo'lmadi!");
@@ -584,7 +575,6 @@ window.handleLogin = async function() {
     alert(t ? t.t('regSuccess') : data.message);
     if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
     window.updateAuthHeaderUI();
-    window.updateTopPlayersList();
     window.switchView("home");
   } catch (err) {
     alert("Serverga ulanib bo'lmadi!");
@@ -617,7 +607,6 @@ window.handleLogout = async function() {
   isOnlineMode = false;
   if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
   window.updateAuthHeaderUI();
-  window.updateTopPlayersList();
   window.switchView("home");
   if (!window.currentUser && typeof window.openLoginModal === "function") {
     window.openLoginModal();
@@ -936,7 +925,6 @@ window.handleLoginModal = async function() {
     localStorage.setItem("justChessAuthToken", window.authToken);
     window.closeLoginModal();
     window.updateAuthHeaderUI();
-    window.updateTopPlayersList();
     window.switchView("home");
     if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
     return;
@@ -957,7 +945,6 @@ window.handleLoginModal = async function() {
       window.authToken = data.token;
       window.closeLoginModal();
       window.updateAuthHeaderUI();
-      window.updateTopPlayersList();
       window.switchView("home");
       if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
     } else {
@@ -1046,7 +1033,6 @@ window.handleSignupModal = async function() {
 
   window.closeSignupModal();
   window.updateAuthHeaderUI();
-  window.updateTopPlayersList();
   window.switchView("home");
   if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
 };
@@ -1529,7 +1515,7 @@ window.resetSettings = function() {
   document.addEventListener("DOMContentLoaded", () => {
   window.updateStreakUI();
   window.updateAuthHeaderUI();
-  window.updateTopPlayersList();
+  window.loadTopPlayers();
   window.setupHistoryFilters();
 
   // Profile Modal

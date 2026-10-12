@@ -115,13 +115,13 @@ async function start() {
       const valid = await bcrypt.compare(password, user.password_hash);
       if (!valid) return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-      await db.db.run('UPDATE users SET last_active = ? WHERE id = ?', [new Date().toISOString(), user.id]);
+      await db.touchUserLastActive(user.id);
       res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode }, token });
     } catch (err) { console.error('Login xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/auth/logout', authMiddleware, async (req, res) => {
-    try { await db.db.run('DELETE FROM sessions WHERE user_id = ?', [req.user.userId]); res.json({ success: true, message: 'Hisobdan chiqildi!' }); }
+    try { await db.deleteUserSessions(req.user.userId); res.json({ success: true, message: 'Hisobdan chiqildi!' }); }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -222,11 +222,10 @@ async function start() {
     try {
       const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
       const { name, description, maxPlayers, clubId, tournamentType, timeControl, rounds, clubIdA, clubIdB } = req.body;
-      const tournamentId = uuidv4();
-      const tc = timeControl || (tournamentType === 'arena' ? '5+3' : '5+3');
+      const tc = timeControl || '5+3';
       const rnds = rounds || (tournamentType === 'team' ? 1 : 7);
-      await db.createTournament({ name, description, maxPlayers, creatorId: req.user.userId, clubId, tournamentType, timeControl: tc, rounds: rnds, clubIdA, clubIdB });
-      res.json({ success: true, tournamentId, message: 'Turnir yaratildi!' });
+      const created = await db.createTournament({ name, description, maxPlayers, creatorId: req.user.userId, clubId, tournamentType, timeControl: tc, rounds: rnds, clubIdA, clubIdB });
+      res.json({ success: true, tournamentId: created.id, message: 'Turnir yaratildi!' });
     } catch (err) { console.error('Create tournament xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -518,7 +517,7 @@ async function start() {
 
   server.listen(PORT, () => {
     console.log('Server ishga tushdi: http://localhost:' + PORT);
-    console.log('SQLite bazasi: database.sqlite');
+    console.log(db.usePostgres ? 'Baza: PostgreSQL (DATABASE_URL)' : 'Baza: SQLite (database.sqlite)');
   });
 }
 

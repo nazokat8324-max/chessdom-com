@@ -6,12 +6,15 @@ Foydalanuvchi bilan **o'zbek tilida** gaplashiladi; koddagi foydalanuvchiga ko'r
 ## Ishga tushirish / tekshirish
 - `npm start` → `node server.js`, port `3000` (`PORT` env). Brauzer: http://localhost:3000
 - `npm test` — faqat `node --check` (sintaksis tekshiruvi), haqiqiy testlar yo'q.
-- Env: `JWT_SECRET` (default `justchess_secret_key_2024`), `PORT`. `.env` fayli kod tomonidan yuklanmaydi (dotenv yo'q).
+- Env: `DATABASE_URL` (PostgreSQL, ixtiyoriy), `JWT_SECRET` (default `justchess_secret_key_2024`), `PORT`. `.env` fayli kod tomonidan yuklanmaydi (dotenv yo'q).
 
-## MUHIM: README eskirgan
-README PostgreSQL, Redis, PeerJS, i18next deydi — **haqiqatda baza SQLite** (`database.sqlite`, `sqlite3` paketi, `database.js`).
-`schema.sql` / `schema-extended.sql` (Postgres) ishlatilmaydi; jadvallar `database.js` → `initDatabase()` ichida
-`CREATE TABLE IF NOT EXISTS` + `ALTER TABLE ... ADD COLUMN` (try/catch) bilan yaratiladi. Docker/Procfile ham bor, lekin asosiy yo'l — lokal SQLite.
+## Baza: ikki rejim (README eskirgan)
+- `DATABASE_URL` berilsa → **PostgreSQL** (`pg` Pool; production — Render + Neon). SSL sertifikat tekshiruvi bilan; `localhost` yoki `sslmode=disable` bo'lsa SSL'siz.
+- Berilmasa → **SQLite** (`database.sqlite` loyiha papkasida) — lokal ishlash uchun.
+- Render'da SQLite fayli har deployda o'chib ketadi — production'da albatta `DATABASE_URL` bo'lishi kerak.
+- `schema.sql` / `schema-extended.sql` ishlatilmaydi; jadvallar `database.js` → `initDatabase()` ichida `CREATE TABLE IF NOT EXISTS` + `ALTER TABLE ... ADD COLUMN` (try/catch) bilan yaratiladi.
+- SQL ikkala bazada ishlashi kerak: `?` placeholder (Postgres uchun avtomatik `$n`), jadval tartibi FK bo'yicha, har INSERT'da `id` (uuidv4) va vaqt ISO string sifatida, camelCase aliaslar qo'shtirnoqda (`as "userId"`).
+- README PostgreSQL+Redis+PeerJS deydi — Redis/PeerJS ishlatilmaydi.
 
 ## Fayllar
 ### Backend
@@ -21,7 +24,7 @@ README PostgreSQL, Redis, PeerJS, i18next deydi — **haqiqatda baza SQLite** (`
   - Rate limit: `apiLimiter` 100/15min, `authLimiter` 5/15min (register/login).
   - `validateMove` — faqat kvadrat formati tekshiriladi, shaxmat qoidalari serverda TEKSHIRILMAYDI (chess.js faqat klientda).
   - `make-move`: xona, 2 o'yinchi borligi, `player.color === room.turn` tekshiriladi, keyin `opponent-move` raqibga yuboriladi; aks holda `move-rejected {reason}`.
-- [database.js](database.js) — SQLite wrapperlar (`dbGet/dbAll/dbRun/dbExec`), JSON ustunlar TEXT sifatida saqlanadi (`parseJson`). `db` obyektining o'zi ham export qilinadi (`db.db.run(...)` serverda ishlatiladi).
+- [database.js](database.js) — ikki rejimli wrapperlar (`dbGet/dbAll/dbRun/dbExec`, parametrlar `(sql, a, b)` yoki `(sql, [a, b])`), JSON ustunlar TEXT sifatida saqlanadi (`parseJson`). Server bazaga faqat export qilingan funksiyalar orqali murojaat qiladi (`usePostgres` flag ham export qilinadi).
   - `users` jadvalida `stats`, `stats_by_mode`, `history` — JSON TEXT. O'yin tarixi `users.history` ichida (+ alohida `games` jadvali ham yoziladi).
   - `getDailyWinners` — oxirgi 24 soatdagi g'alabalar bo'yicha top 5 (`history[].timestamp`).
   - Elo: K=32, min reyting 100 (`updateUserRatingByResult`).
@@ -68,7 +71,8 @@ Hali qolganlar:
 - Shaxsiy chat `roomId = user_<partnerId>` sifatida saqlanadi — ikki tomonning xabarlari turli "xona"larda.
 - Statistika ham localStorage, ham serverda saqlanadi; login paytida server qiymati ustun.
 - `send-chat-message` socket eventi `senderId: socket.id` yuboradi (autentifikatsiyasiz).
-- Team turnirlari SQLite rejimida 501 qaytaradi.
+- Team turnirlari 501 qaytaradi (amalga oshirilmagan).
+- `JWT_SECRET` Render'da o'rnatilmagan bo'lsa, koddagi default kalit ishlatiladi — xavfsizlik uchun Render env'da o'rnatish kerak.
 ## Ish uslubi
 - Kod uslubiga moslash: global `window.*` funksiyalar, `typeof x === 'function'` tekshiruvlari, o'zbekcha toast/alert matnlari, i18n uchun `i18next.t(key, {defaultValue})`.
 - Commit xabarlari inglizcha, qisqa, buyruq shaklida (masalan "Assign colors server-side and validate turn on make-move").

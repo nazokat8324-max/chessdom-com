@@ -1,44 +1,69 @@
-const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-const db = new sqlite3.Database(path.join(__dirname, 'database.sqlite'));
+// DATABASE_URL berilsa PostgreSQL (masalan Render + Neon), aks holda lokal SQLite fayli.
+// Barcha so'rovlar `?` placeholder bilan yoziladi; PostgreSQL uchun ular $1, $2... ga aylantiriladi.
+const DATABASE_URL = process.env.DATABASE_URL;
+const usePostgres = !!DATABASE_URL;
 
-db.serialize(() => {
-  db.run('PRAGMA journal_mode = WAL');
-  db.run('PRAGMA foreign_keys = ON');
-});
+let pool = null;
+let sqliteDb = null;
 
-function dbGet(sql, ...params) {
+if (usePostgres) {
+  const { Pool } = require('pg');
+  // Masofaviy baza bilan sertifikat tekshiriladigan SSL; lokal yoki sslmode=disable bo'lsa SSL'siz
+  const noSsl = /@(localhost|127\.0\.0\.1)[:/]/.test(DATABASE_URL) || /sslmode=disable/.test(DATABASE_URL);
+  pool = new Pool({ connectionString: DATABASE_URL, ssl: !noSsl });
+} else {
+  const sqlite3 = require('sqlite3').verbose();
+  sqliteDb = new sqlite3.Database(path.join(__dirname, 'database.sqlite'));
+  sqliteDb.serialize(() => {
+    sqliteDb.run('PRAGMA journal_mode = WAL');
+    sqliteDb.run('PRAGMA foreign_keys = ON');
+  });
+}
+
+// dbGet(sql, a, b) va dbGet(sql, [a, b]) ikkalasi ham qo'llab-quvvatlanadi
+function normalizeParams(params) {
+  return params.length === 1 && Array.isArray(params[0]) ? params[0] : params;
+}
+
+function toPgSql(sql) {
+  let i = 0;
+  return sql.replace(/\?/g, () => '$' + (++i));
+}
+
+function sqliteCall(method, sql, params) {
   return new Promise((resolve, reject) => {
-    db.get(sql, ...params, (err, row) => {
+    sqliteDb[method](sql, params, function (err, result) {
       if (err) reject(err);
-      else resolve(row);
+      else resolve(method === 'run' ? this : result);
     });
   });
 }
 
-function dbAll(sql, ...params) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, ...params, (err, rows) => {
-      if (err) reject(err);
-      else resolve(rows);
-    });
-  });
+async function dbGet(sql, ...params) {
+  params = normalizeParams(params);
+  if (usePostgres) return (await pool.query(toPgSql(sql), params)).rows[0];
+  return sqliteCall('get', sql, params);
 }
 
-function dbRun(sql, ...params) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, ...params, function (err) {
-      if (err) reject(err);
-      else resolve(this);
-    });
-  });
+async function dbAll(sql, ...params) {
+  params = normalizeParams(params);
+  if (usePostgres) return (await pool.query(toPgSql(sql), params)).rows;
+  return sqliteCall('all', sql, params);
+}
+
+async function dbRun(sql, ...params) {
+  params = normalizeParams(params);
+  if (usePostgres) return pool.query(toPgSql(sql), params);
+  return sqliteCall('run', sql, params);
 }
 
 function dbExec(sql) {
+  if (usePostgres) return pool.query(sql);
   return new Promise((resolve, reject) => {
-    db.exec(sql, (err) => {
+    sqliteDb.exec(sql, (err) => {
       if (err) reject(err);
       else resolve();
     });
@@ -92,6 +117,20 @@ async function initDatabase() {
   `);
 
   await dbExec(`
+    CREATE TABLE IF NOT EXISTS clubs (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      description TEXT,
+      icon TEXT DEFAULT '♟️',
+      creator_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      max_members INTEGER DEFAULT 50,
+      current_members INTEGER DEFAULT 1,
+      is_public INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dbExec(`
     CREATE TABLE IF NOT EXISTS tournaments (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -121,7 +160,7 @@ async function initDatabase() {
       id TEXT PRIMARY KEY,
       tournament_id TEXT REFERENCES tournaments(id) ON DELETE CASCADE,
       user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      score INTEGER DEFAULT 0,
+      score REAL DEFAULT 0,
       position INTEGER,
       club TEXT,
       opponents TEXT DEFAULT '[]',
@@ -184,20 +223,6 @@ async function initDatabase() {
   `);
 
   await dbExec(`
-    CREATE TABLE IF NOT EXISTS clubs (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      description TEXT,
-      icon TEXT DEFAULT '♟️',
-      creator_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-      max_members INTEGER DEFAULT 50,
-      current_members INTEGER DEFAULT 1,
-      is_public INTEGER DEFAULT 1,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  await dbExec(`
     CREATE TABLE IF NOT EXISTS club_members (
       id TEXT PRIMARY KEY,
       club_id TEXT REFERENCES clubs(id) ON DELETE CASCADE,
@@ -253,7 +278,7 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
-  console.log('✅ Database SQLite sahifalari yaratildi.');
+  console.log(usePostgres ? '✅ PostgreSQL jadvallari tayyor.' : '✅ Database SQLite sahifalari yaratildi.');
 }
 
 async function closeStaleArenas() {
@@ -311,6 +336,14 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
   await dbRun('UPDATE users SET stats = ?, stats_by_mode = ?, history = ?, last_active = ? WHERE id = ?', [JSON.stringify(stats), JSON.stringify(statsByMode), JSON.stringify(history), new Date().toISOString(), userId]);
 
   return { stats, statsByMode, history };
+}
+
+async function touchUserLastActive(userId) {
+  await dbRun('UPDATE users SET last_active = ? WHERE id = ?', [new Date().toISOString(), userId]);
+}
+
+async function deleteUserSessions(userId) {
+  await dbRun('DELETE FROM sessions WHERE user_id = ?', [userId]);
 }
 
 async function updateUserRating(userId, newRating) {
@@ -435,7 +468,7 @@ async function tournamentJoin(tournamentId, userId, club) {
   const existing = await dbGet('SELECT id FROM tournament_participants WHERE tournament_id = ? AND user_id = ?', [tournamentId, userId]);
   if (existing) return { success: false, message: 'Siz allaqachon turnirdasiz!' };
 
-  await dbRun('INSERT INTO tournament_participants (tournament_id, user_id, club) VALUES (?, ?, ?)', [tournamentId, userId, club || null]);
+  await dbRun('INSERT INTO tournament_participants (id, tournament_id, user_id, club, joined_at) VALUES (?, ?, ?, ?, ?)', [uuidv4(), tournamentId, userId, club || null, new Date().toISOString()]);
   await dbRun('UPDATE tournaments SET current_players = current_players + 1 WHERE id = ?', [tournamentId]);
 
   if (tournament.is_arena) {
@@ -568,7 +601,7 @@ async function joinClub(clubId, userId) {
   if (club.current_members >= club.max_members) return { success: false, message: 'Klub to\'la!' };
   const existing = await dbGet('SELECT id FROM club_members WHERE club_id = ? AND user_id = ?', [clubId, userId]);
   if (existing) return { success: false, message: 'Siz allaqachon klubdasiz!' };
-  await dbRun('INSERT INTO club_members (club_id, user_id, role) VALUES (?, ?, ?)', [clubId, userId, 'member']);
+  await dbRun('INSERT INTO club_members (id, club_id, user_id, role, joined_at) VALUES (?, ?, ?, ?, ?)', [uuidv4(), clubId, userId, 'member', new Date().toISOString()]);
   await dbRun('UPDATE clubs SET current_members = current_members + 1 WHERE id = ?', [clubId]);
   return { success: true, message: 'Klubga qo\'shildingiz!' };
 }
@@ -610,6 +643,8 @@ module.exports = {
   createUser,
   updateUserStats,
   updateUserRating,
+  touchUserLastActive,
+  deleteUserSessions,
   getLeaderboard,
   getDailyWinners,
   getStatsByUsername,
@@ -642,5 +677,5 @@ module.exports = {
   joinClub,
   getClubMembers,
   getClubLeaderboard,
-  db,
+  usePostgres,
 };

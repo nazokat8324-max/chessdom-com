@@ -286,7 +286,7 @@ async function createUser(user) {
     'INSERT INTO users (id, username, email, password_hash, rating, stats, stats_by_mode, history, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [id, user.username, user.email, user.passwordHash, user.rating || 1500, JSON.stringify(user.stats || { wins: 0, losses: 0, draws: 0 }), JSON.stringify(user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }), JSON.stringify(user.history || []), new Date().toISOString()]
   );
-  return { id, username: user.username, email: user.email, rating: user.rating || 1500, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode, history: user.history || [], created_at: new Date().toISOString() };
+  return { id, username: user.username, email: user.email, rating: user.rating || 1500, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }, history: user.history || [], created_at: new Date().toISOString() };
 }
 
 async function updateUserStats(userId, result, opponent, mode, moves, timeControl) {
@@ -407,6 +407,23 @@ async function getTournaments(filter) {
 
 async function getTournamentById(id) {
   return await dbGet('SELECT * FROM tournaments WHERE id = ?', id);
+}
+
+// Joriy soat uchun arena mavjud bo'lmasa, uni yaratadi.
+async function ensureCurrentArena(slot) {
+  let arena = await dbGet(
+    "SELECT * FROM tournaments WHERE is_arena = 1 AND time_control = ? AND status = 'active' AND started_at >= ? AND started_at < ? ORDER BY created_at DESC LIMIT 1",
+    [slot.code, slot.slotStart, slot.slotEnd]
+  );
+  if (!arena) {
+    const id = uuidv4();
+    await dbRun(
+      'INSERT INTO tournaments (id, name, description, max_players, creator_id, tournament_type, time_control, rounds, current_round, is_arena, status, started_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [id, `Arena ${slot.name}`, '24/7 avtomatik aylanuvchi arena', 9999, null, 'arena', slot.code, slot.rounds, 0, 1, 'active', slot.slotStart, slot.slotStart]
+    );
+    arena = await getTournamentById(id);
+  }
+  return { ...arena, is_arena: true };
 }
 
 async function tournamentJoin(tournamentId, userId, club) {
@@ -604,6 +621,7 @@ module.exports = {
   createTournament,
   getTournaments,
   getTournamentById,
+  ensureCurrentArena,
   tournamentJoin,
   tournamentStart,
   getTournamentParticipants,

@@ -39,6 +39,13 @@ function colorForRoom(room, socketId) {
   return room.players.length === 0 ? 'w' : 'b';
 }
 
+// Uzilib qolgan socketlarni matchmaking navbatidan olib tashlash
+function pruneMatchmakingQueue() {
+  for (let i = matchmakingQueue.length - 1; i >= 0; i--) {
+    if (!io.sockets.sockets.get(matchmakingQueue[i].socketId)) matchmakingQueue.splice(i, 1);
+  }
+}
+
 function findPlayer(room, socketId) { return room.players.find(p => p.socketId === socketId); }
 
 function removePlayerFromRoom(room) {
@@ -91,7 +98,7 @@ async function start() {
       const passwordHash = await bcrypt.hash(password, 10);
       const user = await db.createUser({ username, email, passwordHash });
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-      res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!", user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats }, token });
+      res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!", user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.statsByMode }, token });
     } catch (err) { console.error('Register xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -109,7 +116,7 @@ async function start() {
       if (!valid) return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
       await db.db.run('UPDATE users SET last_active = ? WHERE id = ?', [new Date().toISOString(), user.id]);
-      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats }, token });
+      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode }, token });
     } catch (err) { console.error('Login xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -170,26 +177,35 @@ async function start() {
 
   app.post('/api/matchmaking/join', authMiddleware, async (req, res) => {
     try {
-      const { username, rating, socketId } = req.body;
-      const userIndex = matchmakingQueue.findIndex(u => u.username === username);
-      if (userIndex !== -1) return res.status(400).json({ success: false, message: 'Already in queue' });
-      matchmakingQueue.push({ username, rating: rating || 1500, joinedAt: Date.now(), socketId: socketId || null });
-      if (matchmakingQueue.length >= 2) {
-        const player1 = matchmakingQueue.shift();
-        const player2 = matchmakingQueue.shift();
-        const roomId = generateRoomId();
-        const room = createRoom();
-        if (player1.socketId) room.colorMap[player1.socketId] = 'w';
-        if (player2.socketId) room.colorMap[player2.socketId] = 'b';
-        rooms.set(roomId, room);
-        const { socketId: opponentSocketId, ...opponentInfo } = player2;
-        res.json({ success: true, matched: true, roomId, opponent: opponentInfo, color: 'w' });
-      } else { res.json({ success: true, matched: false, position: matchmakingQueue.length }); }
+      const { socketId } = req.body;
+      const username = req.user.username;
+      const playerSocket = socketId ? io.sockets.sockets.get(socketId) : null;
+      if (!playerSocket) return res.status(400).json({ success: false, message: 'Serverga socket orqali ulanmagansiz!' });
+      pruneMatchmakingQueue();
+      if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
+      const user = await db.getUserById(req.user.userId);
+      const me = { username, rating: (user && user.rating) || 1500, joinedAt: Date.now(), socketId };
+      const waiting = matchmakingQueue.shift();
+      if (!waiting) {
+        matchmakingQueue.push(me);
+        return res.json({ success: true, matched: false, position: matchmakingQueue.length });
+      }
+      // Navbatda kutgan o'yinchi oq, yangi kelgan o'yinchi qora bilan o'ynaydi.
+      const roomId = generateRoomId();
+      const room = createRoom();
+      room.players.push({ socketId: waiting.socketId, color: 'w' }, { socketId: me.socketId, color: 'b' });
+      rooms.set(roomId, room);
+      for (const [player, opponent, color] of [[waiting, me, 'w'], [me, waiting, 'b']]) {
+        const s = io.sockets.sockets.get(player.socketId);
+        if (s) s.join(roomId);
+        io.to(player.socketId).emit('match-found', { roomId, color, opponent: { username: opponent.username, rating: opponent.rating } });
+      }
+      res.json({ success: true, matched: true, roomId, color: 'b', opponent: { username: waiting.username, rating: waiting.rating } });
     } catch (err) { console.error('Matchmaking xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/matchmaking/leave', authMiddleware, async (req, res) => {
-    try { const { username } = req.body; const index = matchmakingQueue.findIndex(u => u.username === username); if (index !== -1) matchmakingQueue.splice(index, 1); res.json({ success: true }); }
+    try { const index = matchmakingQueue.findIndex(u => u.username === req.user.username); if (index !== -1) matchmakingQueue.splice(index, 1); res.json({ success: true }); }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -212,6 +228,17 @@ async function start() {
       await db.createTournament({ name, description, maxPlayers, creatorId: req.user.userId, clubId, tournamentType, timeControl: tc, rounds: rnds, clubIdA, clubIdB });
       res.json({ success: true, tournamentId, message: 'Turnir yaratildi!' });
     } catch (err) { console.error('Create tournament xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.get('/api/tournaments/arenas', apiLimiter, async (req, res) => {
+    try {
+      const { getArenaSchedule, getCurrentArenaSlot } = require('./server-helpers');
+      const now = new Date();
+      const slot = getCurrentArenaSlot(now);
+      const currentArena = await db.ensureCurrentArena(slot);
+      const timeUntilNext = Math.max(0, new Date(slot.slotEnd).getTime() - now.getTime());
+      res.json({ success: true, currentArena, timeControl: slot, timeUntilNext, schedule: getArenaSchedule(now) });
+    } catch (err) { console.error('Arenas xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.get('/api/tournaments', apiLimiter, async (req, res) => {
@@ -418,6 +445,15 @@ async function start() {
 
   io.on('connection', (socket) => {
     console.log('Yangi o\'yinchi ulandi:', socket.id);
+    // Shaxsiy xabarlar (do'stlik so'rovi, chat) uchun user_<id> xonasiga qo'shish
+    socket.on('authenticate', (token) => {
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET);
+        socket.data.userId = decoded.userId;
+        socket.data.username = decoded.username;
+        socket.join(`user_${decoded.userId}`);
+      } catch (err) { socket.emit('auth-error', { message: 'Invalid or expired token' }); }
+    });
     socket.on('join-club-room', (clubRoomId) => { socket.join(clubRoomId); console.log(`Klub xonasiga qo'shildi: ${clubRoomId}`); });
     socket.on('join-room', (roomId) => {
       if (!rooms.has(roomId)) { rooms.set(roomId, createRoom()); }
@@ -473,6 +509,7 @@ async function start() {
     });
     socket.on('disconnect', () => {
       console.log('O\'yinchi chiqib ketdi:', socket.id);
+      pruneMatchmakingQueue();
       for (const [roomId, room] of rooms.entries()) { const index = room.players.findIndex(p => p.socketId === socket.id); if (index !== -1) { room.players.splice(index, 1); socket.to(roomId).emit('opponent-disconnected'); if (room.players.length === 0) { rooms.delete(roomId); } else { removePlayerFromRoom(room); } break; } }
     });
   });

@@ -1,6 +1,12 @@
 if (typeof window.currentLang === 'undefined') {
   window.currentLang = localStorage.getItem("justChessLang") || "uz";
 }
+// Eski versiyadagi faqat brauzerda yaratilgan ("local_" tokenli) akkauntlar serverda ishlamaydi — sessiyani tozalash
+if ((localStorage.getItem("justChessAuthToken") || "").startsWith("local_")) {
+  localStorage.removeItem("justChessAuthToken");
+  localStorage.removeItem("justChessCurrentUser");
+}
+localStorage.removeItem("justChessRegisteredUsers");
 window.currentUser = JSON.parse(localStorage.getItem("justChessCurrentUser")) || null;
 window.stats = window.currentUser ? window.currentUser.stats : localStorage.getItem("justChessGuestStats") ? JSON.parse(localStorage.getItem("justChessGuestStats")) : { wins: 0, losses: 0, draws: 0 };
 window.statsByMode = (window.currentUser && window.currentUser.statsByMode) || JSON.parse(localStorage.getItem("justChessStatsByMode")) || {
@@ -505,6 +511,36 @@ window.updateAuthHeaderUI = function() {
   }
 };
 
+// Server login/register javobidan sessiyani o'rnatish
+window.applyAuthSession = function(user, token) {
+  const settings = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
+  const country = user.country || settings.country || "uz";
+  let countryName = user.countryName || "";
+  if (!countryName && typeof allCountries !== 'undefined') {
+    const found = allCountries.find(c => c.code === country);
+    if (found) countryName = found.name;
+  }
+  if (!countryName && country === "uz") countryName = "O'zbekiston";
+
+  window.currentUser = {
+    ...user,
+    country: country,
+    countryName: countryName,
+    stats: user.stats || { wins: 0, losses: 0, draws: 0 },
+    statsByMode: user.statsByMode || {
+      rapid: { wins: 0, losses: 0, draws: 0 },
+      blitz: { wins: 0, losses: 0, draws: 0 },
+      bullet: { wins: 0, losses: 0, draws: 0 }
+    }
+  };
+  window.authToken = token;
+  window.stats = window.currentUser.stats;
+  window.statsByMode = window.currentUser.statsByMode;
+  localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+  localStorage.setItem("justChessAuthToken", token);
+  if (typeof window.authenticateSocket === 'function') window.authenticateSocket();
+};
+
 window.handleRegister = async function() {
   const username = document.getElementById("regUsername").value.trim();
   const email = document.getElementById("regEmail").value.trim();
@@ -529,11 +565,7 @@ window.handleRegister = async function() {
       window.playAnimation("regCardTitle", "shakeX");
       return;
     }
-    window.currentUser = data.user;
-    window.authToken = data.token;
-    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
-    localStorage.setItem("justChessAuthToken", data.token);
-    window.stats = window.currentUser.stats;
+    window.applyAuthSession(data.user, data.token);
     alert(t ? t.t('regSuccess') : data.message);
     if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
     window.updateAuthHeaderUI();
@@ -567,11 +599,7 @@ window.handleLogin = async function() {
       window.playAnimation("loginCardTitle", "shakeX");
       return;
     }
-    window.currentUser = data.user;
-    window.authToken = data.token;
-    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
-    localStorage.setItem("justChessAuthToken", data.token);
-    window.stats = window.currentUser.stats;
+    window.applyAuthSession(data.user, data.token);
     alert(t ? t.t('regSuccess') : data.message);
     if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
     window.updateAuthHeaderUI();
@@ -873,20 +901,7 @@ window.socialLogin = function(provider) {
   alert(`Social login (${provider}) will be available soon.`);
 };
 
-// --- Get registered users from localStorage ---
-window.getRegisteredUsers = function() {
-  try {
-    return JSON.parse(localStorage.getItem("justChessRegisteredUsers") || "[]");
-  } catch {
-    return [];
-  }
-};
-
-window.saveRegisteredUsers = function(users) {
-  localStorage.setItem("justChessRegisteredUsers", JSON.stringify(users));
-};
-
-// --- Login handler ---
+/// --- Login handler ---
 window.handleLoginModal = async function() {
   const username = document.getElementById("loginModalUsername").value.trim();
   const password = document.getElementById("loginModalPassword").value.trim();
@@ -913,24 +928,6 @@ window.handleLoginModal = async function() {
 
   if (!valid) return;
 
-  // Check local registered users first
-  const users = window.getRegisteredUsers();
-  const existing = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-
-  if (existing && existing.password === password) {
-    // Local login success
-    window.currentUser = existing.userData;
-    window.authToken = "local_" + Date.now();
-    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
-    localStorage.setItem("justChessAuthToken", window.authToken);
-    window.closeLoginModal();
-    window.updateAuthHeaderUI();
-    window.switchView("home");
-    if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
-    return;
-  }
-
-  // Fallback: try server login
   try {
     const response = await fetch('/api/auth/login', {
       method: 'POST',
@@ -939,10 +936,7 @@ window.handleLoginModal = async function() {
     });
     const data = await response.json();
     if (data.success) {
-      localStorage.setItem("justChessCurrentUser", JSON.stringify(data.user));
-      localStorage.setItem("justChessAuthToken", data.token);
-      window.currentUser = data.user;
-      window.authToken = data.token;
+      window.applyAuthSession(data.user, data.token);
       window.closeLoginModal();
       window.updateAuthHeaderUI();
       window.switchView("home");
@@ -960,40 +954,20 @@ window.handleSignupModal = async function() {
   const username = document.getElementById("signupUsername").value.trim();
   const password = document.getElementById("signupPassword").value.trim();
 
-  const settings = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
-  const country = settings.country || "uz";
-  let countryName = "";
-  if (typeof allCountries !== 'undefined') {
-    const found = allCountries.find(c => c.code === country);
-    if (found) countryName = found.name;
-  }
-  if (!countryName && country === "uz") countryName = "O'zbekiston";
-
   const usernameError = document.getElementById("signupUsernameError");
   const usernameExistsError = document.getElementById("signupUsernameExistsError");
   const passwordError = document.getElementById("signupPasswordError");
 
   let valid = true;
 
-  // Username required
-  if (!username) {
+  // Username required (server: 3-30 belgi)
+  if (!username || username.length < 3 || username.length > 30) {
     if (usernameError) usernameError.style.display = "block";
     valid = false;
   } else {
     if (usernameError) usernameError.style.display = "none";
   }
-
-  // Username uniqueness check
-  if (valid && username) {
-    const users = window.getRegisteredUsers();
-    const exists = users.some(u => u.username.toLowerCase() === username.toLowerCase());
-    if (exists) {
-      if (usernameExistsError) usernameExistsError.style.display = "block";
-      valid = false;
-    } else {
-      if (usernameExistsError) usernameExistsError.style.display = "none";
-    }
-  }
+  if (usernameExistsError) usernameExistsError.style.display = "none";
 
   // Password min 6 chars
   if (!password || password.length < 6) {
@@ -1005,31 +979,27 @@ window.handleSignupModal = async function() {
 
   if (!valid) return;
 
-  window.currentUser = {
-    username: username,
-    email: username + '@justchess.local',
-    rating: 1500,
-    stats: { wins: 0, losses: 0, draws: 0 },
-    statsByMode: {
-      rapid: { wins: 0, losses: 0, draws: 0 },
-      blitz: { wins: 0, losses: 0, draws: 0 },
-      bullet: { wins: 0, losses: 0, draws: 0 }
-    },
-    country: country,
-    countryName: countryName,
-    history: []
-  };
-  window.stats = window.currentUser.stats;
-  window.statsByMode = window.currentUser.statsByMode;
-  window.authToken = "local_" + Date.now();
-
-  localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
-  localStorage.setItem("justChessAuthToken", window.authToken);
-
-  // Save to registered users list for future login
-  const users = window.getRegisteredUsers();
-  users.push({ username: username, password: password, userData: window.currentUser });
-  window.saveRegisteredUsers(users);
+  try {
+    // Modalda email maydoni yo'q — server talab qilgani uchun username asosida yaratiladi
+    const response = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email: username.toLowerCase() + '@justchess.local', password })
+    });
+    const data = await response.json();
+    if (!data.success) {
+      if (response.status === 409) {
+        if (usernameExistsError) usernameExistsError.style.display = "block";
+      } else {
+        alert(data.message || "Ro'yxatdan o'tib bo'lmadi!");
+      }
+      return;
+    }
+    window.applyAuthSession(data.user, data.token);
+  } catch {
+    alert("Serverga ulanib bo'lmadi!");
+    return;
+  }
 
   window.closeSignupModal();
   window.updateAuthHeaderUI();

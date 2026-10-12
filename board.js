@@ -79,6 +79,39 @@ function updateStatsDisplay() {
   }
 }
 
+let gameFinished = false;
+
+// O'yinni yakunlaydi va natijani o'yinchining o'z nuqtai nazaridan saqlaydi.
+// winnerColor: 'w' | 'b' | null (durrang). Onlayn bo'lmagan o'yinda oq tomondan hisoblanadi.
+window.finishGame = function(winnerColor, message, toastType) {
+  if (gameFinished) return;
+  gameFinished = true;
+  clearInterval(timerInterval);
+  const myColor = window.myColor || 'w';
+  const result = winnerColor === null ? 'draw' : (winnerColor === myColor ? 'win' : 'loss');
+  const opponentName = window.myColor
+    ? ((window.currentOpponent && window.currentOpponent.username) || 'Raqib')
+    : 'Oq va Qora';
+  saveGameHistory(result, opponentName, "Online o'yin");
+  recordResult(result);
+  if (message) showToast(message, toastType || 'info', 5000);
+  if (typeof window.clearMyColor === 'function') window.clearMyColor();
+};
+
+// Yurishdan keyin (o'zimizning yoki raqibning) o'yin tugaganini tekshiradi.
+window.checkGameOverAfterMove = function() {
+  if (!game.game_over()) return;
+  playSound('gameEnd');
+  if (typeof confetti === 'function') {
+    confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
+  }
+  if (game.in_checkmate()) {
+    window.finishGame(game.turn() === 'w' ? 'b' : 'w', "Shaxmat! O'yin tugadi.", 'success');
+  } else {
+    window.finishGame(null, "Durang!", 'warning');
+  }
+};
+
 function recordResult(res) {
   if (!window.statsByMode) {
     window.statsByMode = {
@@ -92,11 +125,11 @@ function recordResult(res) {
     window.statsByMode[mode] = { wins: 0, losses: 0, draws: 0 };
   }
 
-  if (res === "white_win") {
+  if (res === "win") {
     window.stats.wins++;
     window.statsByMode[mode].wins++;
     if (typeof updateRating === 'function') updateRating('win');
-  } else if (res === "black_win") {
+  } else if (res === "loss") {
     window.stats.losses++;
     window.statsByMode[mode].losses++;
     if (typeof updateRating === 'function') updateRating('loss');
@@ -270,10 +303,7 @@ function startTimer() {
       }
       if (blackTimerElement) blackTimerElement.classList.remove("active");
       if (whiteTimeLeft <= 0) {
-        clearInterval(timerInterval);
-        saveGameHistory("loss", "Oq va Qora (Online)", "Online o'yin");
-        recordResult("black_win");
-        showToast(t.whiteTimeUp, 'error', 5000);
+        window.finishGame('b', t.whiteTimeUp, 'error');
       }
     } else {
       blackTimeLeft = Math.max(0, blackTimeLeft - 0.2);
@@ -286,10 +316,7 @@ function startTimer() {
       }
       if (whiteTimerElement) whiteTimerElement.classList.remove("active");
       if (blackTimeLeft <= 0) {
-        clearInterval(timerInterval);
-        saveGameHistory("win", "Oq va Qora (Online)", "Online o'yin");
-        recordResult("white_win");
-        showToast(t.blackTimeUp, 'error', 5000);
+        window.finishGame('w', t.blackTimeUp, 'error');
       }
     }
     updateTimersDisplay();
@@ -300,6 +327,9 @@ function setGameTime(sec, btnElement) {
   clearInterval(timerInterval);
   initialTime = whiteTimeLeft = blackTimeLeft = sec;
   gameStarted = false;
+  gameFinished = false;
+  halfMoveClock = 0;
+  positionHistory = [];
   game.reset();
   window.currentGameTimeControl = getGameModeFromTime(sec);
   updateTimersDisplay();
@@ -334,8 +364,12 @@ window.startNewGame = function() {
   }
 
   if (window.currentUser) {
-    updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
-    updatePlayerInfo('black', 'Raqib', 1500);
+    const opponent = window.currentOpponent || {};
+    const me = { name: window.currentUser.username, rating: window.currentUser.rating || 1500 };
+    const them = { name: opponent.username || 'Raqib', rating: opponent.rating || 1500 };
+    const [white, black] = window.myColor === 'b' ? [them, me] : [me, them];
+    updatePlayerInfo('white', white.name, white.rating);
+    updatePlayerInfo('black', black.name, black.rating);
   } else {
     updatePlayerInfo('white', 'Oq', 1500);
     updatePlayerInfo('black', 'Qora', 1500);
@@ -344,15 +378,17 @@ window.startNewGame = function() {
 };
 
 function resignGame() {
-  clearInterval(timerInterval);
+  if (gameFinished) return;
   const lang = (typeof window.currentLang !== 'undefined') ? window.currentLang : 'uz';
   if (typeof translations === 'undefined') return;
   const t = translations[lang];
-  const currentTurn = game.turn();
-  const result = currentTurn === "w" ? "loss" : "win";
-  saveGameHistory(result, "Oq va Qora (Online)", "Online o'yin");
-  recordResult(currentTurn === "w" ? "black_win" : "white_win");
-  showToast(currentTurn === "w" ? t.whiteResigned : t.blackResigned, 'error', 5000);
+  // Onlayn o'yinda taslim bo'lgan — o'zimiz, aks holda navbatdagi tomon
+  const loser = window.myColor || game.turn();
+  const winner = loser === 'w' ? 'b' : 'w';
+  if (typeof socket !== 'undefined' && window.currentRoomId) {
+    socket.emit('game-over', { roomId: window.currentRoomId, result: { type: 'resign', winner } });
+  }
+  window.finishGame(winner, loser === 'w' ? t.whiteResigned : t.blackResigned, 'error');
 }
 
 window.undoMove = function() {
@@ -397,7 +433,12 @@ window.updatePlayerInfo = function(color, name, rating) {
 };
 
 function onDragStart(source, piece, position, orientation) {
-  if (game.game_over()) return false;
+  if (game.game_over() || gameFinished) return false;
+
+  // Onlayn o'yinda faqat o'z donalarimizni va faqat o'z navbatimizda yuramiz
+  if (window.myColor && (piece.charAt(0) !== window.myColor || game.turn() !== window.myColor)) {
+    return false;
+  }
 
   if (!opponentFound) {
     showToast('Raqib topilishi kutilmoqda...', 'warning', 2000);
@@ -446,34 +487,7 @@ function onDrop(source, target) {
     sendMove(moveData);
   }
 
-  if (game.game_over()) {
-    clearInterval(timerInterval);
-    playSound('gameEnd');
-
-    if (typeof window.clearMyColor === 'function') {
-      window.clearMyColor();
-    }
-
-    if (typeof confetti === 'function') {
-      confetti({
-        particleCount: 150,
-        spread: 90,
-        origin: { y: 0.6 }
-      });
-    }
-
-    if (game.in_checkmate()) {
-      const winner = game.turn() === 'w' ? "black_win" : "white_win";
-      const result = game.turn() === 'w' ? "loss" : "win";
-      saveGameHistory(result, "Oq va Qora (Online)", "Online o'yin");
-      recordResult(winner);
-      showToast("Shaxmat! O'yin tugadi.", 'success', 5000);
-    } else {
-      saveGameHistory("draw", "Oq va Qora (Online)", "Online o'yin");
-      recordResult("draw");
-      showToast("Durang!", 'warning', 5000);
-    }
-  }
+  window.checkGameOverAfterMove();
 }
 
 function onSnapEnd() {
@@ -653,36 +667,13 @@ onSnapEnd = function() {
   const repetitions = positionHistory.filter(pos => pos === fen).length;
   
   if (halfMoveClock >= 100) {
-    showToast('50 harakat qoidasi: Durrang!', 'warning', 5000);
-    saveGameHistory('draw', 'Oq va Qora (Online)', 'Online o\'yin');
-    recordResult('draw');
-    clearInterval(timerInterval);
+    window.finishGame(null, '50 harakat qoidasi: Durrang!', 'warning');
   } else if (repetitions >= 3) {
-    showToast('3 ta takroranish: Durrang!', 'warning', 5000);
-    saveGameHistory('draw', 'Oq va Qora (Online)', 'Online o\'yin');
-    recordResult('draw');
-    clearInterval(timerInterval);
+    window.finishGame(null, '3 ta takroranish: Durrang!', 'warning');
   }
   
   saveGameState();
 };
-
-// Time forfeit detection
-function checkTimeForfeit() {
-  if (!gameStarted || game.game_over()) return;
-  
-  if (whiteTimeLeft <= 0 && game.turn() === 'w') {
-    showToast('Oq vaqtdan chiqdi! Qora g\'alaba!', 'error', 5000);
-    saveGameHistory('loss', 'Oq va Qora (Online)', 'Online o\'yin');
-    recordResult('black_win');
-    clearInterval(timerInterval);
-  } else if (blackTimeLeft <= 0 && game.turn() === 'b') {
-    showToast('Qora vaqtdan chiqdi! Oq g\'alaba!', 'error', 5000);
-    saveGameHistory('win', 'Oq va Qora (Online)', 'Online o\'yin');
-    recordResult('white_win');
-    clearInterval(timerInterval);
-  }
-}
 
 // Debounce utility
 function debounce(func, wait) {

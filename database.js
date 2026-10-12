@@ -254,6 +254,9 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE users ADD COLUMN country TEXT DEFAULT NULL`);
   } catch (e) {}
   try {
+    await dbExec(`ALTER TABLE users ADD COLUMN ratings_by_mode TEXT DEFAULT NULL`);
+  } catch (e) {}
+  try {
     await dbExec(`ALTER TABLE games ADD COLUMN time_control TEXT DEFAULT 'blitz'`);
   } catch (e) {}
   try {
@@ -296,16 +299,28 @@ async function closeStaleArenas() {
   }
 }
 
+const RATING_MODES = ['rapid', 'blitz', 'bullet'];
+
+// Rejim bo'yicha reytinglar; hali o'ynalmagan rejim umumiy reytingdan boshlanadi
+function normalizeRatingsByMode(row) {
+  const stored = parseJson(row.ratings_by_mode) || {};
+  const result = {};
+  for (const mode of RATING_MODES) result[mode] = Number(stored[mode]) || row.rating || 1500;
+  return result;
+}
+
+function mapUserRow(row) {
+  return { ...row, stats: parseJson(row.stats), stats_by_mode: parseJson(row.stats_by_mode), ratings_by_mode: normalizeRatingsByMode(row), history: parseJson(row.history) };
+}
+
 async function getUserByUsername(username) {
   const row = await dbGet('SELECT * FROM users WHERE username = ?', username);
-  if (!row) return null;
-  return { ...row, stats: parseJson(row.stats), stats_by_mode: parseJson(row.stats_by_mode), history: parseJson(row.history) };
+  return row ? mapUserRow(row) : null;
 }
 
 async function getUserById(id) {
   const row = await dbGet('SELECT * FROM users WHERE id = ?', id);
-  if (!row) return null;
-  return { ...row, stats: parseJson(row.stats), stats_by_mode: parseJson(row.stats_by_mode), history: parseJson(row.history) };
+  return row ? mapUserRow(row) : null;
 }
 
 async function createUser(user) {
@@ -314,7 +329,7 @@ async function createUser(user) {
     'INSERT INTO users (id, username, email, password_hash, rating, stats, stats_by_mode, history, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [id, user.username, user.email, user.passwordHash, user.rating || 1500, JSON.stringify(user.stats || { wins: 0, losses: 0, draws: 0 }), JSON.stringify(user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }), JSON.stringify(user.history || []), new Date().toISOString()]
   );
-  return { id, username: user.username, email: user.email, rating: user.rating || 1500, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }, history: user.history || [], created_at: new Date().toISOString() };
+  return { id, username: user.username, email: user.email, rating: user.rating || 1500, ratingsByMode: { rapid: user.rating || 1500, blitz: user.rating || 1500, bullet: user.rating || 1500 }, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }, history: user.history || [], created_at: new Date().toISOString() };
 }
 
 async function updateUserStats(userId, result, opponent, mode, moves, timeControl) {
@@ -359,13 +374,14 @@ async function updateUserRating(userId, newRating) {
 }
 
 async function getLeaderboard() {
-  const rows = await dbAll('SELECT username, rating, stats, stats_by_mode FROM users ORDER BY rating DESC LIMIT 100');
+  const rows = await dbAll('SELECT username, rating, ratings_by_mode, stats, stats_by_mode FROM users ORDER BY rating DESC LIMIT 100');
   return rows.map(u => ({
     username: u.username,
     wins: parseInt(u.stats ? JSON.parse(u.stats).wins : 0) || 0,
     losses: parseInt(u.stats ? JSON.parse(u.stats).losses : 0) || 0,
     draws: parseInt(u.stats ? JSON.parse(u.stats).draws : 0) || 0,
     rating: u.rating || 1500,
+    ratingsByMode: normalizeRatingsByMode(u),
     statsByMode: u.stats_by_mode ? JSON.parse(u.stats_by_mode) : { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }
   }));
 }
@@ -390,7 +406,7 @@ async function getDailyWinners() {
 async function getStatsByUsername(username) {
   const user = await getUserByUsername(username);
   if (!user) return null;
-  return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, rating: user.rating || 1500 };
+  return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.stats_by_mode, rating: user.rating || 1500, ratingsByMode: user.ratings_by_mode };
 }
 
 async function getUserGames(userId) {
@@ -405,20 +421,30 @@ async function saveGame(userId, gameData) {
   return { id, ...gameData };
 }
 
-async function updateUserRatingByResult(userId, result, opponentRating) {
+function eloChange(playerRating, opponentRating, result) {
+  const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - playerRating) / 400));
+  const score = result === 'win' ? 1 : (result === 'loss' ? 0 : 0.5);
+  return Math.round(32 * (score - expectedScore));
+}
+
+// Umumiy reyting va (berilgan bo'lsa) o'yin rejimi reytingini yangilaydi
+async function updateUserRatingByResult(userId, result, opponentRating, timeControl, opponentModeRating) {
   const user = await getUserById(userId);
   if (!user) return null;
   const playerRating = user.rating || 1500;
-  const opponent = opponentRating || 1500;
-  const expectedScore = 1 / (1 + Math.pow(10, (opponent - playerRating) / 400));
-  let score = 0.5;
-  if (result === 'win') score = 1;
-  else if (result === 'loss') score = 0;
-  const kFactor = 32;
-  const ratingChange = Math.round(kFactor * (score - expectedScore));
+  const ratingChange = eloChange(playerRating, Number(opponentRating) || 1500, result);
   const newRating = Math.max(100, playerRating + ratingChange);
-  await updateUserRating(userId, newRating);
-  return { success: true, newRating, change: ratingChange };
+
+  const ratingsByMode = user.ratings_by_mode;
+  let modeChange = null;
+  if (RATING_MODES.includes(timeControl)) {
+    const modeRating = ratingsByMode[timeControl];
+    modeChange = eloChange(modeRating, Number(opponentModeRating) || Number(opponentRating) || 1500, result);
+    ratingsByMode[timeControl] = Math.max(100, modeRating + modeChange);
+  }
+
+  await dbRun('UPDATE users SET rating = ?, ratings_by_mode = ? WHERE id = ?', [newRating, JSON.stringify(ratingsByMode), userId]);
+  return { success: true, newRating, change: ratingChange, mode: modeChange === null ? null : timeControl, modeChange, ratingsByMode };
 }
 
 async function matchmakingJoin(username, rating) {

@@ -123,7 +123,7 @@ async function start() {
       if (!valid) return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
       await db.touchUserLastActive(user.id);
-      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, country: user.country || null }, token });
+      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, ratingsByMode: user.ratings_by_mode, country: user.country || null }, token });
     } catch (err) { console.error('Login xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -171,12 +171,14 @@ async function start() {
 
   app.post('/api/ratings/update', authMiddleware, [
     body('result').isIn(['win', 'loss', 'draw']).withMessage('Invalid result'),
-    body('opponentRating').optional().isNumeric()
+    body('opponentRating').optional().isNumeric(),
+    body('opponentModeRating').optional({ values: 'null' }).isNumeric(),
+    body('timeControl').optional().isIn(['rapid', 'blitz', 'bullet']).withMessage('Invalid time control')
   ], async (req, res) => {
     try {
       const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
-      const { result, opponentRating } = req.body;
-      const data = await db.updateUserRatingByResult(req.user.userId, result, opponentRating);
+      const { result, opponentRating, timeControl, opponentModeRating } = req.body;
+      const data = await db.updateUserRatingByResult(req.user.userId, result, opponentRating, timeControl, opponentModeRating);
       if (!data) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
       res.json(data);
     } catch (err) { console.error('Rating xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -206,7 +208,7 @@ async function start() {
         myCountry = country;
         await db.updateUserCountry(req.user.userId, country);
       }
-      const me = { username, rating: (user && user.rating) || 1500, country: myCountry, joinedAt: Date.now(), socketId };
+      const me = { username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId };
       const waiting = matchmakingQueue.shift();
       if (!waiting) {
         matchmakingQueue.push(me);
@@ -220,9 +222,9 @@ async function start() {
       for (const [player, opponent, color] of [[waiting, me, 'w'], [me, waiting, 'b']]) {
         const s = io.sockets.sockets.get(player.socketId);
         if (s) s.join(roomId);
-        io.to(player.socketId).emit('match-found', { roomId, color, opponent: { username: opponent.username, rating: opponent.rating, country: opponent.country } });
+        io.to(player.socketId).emit('match-found', { roomId, color, opponent: { username: opponent.username, rating: opponent.rating, ratingsByMode: opponent.ratingsByMode, country: opponent.country } });
       }
-      res.json({ success: true, matched: true, roomId, color: 'b', opponent: { username: waiting.username, rating: waiting.rating, country: waiting.country } });
+      res.json({ success: true, matched: true, roomId, color: 'b', opponent: { username: waiting.username, rating: waiting.rating, ratingsByMode: waiting.ratingsByMode, country: waiting.country } });
     } catch (err) { console.error('Matchmaking xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 

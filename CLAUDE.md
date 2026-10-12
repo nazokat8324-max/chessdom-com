@@ -27,7 +27,7 @@ Foydalanuvchi bilan **o'zbek tilida** gaplashiladi; koddagi foydalanuvchiga ko'r
 - [database.js](database.js) — ikki rejimli wrapperlar (`dbGet/dbAll/dbRun/dbExec`, parametrlar `(sql, a, b)` yoki `(sql, [a, b])`), JSON ustunlar TEXT sifatida saqlanadi (`parseJson`). Server bazaga faqat export qilingan funksiyalar orqali murojaat qiladi (`usePostgres` flag ham export qilinadi).
   - `users` jadvalida `stats`, `stats_by_mode`, `history` — JSON TEXT. O'yin tarixi `users.history` ichida (+ alohida `games` jadvali ham yoziladi).
   - `getDailyWinners` — oxirgi 24 soatdagi g'alabalar bo'yicha top 5 (`history[].timestamp`).
-  - Elo: K=32, min reyting 100 (`updateUserRatingByResult`).
+  - Elo: K=32, min reyting 100 (`updateUserRatingByResult`). Umumiy `rating` + rejim bo'yicha `ratings_by_mode` (JSON: rapid/blitz/bullet; yo'q bo'lsa umumiy reytingdan boshlanadi). Klient `timeControl` va `opponentModeRating` yuboradi; profil `refreshCurrentUserRatings()` (`/api/stats/:username`) orqali yangilanadi.
 - [server-helpers.js](server-helpers.js) — `swissPairings`, `teamPairings`.
 
 ### Frontend (oddiy `<script>` teglar, modul yo'q, hamma narsa `window.*` global)

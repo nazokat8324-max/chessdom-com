@@ -78,7 +78,9 @@ window.renderPlayersTable = function(players, filter) {
     return;
   }
   
-  let sorted = players.slice().sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  // Rejim tanlangan bo'lsa, shu rejim reytingi bo'yicha tartiblash
+  const ratingFor = (user) => (filter !== 'all' && user.ratingsByMode && user.ratingsByMode[filter]) || user.rating || 0;
+  let sorted = players.slice().sort((a, b) => ratingFor(b) - ratingFor(a));
   
   if (filter !== 'all') {
     const modeStats = (user) => user.statsByMode?.[filter] || { wins: 0, losses: 0, draws: 0 };

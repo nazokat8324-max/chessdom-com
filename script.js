@@ -684,6 +684,8 @@ window.openProfileModal = function() {
   if (profileModal) {
     profileModal.style.display = "flex";
   }
+  // Eng so'nggi reytinglarni serverdan olish (ochiq oyna avtomatik yangilanadi)
+  if (typeof window.refreshCurrentUserRatings === 'function') window.refreshCurrentUserRatings();
 };
 
 // --- Info Modal (Sayt haqida / Maqsad / Rejalar / Tuzilma) ---
@@ -1347,9 +1349,12 @@ window.updateProfileModalData = function() {
   const goal = profileData.goal || '';
   const debut = profileData.debut || '';
   const club = profileData.club || '';
-  const rapid = profileData.rapid || (window.currentUser.rating || 1500);
-  const blitz = profileData.blitz || (window.currentUser.rating || 1500);
-  const bullet = profileData.bullet || (window.currentUser.rating || 1500);
+  // Rejim reytinglari serverdan keladi (har o'yindan keyin yangilanadi)
+  const ratingsByMode = window.currentUser.ratingsByMode || {};
+  const baseRating = window.currentUser.rating || 1500;
+  const rapid = ratingsByMode.rapid || baseRating;
+  const blitz = ratingsByMode.blitz || baseRating;
+  const bullet = ratingsByMode.bullet || baseRating;
 
   if (rapidRating) rapidRating.textContent = rapid;
   if (blitzRating) blitzRating.textContent = blitz;

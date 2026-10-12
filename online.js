@@ -89,6 +89,7 @@ socket.on('match-found', (data) => {
   updateOnlineStatus(true);
 
   window.opponentRating = (data.opponent && data.opponent.rating) || 1500;
+  window.opponentRatingsByMode = (data.opponent && data.opponent.ratingsByMode) || null;
   if (typeof window.setOpponentData === 'function') {
     window.setOpponentData(data.opponent);
   }

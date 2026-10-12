@@ -47,7 +47,11 @@ window.abortGame = function() {
 window.setOpponentFound = function(found) {
   opponentFound = found;
   window.setGamePanelMode(found ? 'in' : 'pre');
-  if (!found && typeof window.clearMyColor === 'function') window.clearMyColor();
+  if (!found) {
+    if (typeof window.clearMyColor === 'function') window.clearMyColor();
+    // Raqib qidirilayotganda oldingi raqib ma'lumoti (bayrog'i) ko'rinmasin
+    if (typeof window.setOpponentData === 'function') window.setOpponentData(null);
+  }
   if (board) {
     board.position('start');
   }

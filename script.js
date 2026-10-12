@@ -771,7 +771,7 @@ window.currentOpponent = {};
 window.setOpponentData = function(data) {
   if (data) {
     window.currentOpponent = {
-      country: data.country || 'uz',
+      country: data.country || null,
       countryName: data.countryName || '',
       username: data.username || 'Raqib',
       rating: data.rating || 1500
@@ -787,7 +787,9 @@ window.setOpponentData = function(data) {
 // Update game player flags dynamically
 window.updateGameFlags = function() {
   const DEFAULT_FLAG = 'uz';
-  
+  // Raqib hali topilmagan yoki davlatini tanlamagan bo'lsa — xalqaro (BMT) bayrog'i
+  const UNKNOWN_FLAG = 'un';
+
   const whiteFlagEl = document.getElementById('whitePlayerFlag');
   const blackFlagEl = document.getElementById('blackPlayerFlag');
   
@@ -797,17 +799,20 @@ window.updateGameFlags = function() {
   const opponent = window.currentOpponent || {};
   const opponentCountry = opponent.country
     ? opponent.country.toLowerCase()
-    : DEFAULT_FLAG;
+    : UNKNOWN_FLAG;
   // Qora bilan o'ynaganda o'z bayrog'imiz qora panelda bo'ladi
   const [whiteCountry, blackCountry] = window.myColor === 'b'
     ? [opponentCountry, playerCountry]
     : [playerCountry, opponentCountry];
 
+  // onerror yashirgan bo'lsa, yangi bayroq uchun qayta ko'rsatamiz
   if (whiteFlagEl) {
+    whiteFlagEl.style.display = '';
     whiteFlagEl.src = `https://flagcdn.com/w40/${whiteCountry}.png`;
   }
 
   if (blackFlagEl) {
+    blackFlagEl.style.display = '';
     blackFlagEl.src = `https://flagcdn.com/w40/${blackCountry}.png`;
   }
 };

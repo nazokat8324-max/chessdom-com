@@ -330,7 +330,7 @@ async function getLeaderboard() {
 }
 
 async function getDailyWinners() {
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
   const users = await dbAll('SELECT username, stats, history, rating FROM users');
   const dailyWins = users.map(u => {
     const history = parseJson(u.history) || [];
@@ -338,8 +338,8 @@ async function getDailyWinners() {
       if (game.result !== 'win') return false;
       const ts = game.timestamp || game.date;
       if (!ts) return false;
-      const gameDate = new Date(ts);
-      return !isNaN(gameDate.getTime()) && gameDate >= cutoff;
+      const gameTime = new Date(ts).getTime();
+      return !isNaN(gameTime) && gameTime >= cutoff;
     }).length;
     return { username: u.username, dailyWins: wins, rating: u.rating || 1500 };
   }).filter(u => u.dailyWins > 0).sort((a, b) => b.dailyWins - a.dailyWins).slice(0, 5);

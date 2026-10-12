@@ -789,19 +789,24 @@ window.updateGameFlags = function() {
   const whiteFlagEl = document.getElementById('whitePlayerFlag');
   const blackFlagEl = document.getElementById('blackPlayerFlag');
   
+  const playerCountry = (window.currentUser && window.currentUser.country)
+    ? window.currentUser.country.toLowerCase()
+    : DEFAULT_FLAG;
+  const opponent = window.currentOpponent || {};
+  const opponentCountry = opponent.country
+    ? opponent.country.toLowerCase()
+    : DEFAULT_FLAG;
+  // Qora bilan o'ynaganda o'z bayrog'imiz qora panelda bo'ladi
+  const [whiteCountry, blackCountry] = window.myColor === 'b'
+    ? [opponentCountry, playerCountry]
+    : [playerCountry, opponentCountry];
+
   if (whiteFlagEl) {
-    const playerCountry = (window.currentUser && window.currentUser.country)
-      ? window.currentUser.country.toLowerCase()
-      : DEFAULT_FLAG;
-    whiteFlagEl.src = `https://flagcdn.com/w40/${playerCountry}.png`;
+    whiteFlagEl.src = `https://flagcdn.com/w40/${whiteCountry}.png`;
   }
-  
+
   if (blackFlagEl) {
-    const opponent = window.currentOpponent || {};
-    const opponentCountry = opponent.country
-      ? opponent.country.toLowerCase()
-      : DEFAULT_FLAG;
-    blackFlagEl.src = `https://flagcdn.com/w40/${opponentCountry}.png`;
+    blackFlagEl.src = `https://flagcdn.com/w40/${blackCountry}.png`;
   }
 };
 

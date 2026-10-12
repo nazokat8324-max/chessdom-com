@@ -47,6 +47,7 @@ window.abortGame = function() {
 window.setOpponentFound = function(found) {
   opponentFound = found;
   window.setGamePanelMode(found ? 'in' : 'pre');
+  if (!found && typeof window.clearMyColor === 'function') window.clearMyColor();
   if (board) {
     board.position('start');
   }
@@ -70,11 +71,24 @@ window.updateGameStatusText = function() {
 
 window.myColor = null;
 
+// O'yinchining o'z paneli doim pastda, raqibniki tepada bo'lishi uchun
+// qora bilan o'ynaganda oq va qora panellar o'rni almashtiriladi
+function arrangePlayerBars() {
+  const whiteBar = document.querySelector('#gameView .white-player');
+  const blackBar = document.querySelector('#gameView .black-player');
+  const boardWrapper = document.querySelector('#gameView .board-wrapper');
+  if (!whiteBar || !blackBar || !boardWrapper) return;
+  const [top, bottom] = window.myColor === 'b' ? [whiteBar, blackBar] : [blackBar, whiteBar];
+  boardWrapper.before(top);
+  boardWrapper.after(bottom);
+}
+
 window.applyMyColor = function(color) {
   window.myColor = (color === 'w' || color === 'b') ? color : null;
   if (board && typeof board.orientation === 'function') {
     board.orientation(window.myColor === 'b' ? 'black' : 'white');
   }
+  arrangePlayerBars();
 };
 
 window.clearMyColor = function() {
@@ -82,6 +96,7 @@ window.clearMyColor = function() {
   if (board && typeof board.orientation === 'function') {
     board.orientation('white');
   }
+  arrangePlayerBars();
 };
 
 window.currentGameTimeControl = 'blitz';
@@ -128,7 +143,7 @@ window.finishGame = function(winnerColor, message, toastType) {
   saveGameHistory(result, opponentName, "Online o'yin");
   recordResult(result);
   if (message) showToast(message, toastType || 'info', 5000);
-  if (typeof window.clearMyColor === 'function') window.clearMyColor();
+  // Doska va panellar "Yangi o'yin" bosilguncha o'yinchi tomonida qoladi
   window.setGamePanelMode('over');
 };
 

@@ -111,9 +111,6 @@ socket.on('opponent-disconnected', () => {
   if (typeof window.updateGameStatusText === 'function') {
     window.updateGameStatusText();
   }
-  if (typeof window.clearMyColor === 'function') {
-    window.clearMyColor();
-  }
   updateOnlineStatus(false);
 });
 

@@ -1594,6 +1594,9 @@ const translationsExtra = {
     durMinutes: "{{m}} daqiqa",
     unratedLabel: "Reytingsiz",
     authOr: "yoki",
+    clubDetailTitle: "{{country}} shaxmat klubi",
+    clubJoinWelcome: "Xush kelibsiz!",
+    clubJoinSuccess: "Siz muvaffaqiyatli qo'shildingiz:",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -1723,6 +1726,9 @@ const translationsExtra = {
     durMinutes: "{{m}} min",
     unratedLabel: "Unrated",
     authOr: "or",
+    clubDetailTitle: "{{country}} Chess Club",
+    clubJoinWelcome: "Welcome!",
+    clubJoinSuccess: "You have successfully joined",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -1852,6 +1858,9 @@ const translationsExtra = {
     durMinutes: "{{m}} мин",
     unratedLabel: "Без рейтинга",
     authOr: "или",
+    clubDetailTitle: "Шахматный клуб: {{country}}",
+    clubJoinWelcome: "Добро пожаловать!",
+    clubJoinSuccess: "Вы успешно вступили в",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -1981,6 +1990,9 @@ const translationsExtra = {
     durMinutes: "{{m}} min",
     unratedLabel: "Sin clasificación",
     authOr: "o",
+    clubDetailTitle: "Club de ajedrez de {{country}}",
+    clubJoinWelcome: "¡Bienvenido!",
+    clubJoinSuccess: "Te has unido correctamente a",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2110,6 +2122,9 @@ const translationsExtra = {
     durMinutes: "{{m}} Min.",
     unratedLabel: "Ungewertet",
     authOr: "oder",
+    clubDetailTitle: "Schachklub {{country}}",
+    clubJoinWelcome: "Willkommen!",
+    clubJoinSuccess: "Du bist erfolgreich beigetreten:",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -2239,6 +2254,9 @@ const translationsExtra = {
     durMinutes: "{{m}} min",
     unratedLabel: "Non classé",
     authOr: "ou",
+    clubDetailTitle: "Club d'échecs {{country}}",
+    clubJoinWelcome: "Bienvenue !",
+    clubJoinSuccess: "Vous avez rejoint avec succès",
     searchNoResults: "Aucun résultat"
   }
 };

@@ -486,36 +486,22 @@ window.openClubDetail = function(countryName, countryCode) {
   }
   // Klub sahifasini to'ldirish
   const clubDetailView = document.getElementById('clubDetailView');
+
+  // Davlat bayrog'i butun klub sahifasining foni; ustida matn o'qilishi uchun quyuq qatlam
+  clubDetailView.style.backgroundImage =
+    `linear-gradient(180deg, rgba(12, 22, 20, 0.55) 0%, rgba(12, 22, 20, 0.82) 280px, rgba(12, 22, 20, 0.9) 100%), url('https://flagcdn.com/w1280/${encodeURIComponent(countryCode)}.png')`;
+  clubDetailView.style.backgroundSize = 'cover';
+  clubDetailView.style.backgroundPosition = 'center top';
+  clubDetailView.style.backgroundColor = '#0c1614';
   
   clubDetailView.innerHTML = `
     <!-- Banner -->
     <div style="
       position: relative;
       min-height: 180px;
-      background: linear-gradient(135deg, #2c3e50 0%, #1a2a28 50%, #2c3e50 100%);
       overflow: hidden;
       width: 100%;
     ">
-      <!-- Flag background -->
-      <div style="
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: url('https://flagcdn.com/w320/${countryCode}.png');
-        background-size: cover;
-        background-position: right center;
-        opacity: 0.35;
-      "></div>
-      <div style="
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%);
-      "></div>
       
       <!-- Back button -->
       <button onclick="switchView('clubs')" style="
@@ -557,7 +543,7 @@ window.openClubDetail = function(countryName, countryCode) {
           border: 2px solid rgba(255, 255, 255, 0.2);
         ">
         <div>
-          <h2 style="color: #fff; font-size: 24px; margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5);">${localizedCountry} Chess Club</h2>
+          <h2 style="color: #fff; font-size: 24px; margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5);">${escapeHtml(tx('clubDetailTitle', '{{country}} shaxmat klubi', { country: localizedCountry }))}</h2>
           <span style="color: #81b64c; font-size: 13px; margin-top: 3px; display: block;">${memberCount} ${tr('clubDetailMembersCount', "a'zo")} • ${eventsPlayed} ${tr('clubDetailEventsCount', "musobaqa")}</span>
         </div>
       </div>
@@ -785,11 +771,11 @@ window.showJoinSuccessModal = function(country) {
       animation: scaleIn 0.3s ease;
     ">
       <div style="font-size: 48px; margin-bottom: 15px;">🎉</div>
-      <h3 style="color: #81b64c; font-size: 20px; margin-bottom: 10px;">Welcome!</h3>
-      <p style="color: #fff; font-size: 14px; margin-bottom: 5px;">You have successfully joined</p>
+      <h3 style="color: #81b64c; font-size: 20px; margin-bottom: 10px;">${escapeHtml(tx('clubJoinWelcome', 'Xush kelibsiz!'))}</h3>
+      <p style="color: #fff; font-size: 14px; margin-bottom: 5px;">${escapeHtml(tx('clubJoinSuccess', "Siz muvaffaqiyatli qo'shildingiz:"))}</p>
       <p style="color: #81b64c; font-size: 16px; font-weight: bold; margin-bottom: 20px;">
         <img src="https://flagcdn.com/w40/${country.code}.png" style="vertical-align: middle; margin-right: 8px; border-radius: 3px; width: 30px; height: 20px;">
-        ${country.name} Chess Club
+        ${escapeHtml(tx('clubDetailTitle', '{{country}} shaxmat klubi', { country: (typeof countryName === 'function' ? countryName(country.name, country.code) : country.name) }))}
       </p>
       <button onclick="document.getElementById('joinSuccessModal').remove()" style="
         background: #81b64c;

@@ -284,6 +284,8 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  await migrateRatingsByMode();
+
   console.log(usePostgres ? '✅ PostgreSQL jadvallari tayyor.' : '✅ Database SQLite sahifalari yaratildi.');
 }
 
@@ -301,12 +303,32 @@ async function closeStaleArenas() {
 
 const RATING_MODES = ['rapid', 'blitz', 'bullet'];
 
-// Rejim bo'yicha reytinglar; hali o'ynalmagan rejim umumiy reytingdan boshlanadi
+// Rejim bo'yicha reytinglar; har bir rejim 1500 dan boshlanadi
 function normalizeRatingsByMode(row) {
   const stored = parseJson(row.ratings_by_mode) || {};
   const result = {};
-  for (const mode of RATING_MODES) result[mode] = Number(stored[mode]) || row.rating || 1500;
+  for (const mode of RATING_MODES) result[mode] = Number(stored[mode]) || 1500;
   return result;
+}
+
+// Bir martalik/idempotent tuzatish: o'yin o'ynalmagan rejim — 1500;
+// rejim reytingi hali saqlanmagan eski akkauntlarda o'ynalgan rejim umumiy reytingni oladi
+async function migrateRatingsByMode() {
+  const rows = await dbAll('SELECT id, rating, ratings_by_mode, stats_by_mode FROM users');
+  for (const row of rows) {
+    const stored = parseJson(row.ratings_by_mode) || {};
+    const statsByMode = parseJson(row.stats_by_mode) || {};
+    const fixed = {};
+    for (const mode of RATING_MODES) {
+      const s = statsByMode[mode] || {};
+      const games = (s.wins || 0) + (s.losses || 0) + (s.draws || 0);
+      if (games === 0) fixed[mode] = 1500;
+      else fixed[mode] = Number(stored[mode]) || row.rating || 1500;
+    }
+    if (JSON.stringify(fixed) !== JSON.stringify(stored)) {
+      await dbRun('UPDATE users SET ratings_by_mode = ? WHERE id = ?', [JSON.stringify(fixed), row.id]);
+    }
+  }
 }
 
 function mapUserRow(row) {
@@ -326,10 +348,10 @@ async function getUserById(id) {
 async function createUser(user) {
   const id = uuidv4();
   await dbRun(
-    'INSERT INTO users (id, username, email, password_hash, rating, stats, stats_by_mode, history, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-    [id, user.username, user.email, user.passwordHash, user.rating || 1500, JSON.stringify(user.stats || { wins: 0, losses: 0, draws: 0 }), JSON.stringify(user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }), JSON.stringify(user.history || []), new Date().toISOString()]
+    'INSERT INTO users (id, username, email, password_hash, rating, ratings_by_mode, stats, stats_by_mode, history, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [id, user.username, user.email, user.passwordHash, user.rating || 1500, JSON.stringify({ rapid: 1500, blitz: 1500, bullet: 1500 }), JSON.stringify(user.stats || { wins: 0, losses: 0, draws: 0 }), JSON.stringify(user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }), JSON.stringify(user.history || []), new Date().toISOString()]
   );
-  return { id, username: user.username, email: user.email, rating: user.rating || 1500, ratingsByMode: { rapid: user.rating || 1500, blitz: user.rating || 1500, bullet: user.rating || 1500 }, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }, history: user.history || [], created_at: new Date().toISOString() };
+  return { id, username: user.username, email: user.email, rating: user.rating || 1500, ratingsByMode: { rapid: 1500, blitz: 1500, bullet: 1500 }, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }, history: user.history || [], created_at: new Date().toISOString() };
 }
 
 async function updateUserStats(userId, result, opponent, mode, moves, timeControl) {

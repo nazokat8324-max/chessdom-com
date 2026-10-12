@@ -45,7 +45,10 @@ Foydalanuvchi bilan **o'zbek tilida** gaplashiladi; koddagi foydalanuvchiga ko'r
 - [views.js](views.js) — leaderboard (o'yinchilar / klublar), `/api/leaderboard`, `/api/clubs/leaderboard`.
 - [profil.js](profil.js) — profil sahifasi, Chart.js grafik.
 - [social.js](social.js) (~2400 qator, eng kattasi) — turnirlar/arenalar, do'stlar, chat, **mamlakat-asosidagi klublar** (klub = davlat; a'zolik asosan localStorage'da), davlatlar ro'yxati va kirill→lotin, bayroqlar, klub chat/turnir/tarix/leaderboard.
-- [languages.js](languages.js) — `translations` obyekti: `uz, en, ru, es, de, fr`; i18next bilan; `updateUI()` qo'lda element ID bo'yicha matn qo'yadi; `setLanguage/changeLanguage`. Yangi matn qo'shilsa — 6 tilning hammasiga kalit qo'shish kerak.
+- [languages.js](languages.js) — `translations` obyekti: `uz, en, ru, es, de, fr`; i18next bilan; `setLanguage/changeLanguage`. Keyingi qo'shilgan kalitlar `translationsExtra` blokida (i18next.init dan oldin, `translations` ga merge qilinadi). Yangi matn qo'shilsa — 6 tilning hammasiga kalit qo'shish kerak.
+  - Tarjima usullari: HTML'da `data-i18n="kalit"` (textContent) va `data-i18n-placeholder="kalit"` — `updateUI()` avtomatik qo'llaydi (element ichida faqat matn bo'lsin); JS'da `tx('kalit', "o'zbekcha fallback", { name })` ([script.js](script.js) boshida; qiymatlar escape qilinmaydi — innerHTML'ga `escapeHtml` bilan); eski kod `updateUI()` da id bo'yicha `t('kalit')`.
+  - `updateUI()` til almashganda ochiq Do'stlar/Chat/Tarix/Klub chati/Turnir tafsiloti sahifalarini qayta chizadi.
+  - Server xato matnlari (`data.message`) faqat o'zbekcha — klientda `alert(data.message || tx(...))`.
 - [sound.js](sound.js) — Howler, lichess ovozlari.
 - [style.css](style.css) — ~3400 qator, bitta fayl.
 

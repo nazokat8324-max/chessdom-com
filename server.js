@@ -22,6 +22,8 @@ const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
+// Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
+app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 app.use(express.static(__dirname));
 
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { success: false, message: 'Too many requests, please try again later.' } });
@@ -391,6 +393,11 @@ async function start() {
 
   app.post('/api/friends/accept', authMiddleware, async (req, res) => {
     try { const { requestId } = req.body; const result = await db.acceptFriendRequest(requestId, req.user.userId); res.json(result); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/friends/decline', authMiddleware, async (req, res) => {
+    try { const { requestId } = req.body; const result = await db.declineFriendRequest(requestId, req.user.userId); res.json(result); }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 

@@ -478,7 +478,7 @@ window.openClubDetail = function(countryName, countryCode) {
           <span style="font-size: 20px;">${medals[index]}</span>
           <div>
             <div style="font-size: 14px; color: #fff; font-weight: bold;">${player.username}</div>
-            <div style="font-size: 11px; color: #88a;">Rating: ${player.rating} • Wins: ${player.wins}</div>
+            <div style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${player.rating} • Wins: ${player.wins}</div>
           </div>
         </div>
       `;
@@ -713,7 +713,7 @@ function removeClubMember(countryName, username) {
 // Club sahifasidan Join/Leave
 window.joinLeaveFromClubPage = function(countryName, countryCode) {
   if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
+    alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     switchView('login');
     return;
   }
@@ -745,9 +745,9 @@ window.scrollToSection = function(sectionName) {
 
 // Invite friend to club
 window.inviteFriendToClub = function(countryName) {
-  const username = prompt(`Enter username to invite to ${countryName} Chess Club:`);
+  const username = prompt(tx('inviteClubPrompt', '{{country}} shaxmat klubiga taklif qilish uchun foydalanuvchi nomini kiriting:', { country: countryName }));
   if (username && username.trim()) {
-    alert(`Invitation sent to ${username.trim()} for ${countryName} Chess Club!`);
+    alert(tx('inviteClubSent', '{{user}} {{country}} shaxmat klubiga taklif qilindi!', { user: username.trim(), country: countryName }));
   }
 };
 
@@ -972,13 +972,14 @@ function getArenaTimeControlLabel(code) {
 }
 
 window.openArenaTournamentDetail = async function(tournamentId) {
+  window.currentTournamentDetail = { id: tournamentId, arena: true };
   const view = document.getElementById('tournamentDetailView');
   const container = document.getElementById('tournamentDetailContainer');
   if (!view || !container) return;
 
   window.openTournamentDetailShell(view);
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 30px;">Turnir yuklanmoqda...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 30px;">' + tx('tdLoading', 'Turnir yuklanmoqda...') + '</div>';
 
   try {
     const [tournamentResponse, standingsResponse] = await Promise.all([
@@ -999,34 +1000,23 @@ window.openArenaTournamentDetail = async function(tournamentId) {
     const timeControl = tournament.time_control || tournament.timeControl || '—';
     const rounds = tournament.rounds || 7;
 
-    const standingsDataList = standings.length > 0 ? standings : [
-      { username: 'Magnus', rating: 2850, score: 24 },
-      { username: 'Hikaru', rating: 2780, score: 19 },
-      { username: 'Ian', rating: 2715, score: 16 },
-      { username: 'Ding', rating: 2680, score: 14 },
-      { username: 'Alireza', rating: 2650, score: 11 },
-      { username: 'Fabiano', rating: 2720, score: 10 },
-      { username: 'Wesley', rating: 2695, score: 9 },
-      { username: 'Anish', rating: 2760, score: 8 },
-      { username: 'Levon', rating: 2730, score: 7 },
-      { username: 'Maxime', rating: 2705, score: 6 }
-    ];
+    const standingsDataList = standings;
 
     const standingsHTML = standingsDataList.slice(0, 10).map((participant, index) => `
         <div class="tournament-detail-standings-row">
           <span class="tournament-detail-rank">#${index + 1}</span>
           <div class="tournament-detail-player">
-            <strong>${escapeHtml(participant.username || 'Unknown')}</strong>
-            <span>Rating: ${Number(participant.rating || 1500)}</span>
+            <strong>${escapeHtml(participant.username || tx('unknownLabel', "Noma'lum"))}</strong>
+            <span>${tx('profLabelRating', 'Reyting:')} ${Number(participant.rating || 1500)}</span>
           </div>
           <span class="tournament-detail-score">${Number(participant.score || 0)}</span>
         </div>
-      `).join('');
+      `).join('') || `<div class="tournament-detail-empty">${escapeHtml(tx('tdNoParticipants', "Hali ishtirokchilar yo'q. Birinchi bo'lib qo'shiling!"))}</div>`;
 
-    const opponent = standings.find(p => p.username !== currentUsername) || standings[0] || { username: 'Opponent', rating: 1500 };
+    const opponent = standings.find(p => p.username !== currentUsername) || standings[0] || { username: tx('colOpponent', 'Raqib'), rating: 1500 };
     const opponentFlag = getPlayerFlag(opponent.username, opponent.club);
     const playerFlag = currentUsername ? getPlayerFlag(currentUsername, null) : getPlayerFlag('Guest', null);
-    const playerName = currentUsername || 'Guest';
+    const playerName = currentUsername || tx('tdGuest', 'Mehmon');
     const playerRating = window.currentUser && window.currentUser.rating ? window.currentUser.rating : 1500;
 
     container.innerHTML = `
@@ -1035,10 +1025,10 @@ window.openArenaTournamentDetail = async function(tournamentId) {
           <div class="tournament-player-bar opponent">
             <div class="tournament-player-avatar">${(opponent.username || 'O').charAt(0).toUpperCase()}</div>
             <div class="tournament-player-info">
-              <span class="tournament-player-name">${escapeHtml(opponent.username || 'Opponent')}</span>
+              <span class="tournament-player-name">${escapeHtml(opponent.username || tx('colOpponent', 'Raqib'))}</span>
               <div class="tournament-player-meta">
                 <img class="tournament-player-flag" src="${opponentFlag}" alt="" loading="lazy" onerror="this.style.display='none'">
-                <span class="tournament-player-rating">Rating: ${Number(opponent.rating || 1500)}</span>
+                <span class="tournament-player-rating">${tx('profLabelRating', 'Reyting:')} ${Number(opponent.rating || 1500)}</span>
               </div>
             </div>
           </div>
@@ -1053,7 +1043,7 @@ window.openArenaTournamentDetail = async function(tournamentId) {
               <span class="tournament-player-name">${escapeHtml(playerName)}</span>
               <div class="tournament-player-meta">
                 <img class="tournament-player-flag" src="${playerFlag}" alt="" loading="lazy" onerror="this.style.display='none'">
-                <span class="tournament-player-rating">Rating: ${Number(playerRating)}</span>
+                <span class="tournament-player-rating">${tx('profLabelRating', 'Reyting:')} ${Number(playerRating)}</span>
               </div>
             </div>
             <div class="tournament-player-clock" id="playerClock">--:--</div>
@@ -1063,37 +1053,37 @@ window.openArenaTournamentDetail = async function(tournamentId) {
         <aside class="tournament-detail-info-panel">
           <div class="tournament-detail-info-header">
             <div class="tournament-detail-info-title">
-              <span class="tournament-detail-eyebrow">Turnir tafsiloti</span>
+              <span class="tournament-detail-eyebrow">${escapeHtml(tx('tdEyebrow', 'Turnir tafsiloti'))}</span>
               <h2>${escapeHtml(tournament.name)}</h2>
-              <p>Arena • ${escapeHtml(getArenaTimeControlLabel(timeControl))} • ${rounds} rounds</p>
+              <p>${escapeHtml(tx('tdArenaSubtitle', 'Arena • {{tc}} • {{count}} raund', { tc: getArenaTimeControlLabel(timeControl), count: rounds }))}</p>
             </div>
-            <button class="tournament-detail-back-btn" id="arenaDetailBackButton">← Turnirlar</button>
+            <button class="tournament-detail-back-btn" id="arenaDetailBackButton">← ${escapeHtml(tx('tdBack', 'Turnirlar'))}</button>
           </div>
 
           <div class="tournament-detail-meta-grid">
             <div class="tournament-detail-stat tournament-stat-card">
-              <span>Vaqt nazorati</span>
+              <span>${escapeHtml(tx('tdTimeControl', 'Vaqt nazorati'))}</span>
               <strong>${escapeHtml(getArenaTimeControlLabel(timeControl))}</strong>
             </div>
             <div class="tournament-detail-stat tournament-stat-card">
-              <span>Raundlar</span>
-              <strong>${rounds} raund</strong>
+              <span>${escapeHtml(tx('tdRounds', 'Raundlar'))}</span>
+              <strong>${escapeHtml(tx('tdRoundsCount', '{{count}} raund', { count: rounds }))}</strong>
             </div>
           </div>
 
           <section class="tournament-detail-section">
             <div class="tournament-detail-section-heading">
-              <h3>Standings</h3>
-              <span>${standings.length} ishtirokchi</span>
+              <h3>${escapeHtml(tx('leagueStandingsTitle', 'Turnir jadvali'))}</h3>
+              <span>${escapeHtml(tx('tdParticipants', '{{count}} ishtirokchi', { count: standings.length }))}</span>
             </div>
             <div class="tournament-detail-standings-list">${standingsHTML}</div>
           </section>
 
           <div class="tournament-detail-join-footer">
             <button class="tournament-detail-join-btn" id="arenaDetailJoinButton" ${isJoined ? 'disabled' : ''}>
-              ${isJoined ? 'Turnirga qo\'shildingiz' : 'Join Tournament'}
+              ${escapeHtml(isJoined ? tx('tdJoinedBtn', "Turnirga qo'shildingiz") : tx('tdJoinBtn', "Turnirga qo'shilish"))}
             </button>
-            <div class="tournament-detail-join-note">${isJoined ? 'Siz ushbu turnir ishtirokchisisiz' : 'Turnirga qo\'shiling va natijangizni yaxshilang'}</div>
+            <div class="tournament-detail-join-note">${escapeHtml(isJoined ? tx('tdJoinedNote', 'Siz ushbu turnir ishtirokchisisiz') : tx('tdJoinNote', "Turnirga qo'shiling va natijangizni yaxshilang"))}</div>
           </div>
         </aside>
       </div>
@@ -1118,8 +1108,15 @@ window.openArenaTournamentDetail = async function(tournamentId) {
     }
   } catch (err) {
     console.error('Arena turniri tafsiloti xatoligi:', err);
-    container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 30px;">Turnirni yuklashda xatolik yuz berdi</div>';
+    container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 30px;">' + tx('tdLoadError', 'Turnirni yuklashda xatolik yuz berdi') + '</div>';
   }
+};
+
+window.refreshTournamentDetail = function() {
+  const current = window.currentTournamentDetail;
+  if (!current) return;
+  if (current.arena) window.openArenaTournamentDetail(current.id);
+  else window.openTournamentDetail(current.id);
 };
 
 window.joinArenaTournament = function(tournamentId) {
@@ -1131,13 +1128,13 @@ window.loadArenas = function() {
   const container = document.getElementById('arenaScheduleContainer');
   if (!container) return;
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Jadval yuklanmoqda...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('arenaScheduleLoading', 'Jadval yuklanmoqda...') + '</div>';
 
   fetch('/api/tournaments/arenas')
     .then(res => res.ok ? res.json() : null)
     .then(data => {
       if (!data || !data.success || !Array.isArray(data.schedule)) {
-        container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 20px;">Jadvalni yuklab bo\'lmadi</div>';
+        container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 20px;">' + tx('arenaScheduleError', "Jadvalni yuklab bo'lmadi") + '</div>';
         return;
       }
 
@@ -1151,12 +1148,12 @@ window.loadArenas = function() {
         <div class="arena-schedule-header">
           <div>
             <div class="arena-schedule-eyebrow">🏆 24/7 Arena</div>
-            <div class="arena-schedule-title">Har soatda yangi turnir</div>
-            <div class="arena-schedule-subtitle">Rapid • Blitz • Bullet | Har bir turnir 60 daqiqa</div>
+            <div class="arena-schedule-title">${escapeHtml(tx('arenaTitle', 'Har soatda yangi turnir'))}</div>
+            <div class="arena-schedule-subtitle">${escapeHtml(tx('arenaSubtitle', 'Rapid • Blitz • Bullet | Har bir turnir 60 daqiqa'))}</div>
           </div>
           <div class="arena-schedule-summary">
             <strong>24</strong>
-            <span>ta turnir</span>
+            <span>${escapeHtml(tx('arenaCountLabel', 'ta turnir'))}</span>
           </div>
         </div>
         <div class="arena-schedule-grid">
@@ -1172,14 +1169,14 @@ window.loadArenas = function() {
         const statusLabel = isCurrent
           ? '<span class="arena-schedule-status live">LIVE</span>'
           : (isPast
-            ? '<span class="arena-schedule-status">Tugagan</span>'
-            : `<span class="arena-schedule-status">${formatArenaDuration(start.getTime() - now)} keyin</span>`);
+            ? `<span class="arena-schedule-status">${escapeHtml(tx('arenaStatusDone', 'Tugagan'))}</span>`
+            : `<span class="arena-schedule-status">${escapeHtml(tx('arenaStartsIn', '{{time}} keyin', { time: formatArenaDuration(start.getTime() - now) }))}</span>`);
         const currentContent = isCurrent
-          ? `<div class="arena-schedule-window">Keyingi turnir: <span class="arena-countdown">${formatArenaCountdown(timeUntilNext)}</span></div>
-             <div style="font-size: 10px; color: #b8c7c2; margin-top: 4px;">${livePlayers} o'yinchi ishtirok etmoqda</div>`
+          ? `<div class="arena-schedule-window">${escapeHtml(tx('arenaNext', 'Keyingi turnir:'))} <span class="arena-countdown">${formatArenaCountdown(timeUntilNext)}</span></div>
+             <div style="font-size: 10px; color: #b8c7c2; margin-top: 4px;">${escapeHtml(tx('arenaPlayersLive', "{{count}} o'yinchi ishtirok etmoqda", { count: livePlayers }))}</div>`
           : `<div class="arena-schedule-window">${formatArenaHour(start)}–${formatArenaHour(end)}</div>`;
         const joinBtn = isCurrent && currentArena
-          ? `<button class="form-submit arena-schedule-join" data-tournament-id="${escapeHtml(currentArena.id)}">Join</button>`
+          ? `<button class="form-submit arena-schedule-join" data-tournament-id="${escapeHtml(currentArena.id)}">${escapeHtml(tx('btnJoin', "Qo'shilish"))}</button>`
           : '';
 
         html += `
@@ -1190,7 +1187,7 @@ window.loadArenas = function() {
               ${statusLabel}
             </div>
             <div class="arena-schedule-name">${slot.icon} ${slot.name}</div>
-            <div class="arena-schedule-code">${slot.code} • ${slot.rounds} raund</div>
+            <div class="arena-schedule-code">${slot.code} • ${escapeHtml(tx('tdRoundsCount', '{{count}} raund', { count: slot.rounds }))}</div>
             ${currentContent}
             ${joinBtn}
           </article>
@@ -1208,7 +1205,7 @@ window.loadArenas = function() {
     })
     .catch(err => {
       console.error('Arena jadvali xatoligi:', err);
-      container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 20px;">Jadvalni yuklab bo\'lmadi</div>';
+      container.innerHTML = '<div style="font-size: 13px; color: #e74c3c; text-align: center; padding: 20px;">' + tx('arenaScheduleError', "Jadvalni yuklab bo'lmadi") + '</div>';
     });
 };
 
@@ -1223,8 +1220,8 @@ function formatArenaDuration(ms) {
   const totalSec = Math.max(0, Math.floor(ms / 1000));
   const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
-  if (h > 0) return `${h} soat ${m} daqiqa`;
-  return `${m} daqiqa`;
+  if (h > 0) return tx('durHoursMinutes', '{{h}} soat {{m}} daqiqa', { h, m });
+  return tx('durMinutes', '{{m}} daqiqa', { m });
 }
 
 function formatArenaHour(date) {
@@ -1250,12 +1247,12 @@ function startArenaCountdown(initialMs) {
 }
 
 window.loadTournaments = function() {
+  if (typeof window.loadArenas === 'function') window.loadArenas();
+
   const container = document.getElementById('tournamentsListContainer');
   if (!container) return;
 
-  if (typeof window.loadArenas === 'function') window.loadArenas();
-
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
    
   fetch('/api/tournaments')
     .then(res => {
@@ -1284,7 +1281,7 @@ window.loadTournaments = function() {
            actionBtns = `<button class="control-btn" onclick="openTournamentDetail('${tournament.id}')" style="padding: 6px 12px; font-size: 12px;">Results</button>`;
         } else {
           actionBtns = `
-            <button class="form-submit" onclick="joinTournament('${tournament.id}')" style="padding: 6px 12px; font-size: 12px;">Join</button>
+            <button class="form-submit" onclick="joinTournament('${tournament.id}')" style="padding: 6px 12px; font-size: 12px;">${escapeHtml(tx('btnJoin', "Qo'shilish"))}</button>
             <button class="control-btn" onclick="openTournamentDetail('${tournament.id}')" style="padding: 6px 12px; font-size: 12px;">View</button>
           `;
         }
@@ -1308,13 +1305,13 @@ window.loadTournaments = function() {
     })
     .catch(err => {
       console.error('Load tournaments xatoligi:', err);
-      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Yuklashda xatolik yuz berdi</div>';
+      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('errLoadFailed', 'Yuklashda xatolik yuz berdi') + '</div>';
     });
 };
 
 window.joinTournament = function(tournamentId, afterJoin) {
   if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
+    alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     switchView('login');
     return;
   }
@@ -1332,29 +1329,29 @@ window.joinTournament = function(tournamentId, afterJoin) {
       if (typeof afterJoin === 'function') {
         afterJoin(data);
       } else {
-        alert('Joined tournament!');
+        alert(tx('tournamentJoined', "Turnirga qo'shildingiz!"));
         loadTournaments();
       }
     } else {
-      alert(data.message || 'Xatolik yuz berdi!');
+      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
     console.error('Join tournament xatoligi:', err);
-    alert('Serverga ulanib bo\'lmadi!');
+    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
   });
 };
 
 window.sendFriendRequest = function() {
   if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
+    alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     switchView('login');
     return;
   }
   
   const username = document.getElementById('friendUsernameInput').value.trim();
   if (!username) {
-    alert('Do\'stingiz nomini kiriting!');
+    alert(tx('friendNameRequired', "Do'stingiz nomini kiriting!"));
     return;
   }
   
@@ -1369,15 +1366,15 @@ window.sendFriendRequest = function() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert('Do\'stlik so\'rovi yuborildi!');
+      alert(tx('friendRequestSent', "Do'stlik so'rovi yuborildi!"));
       document.getElementById('friendUsernameInput').value = '';
     } else {
-      alert(data.message || 'Xatolik yuz berdi!');
+      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
     console.error('Send friend request xatoligi:', err);
-    alert('Serverga ulanib bo\'lmadi!');
+    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
   });
 };
 
@@ -1391,24 +1388,24 @@ window.loadFriendRequests = function() {
   .then(res => res.json())
   .then(data => {
     if (!data.success || !data.requests || data.requests.length === 0) {
-      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">So\'rovlar yo\'q</div>';
+      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('noFriendRequests', "So'rovlar yo'q") + '</div>';
       return;
     }
     
-    let htmlContent = '<div style="font-size: 14px; color: #fff; margin-bottom: 10px; font-weight: bold;">Do\'stlik so\'rovlari:</div>';
+    let htmlContent = '<div style="font-size: 14px; color: #fff; margin-bottom: 10px; font-weight: bold;">' + tx('friendRequestsHeader', "Do'stlik so'rovlari:") + '</div>';
     data.requests.forEach(request => {
       htmlContent += `
         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
           <div>
-            <b style="font-size: 14px; color: #fff;">${request.username}</b>
-            <span style="font-size: 11px; color: #88a;">Reyting: ${request.rating || 1500}</span>
+            <b style="font-size: 14px; color: #fff;">${escapeHtml(request.username)}</b>
+            <span style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${request.rating || 1500}</span>
           </div>
           <div style="display: flex; gap: 8px;">
             <button class="form-submit" onclick="acceptFriendRequest('${request.id}')" style="padding: 4px 10px; font-size: 12px; background: #2ecc71;">
-              Qabul
+              ${tx('btnAccept', 'Qabul qilish')}
             </button>
             <button class="action-btn" onclick="declineFriendRequest('${request.id}')" style="padding: 4px 10px; font-size: 12px; background: #e74c3c;">
-              Rad
+              ${tx('btnDecline', 'Rad etish')}
             </button>
           </div>
         </div>
@@ -1434,11 +1431,11 @@ window.acceptFriendRequest = function(requestId) {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      alert('Do\'stlik qabul qilindi!');
+      alert(tx('friendAccepted', "Do'stlik qabul qilindi!"));
       loadFriendRequests();
       loadFriendsList();
     } else {
-      alert(data.message || 'Xatolik yuz berdi!');
+      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -1446,11 +1443,34 @@ window.acceptFriendRequest = function(requestId) {
   });
 };
 
+window.declineFriendRequest = function(requestId) {
+  fetch('/api/friends/decline', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${window.authToken}`
+    },
+    body: JSON.stringify({ requestId })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      loadFriendRequests();
+    } else {
+      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+    }
+  })
+  .catch(err => {
+    console.error('Decline friend request xatoligi:', err);
+    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
+  });
+};
+
 window.loadFriendsList = function() {
   const container = document.getElementById('friendsListContainer');
   if (!container) return;
   
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
   
   fetch('/api/friends', {
     headers: { 'Authorization': `Bearer ${window.authToken}` }
@@ -1461,7 +1481,7 @@ window.loadFriendsList = function() {
     })
     .then(data => {
       if (!data.success || !data.friends || data.friends.length === 0) {
-        container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Do\'stlar ro\'yxati bo\'sh</div>';
+        container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('friendsEmpty', "Do'stlar ro'yxati bo'sh") + '</div>';
         return;
       }
       
@@ -1474,12 +1494,12 @@ window.loadFriendsList = function() {
                 ${friend.username.charAt(0).toUpperCase()}
               </div>
               <div>
-                <b style="font-size: 14px; color: #fff; display: block;">${friend.username}</b>
-                <span style="font-size: 11px; color: #88a;">Reyting: ${friend.rating || 1500}</span>
+                <b style="font-size: 14px; color: #fff; display: block;">${escapeHtml(friend.username)}</b>
+                <span style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${friend.rating || 1500}</span>
               </div>
             </div>
             <button class="form-submit" onclick="startChatWith('${friend.id}', '${friend.username}')" style="padding: 6px 12px; font-size: 12px;">
-              Chat
+              ${tx('mChat', 'Chat')}
             </button>
           </div>
         `;
@@ -1489,7 +1509,7 @@ window.loadFriendsList = function() {
     })
     .catch(err => {
       console.error('Load friends list xatoligi:', err);
-      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Yuklashda xatolik yuz berdi</div>';
+      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('errLoadFailed', 'Yuklashda xatolik yuz berdi') + '</div>';
     });
 };
 
@@ -1508,11 +1528,11 @@ window.loadChatMessages = function() {
   const roomId = document.getElementById('chatRoomSelect').value;
   
   if (!roomId) {
-    container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Xona tanlang</div>';
+    container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('chatSelectRoom', 'Xona tanlang') + '</div>';
     return;
   }
   
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
   
   let url = `/api/chat/messages?roomId=${encodeURIComponent(roomId)}`;
   if (!window.authToken) {
@@ -1528,7 +1548,7 @@ window.loadChatMessages = function() {
     })
     .then(data => {
       if (!data.success || !data.messages || data.messages.length === 0) {
-        container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Xabarlar yo\'q</div>';
+        container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('chatNoMessages', "Xabarlar yo'q") + '</div>';
         return;
       }
       
@@ -1538,8 +1558,8 @@ window.loadChatMessages = function() {
         htmlContent += `
           <div style="text-align: ${isOwn ? 'right' : 'left'}; margin-bottom: 8px;">
             <div style="display: inline-block; background: ${isOwn ? '#2ecc71' : '#2a3e3b'}; color: #fff; padding: 8px 12px; border-radius: 8px; max-width: 70%; text-align: left;">
-              <div style="font-size: 11px; color: #88a; margin-bottom: 4px;">${msg.username || msg.sender_username || 'Foydalanuvchi'}</div>
-              <div style="font-size: 13px;">${msg.message}</div>
+              <div style="font-size: 11px; color: #88a; margin-bottom: 4px;">${escapeHtml(msg.username || msg.sender_username || tx('userFallback', 'Foydalanuvchi'))}</div>
+              <div style="font-size: 13px;">${escapeHtml(msg.message)}</div>
             </div>
           </div>
         `;
@@ -1550,7 +1570,7 @@ window.loadChatMessages = function() {
     })
     .catch(err => {
       console.error('Load chat messages xatoligi:', err);
-      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Yuklashda xatolik yuz berdi</div>';
+      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('errLoadFailed', 'Yuklashda xatolik yuz berdi') + '</div>';
     });
 };
 
@@ -1561,7 +1581,7 @@ window.sendChatMessage = function() {
   
   if (!message) return;
   if (!roomId && !window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
+    alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     return;
   }
   
@@ -1585,7 +1605,7 @@ window.sendChatMessage = function() {
       input.value = '';
       loadChatMessages();
     } else {
-      alert(data.message || 'Xatolik yuz berdi!');
+      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -1596,7 +1616,7 @@ window.sendChatMessage = function() {
 document.addEventListener('DOMContentLoaded', () => {
   const chatRoomSelect = document.getElementById('chatRoomSelect');
   if (chatRoomSelect) {
-    chatRoomSelect.innerHTML = '<option value="">Xona tanlang</option>';
+    chatRoomSelect.innerHTML = '<option value="">' + tx('chatSelectRoom', 'Xona tanlang') + '</option>';
   }
 });
 
@@ -1623,7 +1643,7 @@ window.showClubLeaderboard = function(countryName) {
   const titleEl = document.getElementById("clubLeaderboardTitle");
   if (titleEl) titleEl.textContent = `${countryName} Club Leaderboard`;
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
 
   fetch('/api/leaderboard')
     .then(res => res.ok ? res.json() : null)
@@ -1894,7 +1914,7 @@ window.loadClubLeagueCalendar = function(countryName, container) {
 // Klub chat - Chess.com uslubi
 window.showClubChat = function(countryName, countryCode) {
   if (!window.currentUser) {
-    alert('Chat uchun avval tizimga kirishingiz kerak!');
+    alert(tx('errChatLoginRequired', 'Chat uchun avval tizimga kirishingiz kerak!'));
     switchView('login');
     return;
   }
@@ -1906,13 +1926,13 @@ window.showClubChat = function(countryName, countryCode) {
   if (titleEl) {
     const safeCountryName = escapeHtml(countryName);
     const safeCountryCode = escapeHtml(countryCode);
-    titleEl.innerHTML = `<img src="https://flagcdn.com/w20/${safeCountryCode}.png" style="width: 20px; height: 14px; margin-right: 8px; border-radius: 2px;"> ${safeCountryName} Club Chat`;
+    titleEl.innerHTML = `<img src="https://flagcdn.com/w20/${safeCountryCode}.png" style="width: 20px; height: 14px; margin-right: 8px; border-radius: 2px;"> ${escapeHtml(tx('clubChatTitle', '{{country}} klub chati', { country: countryName }))}`;
   }
 
   const container = document.getElementById("clubChatMessagesContainer");
   if (!container) return;
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
 
   loadClubChatMessages();
 
@@ -1939,7 +1959,7 @@ window.loadClubChatMessages = function() {
   const roomId = 'club_' + window.currentClubName;
   const url = `/api/chat/messages?roomId=${encodeURIComponent(roomId)}`;
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
 
   fetch(url, {
     headers: window.authToken ? { 'Authorization': `Bearer ${window.authToken}` } : {}
@@ -1950,7 +1970,7 @@ window.loadClubChatMessages = function() {
     })
     .then(data => {
       if (!data.success || !data.messages || data.messages.length === 0) {
-        container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Hali xabarlar yo\'q. Birinchi xabarni yuboring!</div>';
+        container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('clubChatEmpty', "Hali xabarlar yo'q. Birinchi xabarni yuboring!") + '</div>';
         return;
       }
 
@@ -1959,12 +1979,12 @@ window.loadClubChatMessages = function() {
       data.messages.forEach(msg => {
         const isOwn = String(msg.sender_id) === String(currentUserId);
         const time = new Date(msg.created_at || msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const authorName = msg.sender_username || (isOwn ? (window.currentUser ? window.currentUser.username : 'Siz') : 'Foydalanuvchi');
+        const authorName = msg.username || msg.sender_username || (isOwn ? (window.currentUser ? window.currentUser.username : tx('youLabel', 'Siz')) : tx('userFallback', 'Foydalanuvchi'));
         
         htmlContent += `
           <div class="club-chat-message ${isOwn ? 'own' : 'other'}">
-            <span class="club-chat-message-author">${authorName}</span>
-            <div>${msg.message}</div>
+            <span class="club-chat-message-author">${escapeHtml(authorName)}</span>
+            <div>${escapeHtml(msg.message)}</div>
             <div class="club-chat-message-time">${time}</div>
           </div>
         `;
@@ -1975,13 +1995,13 @@ window.loadClubChatMessages = function() {
     })
     .catch(err => {
       console.error('Klub chat xabarlari xatoligi:', err);
-      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Yuklashda xatolik yuzberdi</div>';
+      container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('errLoadFailed', 'Yuklashda xatolik yuz berdi') + '</div>';
     });
 };
 
 window.sendClubChatMessage = function() {
   if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
+    alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     return;
   }
 
@@ -2012,7 +2032,7 @@ window.sendClubChatMessage = function() {
       input.value = '';
       loadClubChatMessages();
     } else {
-      alert(data.message || 'Xatolik yuzberdi!');
+      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -2152,13 +2172,14 @@ window.loadClubHistory = function(countryName, container) {
 // ===== INDIVIDUAL TURNIR (SWISS) TAFSILOTI =====
 
 window.openTournamentDetail = async function(tournamentId) {
+  window.currentTournamentDetail = { id: tournamentId, arena: false };
   const view = document.getElementById('tournamentDetailView');
   const container = document.getElementById('tournamentDetailContainer');
   if (!view || !container) return;
 
   window.openTournamentDetailShell(view);
 
-  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">Loading...</div>';
+  container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
 
   try {
     const [tRes, sRes, mRes] = await Promise.all([
@@ -2173,66 +2194,60 @@ window.openTournamentDetail = async function(tournamentId) {
     const tournament = tData.tournament || tData;
     const standings = (sData.success ? sData.standings : []) || [];
     const matches = (mData.success ? mData.matches : []) || [];
+    const currentUsername = window.currentUser ? window.currentUser.username : null;
+    const isJoined = !!currentUsername && standings.some(s => s.username === currentUsername);
 
     const currentRound = tournament.current_round || 0;
     const maxRounds = tournament.rounds || 7;
-    const typeLabel = tournament.tournament_type === 'team' ? 'Team'
-      : (tournament.tournament_type === 'individual' ? 'Individual' : 'Arena');
+    const typeLabel = tournament.tournament_type === 'team' ? tx('tdTypeTeam', 'Jamoaviy')
+      : (tournament.tournament_type === 'individual' ? tx('tdTypeIndividual', 'Individual') : tx('tdTypeArena', 'Arena'));
+    const statusLabels = { waiting: tx('tdStatusWaiting', 'Kutilmoqda'), active: tx('tdStatusActive', 'Faol'), completed: tx('tdStatusCompleted', 'Yakunlangan') };
+    const statusLabel = statusLabels[tournament.status] || tournament.status || '—';
 
     const roundMatches = matches.filter(m => m.round === currentRound && m.status !== 'bye');
     const byeMatches = matches.filter(m => m.round === currentRound && m.status === 'bye');
 
     let pairingsHTML = '';
     if (roundMatches.length === 0 && byeMatches.length === 0) {
-      pairingsHTML = '<div class="tournament-detail-empty">Hozircha juftliklar yaratilmagan</div>';
+      pairingsHTML = '<div class="tournament-detail-empty">' + escapeHtml(tx('tdNoPairings', 'Hozircha juftliklar yaratilmagan')) + '</div>';
     } else {
       roundMatches.forEach(m => {
         const isPlayer = window.currentUser && (m.player1Id === window.currentUser.id || m.player2Id === window.currentUser.id);
-         const p1 = m.player1Username || 'White';
-        const p2 = m.player2Username || (m.player2Id ? 'Opponent' : '—')
+         const p1 = m.player1Username || tx('whiteText', 'Oq');
+        const p2 = m.player2Username || (m.player2Id ? tx('colOpponent', 'Raqib') : '—');
         let resultBtns = '';
         if (isPlayer && m.status === 'active') {
           resultBtns = `
             <div style="display: flex; gap: 6px; margin-top: 8px;">
-               <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'white')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">White wins</button>
-              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'draw')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">Draw</button>
-              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'black')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">Black wins</button>
+               <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'white')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">${escapeHtml(tx('tdWhiteWins', 'Oq yutdi'))}</button>
+              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'draw')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">${escapeHtml(tx('btnDrawText', 'Durrang'))}</button>
+              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'black')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">${escapeHtml(tx('tdBlackWins', 'Qora yutdi'))}</button>
             </div>`;
         } else if (m.status === 'completed') {
           const winnerName = m.winnerId === m.player1Id ? p1 : p2;
-          resultBtns = `<div style="font-size: 11px; color: #8fc95a; margin-top: 6px; font-weight: 700;">✓ ${winnerName} wins</div>`;
+          const resultText = m.winnerId ? tx('tdPlayerWins', '{{name}} yutdi', { name: winnerName }) : tx('resultDraw', 'Durrang');
+          resultBtns = `<div style="font-size: 11px; color: #8fc95a; margin-top: 6px; font-weight: 700;">✓ ${escapeHtml(resultText)}</div>`;
         }
         pairingsHTML += `
           <div class="tournament-detail-standings-row" style="grid-template-columns: 18px minmax(0, 1fr) auto minmax(0, 1fr);">
             <span style="font-size: 12px; color: #8fc95a; font-weight: 800;">#${m.board || (roundMatches.indexOf(m) + 1)}</span>
             <div style="min-width: 0;">
-              <strong style="font-size: 13px; color: #f4fbf3;">${p1}</strong>
+              <strong style="font-size: 13px; color: #f4fbf3;">${escapeHtml(p1)}</strong>
             </div>
             <span style="font-size: 11px; color: #8fa89f; font-weight: 700;">vs</span>
             <div style="min-width: 0;">
-              <strong style="font-size: 13px; color: #f4fbf3;">${p2}</strong>
+              <strong style="font-size: 13px; color: #f4fbf3;">${escapeHtml(p2)}</strong>
             </div>
           </div>
           ${resultBtns}
         `;
       });
       byeMatches.forEach(m => {
-        pairingsHTML += `<div class="tournament-detail-standings-row" style="color: #e6b800;"><span>♟️</span><span>${m.player1Username || 'Player'} — Bye (+1)</span></div>`;
+        pairingsHTML += `<div class="tournament-detail-standings-row" style="color: #e6b800;"><span>♟️</span><span>${escapeHtml(tx('tdBye', "{{name}} — raund o'tkazib yuboriladi (+1)", { name: m.player1Username || tx('tdPlayer', "O'yinchi") }))}</span></div>`;
       });
     }
 
-    const standingsDataList = standings.length > 0 ? standings : [
-      { username: 'Magnus', rating: 2850, score: 24 },
-      { username: 'Hikaru', rating: 2780, score: 19 },
-      { username: 'Ian', rating: 2715, score: 16 },
-      { username: 'Ding', rating: 2680, score: 14 },
-      { username: 'Alireza', rating: 2650, score: 11 },
-      { username: 'Fabiano', rating: 2720, score: 10 },
-      { username: 'Wesley', rating: 2695, score: 9 },
-      { username: 'Anish', rating: 2760, score: 8 },
-      { username: 'Levon', rating: 2730, score: 7 },
-      { username: 'Maxime', rating: 2705, score: 6 }
-    ];
+    const standingsDataList = standings;
 
     let standingsHTML = '';
     standingsDataList.slice(0, 10).forEach((s, i) => {
@@ -2241,20 +2256,20 @@ window.openTournamentDetail = async function(tournamentId) {
           <span class="tournament-detail-rank">#${i + 1}</span>
           <div class="tournament-detail-player">
             <strong>${escapeHtml(s.username)}</strong>
-            <span>Rating: ${Number(s.rating || 1500)}</span>
+            <span>${tx('profLabelRating', 'Reyting:')} ${Number(s.rating || 1500)}</span>
           </div>
           <span class="tournament-detail-score">${Number(s.score || 0)}</span>
         </div>`;
     });
 
+    if (!standingsHTML) standingsHTML = `<div class="tournament-detail-empty">${escapeHtml(tx('tdNoParticipants', "Hali ishtirokchilar yo'q. Birinchi bo'lib qo'shiling!"))}</div>`;
+
      const canGenerate = standings.length >= 2 && currentRound < maxRounds;
 
-     window.initTournamentDetailBoard();
-
-     const swissOpponent = standings.find(p => p.username !== (window.currentUser && window.currentUser.username)) || standings[0] || { username: 'Opponent', rating: 1500 };
+     const swissOpponent = standings.find(p => p.username !== (window.currentUser && window.currentUser.username)) || standings[0] || { username: tx('colOpponent', 'Raqib'), rating: 1500 };
      const swissOpponentFlag = getPlayerFlag(swissOpponent.username, null);
      const swissPlayerFlag = currentUsername ? getPlayerFlag(currentUsername, null) : getPlayerFlag('Guest', null);
-     const swissPlayerName = currentUsername || 'Guest';
+     const swissPlayerName = currentUsername || tx('tdGuest', 'Mehmon');
      const swissPlayerRating = window.currentUser && window.currentUser.rating ? window.currentUser.rating : 1500;
 
      container.innerHTML = `
@@ -2263,10 +2278,10 @@ window.openTournamentDetail = async function(tournamentId) {
           <div class="tournament-player-bar opponent">
             <div class="tournament-player-avatar">${(swissOpponent.username || 'O').charAt(0).toUpperCase()}</div>
             <div class="tournament-player-info">
-              <span class="tournament-player-name">${escapeHtml(swissOpponent.username || 'Opponent')}</span>
+              <span class="tournament-player-name">${escapeHtml(swissOpponent.username || tx('colOpponent', 'Raqib'))}</span>
               <div class="tournament-player-meta">
                 <img class="tournament-player-flag" src="${swissOpponentFlag}" alt="" loading="lazy" onerror="this.style.display='none'">
-                <span class="tournament-player-rating">Rating: ${Number(swissOpponent.rating || 1500)}</span>
+                <span class="tournament-player-rating">${tx('profLabelRating', 'Reyting:')} ${Number(swissOpponent.rating || 1500)}</span>
               </div>
             </div>
           </div>
@@ -2281,7 +2296,7 @@ window.openTournamentDetail = async function(tournamentId) {
               <span class="tournament-player-name">${escapeHtml(swissPlayerName)}</span>
               <div class="tournament-player-meta">
                 <img class="tournament-player-flag" src="${swissPlayerFlag}" alt="" loading="lazy" onerror="this.style.display='none'">
-                <span class="tournament-player-rating">Rating: ${Number(swissPlayerRating)}</span>
+                <span class="tournament-player-rating">${tx('profLabelRating', 'Reyting:')} ${Number(swissPlayerRating)}</span>
               </div>
             </div>
             <div class="tournament-player-clock" id="playerClock">--:--</div>
@@ -2291,50 +2306,67 @@ window.openTournamentDetail = async function(tournamentId) {
         <aside class="tournament-detail-info-panel">
           <div class="tournament-detail-info-header">
             <div class="tournament-detail-info-title">
-              <span class="tournament-detail-eyebrow">Turnir tafsiloti</span>
+              <span class="tournament-detail-eyebrow">${escapeHtml(tx('tdEyebrow', 'Turnir tafsiloti'))}</span>
               <h2>${escapeHtml(tournament.name)}</h2>
-              <p>${typeLabel} tournament • ${tournament.time_control || '—'} • ${tournament.rounds || 7} rounds</p>
+              <p>${escapeHtml(tx('tdSubtitle', '{{type}} turnir • {{tc}} • {{count}} raund', { type: typeLabel, tc: tournament.time_control || '—', count: maxRounds }))}</p>
             </div>
-            <button class="tournament-detail-back-btn" onclick="window.closeTournamentDetail(); switchView('tournaments'); loadTournaments();">← Turnirlar</button>
+            <button class="tournament-detail-back-btn" onclick="window.closeTournamentDetail(); switchView('tournaments'); loadTournaments();">← ${escapeHtml(tx('tdBack', 'Turnirlar'))}</button>
           </div>
 
            <div class="tournament-detail-meta-grid">
             <div class="tournament-detail-stat tournament-stat-card">
-              <span>Current Round</span>
+              <span>${escapeHtml(tx('tdCurrentRound', 'Joriy raund'))}</span>
               <strong>${currentRound}/${maxRounds}</strong>
             </div>
             <div class="tournament-detail-stat tournament-stat-card">
-              <span>Status</span>
-              <strong style="text-transform: capitalize;">${tournament.status}</strong>
+              <span>${escapeHtml(tx('tdStatus', 'Holat'))}</span>
+              <strong>${escapeHtml(statusLabel)}</strong>
             </div>
           </div>
 
           <section class="tournament-detail-section">
             <div class="tournament-detail-section-heading">
-              <h3>Standings</h3>
-              <span>${standingsDataList.length} ishtirokchi</span>
+              <h3>${escapeHtml(tx('leagueStandingsTitle', 'Turnir jadvali'))}</h3>
+              <span>${escapeHtml(tx('tdParticipants', '{{count}} ishtirokchi', { count: standings.length }))}</span>
             </div>
             <div class="tournament-detail-standings-list">${standingsHTML}</div>
           </section>
 
+          <section class="tournament-detail-section">
+            <div class="tournament-detail-section-heading">
+              <h3>${escapeHtml(tx('tdPairings', 'Juftliklar ({{round}}-raund)', { round: currentRound }))}</h3>
+            </div>
+            <div class="tournament-detail-standings-list">${pairingsHTML}</div>
+            ${canGenerate ? `<button class="tournament-detail-join-btn" style="margin-top: 10px;" onclick="generateTournamentPairings('${escapeHtml(tournamentId)}')">${escapeHtml(tx('tdGeneratePairings', 'Keyingi raund juftliklarini yaratish'))}</button>` : ''}
+          </section>
+
           <div class="tournament-detail-join-footer">
             <button class="tournament-detail-join-btn" id="swissDetailJoinButton" ${isJoined ? 'disabled' : ''}>
-              ${isJoined ? 'Turnirga qo\'shildingiz' : 'Join Tournament'}
+              ${escapeHtml(isJoined ? tx('tdJoinedBtn', "Turnirga qo'shildingiz") : tx('tdJoinBtn', "Turnirga qo'shilish"))}
             </button>
-            <div class="tournament-detail-join-note">${isJoined ? 'Siz ushbu turnir ishtirokchisisiz' : 'Turnirga qo\'shiling va natijangizni yaxshilang'}</div>
+            <div class="tournament-detail-join-note">${escapeHtml(isJoined ? tx('tdJoinedNote', 'Siz ushbu turnir ishtirokchisisiz') : tx('tdJoinNote', "Turnirga qo'shiling va natijangizni yaxshilang"))}</div>
           </div>
         </aside>
       </div>
     `;
+
+    window.initTournamentDetailBoard();
+
+    const swissJoinButton = document.getElementById('swissDetailJoinButton');
+    if (swissJoinButton && !isJoined) {
+      swissJoinButton.addEventListener('click', () => {
+        window.joinTournament(tournamentId, () => window.openTournamentDetail(tournamentId));
+      });
+    }
   } catch (err) {
     console.error('Tournament detail xatoligi:', err);
-    container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Yuklashda xatolik</div>';
+    container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + tx('errLoadFailed', 'Yuklashda xatolik yuz berdi') + '</div>';
   }
 };
 
 window.generateTournamentPairings = function(tournamentId) {
   if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
+    alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     switchView('login');
     return;
   }
@@ -2345,15 +2377,15 @@ window.generateTournamentPairings = function(tournamentId) {
     .then(r => r.json())
     .then(d => {
       if (d.success) {
-        alert('Round ' + d.round + ' pairings generated!');
+        alert(tx('pairingsGenerated', '{{round}}-raund juftliklari yaratildi!', { round: d.round }));
         window.openTournamentDetail(tournamentId);
       } else {
-        alert(d.message || 'Xatolik yuz berdi!');
+        alert(d.message || tx('errGeneric', 'Xatolik yuz berdi!'));
       }
     })
     .catch(err => {
       console.error('Pairings yaratish xatoligi:', err);
-      alert('Serverga ulanib bo\'lmadi!');
+      alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
     });
 };
 
@@ -2368,11 +2400,11 @@ window.reportTournamentMatchResult = function(tournamentId, matchId, result) {
       if (d.success) {
         window.openTournamentDetail(tournamentId);
       } else {
-        alert(d.message || 'Xatolik yuz berdi!');
+        alert(d.message || tx('errGeneric', 'Xatolik yuz berdi!'));
       }
     })
     .catch(err => {
       console.error('Match result xatoligi:', err);
-      alert('Serverga ulanib bo\'lmadi!');
+      alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
     });
 };

@@ -562,6 +562,13 @@ async function acceptFriendRequest(requestId, receiverId) {
   return { success: true, message: 'Do\'stlik qabul qilindi!' };
 }
 
+async function declineFriendRequest(requestId, receiverId) {
+  const req = await dbGet('SELECT id FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = ?', [requestId, receiverId, 'pending']);
+  if (!req) return { success: false, message: 'So\'rov topilmadi!' };
+  await dbRun("UPDATE friend_requests SET status = 'declined', updated_at = ? WHERE id = ?", [new Date().toISOString(), requestId]);
+  return { success: true, message: 'So\'rov rad etildi!' };
+}
+
 async function getFriends(userId) {
   const rows = await dbAll(`SELECT u.id, u.username, u.rating, u.last_active FROM friends f JOIN users u ON f.friend_id = u.id WHERE f.user_id = ? ORDER BY u.last_active DESC`, [userId]);
   return rows;
@@ -676,6 +683,7 @@ module.exports = {
   getTournamentStandings,
   sendFriendRequest,
   acceptFriendRequest,
+  declineFriendRequest,
   getFriends,
   getFriendRequests,
   getChatMessages,

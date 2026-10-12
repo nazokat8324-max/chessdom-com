@@ -142,8 +142,8 @@ window.finishGame = function(winnerColor, message, toastType) {
   const myColor = window.myColor || 'w';
   const result = winnerColor === null ? 'draw' : (winnerColor === myColor ? 'win' : 'loss');
   const opponentName = window.myColor
-    ? ((window.currentOpponent && window.currentOpponent.username) || 'Raqib')
-    : 'Oq va Qora';
+    ? ((window.currentOpponent && window.currentOpponent.username) || tx('colOpponent', 'Raqib'))
+    : tx('opponentLocal', 'Oq va Qora');
   saveGameHistory(result, opponentName, "Online o'yin");
   recordResult(result);
   if (message) showToast(message, toastType || 'info', 5000);
@@ -159,9 +159,9 @@ window.checkGameOverAfterMove = function() {
     confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
   }
   if (game.in_checkmate()) {
-    window.finishGame(game.turn() === 'w' ? 'b' : 'w', "Shaxmat! O'yin tugadi.", 'success');
+    window.finishGame(game.turn() === 'w' ? 'b' : 'w', tx('gameCheckmate', "Shaxmat! O'yin tugadi."), 'success');
   } else {
-    window.finishGame(null, "Durang!", 'warning');
+    window.finishGame(null, tx('gameDraw', 'Durrang!'), 'warning');
   }
 };
 
@@ -204,7 +204,7 @@ function recordResult(res) {
 }
 
 window.resetStats = function() {
-  if (!confirm("Haqiqatan ham statistikalarni tozalashni xohlaysizmi?")) return;
+  if (!confirm(tx('resetStatsConfirm', 'Haqiqatan ham statistikani tozalashni xohlaysizmi?'))) return;
   window.stats = { wins: 0, losses: 0, draws: 0 };
   window.statsByMode = {
     rapid: { wins: 0, losses: 0, draws: 0 },
@@ -227,23 +227,23 @@ window.resetStats = function() {
 };
 
 window.offerDraw = function() {
-  if (confirm('Raqibga durrang taklifini yuborishni xohlaysizmi?')) {
+  if (confirm(tx('drawOfferSendConfirm', 'Raqibga durrang taklifini yuborishni xohlaysizmi?'))) {
     if (typeof socket !== 'undefined' && window.currentRoomId) {
       socket.emit('offer-draw', { roomId: window.currentRoomId });
     }
-    alert('Durrang taklifi yuborildi!');
+    alert(tx('drawOfferSent', 'Durrang taklifi yuborildi!'));
   }
 };
 
 window.exportPGN = function() {
   if (!game || !game.history) {
-    alert('Hech qanday yurish yo\'q!');
+    alert(tx('noMovesYet', "Hali hech qanday yurish yo'q!"));
     return;
   }
   
   const moves = game.history();
   if (moves.length === 0) {
-    alert('Hech qanday yurish yo\'q!');
+    alert(tx('noMovesYet', "Hali hech qanday yurish yo'q!"));
     return;
   }
   
@@ -419,13 +419,13 @@ window.startNewGame = function() {
   if (window.currentUser) {
     const opponent = window.currentOpponent || {};
     const me = { name: window.currentUser.username, rating: window.currentUser.rating || 1500 };
-    const them = { name: opponent.username || 'Raqib', rating: opponent.rating || 1500 };
+    const them = { name: opponent.username || tx('colOpponent', 'Raqib'), rating: opponent.rating || 1500 };
     const [white, black] = window.myColor === 'b' ? [them, me] : [me, them];
     updatePlayerInfo('white', white.name, white.rating);
     updatePlayerInfo('black', black.name, black.rating);
   } else {
-    updatePlayerInfo('white', 'Oq', 1500);
-    updatePlayerInfo('black', 'Qora', 1500);
+    updatePlayerInfo('white', tx('whiteText', 'Oq'), 1500);
+    updatePlayerInfo('black', tx('blackText', 'Qora'), 1500);
   }
   setGameTime(initialTime);
 };
@@ -446,7 +446,7 @@ function resignGame() {
 
 window.undoMove = function() {
   if (!game || game.history().length === 0) {
-    showToast('Qaytarish uchun yurishlar yo\'q!', 'warning');
+    showToast(tx('noMovesToUndo', "Qaytarish uchun yurishlar yo'q!"), 'warning');
     return;
   }
   
@@ -454,7 +454,7 @@ window.undoMove = function() {
   if (board) board.position(game.fen());
   updateHistory();
   saveGameState();
-  showToast('Oxirgi yurish qaytarildi', 'info');
+  showToast(tx('lastMoveUndone', 'Oxirgi yurish qaytarildi'), 'info');
 };
 
 window.toggleRated = function() {
@@ -463,10 +463,19 @@ window.toggleRated = function() {
   if (!toggle || !label) return;
   
   if (toggle.checked) {
-    label.textContent = 'Reytingli';
+    label.textContent = tx('ratedLabel', 'Reytingli');
   } else {
-    label.textContent = 'Reytingsiz';
+    label.textContent = tx('unratedLabel', 'Reytingsiz');
   }
+};
+
+// Til almashganda panellardagi "Reyting:" yorlig'ini qayta yozish (raqamni saqlagan holda)
+window.refreshPlayerInfoLabels = function() {
+  ['white', 'black'].forEach(color => {
+    const ratingEl = document.getElementById(`${color}PlayerRating`);
+    if (!ratingEl || !ratingEl.dataset.rating) return;
+    ratingEl.textContent = `${tx('profLabelRating', 'Reyting:')} ${ratingEl.dataset.rating}`;
+  });
 };
 
 window.updatePlayerInfo = function(color, name, rating) {
@@ -478,10 +487,11 @@ window.updatePlayerInfo = function(color, name, rating) {
     avatarEl.textContent = color === 'white' ? '♔' : '♚';
   }
   if (nameEl) {
-    nameEl.textContent = name || (color === 'white' ? 'Oq' : 'Qora');
+    nameEl.textContent = name || (color === 'white' ? tx('whiteText', 'Oq') : tx('blackText', 'Qora'));
   }
   if (ratingEl) {
-    ratingEl.textContent = `Reyting: ${rating || 1500}`;
+    ratingEl.dataset.rating = rating || 1500;
+    ratingEl.textContent = `${tx('profLabelRating', 'Reyting:')} ${rating || 1500}`;
   }
 };
 
@@ -494,7 +504,7 @@ function onDragStart(source, piece, position, orientation) {
   }
 
   if (!opponentFound) {
-    showToast('Raqib topilishi kutilmoqda...', 'warning', 2000);
+    showToast(tx('waitingOpponentToast', 'Raqib topilishi kutilmoqda...'), 'warning', 2000);
     return false;
   }
 
@@ -659,7 +669,7 @@ function restoreGameState() {
         updateHistory();
       }
       
-      showToast('O\'yin holati tiklandi', 'success');
+      showToast(tx('gameStateRestored', "O'yin holati tiklandi"), 'success');
     } else {
       sessionStorage.removeItem('chessGameState');
     }
@@ -716,9 +726,9 @@ onSnapEnd = function() {
   const repetitions = positionHistory.filter(pos => pos === fen).length;
   
   if (halfMoveClock >= 100) {
-    window.finishGame(null, '50 harakat qoidasi: Durrang!', 'warning');
+    window.finishGame(null, tx('gameDraw50', '50 yurish qoidasi: Durrang!'), 'warning');
   } else if (repetitions >= 3) {
-    window.finishGame(null, '3 ta takroranish: Durrang!', 'warning');
+    window.finishGame(null, tx('gameDrawRepetition', '3 marta takrorlanish: Durrang!'), 'warning');
   }
   
   saveGameState();

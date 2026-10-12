@@ -1,6 +1,16 @@
 if (typeof window.currentLang === 'undefined') {
   window.currentLang = localStorage.getItem("justChessLang") || "uz";
 }
+
+// Tarjima yordamchisi: tx('kalit', "o'zbekcha matn", { name }) — i18next tayyor bo'lmasa o'zbekcha matn qaytadi.
+// Qiymatlar HTML-escape qilinmaydi: innerHTML'ga qo'yishdan oldin foydalanuvchi ma'lumotini escapeHtml qiling.
+window.tx = function(key, fallback, opts) {
+  const vars = opts || {};
+  if (typeof i18next !== 'undefined' && i18next.isInitialized) {
+    return i18next.t(key, { defaultValue: fallback, ...vars, interpolation: { escapeValue: false } });
+  }
+  return String(fallback).replace(/\{\{(\w+)\}\}/g, (m, k) => (k in vars ? vars[k] : m));
+};
 // Eski versiyadagi faqat brauzerda yaratilgan ("local_" tokenli) akkauntlar serverda ishlamaydi — sessiyani tozalash
 if ((localStorage.getItem("justChessAuthToken") || "").startsWith("local_")) {
   localStorage.removeItem("justChessAuthToken");
@@ -242,24 +252,34 @@ function renderHistoryTable(history) {
   history.forEach((game, index) => {
     let resultBadge = '';
     if (game.result === 'win') {
-      resultBadge = '<span style="color: #2ecc71; font-weight: bold;">G\'alaba</span>';
+      resultBadge = '<span style="color: #2ecc71; font-weight: bold;">' + tx('resultWin', "G'alaba") + '</span>';
     } else if (game.result === 'loss') {
-      resultBadge = '<span style="color: #e74c3c; font-weight: bold;">Mag\'lubiyat</span>';
+      resultBadge = '<span style="color: #e74c3c; font-weight: bold;">' + tx('resultLoss', "Mag'lubiyat") + '</span>';
     } else if (game.result === 'draw') {
-      resultBadge = '<span style="color: #f39c12; font-weight: bold;">Durang</span>';
+      resultBadge = '<span style="color: #f39c12; font-weight: bold;">' + tx('resultDraw', 'Durrang') + '</span>';
     } else {
       resultBadge = `<span style="color: #88a;">${game.result || '-'}</span>`;
     }
 
     const timeControl = game.timeControl || 'blitz';
     const timeLabel = timeControl.charAt(0).toUpperCase() + timeControl.slice(1);
+    // Bazada o'zbekcha saqlangan standart qiymatlarni joriy tilga o'girish
+    const storedLabels = {
+      "Oq va Qora": tx('opponentLocal', 'Oq va Qora'),
+      "Oq va Qora (Online)": tx('opponentLocal', 'Oq va Qora'),
+      "Raqib": tx('colOpponent', 'Raqib'),
+      "Online o'yin": tx('modeOnline', "Onlayn o'yin"),
+      "Online": tx('modeOnline', "Onlayn o'yin")
+    };
+    const opponentLabel = storedLabels[game.opponent] || game.opponent || tx('unknownLabel', "Noma'lum");
+    const modeLabel = storedLabels[game.mode] || game.mode || tx('modeOnline', "Onlayn o'yin");
 
     html += `
       <tr>
         <td style="color: #88a; font-size: 12px;">${index + 1}</td>
         <td style="color: #ccc; font-size: 12px;">${game.date || '-'}</td>
-        <td style="color: #fff; font-size: 13px; font-weight: bold;">${game.opponent || 'Noma\'lum'}</td>
-        <td style="color: #88a; font-size: 12px;">${game.mode || 'Online'}</td>
+        <td style="color: #fff; font-size: 13px; font-weight: bold;">${escapeHtml(opponentLabel)}</td>
+        <td style="color: #88a; font-size: 12px;">${escapeHtml(modeLabel)}</td>
         <td style="color: #88a; font-size: 12px;">${timeLabel}</td>
         <td style="text-align: center;">${resultBadge}</td>
       </tr>
@@ -333,10 +353,10 @@ window.switchView = function(viewName) {
     if (typeof window.updatePlayerInfo === 'function') {
       if (window.currentUser) {
         window.updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
-        window.updatePlayerInfo('black', 'Raqib', '⏳');
+        window.updatePlayerInfo('black', tx('colOpponent', 'Raqib'), '⏳');
       } else {
-        window.updatePlayerInfo('white', 'Oq', 1500);
-        window.updatePlayerInfo('black', 'Raqib', '⏳');
+        window.updatePlayerInfo('white', tx('whiteText', 'Oq'), 1500);
+        window.updatePlayerInfo('black', tx('colOpponent', 'Raqib'), '⏳');
       }
     }
 
@@ -573,7 +593,7 @@ window.handleRegister = async function() {
     window.updateAuthHeaderUI();
     window.switchView("home");
   } catch (err) {
-    alert("Serverga ulanib bo'lmadi!");
+    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
     console.error(err);
   }
 };
@@ -607,7 +627,7 @@ window.handleLogin = async function() {
     window.updateAuthHeaderUI();
     window.switchView("home");
   } catch (err) {
-    alert("Serverga ulanib bo'lmadi!");
+    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
     console.error(err);
   }
 };
@@ -910,7 +930,7 @@ window.switchToLogin = function() {
 
 // --- Social Login (placeholder) ---
 window.socialLogin = function(provider) {
-  alert(`Social login (${provider}) will be available soon.`);
+  alert(tx('socialLoginSoon', "{{provider}} orqali kirish tez orada qo'shiladi.", { provider }));
 };
 
 /// --- Login handler ---
@@ -1003,13 +1023,13 @@ window.handleSignupModal = async function() {
       if (response.status === 409) {
         if (usernameExistsError) usernameExistsError.style.display = "block";
       } else {
-        alert(data.message || "Ro'yxatdan o'tib bo'lmadi!");
+        alert(data.message || tx('errSignupFailed', "Ro'yxatdan o'tib bo'lmadi!"));
       }
       return;
     }
     window.applyAuthSession(data.user, data.token);
   } catch {
-    alert("Serverga ulanib bo'lmadi!");
+    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
     return;
   }
 
@@ -1189,7 +1209,7 @@ window.getLeagueParticipants = function(leagueKey) {
 
 window.joinLeague = function(leagueKey) {
   if (!window.currentUser) {
-    alert('Avval tizimga kirishingiz kerak!');
+    alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     switchView('login');
     return;
   }
@@ -1404,7 +1424,7 @@ window.saveProfileData = function() {
   localStorage.setItem("justChessProfileData", JSON.stringify(profileData));
   window.updateProfileModalData();
   window.setProfileEditMode(false);
-  showToast("Ma'lumotlar saqlandi", "success");
+  showToast(tx('profileSaved', "Ma'lumotlar saqlandi"), "success");
 };
 
 window.populateSettingsCountries = function() {
@@ -1535,9 +1555,9 @@ window.resetSettings = function() {
     copyProfileLinkBtn.addEventListener("click", () => {
       const profileUrl = window.location.origin + "/profile/" + (window.currentUser ? window.currentUser.username : "");
       navigator.clipboard.writeText(profileUrl).then(() => {
-        showToast("Profil havolasi nusxalandi", "success");
+        showToast(tx('profileLinkCopied', 'Profil havolasi nusxalandi'), "success");
       }).catch(() => {
-        showToast("Nusxalashda xatolik yuz berdi", "error");
+        showToast(tx('copyFailed', 'Nusxalashda xatolik yuz berdi'), "error");
       });
     });
   }

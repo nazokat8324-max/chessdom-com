@@ -526,7 +526,7 @@
                 <div class="time-label" id="timerLabelJudaTez">Juda tez</div>
                 <div class="time-grid">
                   <button class="time-btn" onclick="setGameTime(60, this)">
-                    1 Min
+                    1 <span data-i18n="timeMin">Min</span>
                   </button>
                   <button class="time-btn" onclick="setGameTime(90, this)">
                     1+1
@@ -540,13 +540,13 @@
                 <div class="time-label" id="timerLabelBlits">Blits</div>
                 <div class="time-grid">
                   <button class="time-btn" onclick="setGameTime(180, this)">
-                    3 Min
+                    3 <span data-i18n="timeMin">Min</span>
                   </button>
                   <button class="time-btn" onclick="setGameTime(300, this)">
                     3+2
                   </button>
                   <button class="time-btn" onclick="setGameTime(300, this)">
-                    5 Min
+                    5 <span data-i18n="timeMin">Min</span>
                   </button>
                 </div>
               </div>
@@ -554,13 +554,13 @@
                 <div class="time-label" id="timerLabelTezkor">Tezkor</div>
                 <div class="time-grid">
                   <button class="time-btn" onclick="setGameTime(600, this)">
-                    10 Min
+                    10 <span data-i18n="timeMin">Min</span>
                   </button>
                   <button class="time-btn" onclick="setGameTime(910, this)">
                     15+10
                   </button>
                   <button class="time-btn" onclick="setGameTime(1800, this)">
-                    30 Min
+                    30 <span data-i18n="timeMin">Min</span>
                   </button>
                 </div>
               </div>
@@ -1083,10 +1083,11 @@
         class="card-box"
         style="width: 600px; max-height: 80vh; overflow-y: auto"
       >
-        <div class="card-title" id="friendsCardTitle">Do'stlar</div>
+        <div class="card-title" id="friendsCardTitle" data-i18n="friendsCardTitle">Do'stlar</div>
         <div
           style="font-size: 13px; color: #88a; margin-bottom: 15px"
           id="friendsDesc"
+          data-i18n="friendsDesc"
         >
           Do'stlar ro'yxati va so'rovlar
         </div>
@@ -1096,12 +1097,14 @@
             id="friendUsernameInput"
             class="form-input"
             placeholder="Do'stingiz nomini kiriting"
+            data-i18n-placeholder="friendUsernamePlaceholder"
             style="flex: 1"
           />
           <button
             class="form-submit"
             onclick="sendFriendRequest()"
             id="btnSendFriendRequest"
+            data-i18n="btnSendFriendRequest"
           >
             Do'stlik so'rash
           </button>
@@ -1111,8 +1114,9 @@
             class="action-btn"
             onclick="loadFriendRequests()"
             id="btnViewRequests"
+            data-i18n="btnViewRequests"
           >
-            So'rovlar (0)
+            So'rovlar
           </button>
         </div>
         <div
@@ -1264,7 +1268,7 @@
           id="leaguesCardTitle"
           style="margin-bottom: 5px"
         >
-          🏆 Ligalar
+          🏆 <span data-i18n="mLeagues">Ligalar</span>
         </div>
         <div
           style="
@@ -1628,7 +1632,7 @@
             onclick="backToClubDetail()"
             style="padding: 8px 16px; font-size: 12px"
           >
-            ← Back
+            ← <span data-i18n="clubDetailBack">Orqaga</span>
           </button>
         </div>
         <div
@@ -1664,7 +1668,7 @@
             onclick="backToClubDetail()"
             style="padding: 8px 16px; font-size: 12px"
           >
-            ← Back
+            ← <span data-i18n="clubDetailBack">Orqaga</span>
           </button>
         </div>
         <div
@@ -1699,7 +1703,7 @@
             onclick="backToClubDetail()"
             style="padding: 8px 16px; font-size: 12px"
           >
-            ← Back
+            ← <span data-i18n="clubDetailBack">Orqaga</span>
           </button>
         </div>
         <div
@@ -1729,7 +1733,7 @@
               border-radius: 6px;
             "
           >
-            ← Back
+            ← <span data-i18n="clubDetailBack">Orqaga</span>
           </button>
           <div id="clubChatTitle">Club Chat</div>
           <div style="width: 24px"></div>
@@ -1758,7 +1762,8 @@
               type="text"
               id="clubChatMessageInput"
               class="form-input"
-              placeholder="Write a message..."
+              placeholder="Xabar yozing..."
+              data-i18n-placeholder="chatPlaceholder"
               style="flex: 1"
               onkeypress="if (event.key === 'Enter') sendClubChatMessage();"
             />
@@ -1767,8 +1772,9 @@
               onclick="sendClubChatMessage()"
               id="btnSendClubChat"
               style="padding: 10px 20px; font-size: 13px"
+              data-i18n="btnSendChatMessage"
             >
-              Send
+              Yuborish
             </button>
           </div>
         </div>
@@ -1897,7 +1903,7 @@
             style="flex: 1"
             onchange="loadChatMessages()"
           >
-            <option value="">Xona tanlang</option>
+            <option value="" data-i18n="chatSelectRoom">Xona tanlang</option>
           </select>
         </div>
         <div
@@ -1922,6 +1928,7 @@
             id="chatMessageInput"
             class="form-input"
             placeholder="Xabar yozing..."
+            data-i18n-placeholder="chatPlaceholder"
             style="flex: 1"
             onkeypress="if (event.key === 'Enter') sendChatMessage();"
           />
@@ -1966,48 +1973,50 @@
     <div id="loginModal" class="auth-modal-overlay" style="display: none">
       <div class="auth-modal-container" id="loginModalContainer">
         <div class="auth-modal-header">
-          <h2 class="auth-modal-title">Log In</h2>
+          <h2 class="auth-modal-title" data-i18n="btnLoginSubmit">Kirish</h2>
           <button class="auth-modal-close" id="closeLoginModal">✕</button>
         </div>
 
         <!-- Login Form Step -->
         <div class="auth-login-step" id="authLoginStep">
           <div class="auth-form-group">
-            <label class="auth-form-label">Username</label>
+            <label class="auth-form-label" data-i18n="labelLoginUsername">Foydalanuvchi nomi</label>
             <input
               type="text"
               id="loginModalUsername"
               class="auth-form-input"
-              placeholder="Enter your username"
+              placeholder="Foydalanuvchi nomini kiriting"
+              data-i18n-placeholder="authUsernamePlaceholder"
             />
-            <div class="auth-error" id="loginUsernameError">
-              Username is required
+            <div class="auth-error" id="loginUsernameError" data-i18n="authUsernameRequired">
+              Foydalanuvchi nomini kiriting (3–30 belgi)
             </div>
           </div>
           <div class="auth-form-group">
-            <label class="auth-form-label">Password</label>
+            <label class="auth-form-label" data-i18n="labelLoginPassword">Parol</label>
             <input
               type="password"
               id="loginModalPassword"
               class="auth-form-input"
               placeholder="••••••••"
             />
-            <div class="auth-error" id="loginPasswordError">
-              Password is required
+            <div class="auth-error" id="loginPasswordError" data-i18n="authPasswordRequired">
+              Parolni kiriting
             </div>
           </div>
-          <div class="auth-error" id="loginGeneralError">
-            Invalid username or password
+          <div class="auth-error" id="loginGeneralError" data-i18n="wrongCredentials">
+            Ism yoki parol xato!
           </div>
           <button
             class="auth-submit-btn"
             id="loginSubmitBtn"
             onclick="window.handleLoginModal()"
+            data-i18n="btnLoginSubmit"
           >
-            Log In
+            Kirish
           </button>
           <div class="auth-divider">
-            <span>or</span>
+            <span data-i18n="authOr">yoki</span>
           </div>
           <div class="auth-social-row">
             <button
@@ -2032,9 +2041,9 @@
         </div>
 
         <div class="auth-switch">
-          <span class="auth-switch-text">New to Chessdom?</span>
-          <a class="auth-switch-link" onclick="window.switchToSignUp()"
-            >Sign Up</a
+          <span class="auth-switch-text" data-i18n="authNewToSite">Chessdom'da yangimisiz?</span>
+          <a class="auth-switch-link" onclick="window.switchToSignUp()" data-i18n="goToRegisterLink"
+            >Ro'yxatdan o'tish</a
           >
         </div>
       </div>
@@ -2044,7 +2053,7 @@
     <div id="signupModal" class="auth-modal-overlay" style="display: none">
       <div class="auth-modal-container" id="signupModalContainer">
         <div class="auth-modal-header">
-          <h2 class="auth-modal-title">Sign Up</h2>
+          <h2 class="auth-modal-title" data-i18n="regCardTitle">Ro'yxatdan o'tish</h2>
           <button class="auth-modal-close" id="closeSignupModal">✕</button>
         </div>
 
@@ -2054,11 +2063,12 @@
             class="auth-submit-btn"
             id="continueWithEmailBtn"
             onclick="window.showSignupForm()"
+            data-i18n="authContinueEmail"
           >
-            Continue with Email
+            Email orqali davom etish
           </button>
           <div class="auth-divider">
-            <span>or</span>
+            <span data-i18n="authOr">yoki</span>
           </div>
           <div class="auth-social-row">
             <button
@@ -2089,30 +2099,32 @@
           style="display: none"
         >
           <div class="auth-form-group">
-            <label class="auth-form-label">Username *</label>
+            <label class="auth-form-label"><span data-i18n="labelRegUsername">Foydalanuvchi nomi</span> *</label>
             <input
               type="text"
               id="signupUsername"
               class="auth-form-input"
-              placeholder="Choose a username"
+              placeholder="Foydalanuvchi nomini tanlang"
+              data-i18n-placeholder="authChooseUsername"
             />
-            <div class="auth-error" id="signupUsernameError">
-              Username is required
+            <div class="auth-error" id="signupUsernameError" data-i18n="authUsernameRequired">
+              Foydalanuvchi nomini kiriting (3–30 belgi)
             </div>
-            <div class="auth-error" id="signupUsernameExistsError">
-              This username is already taken
+            <div class="auth-error" id="signupUsernameExistsError" data-i18n="userExists">
+              Bu nomli foydalanuvchi mavjud!
             </div>
           </div>
           <div class="auth-form-group">
-            <label class="auth-form-label">Password *</label>
+            <label class="auth-form-label"><span data-i18n="labelRegPassword">Parol</span> *</label>
             <input
               type="password"
               id="signupPassword"
               class="auth-form-input"
-              placeholder="Min 6 characters"
+              placeholder="Kamida 6 ta belgi"
+              data-i18n-placeholder="authPasswordMin"
             />
-            <div class="auth-error" id="signupPasswordError">
-              Password must be at least 6 characters
+            <div class="auth-error" id="signupPasswordError" data-i18n="authPasswordMinError">
+              Parol kamida 6 ta belgidan iborat bo'lishi kerak
             </div>
           </div>
 
@@ -2120,18 +2132,19 @@
             class="auth-submit-btn"
             id="signupSubmitBtn"
             onclick="window.handleSignupModal()"
+            data-i18n="btnRegSubmit"
           >
-            Sign Up
+            Ro'yxatdan o'tish
           </button>
           <div class="auth-back-link">
-            <a onclick="window.showEmailStep()">← Back</a>
+            <a onclick="window.showEmailStep()">← <span data-i18n="clubDetailBack">Orqaga</span></a>
           </div>
         </div>
 
         <div class="auth-switch">
-          <span class="auth-switch-text">Already have an account?</span>
-          <a class="auth-switch-link" onclick="window.switchToLogin()"
-            >Log In</a
+          <span class="auth-switch-text" data-i18n="authHaveAccount">Akkauntingiz bormi?</span>
+          <a class="auth-switch-link" onclick="window.switchToLogin()" data-i18n="goToLoginLink"
+            >Kirish</a
           >
         </div>
       </div>
@@ -2282,7 +2295,7 @@
               id="cancelProfileBtn"
               style="display: none"
             >
-              ✕ Bekor
+              ✕ <span data-i18n="profCancel">Bekor</span>
             </button>
           </div>
 

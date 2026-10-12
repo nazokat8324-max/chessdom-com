@@ -123,6 +123,7 @@ const translations = {
     btnDrawText: "Durrang",
     btnPgnText: "PGN",
     btnStartGameText: "O'yinni boshlash",
+    btnNewGameText: "Yangi o'yin",
     timerLabelJudaTez: "Juda tez",
     timerLabelBlits: "Blits",
     timerLabelTezkor: "Tezkor",
@@ -366,6 +367,7 @@ const translations = {
     btnDrawText: "Draw",
     btnPgnText: "PGN",
     btnStartGameText: "Start Game",
+    btnNewGameText: "New Game",
     timerLabelJudaTez: "Bullet",
     timerLabelBlits: "Blitz",
     timerLabelTezkor: "Rapid",
@@ -609,6 +611,7 @@ const translations = {
     btnDrawText: "Ничья",
     btnPgnText: "PGN",
     btnStartGameText: "Начать игру",
+    btnNewGameText: "Новая игра",
     timerLabelJudaTez: "Пуля",
     timerLabelBlits: "Блиц",
     timerLabelTezkor: "Рапид",
@@ -852,6 +855,7 @@ tournamentsTitle: "Torneos",
     btnDrawText: "Tablas",
     btnPgnText: "PGN",
     btnStartGameText: "Empezar partida",
+    btnNewGameText: "Nueva partida",
     timerLabelJudaTez: "Bala",
     timerLabelBlits: "Blitz",
     timerLabelTezkor: "Rápidas",
@@ -1095,6 +1099,7 @@ tournamentsTitle: "Torneos",
     btnDrawText: "Remis",
     btnPgnText: "PGN",
     btnStartGameText: "Spiel starten",
+    btnNewGameText: "Neues Spiel",
     timerLabelJudaTez: "Bullet",
     timerLabelBlits: "Blitz",
     timerLabelTezkor: "Rapid",
@@ -1338,6 +1343,7 @@ tournamentsTitle: "Torneos",
     btnDrawText: "Nulle",
     btnPgnText: "PGN",
     btnStartGameText: "Démarrer la partie",
+    btnNewGameText: "Nouvelle partie",
     timerLabelJudaTez: "Bullet",
     timerLabelBlits: "Blitz",
     timerLabelTezkor: "Cadence",
@@ -1585,6 +1591,7 @@ function updateUI() {
   const btnResignText = document.getElementById("btnResignText"); if (btnResignText) btnResignText.textContent = t('btnResign');
   const btnPgnText = document.getElementById("btnPgnText"); if (btnPgnText) btnPgnText.textContent = t('btnPgnText');
   const btnStartGameText = document.getElementById("btnStartGameText"); if (btnStartGameText) btnStartGameText.textContent = t('btnStartGameText');
+  const btnNewGameText = document.getElementById("btnNewGameText"); if (btnNewGameText) btnNewGameText.textContent = t('btnNewGameText');
   const timerLabelJudaTez = document.getElementById("timerLabelJudaTez"); if (timerLabelJudaTez) timerLabelJudaTez.textContent = t('timerLabelJudaTez');
   const timerLabelBlits = document.getElementById("timerLabelBlits"); if (timerLabelBlits) timerLabelBlits.textContent = t('timerLabelBlits');
   const timerLabelTezkor = document.getElementById("timerLabelTezkor"); if (timerLabelTezkor) timerLabelTezkor.textContent = t('timerLabelTezkor');

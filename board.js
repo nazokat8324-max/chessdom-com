@@ -12,8 +12,41 @@ let timerInterval = null;
 let gameStarted = false;
 let opponentFound = false;
 
+// O'ng panel holati: 'pre' — vaqt tanlash va boshlash tugmasi,
+// 'in' — yurishlar tarixi va Durrang/Taslim/PGN, 'over' — tarix, PGN va "Yangi o'yin"
+window.setGamePanelMode = function(mode) {
+  const pre = document.getElementById('preGameControls');
+  const inGame = document.getElementById('inGameControls');
+  const drawBtn = document.getElementById('btnDraw');
+  const resignBtn = document.getElementById('btnResign');
+  const newGameBtn = document.getElementById('btnNewGame');
+  if (pre) pre.hidden = mode !== 'pre';
+  if (inGame) inGame.hidden = mode === 'pre';
+  if (drawBtn) drawBtn.hidden = mode !== 'in';
+  if (resignBtn) resignBtn.hidden = mode !== 'in';
+  if (newGameBtn) newGameBtn.hidden = mode !== 'over';
+};
+
+window.resetToPreGame = function() {
+  if (typeof leaveOnlineGame === 'function') leaveOnlineGame();
+  setGameTime(initialTime);
+  window.setOpponentFound(false);
+};
+
+window.isGameInProgress = function() {
+  return opponentFound && !gameFinished;
+};
+
+// Natija yozmasdan o'yinni to'xtatish (masalan, raqib ulanishni uzganda)
+window.abortGame = function() {
+  gameFinished = true;
+  clearInterval(timerInterval);
+  window.setGamePanelMode('over');
+};
+
 window.setOpponentFound = function(found) {
   opponentFound = found;
+  window.setGamePanelMode(found ? 'in' : 'pre');
   if (board) {
     board.position('start');
   }
@@ -96,6 +129,7 @@ window.finishGame = function(winnerColor, message, toastType) {
   recordResult(result);
   if (message) showToast(message, toastType || 'info', 5000);
   if (typeof window.clearMyColor === 'function') window.clearMyColor();
+  window.setGamePanelMode('over');
 };
 
 // Yurishdan keyin (o'zimizning yoki raqibning) o'yin tugaganini tekshiradi.
@@ -598,15 +632,11 @@ function restoreGameState() {
       updateTimersDisplay();
       
       if (gameStarted) {
-        const preGameControls = document.getElementById('preGameControls');
-        const inGameControls = document.getElementById('inGameControls');
-        if (preGameControls) preGameControls.style.display = 'none';
-        if (inGameControls) inGameControls.style.display = 'block';
+        window.setGamePanelMode('in');
         startTimer();
       }
-      
+
       if (state.history && state.history.length > 0) {
-        if (moveHistoryPanel) moveHistoryPanel.style.display = 'block';
         updateHistory();
       }
       

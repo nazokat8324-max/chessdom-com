@@ -100,7 +100,11 @@ socket.on('match-found', (data) => {
 });
 
 socket.on('opponent-disconnected', () => {
-  alert('Raqib ulanishni uzdi!');
+  // O'yin allaqachon tugagan bo'lsa (raqib "Yangi o'yin" bosgan), ogohlantirish shart emas
+  if (typeof window.isGameInProgress === 'function' && window.isGameInProgress()) {
+    alert('Raqib ulanishni uzdi!');
+    if (typeof window.abortGame === 'function') window.abortGame();
+  }
   window.currentRoomId = null;
   isOnlineMode = false;
   window.isSearchingOpponent = false;

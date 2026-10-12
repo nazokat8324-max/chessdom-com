@@ -497,19 +497,6 @@
             <div class="board-wrapper">
               <div class="board theme-green" id="chessBoard"></div>
             </div>
-            <div
-              class="panel"
-              style="width: 100%; height: 120px; margin-top: 8px"
-            >
-              <div class="panel-header" id="historyPanelHeader">
-                📊 Yurishlar tarixi
-              </div>
-              <div
-                class="panel-content"
-                id="historyList"
-                style="font-size: 12px"
-              ></div>
-            </div>
             <div class="player-bar white-player">
               <div class="player-avatar" id="whitePlayerAvatar">♔</div>
               <div class="player-info">
@@ -532,6 +519,8 @@
           </div>
 
           <div class="control-panel">
+            <!-- O'yin boshlanguncha: vaqt tanlash va boshlash tugmasi -->
+            <div class="game-panel-section" id="preGameControls">
             <div class="time-controls">
               <div class="time-group">
                 <div class="time-label" id="timerLabelJudaTez">Juda tez</div>
@@ -602,8 +591,23 @@
             >
               <span id="btnStartGameText">O'yinni boshlash</span>
             </button>
+            </div>
+
+            <!-- O'yin boshlangach: yurishlar tarixi va o'yin tugmalari -->
+            <div class="game-panel-section" id="inGameControls" hidden>
+            <div class="panel move-history-panel">
+              <div class="panel-header" id="historyPanelHeader">
+                📊 Yurishlar tarixi
+              </div>
+              <div
+                class="panel-content"
+                id="historyList"
+                style="font-size: 12px"
+              ></div>
+            </div>
 
             <div
+              id="inGameButtons"
               style="
                 display: grid;
                 grid-template-columns: 1fr 1fr 1fr;
@@ -640,6 +644,16 @@
               >
                 📄 <span id="btnPgnText">PGN</span>
               </button>
+            </div>
+
+            <button
+              class="start-game-btn"
+              onclick="resetToPreGame()"
+              id="btnNewGame"
+              hidden
+            >
+              <span id="btnNewGameText">Yangi o'yin</span>
+            </button>
             </div>
 
             <div class="control-buttons"></div>

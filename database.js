@@ -251,6 +251,9 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE users ADD COLUMN stats_by_mode TEXT DEFAULT '{"rapid":{"wins":0,"losses":0,"draws":0},"blitz":{"wins":0,"losses":0,"draws":0},"bullet":{"wins":0,"losses":0,"draws":0}}'`);
   } catch (e) {}
   try {
+    await dbExec(`ALTER TABLE users ADD COLUMN country TEXT DEFAULT NULL`);
+  } catch (e) {}
+  try {
     await dbExec(`ALTER TABLE games ADD COLUMN time_control TEXT DEFAULT 'blitz'`);
   } catch (e) {}
   try {
@@ -336,6 +339,11 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
   await dbRun('UPDATE users SET stats = ?, stats_by_mode = ?, history = ?, last_active = ? WHERE id = ?', [JSON.stringify(stats), JSON.stringify(statsByMode), JSON.stringify(history), new Date().toISOString(), userId]);
 
   return { stats, statsByMode, history };
+}
+
+// Davlat kodi (masalan 'uz', 'pk') — raqibga bayroq ko'rsatish uchun
+async function updateUserCountry(userId, country) {
+  await dbRun('UPDATE users SET country = ? WHERE id = ?', [country, userId]);
 }
 
 async function touchUserLastActive(userId) {
@@ -644,6 +652,7 @@ module.exports = {
   updateUserStats,
   updateUserRating,
   touchUserLastActive,
+  updateUserCountry,
   deleteUserSessions,
   getLeaderboard,
   getDailyWinners,

@@ -19,7 +19,7 @@ window.setGamePanelMode = function(mode) {
   const inGame = document.getElementById('inGameControls');
   const drawBtn = document.getElementById('btnDraw');
   const resignBtn = document.getElementById('btnResign');
-  const newGameBtn = document.getElementById('btnNewGame');
+  const newGameBtn = document.getElementById('btnPlayAgain');
   if (pre) pre.hidden = mode !== 'pre';
   if (inGame) inGame.hidden = mode === 'pre';
   if (drawBtn) drawBtn.hidden = mode !== 'in';

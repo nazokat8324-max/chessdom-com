@@ -70,6 +70,11 @@ function authMiddleware(req, res, next) {
   } catch (err) { return res.status(401).json({ success: false, message: 'Invalid or expired token' }); }
 }
 
+// ISO 3166 alpha-2 shaklidagi kichik harfli davlat kodi (flagcdn.com uchun)
+function isValidCountry(country) {
+  return typeof country === 'string' && /^[a-z]{2}$/.test(country);
+}
+
 function validateMove(move) {
   if (!move || typeof move !== 'object') return { valid: false, error: 'Invalid move format' };
   const { from, to, promotion } = move;
@@ -116,7 +121,7 @@ async function start() {
       if (!valid) return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
       await db.touchUserLastActive(user.id);
-      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode }, token });
+      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, country: user.country || null }, token });
     } catch (err) { console.error('Login xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -175,16 +180,31 @@ async function start() {
     } catch (err) { console.error('Rating xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  app.post('/api/users/me/country', authMiddleware, async (req, res) => {
+    try {
+      const { country } = req.body;
+      if (!isValidCountry(country)) return res.status(400).json({ success: false, message: 'Noto\'g\'ri davlat kodi!' });
+      await db.updateUserCountry(req.user.userId, country);
+      res.json({ success: true, country });
+    } catch (err) { console.error('Country xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.post('/api/matchmaking/join', authMiddleware, async (req, res) => {
     try {
-      const { socketId } = req.body;
+      const { socketId, country } = req.body;
       const username = req.user.username;
       const playerSocket = socketId ? io.sockets.sockets.get(socketId) : null;
       if (!playerSocket) return res.status(400).json({ success: false, message: 'Serverga socket orqali ulanmagansiz!' });
       pruneMatchmakingQueue();
       if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
       const user = await db.getUserById(req.user.userId);
-      const me = { username, rating: (user && user.rating) || 1500, joinedAt: Date.now(), socketId };
+      // Klient yuborgan davlatni (Sozlamalardan) bazaga ham yozib qo'yamiz
+      let myCountry = (user && user.country) || null;
+      if (isValidCountry(country) && country !== myCountry) {
+        myCountry = country;
+        await db.updateUserCountry(req.user.userId, country);
+      }
+      const me = { username, rating: (user && user.rating) || 1500, country: myCountry, joinedAt: Date.now(), socketId };
       const waiting = matchmakingQueue.shift();
       if (!waiting) {
         matchmakingQueue.push(me);
@@ -198,9 +218,9 @@ async function start() {
       for (const [player, opponent, color] of [[waiting, me, 'w'], [me, waiting, 'b']]) {
         const s = io.sockets.sockets.get(player.socketId);
         if (s) s.join(roomId);
-        io.to(player.socketId).emit('match-found', { roomId, color, opponent: { username: opponent.username, rating: opponent.rating } });
+        io.to(player.socketId).emit('match-found', { roomId, color, opponent: { username: opponent.username, rating: opponent.rating, country: opponent.country } });
       }
-      res.json({ success: true, matched: true, roomId, color: 'b', opponent: { username: waiting.username, rating: waiting.rating } });
+      res.json({ success: true, matched: true, roomId, color: 'b', opponent: { username: waiting.username, rating: waiting.rating, country: waiting.country } });
     } catch (err) { console.error('Matchmaking xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 

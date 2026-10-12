@@ -218,6 +218,15 @@ window.handleStartGame = async function() {
   await startMatchmaking();
 };
 
+// Sozlamalarda tanlangan davlat ustun; bo'lmasa akkauntdagisi
+function getMyCountry() {
+  let settings = {};
+  try { settings = JSON.parse(localStorage.getItem('justChessSettings') || '{}'); } catch (e) {}
+  const country = settings.country || (window.currentUser && window.currentUser.country) || undefined;
+  if (country && window.currentUser) window.currentUser.country = country;
+  return country;
+}
+
 window.startMatchmaking = async function() {
   if (!window.currentUser) {
     alert('Avval tizimga kirishingiz kerak!');
@@ -254,7 +263,7 @@ window.startMatchmaking = async function() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${window.authToken}`
       },
-      body: JSON.stringify({ socketId: socket.id })
+      body: JSON.stringify({ socketId: socket.id, country: getMyCountry() })
     });
     const data = await res.json();
 

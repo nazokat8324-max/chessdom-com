@@ -539,6 +539,8 @@ window.applyAuthSession = function(user, token) {
   localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
   localStorage.setItem("justChessAuthToken", token);
   if (typeof window.authenticateSocket === 'function') window.authenticateSocket();
+  // Serverda davlat hali yo'q bo'lsa, Sozlamalardagisini yuboramiz
+  if (!user.country && settings.country) window.syncMyCountry(settings.country);
 };
 
 window.handleRegister = async function() {
@@ -1459,7 +1461,27 @@ window.saveSettings = function() {
     showCoords: document.getElementById("settingsCoords")?.checked !== false
   };
   localStorage.setItem("justChessSettings", JSON.stringify(saved));
+  window.syncMyCountry(saved.country);
   showToast(tSettings('settingsSavedToast', "Sozlamalar saqlandi"), "success");
+};
+
+// Tanlangan davlatni joriy foydalanuvchiga va serverga yozish (raqib bayrog'ingizni ko'rishi uchun)
+window.syncMyCountry = function(country) {
+  if (!country || !window.currentUser) return;
+  window.currentUser.country = country;
+  if (typeof allCountries !== 'undefined') {
+    const found = allCountries.find(c => c.code === country);
+    if (found) window.currentUser.countryName = found.name;
+  }
+  localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+  if (typeof window.updateGameFlags === 'function') window.updateGameFlags();
+  if (window.authToken) {
+    fetch('/api/users/me/country', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.authToken}` },
+      body: JSON.stringify({ country })
+    }).catch(err => console.error('Davlatni saqlash xatoligi:', err));
+  }
 };
 
 window.resetSettings = function() {

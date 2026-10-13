@@ -11,6 +11,7 @@ function refreshCurrentUserRatings() {
             if (data.ratingsByMode) window.currentUser.ratingsByMode = data.ratingsByMode;
             if (data.stats) window.currentUser.stats = data.stats;
             if (data.statsByMode) window.currentUser.statsByMode = data.statsByMode;
+            if (data.club !== undefined) window.currentUser.club = data.club;
             localStorage.setItem('justChessCurrentUser', JSON.stringify(window.currentUser));
             updateRatingDisplay();
         })

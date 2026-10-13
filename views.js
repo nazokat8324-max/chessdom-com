@@ -179,7 +179,7 @@ window.renderClubsTable = function(clubs) {
     html += `
       <tr class="${rankClass}">
         <td><span class="rank-badge ${rankClass}">${rankIcon}${index + 1}</span></td>
-        <td><span class="player-name">${escapeHtml(club.name)}</span></td>
+        <td><span class="player-name">${club.code ? `<img src="https://flagcdn.com/w20/${escapeHtml(club.code)}.png" alt="" style="width: 20px; height: 14px; border-radius: 2px; margin-right: 8px; vertical-align: middle;">` : ''}${escapeHtml(typeof window.countryName === 'function' ? window.countryName(club.name, club.code) : club.name)}</span></td>
         <td>${games}</td>
         <td>${wins}</td>
         <td>${losses}</td>

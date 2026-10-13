@@ -194,6 +194,15 @@ function isValidCountry(country) {
   return typeof country === 'string' && /^[a-z]{2}$/.test(country);
 }
 
+// Davlat klubi nomi (inglizcha davlat nomi) va flagcdn kodi (masalan 'uz', 'gb-eng')
+function isValidClubName(name) {
+  return typeof name === 'string' && /^[\p{L}\p{N} .,'()&-]{2,60}$/u.test(name);
+}
+
+function isValidFlagCode(code) {
+  return typeof code === 'string' && /^[a-z]{2}(-[a-z]{2,3})?$/.test(code);
+}
+
 // Yaratuvchisi bor turnirni faqat yaratuvchi, yaratuvchisiz (avtomatik arena) turnirni ishtirokchilar boshqaradi
 function canManageTournament(tournament, participants, userId) {
   if (tournament.creator_id) return tournament.creator_id === userId;
@@ -272,7 +281,7 @@ async function start() {
       if (!valid) return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
       await db.touchUserLastActive(user.id);
-      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, ratingsByMode: user.ratings_by_mode, country: user.country || null }, token });
+      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, ratingsByMode: user.ratings_by_mode, country: user.country || null, club: db.userClub(user) }, token });
     } catch (err) { console.error('Login xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -579,6 +588,39 @@ async function start() {
       else io.emit('chat-message', payload);
       res.json({ success: true, messageId: id });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Davlat klublari: har bir o'yinchi faqat bitta klubga a'zo bo'ladi
+  app.get('/api/country-clubs', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, clubs: await db.getCountryClubSummary() }); }
+    catch (err) { console.error('Country clubs xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.get('/api/country-clubs/:name/members', apiLimiter, async (req, res) => {
+    try { const data = await db.getCountryClubMembers(req.params.name); res.json({ success: true, ...data }); }
+    catch (err) { console.error('Country club members xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/country-clubs/join', authMiddleware, async (req, res) => {
+    try {
+      const { country, code } = req.body;
+      if (!isValidClubName(country) || !isValidFlagCode(code)) return res.status(400).json({ success: false, message: 'Klub topilmadi!' });
+      const user = await db.getUserById(req.user.userId);
+      if (!user) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const current = db.userClub(user);
+      if (current && current.name === country) return res.json({ success: true, club: current });
+      // Boshqa klubda bo'lsa — faqat o'yinchi tasdiqlasa (switch) o'tkaziladi
+      if (current && req.body.switch !== true) {
+        return res.status(409).json({ success: false, reason: 'already_in_club', club: current, message: 'Siz allaqachon boshqa klubga a\'zosiz!' });
+      }
+      const club = await db.setUserCountryClub(req.user.userId, country, code);
+      res.json({ success: true, club, previous: current });
+    } catch (err) { console.error('Country club join xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/country-clubs/leave', authMiddleware, async (req, res) => {
+    try { await db.clearUserCountryClub(req.user.userId); res.json({ success: true, club: null }); }
+    catch (err) { console.error('Country club leave xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/clubs', authMiddleware, [

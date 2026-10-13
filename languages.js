@@ -1643,6 +1643,10 @@ const translationsExtra = {
     srvClubFull: "Klub to'la!",
     srvAlreadyInClub: "Siz allaqachon klubdasiz!",
     srvBadCountry: "Noto'g'ri davlat kodi!",
+    clubLeaveConfirm: "{{country}} klubidan chiqmoqchimisiz?",
+    clubSwitchConfirm: "Siz {{current}} klubiga a'zosiz. O'yinchi faqat bitta klubda bo'lishi mumkin. {{current}} klubidan chiqib, {{country}} klubiga o'tasizmi?",
+    clubLeaderboardTitle: "{{country}} klubi reytingi",
+    srvAlreadyInOtherClub: "Siz allaqachon boshqa klubga a'zosiz!",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -1821,6 +1825,10 @@ const translationsExtra = {
     srvClubFull: "The club is full!",
     srvAlreadyInClub: "You are already in this club!",
     srvBadCountry: "Invalid country code!",
+    clubLeaveConfirm: "Leave the {{country}} club?",
+    clubSwitchConfirm: "You are a member of the {{current}} club. A player can belong to only one club. Leave {{current}} and join {{country}}?",
+    clubLeaderboardTitle: "{{country}} club rankings",
+    srvAlreadyInOtherClub: "You are already a member of another club!",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -1999,6 +2007,10 @@ const translationsExtra = {
     srvClubFull: "Клуб заполнен!",
     srvAlreadyInClub: "Вы уже в клубе!",
     srvBadCountry: "Неверный код страны!",
+    clubLeaveConfirm: "Выйти из клуба «{{country}}»?",
+    clubSwitchConfirm: "Вы состоите в клубе «{{current}}». Игрок может состоять только в одном клубе. Выйти из «{{current}}» и вступить в «{{country}}»?",
+    clubLeaderboardTitle: "Рейтинг клуба «{{country}}»",
+    srvAlreadyInOtherClub: "Вы уже состоите в другом клубе!",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2177,6 +2189,10 @@ const translationsExtra = {
     srvClubFull: "¡El club está lleno!",
     srvAlreadyInClub: "¡Ya estás en este club!",
     srvBadCountry: "¡Código de país no válido!",
+    clubLeaveConfirm: "¿Salir del club de {{country}}?",
+    clubSwitchConfirm: "Eres miembro del club de {{current}}. Un jugador solo puede pertenecer a un club. ¿Salir de {{current}} y unirte a {{country}}?",
+    clubLeaderboardTitle: "Clasificación del club de {{country}}",
+    srvAlreadyInOtherClub: "¡Ya eres miembro de otro club!",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2355,6 +2371,10 @@ const translationsExtra = {
     srvClubFull: "Der Klub ist voll!",
     srvAlreadyInClub: "Du bist bereits im Klub!",
     srvBadCountry: "Ungültiger Ländercode!",
+    clubLeaveConfirm: "Den Klub {{country}} verlassen?",
+    clubSwitchConfirm: "Du bist Mitglied im Klub {{current}}. Ein Spieler kann nur einem Klub angehören. {{current}} verlassen und {{country}} beitreten?",
+    clubLeaderboardTitle: "Rangliste des Klubs {{country}}",
+    srvAlreadyInOtherClub: "Du bist bereits Mitglied eines anderen Klubs!",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -2533,6 +2553,10 @@ const translationsExtra = {
     srvClubFull: "Le club est complet !",
     srvAlreadyInClub: "Vous êtes déjà dans ce club !",
     srvBadCountry: "Code pays invalide !",
+    clubLeaveConfirm: "Quitter le club {{country}} ?",
+    clubSwitchConfirm: "Vous êtes membre du club {{current}}. Un joueur ne peut appartenir qu’à un seul club. Quitter {{current}} et rejoindre {{country}} ?",
+    clubLeaderboardTitle: "Classement du club {{country}}",
+    srvAlreadyInOtherClub: "Vous êtes déjà membre d’un autre club !",
     searchNoResults: "Aucun résultat"
   }
 };

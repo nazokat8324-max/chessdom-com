@@ -30,7 +30,7 @@ Foydalanuvchi bilan **o'zbek tilida** gaplashiladi; koddagi foydalanuvchiga ko'r
   - Turnir: `/matches` POST — faqat yaratuvchi; `/pairings` — yaratuvchi (yaratuvchisiz arenada ishtirokchilar, `canManageTournament`); natija — yaratuvchi yoki o'yinning o'yinchilari.
   - Username: faqat harf/raqam/`_ . -` (Unicode harflar ham), 3–30.
 - [database.js](database.js) — ikki rejimli wrapperlar (`dbGet/dbAll/dbRun/dbExec`, parametrlar `(sql, a, b)` yoki `(sql, [a, b])`), JSON ustunlar TEXT sifatida saqlanadi (`parseJson`). Server bazaga faqat export qilingan funksiyalar orqali murojaat qiladi (`usePostgres` flag ham export qilinadi).
-  - `users` jadvalida `stats`, `stats_by_mode`, `history` — JSON TEXT. O'yin tarixi `users.history` ichida (+ alohida `games` jadvali ham yoziladi).
+  - `users` jadvalida `stats`, `stats_by_mode`, `history` — JSON TEXT; davlat klubi a'zoligi `club_country`, `club_code`, `club_joined_at` (bitta ustun = faqat bitta klub). O'yin tarixi `users.history` ichida (+ alohida `games` jadvali ham yoziladi).
   - `getDailyWinners` — oxirgi 24 soatdagi g'alabalar bo'yicha top 5 (`history[].timestamp`).
   - Elo: K=32, min reyting 100 (`updateUserRatingByResult`). Umumiy `rating` + rejim bo'yicha `ratings_by_mode` (JSON: rapid/blitz/bullet; hammasi 1500 dan boshlanadi; `migrateRatingsByMode()` har startda o'yini yo'q rejimni 1500 ga qaytaradi). Klient `timeControl` va `opponentModeRating` yuboradi; profil `refreshCurrentUserRatings()` (`/api/stats/:username`) orqali yangilanadi.
 - [server-helpers.js](server-helpers.js) — `swissPairings`, `teamPairings`.
@@ -49,7 +49,7 @@ Foydalanuvchi bilan **o'zbek tilida** gaplashiladi; koddagi foydalanuvchiga ko'r
 - [rating.js](rating.js) — `refreshCurrentUserRatings()` (`/api/stats/:username`), `updateRatingDisplay`. Klientda reyting hisoblanmaydi.
 - [views.js](views.js) — leaderboard (o'yinchilar / klublar), `/api/leaderboard`, `/api/clubs/leaderboard`.
 - [profil.js](profil.js) — profil sahifasi, Chart.js grafik.
-- [social.js](social.js) (~2400 qator, eng kattasi) — turnirlar/arenalar, do'stlar, chat, **mamlakat-asosidagi klublar** (klub = davlat; a'zolik asosan localStorage'da), davlatlar ro'yxati va kirill→lotin, bayroqlar, klub chat/turnir/tarix/leaderboard.
+- [social.js](social.js) (~2400 qator, eng kattasi) — turnirlar/arenalar, do'stlar, chat, **mamlakat-asosidagi klublar** (klub = davlat; a'zolik serverda, `window.currentUser.club = {name, code, joinedAt}`; `getUserClubs()`, `fetchClubData()`, `syncClubDirectory()` — eski localStorage a'zoligi bir marta serverga ko'chiriladi; boshqa klubga o'tishda `confirm` + `switch: true`), davlatlar ro'yxati va kirill→lotin, bayroqlar, klub chat/turnir/tarix/leaderboard.
 - [languages.js](languages.js) — `translations` obyekti: `uz, en, ru, es, de, fr`; i18next bilan; `setLanguage/changeLanguage`. Keyingi qo'shilgan kalitlar `translationsExtra` blokida (i18next.init dan oldin, `translations` ga merge qilinadi). Yangi matn qo'shilsa — 6 tilning hammasiga kalit qo'shish kerak.
   - Tarjima usullari: HTML'da `data-i18n="kalit"` (textContent) va `data-i18n-placeholder="kalit"` — `updateUI()` avtomatik qo'llaydi (element ichida faqat matn bo'lsin); JS'da `tx('kalit', "o'zbekcha fallback", { name })` ([script.js](script.js) boshida; qiymatlar escape qilinmaydi — innerHTML'ga `escapeHtml` bilan); eski kod `updateUI()` da id bo'yicha `t('kalit')`.
   - `updateUI()` til almashganda ochiq Do'stlar/Chat/Tarix/Klub chati/Turnir tafsiloti sahifalarini qayta chizadi.
@@ -62,7 +62,7 @@ auth: `POST /api/auth/register|login|logout` · `GET /api/leaderboard` · `GET /
 `GET /api/users/:username/games` (faqat o'zi) · `POST /api/matchmaking/join|leave` · `POST /api/users/me/country` (`POST /api/games` va `/api/ratings/update` olib tashlangan — natija faqat serverda) ·
 turnirlar: `POST/GET /api/tournaments`, `GET /api/tournaments/:id`, `/:id/join`, `/:id/start`, `/:id/standings`, `/:id/matches` (GET/POST), `/:id/participants`, `/:id/pairings` (swiss; team → 501), `/:id/matches/:matchId/result` ·
 do'stlar: `POST /api/friends/request|accept`, `GET /api/friends`, `/api/friends/requests` · chat: `GET/POST /api/chat/messages` ·
-klublar: `POST/GET /api/clubs`, `GET /api/clubs/leaderboard`, `/api/clubs/:id`, `/:id/join`, `/:id/members`.
+davlat klublari: `GET /api/country-clubs` (a'zolar soni), `GET /api/country-clubs/:name/members` (a'zolar + stats {members, events, points}), `POST /api/country-clubs/join {country, code, switch?}` (boshqa klubda bo'lsa 409 `reason:'already_in_club'`), `POST /api/country-clubs/leave`; `GET /api/clubs/leaderboard` — davlat klublari bo'yicha · eski klublar: `POST/GET /api/clubs`, `GET /api/clubs/leaderboard`, `/api/clubs/:id`, `/:id/join`, `/:id/members`.
 Javob formati doim `{ success: bool, message?, ... }`; xato matnlari o'zbekcha.
 
 ## Socket.io eventlar
@@ -80,7 +80,7 @@ Tuzatilgan (2026-10-13): o'yin to'liq serverda (qoidalar, soat, natija, reyting 
 Hali qolganlar:
 - Statistika localStorage'da ham saqlanadi, lekin server qiymati ustun (`game-ended`, login, `/api/stats`).
 - Internet bir lahza uzilsa ham (socket qayta ulanadi) o'yin `abandon` bilan yutqazilgan hisoblanadi — qayta ulanish (reconnect) yo'q.
-- Klub a'zoligi (davlat klublari) localStorage'da; `inviteFriendToClub` hech qayerda ishlatilmaydi.
+- `inviteFriendToClub` hech qayerda ishlatilmaydi. Eski `clubs`/`club_members` jadvallari (foydalanuvchi yaratgan klublar) UI'da ishlatilmaydi.
 - Team turnirlari 501 qaytaradi (amalga oshirilmagan).
 - `JWT_SECRET` Render'da o'rnatilmagan bo'lsa, koddagi default kalit ishlatiladi (server startda ogohlantiradi) — Render env'da o'rnatish kerak.
 ## Ish uslubi

@@ -351,110 +351,85 @@ const continentCountries = {
   Oceania: oceanianCountries
 };
 
-// Foydalanuvchi qo'shilgan klublarini olish
+// Davlat klubi a'zoligi serverda saqlanadi; o'yinchi faqat bitta klubda bo'ladi (window.currentUser.club)
+window.countryClubCounts = {};
+
 function getUserClubs() {
-  if (!window.currentUser) return [];
-  const userClubs = JSON.parse(localStorage.getItem("justChessUserClubs") || "{}");
-  return userClubs[window.currentUser.username] || [];
+  const club = window.currentUser && window.currentUser.club;
+  return club && club.name ? [club.name] : [];
 }
 
-function saveUserClubs(clubs) {
+function setMyClub(club) {
   if (!window.currentUser) return;
-  const userClubs = JSON.parse(localStorage.getItem("justChessUserClubs") || "{}");
-  userClubs[window.currentUser.username] = clubs;
-  localStorage.setItem("justChessUserClubs", JSON.stringify(userClubs));
+  window.currentUser.club = club || null;
+  localStorage.setItem('justChessCurrentUser', JSON.stringify(window.currentUser));
 }
 
-// Real klub statistikasini hisoblash
-function getClubStats(countryName) {
-  // Barcha foydalanuvchilarning klublarini o'qiw
-  const allUserClubs = JSON.parse(localStorage.getItem("justChessUserClubs") || "{}");
-
-  // A'zolar sonini hisoblash (ushbu klubga qo'shilgan foydalanuvchilar)
-  let memberCount = 0;
-  for (const username in allUserClubs) {
-    if (allUserClubs[username] && allUserClubs[username].includes(countryName)) {
-      memberCount++;
-    }
-  }
-
-  // Agar hech kirmagan bo'lsa 0 qaytarish
-  if (memberCount === 0) {
-    return { members: 0, events: 0, points: 0 };
-  }
-
-  // Jami o'yinlar sonini hisoclash (barcha a'zolar tarixidan)
-  let totalEvents = 0;
-  let totalPoints = 0;
-
-  for (const username in allUserClubs) {
-    if (allUserClubs[username] && allUserClubs[username].includes(countryName)) {
-      // Har bir foydalanuvchi tarixini o'qish
-      const userHistory = JSON.parse(localStorage.getItem("justChessGameHistory_" + username) || "[]");
-      totalEvents += userHistory.length;
-
-      // O'yin natijalariga qarab ochko hisoblash
-      userHistory.forEach(game => {
-        if (game.result === "win") totalPoints += 10;
-        else if (game.result === "draw") totalPoints += 5;
-        else totalPoints += 1;
-      });
-    }
-  }
-
-  // Agar tarix bo'sh bo'lsa, a'zolar soniga qarab minimal qiymat
-  if (totalEvents === 0) {
-    totalEvents = memberCount; // Har bir a'zo kamida 1 ta o'yin
-    totalPoints = memberCount * 3; // Har bir a'zo kamida 3 ochko
-  }
-
-  return {
-    members: memberCount,
-    events: totalEvents,
-    points: totalPoints
-  };
+function clubAuthHeaders() {
+  return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.authToken}` };
 }
 
-// Klub a'zolarining real statistikasini olish
-function getClubTopPlayers(countryName) {
-  const allUserClubs = JSON.parse(localStorage.getItem("justChessUserClubs") || "{}");
-  const allUsers = JSON.parse(localStorage.getItem("justChessAllUsers") || "[]");
+function postClubAction(action, body) {
+  return fetch('/api/country-clubs/' + action, { method: 'POST', headers: clubAuthHeaders(), body: JSON.stringify(body || {}) })
+    .then(res => res.json());
+}
 
-  // Klub a'zolarini topish
-  const members = [];
-  for (const username in allUserClubs) {
-    if (allUserClubs[username] && allUserClubs[username].includes(countryName)) {
-      // Foydalanuvchi ma'lumotlarini topish
-      const user = allUsers.find(u => u.username === username);
-      if (user) {
-        const rating = user.rating || 1500;
-        const stats = user.stats || { wins: 0, losses: 0, draws: 0 };
-        members.push({
-          username: username,
-          rating: rating,
-          wins: stats.wins || 0
-        });
-      } else {
-        // Agar user topilmasa
-        members.push({
-          username: username,
-          rating: 1500,
-          wins: 0
-        });
-      }
-    }
+// Klub a'zolari (reyting bo'yicha) va umumiy statistika: a'zolar, o'yinlar, klub ballari
+async function fetchClubData(countryName) {
+  try {
+    const data = await fetch('/api/country-clubs/' + encodeURIComponent(countryName) + '/members').then(res => res.json());
+    if (data.success) return data;
+  } catch (err) {
+    console.error("Klub ma'lumotlarini yuklash xatoligi:", err);
   }
+  return { members: [], stats: { members: 0, events: 0, points: 0 } };
+}
 
-  // Reyting bo'yicha saralab, eng yaxshilarni qaytarish
-  members.sort((a, b) => b.rating - a.rating);
-  return members.slice(0, 3);
+// Oldin brauzerda saqlangan a'zolikni bir marta serverga ko'chirish
+async function migrateLocalClubMembership() {
+  if (!window.currentUser || !window.authToken) return;
+  let all = {};
+  try { all = JSON.parse(localStorage.getItem('justChessUserClubs') || '{}'); } catch (e) {}
+  const mine = all[window.currentUser.username];
+  if (!Array.isArray(mine) || mine.length === 0) return;
+  delete all[window.currentUser.username];
+  localStorage.setItem('justChessUserClubs', JSON.stringify(all));
+  if (window.currentUser.club) return;
+  const country = allCountries.find(c => c.name === mine[0]);
+  if (!country) return;
+  try {
+    const data = await postClubAction('join', { country: country.name, code: country.code });
+    if (data.success) setMyClub(data.club);
+  } catch (err) {
+    console.error("Klub a'zoligini ko'chirish xatoligi:", err);
+  }
+}
+
+// Klublar ro'yxati uchun: o'z klubim va har bir klubdagi a'zolar soni
+async function syncClubDirectory() {
+  if (window.currentUser && typeof window.refreshCurrentUserRatings === 'function') {
+    await window.refreshCurrentUserRatings();
+  }
+  await migrateLocalClubMembership();
+  try {
+    const data = await fetch('/api/country-clubs').then(res => res.json());
+    if (data.success) {
+      window.countryClubCounts = {};
+      data.clubs.forEach(c => { window.countryClubCounts[c.name] = c.members; });
+    }
+  } catch (err) {
+    console.error('Klublar ro\'yxati xatoligi:', err);
+  }
 }
 
 // Batafsil klub sahifasi - to'liq sahifa ko'rinishida
-window.openClubDetail = function(countryName, countryCode) {
+window.openClubDetail = async function(countryName, countryCode) {
+  window.currentClubName = countryName;
+  window.currentClubCode = countryCode;
+  const clubData = await fetchClubData(countryName);
   const userClubs = getUserClubs();
-  const stats = getClubStats(countryName);
-  const topPlayers = getClubTopPlayers(countryName);
+  const stats = clubData.stats;
+  const topPlayers = clubData.members.slice(0, 3);
   const memberCount = stats.members;
   const eventsPlayed = stats.events;
   const clubPoints = stats.points;
@@ -478,7 +453,7 @@ window.openClubDetail = function(countryName, countryCode) {
           <span style="font-size: 20px;">${medals[index]}</span>
           <div>
             <div style="font-size: 14px; color: #fff; font-weight: bold;">${escapeHtml(player.username)}</div>
-            <div style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${player.rating} • Wins: ${player.wins}</div>
+            <div style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${player.rating} • 🏆 ${player.wins}</div>
           </div>
         </div>
       `;
@@ -534,7 +509,7 @@ window.openClubDetail = function(countryName, countryCode) {
         z-index: 5;
         text-align: center;
       ">
-        <img src="https://flagcdn.com/w80/${countryCode}.png" alt="${localizedCountry}" style="
+        <img src="https://flagcdn.com/w80/${escapeHtml(countryCode)}.png" alt="${escapeHtml(localizedCountry)}" style="
           width: 70px;
           height: 70px;
           border-radius: 50%;
@@ -603,7 +578,7 @@ window.openClubDetail = function(countryName, countryCode) {
 
        <!-- Action Buttons - Bitta qatorda -->
        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">
-         <button id="clubDetailJoinBtn" onclick="joinLeaveFromClubPage('${countryName}', '${countryCode}')" style="
+         <button id="clubDetailJoinBtn" data-name="${escapeHtml(countryName)}" data-code="${escapeHtml(countryCode)}" onclick="joinLeaveFromClubPage(this.dataset.name, this.dataset.code)" style="
            padding: 12px;
            background: ${isJoined ? '#3b1e1e' : '#81b64c'};
            color: ${isJoined ? '#ff9999' : '#111'};
@@ -614,7 +589,7 @@ window.openClubDetail = function(countryName, countryCode) {
            cursor: pointer;
            transition: all 0.2s;
           ">${isJoined ? tr('clubDetailLeaveBtn', 'Leave Club') : tr('clubDetailJoinBtn', "Klubga qo'shilish")}</button>
-          <button onclick="showClubTournaments('${countryName}')" style="
+          <button data-name="${escapeHtml(countryName)}" onclick="showClubTournaments(this.dataset.name)" style="
            padding: 12px;
            background: #2a3e3b;
            color: #fff;
@@ -625,7 +600,7 @@ window.openClubDetail = function(countryName, countryCode) {
            cursor: pointer;
            transition: all 0.2s;
          ">🏆 ${tr('clubDetailTournamentsBtn', "Turnirlar")}</button>
-          <button onclick="showClubHistory('${countryName}')" style="
+          <button data-name="${escapeHtml(countryName)}" onclick="showClubHistory(this.dataset.name)" style="
             padding: 12px;
             background: #2a3e3b;
             color: #fff;
@@ -671,56 +646,41 @@ window.switchViewToClubDetail = function() {
   document.getElementById("navClubs").classList.add("active");
 };
 
-// Klub a'zolari ro'yxatini olish (join sanalari bilan)
-function getClubMembers(countryName) {
-  if (!countryName) return [];
-  const key = "justChessClubMembers_" + countryName;
-  return JSON.parse(localStorage.getItem(key) || "[]");
-}
-
-function addClubMember(countryName, username, joinDate) {
-  if (!countryName || !username) return;
-  const key = "justChessClubMembers_" + countryName;
-  const members = JSON.parse(localStorage.getItem(key) || "[]");
-  if (!members.some(m => m.username === username)) {
-    members.push({ username, joinedAt: joinDate || new Date().toISOString() });
-    localStorage.setItem(key, JSON.stringify(members));
-  }
-}
-
-function removeClubMember(countryName, username) {
-  if (!countryName || !username) return;
-  const key = "justChessClubMembers_" + countryName;
-  const members = JSON.parse(localStorage.getItem(key) || "[]");
-  const filtered = members.filter(m => m.username !== username);
-  localStorage.setItem(key, JSON.stringify(filtered));
-}
-
-// Club sahifasidan Join/Leave
-window.joinLeaveFromClubPage = function(countryName, countryCode) {
+// Klub sahifasidan qo'shilish/chiqish. O'yinchi faqat bitta klubda: boshqa klubdagi o'yinchi tasdiqlasa, o'tkaziladi
+window.joinLeaveFromClubPage = async function(countryName, countryCode) {
   if (!window.currentUser) {
     alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     switchView('login');
     return;
   }
-
-  const userClubs = getUserClubs();
-  const index = userClubs.indexOf(countryName);
-
-  if (index === -1) {
-    userClubs.push(countryName);
-    saveUserClubs(userClubs);
-    addClubMember(countryName, window.currentUser.username, new Date().toISOString());
-    window.showJoinSuccessModal({ name: countryName, code: countryCode });
-    // Sahifani qayta yuklash
-    window.openClubDetail(countryName, countryCode);
-  } else {
-    userClubs.splice(index, 1);
-    saveUserClubs(userClubs);
-    removeClubMember(countryName, window.currentUser.username);
-    // Sahifani qayta yuklash
-    window.openClubDetail(countryName, countryCode);
+  const localized = window.countryName(countryName, countryCode);
+  const isJoined = getUserClubs().includes(countryName);
+  let joined = false;
+  try {
+    if (isJoined) {
+      if (!confirm(tx('clubLeaveConfirm', '{{country}} klubidan chiqmoqchimisiz?', { country: localized }))) return;
+      const data = await postClubAction('leave');
+      if (!data.success) { alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!')); return; }
+      setMyClub(null);
+    } else {
+      let data = await postClubAction('join', { country: countryName, code: countryCode });
+      if (!data.success && data.reason === 'already_in_club' && data.club) {
+        const current = window.countryName(data.club.name, data.club.code);
+        const question = tx('clubSwitchConfirm', "Siz {{current}} klubiga a'zosiz. O'yinchi faqat bitta klubda bo'lishi mumkin. {{current}} klubidan chiqib, {{country}} klubiga o'tasizmi?", { current, country: localized });
+        if (!confirm(question)) return;
+        data = await postClubAction('join', { country: countryName, code: countryCode, switch: true });
+      }
+      if (!data.success) { alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!')); return; }
+      setMyClub(data.club);
+      joined = true;
+    }
+  } catch (err) {
+    console.error("Klub a'zoligi xatoligi:", err);
+    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
+    return;
   }
+  await window.openClubDetail(countryName, countryCode);
+  if (joined) window.showJoinSuccessModal({ name: countryName, code: countryCode });
 };
 
 // Scroll to section (for Quick Links)
@@ -811,37 +771,54 @@ window.setActiveContinent = function(continent) {
   filterCountries();
 };
 
-window.loadClubs = function() {
+function filteredClubCountries() {
+  const input = document.getElementById('clubSearchInput');
+  const query = input ? input.value.toLowerCase().trim() : '';
+  const baseCountries = getActiveCountries();
+  return query
+    ? baseCountries.filter(c => countryName(c.name, c.code).toLowerCase().includes(query) || c.name.toLowerCase().includes(query))
+    : baseCountries;
+}
+
+function renderClubStamps() {
   const container = document.getElementById('clubsListContainer');
   if (!container) return;
-
+  const countries = filteredClubCountries();
+  if (countries.length === 0) {
+    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; padding: 30px;">' + tr('searchNoResults', "Hech qanday davlat topilmadi") + '</div>';
+    return;
+  }
   const userClubs = getUserClubs();
-
   let htmlContent = '';
-  getActiveCountries().forEach(country => {
-    const stats = getClubStats(country.name);
+  countries.forEach(country => {
+    const members = window.countryClubCounts[country.name] || 0;
     const isJoined = userClubs.includes(country.name);
     const safeName = escapeHtml(country.name);
     const safeCode = escapeHtml(country.code);
     const displayName = escapeHtml(countryName(country.name, country.code));
 
     htmlContent += `
-      <div class="country-stamp ${isJoined ? 'joined' : ''}" onclick="openClubDetail('${safeName}', '${safeCode}')">
+      <div class="country-stamp ${isJoined ? 'joined' : ''}" data-name="${safeName}" data-code="${safeCode}" onclick="openClubDetail(this.dataset.name, this.dataset.code)">
         <div class="stamp-perforation"></div>
         ${isJoined ? '<div class="stamp-badge">✓</div>' : ''}
         <div class="stamp-inner">
           <div class="stamp-flag"><img src="https://flagcdn.com/w80/${safeCode}.png" alt="${displayName}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
           <div class="stamp-country-name">${displayName}</div>
-          <div class="stamp-members">${stats.members} ${tr('membersLabel', "a'zo")}</div>
+          <div class="stamp-members">${members} ${tr('membersLabel', "a'zo")}</div>
         </div>
-        <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${safeName}', '${safeCode}')">
+        <button class="stamp-join-btn" onclick="event.stopPropagation(); const s = this.closest('.country-stamp'); openClubDetail(s.dataset.name, s.dataset.code)">
           ${tr('btnView', "Ko'rish")}
         </button>
       </div>
     `;
   });
-
   container.innerHTML = htmlContent;
+}
+
+window.loadClubs = async function() {
+  renderClubStamps();
+  await syncClubDirectory();
+  renderClubStamps();
 };
 
 function escapeHtml(text) {
@@ -871,49 +848,7 @@ function getPlayerFlag(username, club) {
 }
 
 window.filterCountries = debounce(function() {
-  const query = document.getElementById('clubSearchInput').value.toLowerCase().trim();
-  const container = document.getElementById('clubsListContainer');
-  if (!container) return;
-
-  const userClubs = getUserClubs();
-  const baseCountries = getActiveCountries();
-  const filtered = query
-    ? baseCountries.filter(c => {
-        const localName = countryName(c.name, c.code).toLowerCase();
-        return localName.includes(query) || c.name.toLowerCase().includes(query);
-      })
-    : baseCountries;
-
-  if (filtered.length === 0) {
-    container.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: #888; padding: 30px;">' + tr('searchNoResults', "Hech qanday davlat topilmadi") + '</div>';
-    return;
-  }
-
-  let htmlContent = '';
-  filtered.forEach(country => {
-    const stats = getClubStats(country.name);
-    const isJoined = userClubs.includes(country.name);
-    const safeName = escapeHtml(country.name);
-    const safeCode = escapeHtml(country.code);
-    const displayName = escapeHtml(countryName(country.name, country.code));
-
-    htmlContent += `
-      <div class="country-stamp ${isJoined ? 'joined' : ''}" onclick="openClubDetail('${safeName}', '${safeCode}')">
-        <div class="stamp-perforation"></div>
-        ${isJoined ? '<div class="stamp-badge">✓</div>' : ''}
-        <div class="stamp-inner">
-          <div class="stamp-flag"><img src="https://flagcdn.com/w80/${safeCode}.png" alt="${displayName}" style="width: 64px; height: 42px; border-radius: 3px; display: block;" loading="lazy"></div>
-          <div class="stamp-country-name">${displayName}</div>
-          <div class="stamp-members">${stats.members} ${tr('membersLabel', "a'zo")}</div>
-        </div>
-        <button class="stamp-join-btn" onclick="event.stopPropagation(); openClubDetail('${safeName}', '${safeCode}')">
-          ${tr('btnView', "Ko'rish")}
-        </button>
-      </div>
-    `;
-  });
-
-  container.innerHTML = htmlContent;
+  renderClubStamps();
 }, 300);
 
 window.closeTournamentDetail = function() {
@@ -1630,163 +1565,49 @@ window.backToClubDetail = function() {
   }
 };
 
-// Klub reyting jadvali - faqat klub a'zolari
-window.showClubLeaderboard = function(countryName) {
+// Klub reyting jadvali - faqat klub a'zolari (serverdan)
+window.showClubLeaderboard = async function(countryName) {
   window.currentClubName = countryName;
   const container = document.getElementById("clubLeaderboardContainer");
   if (!container) return;
 
   const titleEl = document.getElementById("clubLeaderboardTitle");
-  if (titleEl) titleEl.textContent = `${countryName} Club Leaderboard`;
+  if (titleEl) titleEl.textContent = tx('clubLeaderboardTitle', '{{country}} klubi reytingi', { country: window.countryName(countryName, window.currentClubCode) });
 
   container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
+  switchViewToClubLeaderboard();
 
-  fetch('/api/leaderboard')
-    .then(res => res.ok ? res.json() : null)
-    .then(apiData => {
-      const userClubs = JSON.parse(localStorage.getItem("justChessUserClubs") || "{}");
-      const allUsers = JSON.parse(localStorage.getItem("justChessAllUsers") || "[]");
-      const currentUser = JSON.parse(localStorage.getItem("justChessCurrentUser")) || null;
+  const { members } = await fetchClubData(countryName);
+  if (members.length === 0) {
+    container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">' + escapeHtml(tr('clubDetailNoMembers', "Hali a'zolar yo'q. Birinchi bo'lib qo'shiling!")) + '</div>';
+    return;
+  }
 
-      // Klubga qo'shilgan foydalanuvchilar ro'yxati
-      const clubMemberUsernames = new Set();
-      for (const username in userClubs) {
-        if (userClubs[username] && userClubs[username].includes(countryName)) {
-          clubMemberUsernames.add(username);
-        }
-      }
-      if (currentUser && (userClubs[currentUser.username] || []).includes(countryName)) {
-        clubMemberUsernames.add(currentUser.username);
-      }
+  let htmlContent = "";
+  members.forEach((member, index) => {
+    const firstLetter = member.username ? escapeHtml(member.username.charAt(0).toUpperCase()) : "U";
+    let badgeColor = "#555";
+    if (index === 0) badgeColor = "#f1c40f";
+    else if (index === 1) badgeColor = "#bdc3c7";
+    else if (index === 2) badgeColor = "#e67e22";
 
-      // API yoki localStorage'dan foydalanuvchilarni olish
-      const memberMap = {};
-
-      if (apiData && apiData.success && apiData.leaderboard) {
-        apiData.leaderboard.forEach(u => {
-          if (clubMemberUsernames.has(u.username)) {
-            memberMap[u.username] = {
-              username: u.username,
-              rating: u.rating || 1500,
-              wins: u.wins || 0,
-              losses: u.losses || 0,
-              draws: u.draws || 0
-            };
-          }
-        });
-      }
-
-      // localStorage'dan qolgan a'zolarni qo'shish
-      allUsers.forEach(u => {
-        if (clubMemberUsernames.has(u.username) && !memberMap[u.username]) {
-          memberMap[u.username] = {
-            username: u.username,
-            rating: u.rating || 1500,
-            wins: u.stats?.wins || 0,
-            losses: u.stats?.losses || 0,
-            draws: u.stats?.draws || 0
-          };
-        }
-      });
-
-      // Joriy foydalanuvni ham qo'shish
-      if (currentUser && clubMemberUsernames.has(currentUser.username) && !memberMap[currentUser.username]) {
-        memberMap[currentUser.username] = {
-          username: currentUser.username,
-          rating: currentUser.rating || 1500,
-          wins: currentUser.stats?.wins || 0,
-          losses: currentUser.stats?.losses || 0,
-          draws: currentUser.stats?.draws || 0
-        };
-      }
-
-      const clubMembers = Object.values(memberMap).sort((a, b) => b.rating - a.rating);
-
-      if (clubMembers.length === 0) {
-        container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Hozircha klub a\'zolari yo\'q. Birinchi bo\'lib qo\'shiling!</div>';
-        return;
-      }
-
-      let htmlContent = "";
-      clubMembers.forEach((member, index) => {
-        const firstLetter = member.username ? member.username.charAt(0).toUpperCase() : "U";
-        let badgeColor = "#555";
-        if (index === 0) badgeColor = "#f1c40f";
-        else if (index === 1) badgeColor = "#bdc3c7";
-        else if (index === 2) badgeColor = "#e67e22";
-
-        htmlContent += `
-          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 14px; font-weight: bold; width: 22px; text-align: center; color: ${badgeColor};">#${index + 1}</span>
-              <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
-              <b style="font-size: 14px; color: #fff;">${escapeHtml(member.username)}</b>
-            </div>
-            <div style="display: flex; gap: 15px; font-size: 12px; text-align: right;">
-              <span style="color: #81b64c; font-weight: bold;">${member.rating}</span>
-              <span style="color: #2ecc71;">🏆 ${member.wins}</span>
-              <span style="color: #e74c3c;">❌ ${member.losses}</span>
-              <span style="color: #e6b800;">🤝 ${member.draws}</span>
-            </div>
-          </div>
-        `;
-      });
-
-      container.innerHTML = htmlContent;
-      switchViewToClubLeaderboard();
-    })
-    .catch(err => {
-      console.error('Club leaderboard API xatoligi:', err);
-      // Fallback to pure localStorage
-      const userClubs = JSON.parse(localStorage.getItem("justChessUserClubs") || "{}");
-      const allUsers = JSON.parse(localStorage.getItem("justChessAllUsers") || "[]");
-      const currentUser = JSON.parse(localStorage.getItem("justChessCurrentUser")) || null;
-      const clubMembers = [];
-
-      Object.keys(userClubs).forEach(username => {
-        if (userClubs[username] && userClubs[username].includes(countryName)) {
-          const user = allUsers.find(u => u.username === username);
-          if (user) {
-            clubMembers.push({ username: user.username, rating: user.rating || 1500, wins: user.stats?.wins || 0, losses: user.stats?.losses || 0, draws: user.stats?.draws || 0 });
-          }
-        }
-      });
-      if (currentUser && (userClubs[currentUser.username] || []).includes(countryName) && !clubMembers.some(m => m.username === currentUser.username)) {
-        clubMembers.push({ username: currentUser.username, rating: currentUser.rating || 1500, wins: currentUser.stats?.wins || 0, losses: currentUser.stats?.losses || 0, draws: currentUser.stats?.draws || 0 });
-      }
-      clubMembers.sort((a, b) => b.rating - a.rating);
-
-      if (clubMembers.length === 0) {
-        container.innerHTML = '<div style="font-size: 13px; color: #888; text-align: center; padding: 20px;">Hozircha klub a\'zolari yo\'q. Birinchi bo\'lib qo\'shiling!</div>';
-        return;
-      }
-
-      let htmlContent = "";
-      clubMembers.forEach((member, index) => {
-        const firstLetter = member.username ? member.username.charAt(0).toUpperCase() : "U";
-        let badgeColor = "#555";
-        if (index === 0) badgeColor = "#f1c40f";
-        else if (index === 1) badgeColor = "#bdc3c7";
-        else if (index === 2) badgeColor = "#e67e22";
-        htmlContent += `
-          <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-              <span style="font-size: 14px; font-weight: bold; width: 22px; text-align: center; color: ${badgeColor};">#${index + 1}</span>
-              <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
-              <b style="font-size: 14px; color: #fff;">${escapeHtml(member.username)}</b>
-            </div>
-            <div style="display: flex; gap: 15px; font-size: 12px; text-align: right;">
-              <span style="color: #81b64c; font-weight: bold;">${member.rating}</span>
-              <span style="color: #2ecc71;">🏆 ${member.wins}</span>
-              <span style="color: #e74c3c;">❌ ${member.losses}</span>
-              <span style="color: #e6b800;">🤝 ${member.draws}</span>
-            </div>
-          </div>
-        `;
-      });
-      container.innerHTML = htmlContent;
-      switchViewToClubLeaderboard();
-    });
+    htmlContent += `
+      <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 14px; font-weight: bold; width: 22px; text-align: center; color: ${badgeColor};">#${index + 1}</span>
+          <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
+          <b style="font-size: 14px; color: #fff;">${escapeHtml(member.username)}</b>
+        </div>
+        <div style="display: flex; gap: 15px; font-size: 12px; text-align: right;">
+          <span style="color: #81b64c; font-weight: bold;">${Number(member.rating) || 1500}</span>
+          <span style="color: #2ecc71;">🏆 ${member.wins}</span>
+          <span style="color: #e74c3c;">❌ ${member.losses}</span>
+          <span style="color: #e6b800;">🤝 ${member.draws}</span>
+        </div>
+      </div>
+    `;
+  });
+  container.innerHTML = htmlContent;
 };
 
 window.switchViewToClubLeaderboard = function() {
@@ -2068,33 +1889,14 @@ window.switchViewToClubHistory = function() {
   document.getElementById("navClubs").classList.add("active");
 };
 
-window.loadClubHistory = function(countryName, container) {
+window.loadClubHistory = async function(countryName, container) {
   if (!container) container = document.getElementById("clubHistoryContainer");
   if (!container) return;
 
-  const userClubs = JSON.parse(localStorage.getItem("justChessUserClubs") || "{}");
-  const allUsers = JSON.parse(localStorage.getItem("justChessAllUsers") || "[]");
-  const currentUser = JSON.parse(localStorage.getItem("justChessCurrentUser")) || null;
-  const stats = getClubStats(countryName);
-
-  // Klub a'zolari ro'yxati (join sanalari bilan)
-  const storedMembers = getClubMembers(countryName);
-  const memberUsernames = new Set(storedMembers.map(m => m.username));
-
-  // Eski uslubdagi a'zolarni ham qo'shish
-  for (const username in userClubs) {
-    if (userClubs[username] && userClubs[username].includes(countryName) && !memberUsernames.has(username)) {
-      storedMembers.push({ username, joinedAt: null });
-      memberUsernames.add(username);
-    }
-  }
-  if (currentUser && (userClubs[currentUser.username] || []).includes(countryName) && !memberUsernames.has(currentUser.username)) {
-    storedMembers.push({ username: currentUser.username, joinedAt: null });
-    memberUsernames.add(currentUser.username);
-  }
-
-  // Join sanasiga qarab saralash (yangidan eskiyga)
-  storedMembers.sort((a, b) => {
+  const clubData = await fetchClubData(countryName);
+  const stats = clubData.stats;
+  // Qo'shilgan sanasi bo'yicha (yangidan eskiyga)
+  const storedMembers = clubData.members.slice().sort((a, b) => {
     if (!a.joinedAt) return 1;
     if (!b.joinedAt) return -1;
     return new Date(b.joinedAt) - new Date(a.joinedAt);
@@ -2135,13 +1937,12 @@ window.loadClubHistory = function(countryName, container) {
   `;
 
   storedMembers.forEach((member, index) => {
-    const firstLetter = member.username ? member.username.charAt(0).toUpperCase() : "?";
+    const firstLetter = member.username ? escapeHtml(member.username.charAt(0).toUpperCase()) : "?";
     const joinDate = member.joinedAt
       ? new Date(member.joinedAt).toLocaleDateString('uz-UZ')
       : tr('clubHistoryJoinUnknown', "Aniqlanmagan");
-    const user = allUsers.find(u => u.username === member.username) || (currentUser && currentUser.username === member.username ? currentUser : null);
-    const memberRating = user ? (user.rating || 1500) : 1500;
-    const memberStats = user ? (user.stats || { wins: 0, losses: 0, draws: 0 }) : { wins: 0, losses: 0, draws: 0 };
+    const memberRating = Number(member.rating) || 1500;
+    const memberStats = member;
 
     htmlContent += `
       <div style="display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">

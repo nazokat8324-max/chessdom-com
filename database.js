@@ -256,6 +256,12 @@ async function initDatabase() {
   try {
     await dbExec(`ALTER TABLE users ADD COLUMN ratings_by_mode TEXT DEFAULT NULL`);
   } catch (e) {}
+  // Davlat klubi a'zoligi: har o'yinchi faqat bitta klubda (nomi, bayroq kodi, qo'shilgan vaqti)
+  for (const col of ['club_country', 'club_code', 'club_joined_at']) {
+    try {
+      await dbExec(`ALTER TABLE users ADD COLUMN ${col} TEXT DEFAULT NULL`);
+    } catch (e) {}
+  }
   try {
     await dbExec(`ALTER TABLE games ADD COLUMN time_control TEXT DEFAULT 'blitz'`);
   } catch (e) {}
@@ -440,7 +446,45 @@ async function getDailyWinners() {
 async function getStatsByUsername(username) {
   const user = await getUserByUsername(username);
   if (!user) return null;
-  return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.stats_by_mode, rating: user.rating || 1500, ratingsByMode: user.ratings_by_mode };
+  return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.stats_by_mode, rating: user.rating || 1500, ratingsByMode: user.ratings_by_mode, club: userClub(user) };
+}
+
+function userClub(user) {
+  return user && user.club_country ? { name: user.club_country, code: user.club_code || null, joinedAt: user.club_joined_at || null } : null;
+}
+
+async function setUserCountryClub(userId, name, code) {
+  const joinedAt = new Date().toISOString();
+  await dbRun('UPDATE users SET club_country = ?, club_code = ?, club_joined_at = ? WHERE id = ?', [name, code, joinedAt, userId]);
+  return { name, code, joinedAt };
+}
+
+async function clearUserCountryClub(userId) {
+  await dbRun('UPDATE users SET club_country = NULL, club_code = NULL, club_joined_at = NULL WHERE id = ?', [userId]);
+}
+
+function statsTotals(stats) {
+  const s = stats || {};
+  return { wins: s.wins || 0, losses: s.losses || 0, draws: s.draws || 0 };
+}
+
+// Har bir davlat klubidagi a'zolar soni
+async function getCountryClubSummary() {
+  const rows = await dbAll('SELECT club_country, club_code, COUNT(*) as "members" FROM users WHERE club_country IS NOT NULL GROUP BY club_country, club_code');
+  return rows.map(r => ({ name: r.club_country, code: r.club_code, members: Number(r.members) || 0 }));
+}
+
+// Klub a'zolari va umumiy statistika (o'yinlar soni, klub ballari: g'alaba 10, durrang 5, mag'lubiyat 1)
+async function getCountryClubMembers(name) {
+  const rows = await dbAll('SELECT username, rating, ratings_by_mode, stats, club_joined_at FROM users WHERE club_country = ? ORDER BY rating DESC', [name]);
+  let events = 0, points = 0;
+  const members = rows.map(r => {
+    const s = statsTotals(parseJson(r.stats));
+    events += s.wins + s.losses + s.draws;
+    points += s.wins * 10 + s.draws * 5 + s.losses;
+    return { username: r.username, rating: r.rating || 1500, ratingsByMode: normalizeRatingsByMode(r), ...s, joinedAt: r.club_joined_at };
+  });
+  return { members, stats: { members: members.length, events, points } };
 }
 
 async function getUserGames(userId) {
@@ -685,28 +729,20 @@ async function getClubMembers(clubId) {
   return await dbAll(`SELECT cm.role, u.username, u.rating, u.last_active FROM club_members cm JOIN users u ON cm.user_id = u.id WHERE cm.club_id = ? ORDER BY cm.joined_at ASC`, [clubId]);
 }
 
+// Klublar reytingi — davlat klublari, a'zolarning umumiy natijalari bo'yicha
 async function getClubLeaderboard() {
-  const clubs = await dbAll('SELECT id, name, icon, current_members FROM clubs WHERE is_public = 1');
-  const users = await dbAll('SELECT id, stats FROM users');
-  const userStatsMap = {};
-  users.forEach(u => {
-    const stats = u.stats ? JSON.parse(u.stats) : { wins: 0, losses: 0, draws: 0 };
-    userStatsMap[u.id] = stats;
-  });
-  const leaderboard = [];
-  for (const club of clubs) {
-    const members = await dbAll('SELECT user_id FROM club_members WHERE club_id = ?', [club.id]);
-    const memberIds = members.map(r => r.user_id);
-    let totalWins = 0, totalLosses = 0, totalDraws = 0;
-    memberIds.forEach(userId => {
-      const s = userStatsMap[userId] || { wins: 0, losses: 0, draws: 0 };
-      totalWins += s.wins || 0; totalLosses += s.losses || 0; totalDraws += s.draws || 0;
-    });
-    const games = totalWins + totalLosses + totalDraws;
-    const winPercentage = games > 0 ? ((totalWins / games) * 100).toFixed(1) : '0.0';
-    leaderboard.push({ name: club.name || club.icon || '♟️', games, wins: totalWins, losses: totalLosses, winPercentage: parseFloat(winPercentage) });
+  const rows = await dbAll('SELECT club_country, club_code, stats FROM users WHERE club_country IS NOT NULL');
+  const byClub = {};
+  for (const r of rows) {
+    const club = byClub[r.club_country] || (byClub[r.club_country] = { name: r.club_country, code: r.club_code, members: 0, wins: 0, losses: 0, draws: 0 });
+    const s = statsTotals(parseJson(r.stats));
+    club.members++; club.wins += s.wins; club.losses += s.losses; club.draws += s.draws;
   }
-  leaderboard.sort((a, b) => { if (b.games !== a.games) return b.games - a.games; return parseFloat(b.winPercentage) - parseFloat(a.winPercentage); });
+  const leaderboard = Object.values(byClub).map(c => {
+    const games = c.wins + c.losses + c.draws;
+    return { ...c, games, winPercentage: games > 0 ? Math.round((c.wins / games) * 1000) / 10 : 0 };
+  });
+  leaderboard.sort((x, y) => (y.games - x.games) || (y.winPercentage - x.winPercentage));
   return { success: true, leaderboard };
 }
 
@@ -754,5 +790,10 @@ module.exports = {
   joinClub,
   getClubMembers,
   getClubLeaderboard,
+  setUserCountryClub,
+  clearUserCountryClub,
+  getCountryClubSummary,
+  getCountryClubMembers,
+  userClub,
   usePostgres,
 };

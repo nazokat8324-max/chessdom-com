@@ -52,6 +52,7 @@ const SERVER_MESSAGE_KEYS = {
   "Klub topilmadi!": 'srvClubNotFound',
   "Klub to'la!": 'srvClubFull',
   "Siz allaqachon klubdasiz!": 'srvAlreadyInClub',
+  "Siz allaqachon boshqa klubga a'zosiz!": 'srvAlreadyInOtherClub',
   "Noto'g'ri davlat kodi!": 'srvBadCountry'
 };
 window.tServer = function(message) {

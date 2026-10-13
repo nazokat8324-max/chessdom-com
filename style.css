@@ -3506,6 +3506,32 @@
   display: none;
 }
 
+/* Sozlamalar: saqlanmagan o'zgarishlar eslatmasi */
+.settings-unsaved {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0 12px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f2d48a;
+  background: rgba(242, 196, 82, 0.08);
+  border: 1px solid rgba(242, 196, 82, 0.25);
+}
+.settings-unsaved[hidden] {
+  display: none;
+}
+.settings-unsaved span:first-child {
+  font-size: 10px;
+  animation: settingsPulse 1.4s ease-in-out infinite;
+}
+@keyframes settingsPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
 /* Sozlamalar: mavzu tanlash */
 .settings-row.settings-row-stack {
   flex-direction: column;

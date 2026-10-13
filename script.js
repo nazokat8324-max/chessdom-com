@@ -367,6 +367,10 @@ window.setupHistoryFilters = function() {
 };
 
 window.switchView = function(viewName) {
+  if (viewName !== "settings" && typeof window.discardSettingsChanges === "function") {
+    const settingsEl = document.getElementById("settingsView");
+    if (settingsEl && settingsEl.classList.contains("active-view")) window.discardSettingsChanges();
+  }
   if (viewName === "login" || viewName === "register") {
     if (!window.currentUser) {
       window.showAuthGate(viewName === "login" ? 'login' : 'signup');
@@ -1526,14 +1530,33 @@ window.applyCoords = function(show) {
   document.documentElement.classList.toggle('hide-coords', show === false);
 };
 
-// Bir sozlamani darhol saqlash (boshqa saqlangan qiymatlarni o'zgartirmasdan)
-function patchSettings(patch) {
-  const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
-  localStorage.setItem("justChessSettings", JSON.stringify({ ...saved, ...patch }));
-}
+// Sozlamalar sahifasidagi o'zgarishlar "Saqlash" bosilmaguncha faqat oldindan ko'rish uchun qo'llanadi
+window.settingsDirty = false;
+
+window.markSettingsDirty = function(dirty) {
+  window.settingsDirty = dirty !== false;
+  const note = document.getElementById("settingsUnsavedNote");
+  if (note) note.hidden = !window.settingsDirty;
+};
 
 window.selectSiteTheme = function(theme) {
-  patchSettings({ siteTheme: window.applySiteTheme(theme) });
+  window.applySiteTheme(theme);
+  window.markSettingsDirty();
+};
+
+// Saqlangan qiymatlarni qayta qo'llash (saqlanmagan o'zgarishlarni bekor qilish)
+window.applySavedSettings = function() {
+  const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
+  window.applySiteTheme(saved.siteTheme || "emerald");
+  window.applyCoords(saved.showCoords !== false);
+  if (typeof window.applySavedSound === "function") window.applySavedSound();
+};
+
+window.discardSettingsChanges = function() {
+  if (!window.settingsDirty) return;
+  window.applySavedSettings();
+  window.markSettingsDirty(false);
+  showToast(tx('settingsDiscarded', "Saqlanmagan o'zgarishlar bekor qilindi"), "info");
 };
 
 window.updateSettingsView = function() {
@@ -1550,9 +1573,9 @@ window.updateSettingsView = function() {
   if (lang) lang.value = saved.language || "uz";
   if (sound) sound.checked = saved.soundEnabled !== false;
   if (volume) volume.value = Math.round((saved.volume || 0.8) * 100);
-  window.applySiteTheme(saved.siteTheme || "emerald");
   if (coords) coords.checked = saved.showCoords !== false;
-  window.applyCoords(saved.showCoords !== false);
+  window.applySavedSettings();
+  window.markSettingsDirty(false);
   const volVal = document.getElementById("settingsVolumeVal");
   if (volVal && volume) volVal.textContent = volume.value + "%";
 };
@@ -1571,6 +1594,7 @@ window.saveSettings = function() {
     showCoords: document.getElementById("settingsCoords")?.checked !== false
   };
   localStorage.setItem("justChessSettings", JSON.stringify(saved));
+  window.markSettingsDirty(false);
   window.syncMyCountry(saved.country);
   showToast(tSettings('settingsSavedToast', "Sozlamalar saqlandi"), "success");
 };
@@ -1599,24 +1623,34 @@ window.resetSettings = function() {
     (typeof i18next !== 'undefined' && i18next.isInitialized)
       ? i18next.t(key, { defaultValue: fallback })
       : fallback;
-  localStorage.removeItem("justChessSettings");
+  const sound = document.getElementById("settingsSound");
+  const volume = document.getElementById("settingsVolume");
+  const volVal = document.getElementById("settingsVolumeVal");
+  const coords = document.getElementById("settingsCoords");
+  if (sound) sound.checked = true;
+  if (volume) volume.value = 80;
+  if (volVal) volVal.textContent = "80%";
+  if (coords) coords.checked = true;
   window.applySiteTheme("emerald");
   window.applyCoords(true);
-  window.updateSettingsView();
-  showToast(tSettings('settingsResetToast', "Sozlamalar qayta o'rnatildi"), "info");
+  if (typeof window.applySoundToggle === "function") window.applySoundToggle(true);
+  if (typeof window.setSoundVolume === "function") window.setSoundVolume(0.8);
+  window.markSettingsDirty();
+  showToast(tSettings('settingsResetPending', "Standart qiymatlar qo'yildi — saqlash uchun «Saqlash» tugmasini bosing"), "info", 5000);
 };
 
   const coordsEl = document.getElementById("settingsCoords");
   if (coordsEl) {
     coordsEl.addEventListener("change", function() {
       window.applyCoords(this.checked);
-      patchSettings({ showCoords: this.checked });
+      window.markSettingsDirty();
     });
   }
   const soundEl = document.getElementById("settingsSound");
   if (soundEl) {
     soundEl.addEventListener("change", function() {
       if (typeof window.applySoundToggle === "function") window.applySoundToggle(this.checked);
+      window.markSettingsDirty();
     });
   }
   const volEl = document.getElementById("settingsVolume");
@@ -1625,8 +1659,11 @@ window.resetSettings = function() {
     volEl.addEventListener("input", function() {
       volVal.textContent = this.value + "%";
       if (typeof window.setSoundVolume === "function") window.setSoundVolume(this.value / 100);
+      window.markSettingsDirty();
     });
   }
+  const countrySel = document.getElementById("settingsCountry");
+  if (countrySel) countrySel.addEventListener("change", () => window.markSettingsDirty());
 
   document.addEventListener("DOMContentLoaded", () => {
   window.updateStreakUI();

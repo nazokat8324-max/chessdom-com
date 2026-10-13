@@ -1749,6 +1749,9 @@ const translationsExtra = {
     themeOcean: "Okean",
     themeAmethyst: "Ametist",
     themeSunset: "Shafaq",
+    settingsUnsaved: "Saqlanmagan o'zgarishlar bor",
+    settingsDiscarded: "Saqlanmagan o'zgarishlar bekor qilindi",
+    settingsResetPending: "Standart qiymatlar qo'yildi — saqlash uchun «Saqlash» tugmasini bosing",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2033,6 +2036,9 @@ const translationsExtra = {
     themeOcean: "Ocean",
     themeAmethyst: "Amethyst",
     themeSunset: "Sunset",
+    settingsUnsaved: "You have unsaved changes",
+    settingsDiscarded: "Unsaved changes were discarded",
+    settingsResetPending: "Defaults restored — press \"Save\" to keep them",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2317,6 +2323,9 @@ const translationsExtra = {
     themeOcean: "Океан",
     themeAmethyst: "Аметист",
     themeSunset: "Закат",
+    settingsUnsaved: "Есть несохранённые изменения",
+    settingsDiscarded: "Несохранённые изменения отменены",
+    settingsResetPending: "Восстановлены значения по умолчанию — нажмите «Сохранить»",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2601,6 +2610,9 @@ const translationsExtra = {
     themeOcean: "Océano",
     themeAmethyst: "Amatista",
     themeSunset: "Atardecer",
+    settingsUnsaved: "Hay cambios sin guardar",
+    settingsDiscarded: "Se descartaron los cambios sin guardar",
+    settingsResetPending: "Valores predeterminados restaurados — pulsa \"Guardar\" para mantenerlos",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2885,6 +2897,9 @@ const translationsExtra = {
     themeOcean: "Ozean",
     themeAmethyst: "Amethyst",
     themeSunset: "Abendrot",
+    settingsUnsaved: "Ungespeicherte Änderungen",
+    settingsDiscarded: "Ungespeicherte Änderungen wurden verworfen",
+    settingsResetPending: "Standardwerte gesetzt — zum Übernehmen \"Speichern\" drücken",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -3169,6 +3184,9 @@ const translationsExtra = {
     themeOcean: "Océan",
     themeAmethyst: "Améthyste",
     themeSunset: "Crépuscule",
+    settingsUnsaved: "Modifications non enregistrées",
+    settingsDiscarded: "Les modifications non enregistrées ont été annulées",
+    settingsResetPending: "Valeurs par défaut rétablies — cliquez sur « Enregistrer » pour les garder",
     searchNoResults: "Aucun résultat"
   }
 };

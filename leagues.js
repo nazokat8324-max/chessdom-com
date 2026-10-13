@@ -161,8 +161,9 @@
       body += `<div class="lg-card-link">${esc(tx('lgOpen', 'Jadval va bahslar'))} →</div>`;
     } else {
       status = `<span class="lg-pill lg-pill-wait">${esc(tx('lgStatusWaiting', 'Kutilmoqda'))}</span>`;
+      clickable = ` onclick="window.openLeaguePreview('${esc(continent)}')"`;
       const progress = q.clubs.length
-        ? q.clubs.map(c => {
+        ? q.clubs.slice(0, 5).map(c => {
             const pct = Math.min(100, Math.round(c.members / min * 100));
             return `
               <div class="lg-progress-row">
@@ -172,10 +173,11 @@
               </div>`;
           }).join('')
         : `<div class="lg-muted">${esc(tx('lgNoClubsYet', "Hali klub yo'q"))}</div>`;
-      body = `<div class="lg-card-line"><span>${esc(tx('lgQualified', '{{q}}/{{need}} klub tayyor', { q: q.qualified, need: ov.rules.minClubs }))}</span></div>${progress}`;
+      body = `<div class="lg-card-line"><span>${esc(tx('lgQualified', '{{q}}/{{need}} klub tayyor', { q: q.qualified, need: ov.rules.minClubs }))}</span></div>${progress}
+        <div class="lg-card-link">${esc(tx('lgViewTable', "Jadvalni ko'rish"))} →</div>`;
     }
     return `
-      <div class="lg-league-card${div ? ' clickable' : ''}"${clickable}>
+      <div class="lg-league-card clickable"${clickable}>
         <div class="lg-league-head">
           <span class="lg-league-icon">${leagueIcon(continent)}</span>
           <span class="lg-league-name">${esc(leagueName(continent))}</span>
@@ -314,6 +316,7 @@
     if (!modal || !box) return;
     state.detailTab = 'standings';
     state.detailRound = null;
+    state.previewContinent = null;
     box.innerHTML = `<div class="lg-loading">${esc(tx('loadingText', 'Yuklanmoqda...'))}</div>`;
     modal.style.display = 'flex';
     try {
@@ -331,6 +334,60 @@
     const modal = document.getElementById('leagueDetailModal');
     if (modal) modal.style.display = 'none';
     state.detail = null;
+    state.previewContinent = null;
+  };
+
+  // --- Liga boshlanmagan bo'lsa: qit'adagi barcha davlatlar jadvali ---
+  function renderPreview() {
+    const box = document.getElementById('leagueDetailContent');
+    const ov = state.overview;
+    const continent = state.previewContinent;
+    if (!box || !ov || !continent) return;
+    const q = ov.qualification[continent] || { qualified: 0, clubs: [] };
+    const min = ov.rules.minMembers;
+    const membersOf = {};
+    for (const c of q.clubs) membersOf[c.name] = c.members;
+    const countries = (typeof continentCountries !== 'undefined' && continentCountries[continent]) ? continentCountries[continent] : [];
+    const myClub = window.currentUser && window.currentUser.club ? window.currentUser.club.name : null;
+    const rows = countries
+      .map(c => ({ name: c.name, code: c.code, members: membersOf[c.name] || 0, label: clubName(c) }))
+      .sort((a, b) => (b.members - a.members) || a.label.localeCompare(b.label));
+    const body = rows.map((r, i) => {
+      const ready = r.members >= min;
+      const pct = Math.min(100, Math.round(r.members / min * 100));
+      return `
+        <tr class="${r.name === myClub ? 'lg-mine' : ''}">
+          <td>${i + 1}</td>
+          <td>${clubHtml(r)}${r.name === myClub ? ` <span class="lg-pill lg-pill-live">${esc(tx('lgYourClub', 'Sizning klubingiz'))}</span>` : ''}</td>
+          <td><div class="lg-members-cell"><span>${r.members}/${min}</span><div class="lg-progress"><span style="width:${pct}%"></span></div></div></td>
+          <td>${ready ? `<span class="lg-pill lg-pill-live">${esc(tx('lgReady', 'Tayyor'))}</span>` : `<span class="lg-pill">${esc(tx('lgGathering', "Yig'ilmoqda"))}</span>`}</td>
+          <td>0</td><td>0</td><td>0</td><td>0</td><td><b>0</b></td>
+        </tr>`;
+    }).join('');
+    box.innerHTML = `
+      <div class="lg-modal-head">
+        <div class="lg-modal-title"><span class="lg-league-icon">${leagueIcon(continent)}</span><div><h2>${esc(leagueName(continent))}</h2><p>${esc(tx('lgPreviewTitle', 'Dastlabki jadval'))} · ${esc(tx('lgClubsCount', '{{count}} ta klub', { count: rows.length }))}</p></div></div>
+        <button class="lg-close" onclick="window.closeLeagueDetail()" aria-label="${esc(tx('lgClose', 'Yopish'))}">✕</button>
+      </div>
+      <div class="lg-preview-note">${esc(tx('lgPreviewNote', "Liga boshlanishi uchun kamida {{clubs}} ta klubda {{members}} tadan a'zo kerak. Hozir tayyor: {{q}}.", { clubs: ov.rules.minClubs, members: min, q: q.qualified }))}</div>
+      <div class="lg-modal-body">
+        <table class="lg-table lg-preview-table">
+          <thead><tr>
+            <th>#</th><th>${esc(tx('lgColClub', 'Klub'))}</th><th>${esc(tx('lgColMembers', "A'zo"))}</th><th>${esc(tx('lgColStatus', 'Holat'))}</th>
+            <th>${esc(tx('lgColPlayed', "O'"))}</th><th>${esc(tx('lgColWon', "G'"))}</th><th>${esc(tx('lgColDrawn', 'D'))}</th><th>${esc(tx('lgColLost', "M'"))}</th><th>${esc(tx('lgColPoints', 'Ochko'))}</th>
+          </tr></thead>
+          <tbody>${body}</tbody>
+        </table>
+      </div>`;
+  }
+
+  window.openLeaguePreview = function (continent) {
+    const modal = document.getElementById('leagueDetailModal');
+    if (!modal || !state.overview) return;
+    state.detail = null;
+    state.previewContinent = continent;
+    renderPreview();
+    modal.style.display = 'flex';
   };
 
   // --- Chempionlar ligasi sahifasi ---
@@ -412,6 +469,7 @@
     if (isActive('championsView')) window.renderChampionsLeague();
     const modal = document.getElementById('leagueDetailModal');
     if (modal && modal.style.display === 'flex' && state.detail) window.openLeagueDivision(state.detail.division.id);
+    else if (modal && modal.style.display === 'flex' && state.previewContinent) loadData().then(renderPreview);
     else window.refreshLeagueBadge();
   };
 

@@ -1736,6 +1736,14 @@ const translationsExtra = {
     lgRule4: "Muddatgacha o'ynalmagan o'yin: kelgan o'yinchi texnik g'alaba oladi, ikkalasi kelmasa — 0:0.",
     lgRule5: "Bahsdagi g'alaba — 3 ochko, durrang — 1 ochko. Ochkolar teng bo'lsa, doska ochkolari hal qiladi.",
     lgRule6: "Liga chempionlari Chempionlar ligasiga chiqadi. So'ng {{days}} kunlik tanaffus va yangi mavsum boshqa vaqt nazoratida boshlanadi.",
+    lgViewTable: "Jadvalni ko'rish",
+    lgPreviewTitle: "Dastlabki jadval",
+    lgPreviewNote: "Liga boshlanishi uchun kamida {{clubs}} ta klubda {{members}} tadan a'zo kerak. Hozir tayyor: {{q}}.",
+    lgColMembers: "A'zo",
+    lgColStatus: "Holat",
+    lgReady: "Tayyor",
+    lgGathering: "Yig'ilmoqda",
+    lgYourClub: "Sizning klubingiz",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2007,6 +2015,14 @@ const translationsExtra = {
     lgRule4: "Games not played by the deadline: the player who showed up wins by forfeit; if neither did — 0:0.",
     lgRule5: "A match win gives 3 points, a draw 1. Ties are broken by board points.",
     lgRule6: "League champions advance to the Champions League. Then a {{days}}-day break, and a new season starts with a different time control.",
+    lgViewTable: "View table",
+    lgPreviewTitle: "Preliminary table",
+    lgPreviewNote: "The league starts once at least {{clubs}} clubs have {{members}} members each. Ready now: {{q}}.",
+    lgColMembers: "Members",
+    lgColStatus: "Status",
+    lgReady: "Ready",
+    lgGathering: "Gathering",
+    lgYourClub: "Your club",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2278,6 +2294,14 @@ const translationsExtra = {
     lgRule4: "Несыгранная к сроку партия: пришедший игрок получает техническую победу; если не пришёл никто — 0:0.",
     lgRule5: "Победа в матче — 3 очка, ничья — 1. При равенстве решают очки на досках.",
     lgRule6: "Чемпионы лиг выходят в Лигу чемпионов. Затем перерыв {{days}} дн., и новый сезон начинается с другим контролем времени.",
+    lgViewTable: "Открыть таблицу",
+    lgPreviewTitle: "Предварительная таблица",
+    lgPreviewNote: "Лига начнётся, когда хотя бы в {{clubs}} клубах будет по {{members}} участников. Сейчас готово: {{q}}.",
+    lgColMembers: "Участники",
+    lgColStatus: "Статус",
+    lgReady: "Готов",
+    lgGathering: "Набирается",
+    lgYourClub: "Ваш клуб",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2549,6 +2573,14 @@ const translationsExtra = {
     lgRule4: "Partidas no jugadas a tiempo: gana por incomparecencia quien se presentó; si nadie lo hizo — 0:0.",
     lgRule5: "Ganar un encuentro da 3 puntos, empatar 1. Los empates se deciden por puntos de tablero.",
     lgRule6: "Los campeones pasan a la Liga de Campeones. Luego un descanso de {{days}} días y una nueva temporada con otro ritmo.",
+    lgViewTable: "Ver tabla",
+    lgPreviewTitle: "Tabla preliminar",
+    lgPreviewNote: "La liga empieza cuando al menos {{clubs}} clubes tengan {{members}} miembros cada uno. Listos ahora: {{q}}.",
+    lgColMembers: "Miembros",
+    lgColStatus: "Estado",
+    lgReady: "Listo",
+    lgGathering: "Reuniendo",
+    lgYourClub: "Tu club",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2820,6 +2852,14 @@ const translationsExtra = {
     lgRule4: "Bis zur Frist nicht gespielt: wer erschienen ist, gewinnt kampflos; erschien keiner — 0:0.",
     lgRule5: "Ein Sieg bringt 3 Punkte, ein Remis 1. Bei Gleichstand entscheiden die Brettpunkte.",
     lgRule6: "Die Ligameister ziehen in die Champions League ein. Danach {{days}} Tage Pause, dann eine neue Saison mit anderer Bedenkzeit.",
+    lgViewTable: "Tabelle ansehen",
+    lgPreviewTitle: "Vorläufige Tabelle",
+    lgPreviewNote: "Die Liga startet, sobald mindestens {{clubs}} Klubs je {{members}} Mitglieder haben. Jetzt bereit: {{q}}.",
+    lgColMembers: "Mitglieder",
+    lgColStatus: "Status",
+    lgReady: "Bereit",
+    lgGathering: "Sammelt",
+    lgYourClub: "Dein Klub",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -3091,6 +3131,14 @@ const translationsExtra = {
     lgRule4: "Partie non jouée à l'échéance : le joueur présent gagne par forfait ; si aucun — 0:0.",
     lgRule5: "Une victoire rapporte 3 points, un nul 1. Les égalités se départagent aux points d'échiquier.",
     lgRule6: "Les champions accèdent à la Ligue des champions. Puis {{days}} jours de pause et une nouvelle saison avec une autre cadence.",
+    lgViewTable: "Voir le tableau",
+    lgPreviewTitle: "Tableau préliminaire",
+    lgPreviewNote: "La ligue démarre dès qu'au moins {{clubs}} clubs comptent {{members}} membres chacun. Prêts : {{q}}.",
+    lgColMembers: "Membres",
+    lgColStatus: "Statut",
+    lgReady: "Prêt",
+    lgGathering: "En cours",
+    lgYourClub: "Votre club",
     searchNoResults: "Aucun résultat"
   }
 };

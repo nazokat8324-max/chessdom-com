@@ -5067,6 +5067,36 @@ sidebar {
   margin-bottom: 16px;
 }
 
+/* Liga boshlanmaganda: qit'adagi barcha davlatlar jadvali */
+.lg-preview-note {
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #f2d48a;
+  background: rgba(242, 196, 82, 0.08);
+  border: 1px solid rgba(242, 196, 82, 0.22);
+}
+.lg-preview-table td {
+  padding: 9px 8px;
+}
+.lg-preview-table tr.lg-mine td {
+  background: rgba(129, 182, 76, 0.1);
+}
+.lg-members-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 64px;
+  font-size: 12px;
+  color: #c3cdc8;
+}
+.lg-members-cell .lg-progress {
+  width: 100%;
+}
+
 /* Yon menyudagi kutayotgan liga o'yinlari soni */
 .lg-nav-badge {
   margin-left: auto;

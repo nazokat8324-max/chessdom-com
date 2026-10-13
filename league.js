@@ -402,8 +402,8 @@ async function overview() {
     if (club.members >= CFG.minMembers) entry.qualified++;
   }
   for (const entry of Object.values(qualification)) {
+    // To'liq ro'yxat: klient kartada eng yaxshi 5 tasini, jadvalda hammasini ko'rsatadi
     entry.clubs.sort((a, b) => b.members - a.members);
-    entry.clubs = entry.clubs.slice(0, 5);
   }
 
   const pastRows = await q.all('SELECT * FROM league_seasons WHERE champion_club IS NOT NULL ORDER BY number DESC LIMIT 5');

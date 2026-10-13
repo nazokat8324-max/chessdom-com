@@ -3501,6 +3501,33 @@
   --cd-accent-soft: rgba(240, 160, 60, 0.14);
 }
 
+/* Shaxmat taxtasi ranglari ham sayt mavzusiga mos (chessboard.js katak klasslari) */
+:root,
+:root[data-theme="emerald"] {
+  --board-light: #ebecd0;
+  --board-dark: #739552;
+}
+:root[data-theme="ocean"] {
+  --board-light: #e4ebf3;
+  --board-dark: #6f8fb4;
+}
+:root[data-theme="amethyst"] {
+  --board-light: #ece5f5;
+  --board-dark: #9479bd;
+}
+:root[data-theme="sunset"] {
+  --board-light: #f0d9b5;
+  --board-dark: #b58863;
+}
+:root .white-1e1d7 {
+  background-color: var(--board-light);
+  color: var(--board-dark);
+}
+:root .black-3c85d {
+  background-color: var(--board-dark);
+  color: var(--board-light);
+}
+
 /* Koordinatalar o'chirilganda doskadagi a–h / 1–8 belgilari yashiriladi (chessboard.js) */
 .hide-coords .notation-322f9 {
   display: none;
@@ -5383,8 +5410,8 @@ body.auth-locked {
   align-items: center;
   justify-content: center;
 }
-.auth-board .sq.l { background: #ebecd0; }
-.auth-board .sq.d { background: #739552; }
+.auth-board .sq.l { background: var(--board-light); }
+.auth-board .sq.d { background: var(--board-dark); }
 .auth-board .sq.hl.l { background: #f5f682; }
 .auth-board .sq.hl.d { background: #b9ca43; }
 .auth-board img {

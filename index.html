@@ -388,36 +388,14 @@
             >
               ⚡ Play Online (Matchmaking)
             </button>
-            <div class="dash-info-btns">
-              <button
-                class="play-sub-btn"
-                id="dashAboutBtn"
-                onclick="openInfoModal('about')"
-              >
-                📖 Sayt haqida
-              </button>
-              <button
-                class="play-sub-btn"
-                id="dashGoalBtn"
-                onclick="openInfoModal('goal')"
-              >
-                🎯 Maqsadimiz
-              </button>
-              <button
-                class="play-sub-btn"
-                id="dashPlanBtn"
-                onclick="openInfoModal('plan')"
-              >
-                🚀 Kelajak rejalari
-              </button>
-              <button
-                class="play-sub-btn"
-                id="dashTechBtn"
-                onclick="openInfoModal('tech')"
-              >
-                🧭 Sayt tuzilishi
-              </button>
-            </div>
+            <button class="about-open-btn" id="dashAboutPageBtn" onclick="window.openAboutPage()">
+              <span class="about-open-icon">♞</span>
+              <span class="about-open-text">
+                <b data-i18n="aboutOpenBtn">ChessDom haqida</b>
+                <small data-i18n="aboutOpenSub">Tarix, maqsad, rejalar va sayt tuzilishi</small>
+              </span>
+              <span class="about-open-arrow">→</span>
+            </button>
           </div>
           <!-- O'rtadagi mini taxta bloki -->
           <div
@@ -1263,6 +1241,11 @@
       </div>
     </div>
 
+    <!-- "ChessDom haqida" — to'liq ekranli sahifa (about.js) -->
+    <div id="aboutPage" style="display: none">
+      <div id="aboutPageContent"></div>
+    </div>
+
     <!-- 11. LIGALAR (leagues.js) -->
     <div id="leaguesView" class="view-section lg-view">
       <div class="lg-page" id="leaguesRoot"></div>
@@ -1783,6 +1766,7 @@
     <script src="views.js"></script>
     <script src="rating.js"></script>
     <script src="leagues.js"></script>
+    <script src="about.js"></script>
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>

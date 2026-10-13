@@ -5346,6 +5346,465 @@ sidebar {
   .lg-game-row { grid-template-columns: 1fr; gap: 8px; }
 }
 
+/* ===== "ChessDom haqida" sahifasi (about.js) ===== */
+#aboutPage {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(var(--accent-rgb), 0.16), transparent 40%),
+    radial-gradient(circle at 90% 30%, rgba(242, 196, 82, 0.06), transparent 35%),
+    var(--cd-bg);
+  color: #e8ece9;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+#aboutPage.open {
+  opacity: 1;
+}
+.ab-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: rgba(10, 14, 12, 0.6);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ab-back {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--cd-border-strong);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e8ece9;
+  font-weight: 600;
+  cursor: pointer;
+}
+.ab-back:hover { background: rgba(255, 255, 255, 0.1); }
+.ab-logo {
+  font-size: 20px;
+  font-weight: 800;
+}
+.ab-logo b { color: var(--accent); }
+
+/* Hero */
+.ab-hero {
+  position: relative;
+  min-height: 72vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  overflow: hidden;
+}
+.ab-hero-pieces span {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  font-size: var(--s);
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.07);
+  animation: abFloat var(--t) ease-in-out infinite;
+  user-select: none;
+}
+@keyframes abFloat {
+  0%, 100% { transform: translateY(0) rotate(-6deg); }
+  50% { transform: translateY(-22px) rotate(6deg); }
+}
+.ab-hero-chip {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-light);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  animation: abRise 0.8s ease both;
+}
+.ab-hero-title {
+  margin: 18px 0 10px;
+  font-size: clamp(56px, 10vw, 120px);
+  font-weight: 900;
+  letter-spacing: -3px;
+  line-height: 1;
+  color: #fff;
+  animation: abRise 0.8s 0.1s ease both;
+}
+.ab-hero-title span {
+  background: linear-gradient(90deg, var(--accent-light), #f2d48a, var(--accent));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: abShine 5s linear infinite;
+}
+@keyframes abShine {
+  to { background-position: 200% center; }
+}
+.ab-hero-sub {
+  max-width: 620px;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.6;
+  color: #a9b6b0;
+  animation: abRise 0.8s 0.2s ease both;
+}
+@keyframes abRise {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: none; }
+}
+.ab-scroll-hint {
+  position: absolute;
+  bottom: 26px;
+  width: 26px;
+  height: 42px;
+  border-radius: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+}
+.ab-scroll-hint span {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 4px;
+  height: 8px;
+  margin-left: -2px;
+  border-radius: 2px;
+  background: var(--accent);
+  animation: abScroll 1.6s ease-in-out infinite;
+}
+@keyframes abScroll {
+  0% { opacity: 0; transform: translateY(0); }
+  40% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(14px); }
+}
+
+/* Bo'limlar menyusi */
+.ab-nav {
+  position: sticky;
+  top: 65px;
+  z-index: 2;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(10, 14, 12, 0.55);
+  backdrop-filter: blur(10px);
+}
+.ab-nav-btn {
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid var(--cd-border-strong);
+  background: var(--cd-surface);
+  color: #b9c5bf;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.ab-nav-btn:hover { color: #fff; }
+.ab-nav-btn.active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Bo'limlar */
+.ab-section {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 70px 24px 20px;
+}
+.ab-title {
+  margin: 0 0 26px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+.ab-reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+  transition-delay: var(--d, 0ms);
+}
+.ab-reveal.in {
+  opacity: 1;
+  transform: none;
+}
+.ab-about-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  gap: 28px;
+  align-items: center;
+}
+.ab-text p,
+.ab-lead {
+  margin: 0 0 16px;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #c3cdc8;
+}
+.ab-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.ab-stat {
+  padding: 22px 18px;
+  border-radius: 18px;
+  text-align: center;
+  background: var(--cd-surface);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.ab-stat b {
+  display: block;
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--accent-light);
+  font-variant-numeric: tabular-nums;
+}
+.ab-stat span {
+  font-size: 14px;
+  color: #8fa29a;
+}
+
+/* Maqsad */
+.ab-duo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.ab-duo-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 150px;
+  padding: 22px 12px;
+  border-radius: 20px;
+  background: var(--cd-surface);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+.ab-duo-side span {
+  font-size: 50px;
+  animation: abFloat 6s ease-in-out infinite;
+}
+.ab-duo-side b { font-size: 16px; color: #fff; }
+.ab-duo-plus {
+  font-size: 40px;
+  font-weight: 900;
+  color: var(--accent);
+}
+.ab-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.ab-quote {
+  margin: 0;
+  padding: 18px 22px;
+  border-radius: 16px;
+  font-size: 16px;
+  line-height: 1.7;
+  color: #d5ddd9;
+  background: var(--cd-surface);
+  border-left: 4px solid var(--accent);
+}
+
+/* Kelajak rejalari — vaqt shkalasi */
+.ab-timeline {
+  position: relative;
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0 0 0 8px;
+}
+.ab-timeline::before {
+  content: '';
+  position: absolute;
+  left: 27px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: linear-gradient(var(--accent), rgba(var(--accent-rgb), 0.1));
+}
+.ab-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+.ab-step-dot {
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fff;
+  background: var(--accent);
+  box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0.15);
+}
+.ab-step-card {
+  flex: 1;
+  padding: 16px 20px;
+  border-radius: 14px;
+  font-size: 16px;
+  color: #d5ddd9;
+  background: var(--cd-surface);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Sayt tuzilishi kartalari */
+.ab-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.ab-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 22px 20px;
+  border-radius: 18px;
+  text-align: left;
+  background: var(--cd-surface);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  color: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.ab-card.in:hover {
+  transform: translateY(-4px);
+  border-color: rgba(var(--accent-rgb), 0.45);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+}
+.ab-card-icon { font-size: 30px; }
+.ab-card-title { font-size: 17px; font-weight: 800; color: #fff; }
+.ab-card-text { font-size: 14px; line-height: 1.55; color: #9fb0a8; }
+.ab-card-go {
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-light);
+}
+
+/* Yakuniy chaqiriq */
+.ab-cta {
+  max-width: 1040px;
+  margin: 70px auto 0;
+  padding: 44px 24px;
+  border-radius: 24px;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(var(--accent-rgb), 0.25), transparent 60%),
+    var(--cd-surface);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
+}
+.ab-cta h2 {
+  margin: 0 0 18px;
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+}
+.ab-cta-btn {
+  height: 52px;
+  padding: 0 28px;
+  border: none;
+  border-radius: 14px;
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(180deg, var(--accent-light), var(--accent-dark));
+  box-shadow: 0 10px 26px rgba(var(--accent-rgb), 0.35);
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+}
+.ab-cta-btn:hover { transform: translateY(-2px); filter: brightness(1.07); }
+.ab-footer {
+  padding: 40px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: #56655f;
+}
+
+/* Bosh sahifadagi "ChessDom haqida" tugmasi */
+.about-open-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(var(--accent-rgb), 0.3);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.04));
+  color: #fff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.about-open-btn:hover {
+  transform: translateY(-2px);
+  border-color: rgba(var(--accent-rgb), 0.6);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35);
+}
+.about-open-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  background: rgba(var(--accent-rgb), 0.2);
+}
+.about-open-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.about-open-text b { font-size: 15px; }
+.about-open-text small { font-size: 12px; color: #9fb0a8; }
+.about-open-arrow {
+  font-size: 18px;
+  color: var(--accent-light);
+  transition: transform 0.15s;
+}
+.about-open-btn:hover .about-open-arrow { transform: translateX(4px); }
+
+@media (max-width: 900px) {
+  .ab-about-grid { grid-template-columns: 1fr; }
+  .ab-cards { grid-template-columns: 1fr; }
+  .ab-title { font-size: 28px; }
+  .ab-nav { top: 63px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ab-reveal { opacity: 1; transform: none; transition: none; }
+  .ab-hero-pieces span, .ab-duo-side span, .ab-hero-title span, .ab-scroll-hint span { animation: none; }
+}
+
 /* ===== Kirish / ro'yxatdan o'tish sahifasi (tizimga kirilmaguncha) ===== */
 body.auth-locked {
   overflow: hidden;

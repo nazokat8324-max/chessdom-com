@@ -1510,13 +1510,38 @@ window.populateSettingsCountries = function() {
   country.value = keep || saved.country || "uz";
 };
 
+// --- Sayt rangi va koordinatalar (Sozlamalar → Dizayn) ---
+window.SITE_THEMES = ['emerald', 'ocean', 'amethyst', 'sunset'];
+
+window.applySiteTheme = function(theme) {
+  const name = window.SITE_THEMES.includes(theme) ? theme : 'emerald';
+  document.documentElement.setAttribute('data-theme', name);
+  document.querySelectorAll('[data-theme-option]').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.themeOption === name);
+  });
+  return name;
+};
+
+window.applyCoords = function(show) {
+  document.documentElement.classList.toggle('hide-coords', show === false);
+};
+
+// Bir sozlamani darhol saqlash (boshqa saqlangan qiymatlarni o'zgartirmasdan)
+function patchSettings(patch) {
+  const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
+  localStorage.setItem("justChessSettings", JSON.stringify({ ...saved, ...patch }));
+}
+
+window.selectSiteTheme = function(theme) {
+  patchSettings({ siteTheme: window.applySiteTheme(theme) });
+};
+
 window.updateSettingsView = function() {
   const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
   const country = document.getElementById("settingsCountry");
   const lang = document.getElementById("settingsLanguage");
   const sound = document.getElementById("settingsSound");
   const volume = document.getElementById("settingsVolume");
-  const theme = document.getElementById("settingsTheme");
   const coords = document.getElementById("settingsCoords");
   if (country) {
     window.populateSettingsCountries();
@@ -1525,8 +1550,9 @@ window.updateSettingsView = function() {
   if (lang) lang.value = saved.language || "uz";
   if (sound) sound.checked = saved.soundEnabled !== false;
   if (volume) volume.value = Math.round((saved.volume || 0.8) * 100);
-  if (theme) theme.value = saved.boardTheme || "green";
+  window.applySiteTheme(saved.siteTheme || "emerald");
   if (coords) coords.checked = saved.showCoords !== false;
+  window.applyCoords(saved.showCoords !== false);
   const volVal = document.getElementById("settingsVolumeVal");
   if (volVal && volume) volVal.textContent = volume.value + "%";
 };
@@ -1541,7 +1567,7 @@ window.saveSettings = function() {
     language: (document.getElementById("settingsLanguage")?.value || "uz"),
     soundEnabled: document.getElementById("settingsSound")?.checked !== false,
     volume: (parseInt(document.getElementById("settingsVolume")?.value || "80") / 100),
-    boardTheme: (document.getElementById("settingsTheme")?.value || "green"),
+    siteTheme: document.documentElement.getAttribute("data-theme") || "emerald",
     showCoords: document.getElementById("settingsCoords")?.checked !== false
   };
   localStorage.setItem("justChessSettings", JSON.stringify(saved));
@@ -1574,10 +1600,19 @@ window.resetSettings = function() {
       ? i18next.t(key, { defaultValue: fallback })
       : fallback;
   localStorage.removeItem("justChessSettings");
+  window.applySiteTheme("emerald");
+  window.applyCoords(true);
   window.updateSettingsView();
   showToast(tSettings('settingsResetToast', "Sozlamalar qayta o'rnatildi"), "info");
 };
 
+  const coordsEl = document.getElementById("settingsCoords");
+  if (coordsEl) {
+    coordsEl.addEventListener("change", function() {
+      window.applyCoords(this.checked);
+      patchSettings({ showCoords: this.checked });
+    });
+  }
   const soundEl = document.getElementById("settingsSound");
   if (soundEl) {
     soundEl.addEventListener("change", function() {

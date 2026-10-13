@@ -519,7 +519,7 @@ window.openClubDetail = async function(countryName, countryCode) {
         ">
         <div>
           <h2 style="color: #fff; font-size: 24px; margin: 0; text-shadow: 0 2px 6px rgba(0,0,0,0.5);">${escapeHtml(tx('clubDetailTitle', '{{country}} shaxmat klubi', { country: localizedCountry }))}</h2>
-          <span style="color: #81b64c; font-size: 13px; margin-top: 3px; display: block;">${memberCount} ${tr('clubDetailMembersCount', "a'zo")} • ${eventsPlayed} ${tr('clubDetailEventsCount', "musobaqa")}</span>
+          <span style="color: var(--accent); font-size: 13px; margin-top: 3px; display: block;">${memberCount} ${tr('clubDetailMembersCount', "a'zo")} • ${eventsPlayed} ${tr('clubDetailEventsCount', "musobaqa")}</span>
         </div>
       </div>
     </div>
@@ -537,13 +537,13 @@ window.openClubDetail = async function(countryName, countryCode) {
         margin-right: auto;
       ">
         <div style="
-          background: rgba(129, 182, 76, 0.08);
-          border: 1px solid rgba(129, 182, 76, 0.3);
+          background: rgba(var(--accent-rgb), 0.08);
+          border: 1px solid rgba(var(--accent-rgb), 0.3);
           border-radius: 12px;
           padding: 20px;
           text-align: center;
         ">
-          <div style="font-size: 32px; font-weight: bold; color: #81b64c;">${memberCount}</div>
+          <div style="font-size: 32px; font-weight: bold; color: var(--accent);">${memberCount}</div>
           <div style="font-size: 12px; color: #88a; margin-top: 5px;">${tr('clubDetailMembersCard', "A'zolar")}</div>
         </div>
         <div style="
@@ -569,8 +569,8 @@ window.openClubDetail = async function(countryName, countryCode) {
       </div>
 
       <!-- Description -->
-      <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid #2a3e3b; margin-bottom: 25px; max-width: 900px; margin-left: auto; margin-right: auto;">
-        <h4 style="color: #81b64c; font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">${tr('clubDetailAboutTitle', "Klub haqida")}</h4>
+      <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid var(--cd-border-strong); margin-bottom: 25px; max-width: 900px; margin-left: auto; margin-right: auto;">
+        <h4 style="color: var(--accent); font-size: 14px; margin: 0 0 10px 0; text-transform: uppercase; letter-spacing: 1px;">${tr('clubDetailAboutTitle', "Klub haqida")}</h4>
         <p style="color: #bbb; font-size: 13px; line-height: 1.6; margin: 0;">
           ${aboutText}
         </p>
@@ -580,9 +580,9 @@ window.openClubDetail = async function(countryName, countryCode) {
        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">
          <button id="clubDetailJoinBtn" data-name="${escapeHtml(countryName)}" data-code="${escapeHtml(countryCode)}" onclick="joinLeaveFromClubPage(this.dataset.name, this.dataset.code)" style="
            padding: 12px;
-           background: ${isJoined ? '#3b1e1e' : '#81b64c'};
+           background: ${isJoined ? '#3b1e1e' : 'var(--accent)'};
            color: ${isJoined ? '#ff9999' : '#111'};
-           border: 1px solid ${isJoined ? '#522b2b' : '#81b64c'};
+           border: 1px solid ${isJoined ? '#522b2b' : 'var(--accent)'};
            border-radius: 8px;
            font-weight: bold;
            font-size: 13px;
@@ -591,9 +591,9 @@ window.openClubDetail = async function(countryName, countryCode) {
           ">${isJoined ? tr('clubDetailLeaveBtn', 'Leave Club') : tr('clubDetailJoinBtn', "Klubga qo'shilish")}</button>
           <button data-name="${escapeHtml(countryName)}" onclick="showClubTournaments(this.dataset.name)" style="
            padding: 12px;
-           background: #2a3e3b;
+           background: var(--cd-border-strong);
            color: #fff;
-           border: 1px solid #3d5a56;
+           border: 1px solid var(--cd-border-strong);
            border-radius: 8px;
            font-weight: bold;
            font-size: 13px;
@@ -602,9 +602,9 @@ window.openClubDetail = async function(countryName, countryCode) {
          ">🏆 ${tr('clubDetailTournamentsBtn', "Turnirlar")}</button>
           <button data-name="${escapeHtml(countryName)}" onclick="showClubHistory(this.dataset.name)" style="
             padding: 12px;
-            background: #2a3e3b;
+            background: var(--cd-border-strong);
             color: #fff;
-            border: 1px solid #3d5a56;
+            border: 1px solid var(--cd-border-strong);
             border-radius: 8px;
             font-weight: bold;
             font-size: 13px;
@@ -613,9 +613,9 @@ window.openClubDetail = async function(countryName, countryCode) {
           ">📜 ${tr('clubDetailHistoryBtn', "Tarix")}</button>
           <button onclick="switchView('clubs')" style="
            padding: 12px;
-           background: #192825;
+           background: var(--cd-surface-2);
            color: #ccc;
-           border: 1px solid #2a3e3b;
+           border: 1px solid var(--cd-border-strong);
            border-radius: 8px;
            font-weight: bold;
            font-size: 13px;
@@ -625,8 +625,8 @@ window.openClubDetail = async function(countryName, countryCode) {
        </div>
 
         <!-- Top Players -->
-        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid #2a3e3b; max-width: 900px; margin: 0 auto;">
-          <h4 style="color: #81b64c; font-size: 13px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px;">${tr('clubDetailTopPlayersTitle', "Eng kuchli o'yinchilar")}</h4>
+        <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid var(--cd-border-strong); max-width: 900px; margin: 0 auto;">
+          <h4 style="color: var(--accent); font-size: 13px; margin: 0 0 15px 0; text-transform: uppercase; letter-spacing: 1px;">${tr('clubDetailTopPlayersTitle', "Eng kuchli o'yinchilar")}</h4>
           <div style="display: flex; flex-direction: column; gap: 8px;">
             ${topPlayersHTML}
           </div>
@@ -720,25 +720,25 @@ window.showJoinSuccessModal = function(country) {
 
   modal.innerHTML = `
     <div style="
-      background: linear-gradient(145deg, #1a2a28, #152220);
-      border: 2px solid #81b64c;
+      background: linear-gradient(145deg, #1a2a28, var(--cd-surface));
+      border: 2px solid var(--accent);
       border-radius: 16px;
       padding: 30px;
       text-align: center;
       max-width: 350px;
       width: 90%;
-      box-shadow: 0 20px 60px rgba(129, 182, 76, 0.3);
+      box-shadow: 0 20px 60px rgba(var(--accent-rgb), 0.3);
       animation: scaleIn 0.3s ease;
     ">
       <div style="font-size: 48px; margin-bottom: 15px;">🎉</div>
-      <h3 style="color: #81b64c; font-size: 20px; margin-bottom: 10px;">${escapeHtml(tx('clubJoinWelcome', 'Xush kelibsiz!'))}</h3>
+      <h3 style="color: var(--accent); font-size: 20px; margin-bottom: 10px;">${escapeHtml(tx('clubJoinWelcome', 'Xush kelibsiz!'))}</h3>
       <p style="color: #fff; font-size: 14px; margin-bottom: 5px;">${escapeHtml(tx('clubJoinSuccess', "Siz muvaffaqiyatli qo'shildingiz:"))}</p>
-      <p style="color: #81b64c; font-size: 16px; font-weight: bold; margin-bottom: 20px;">
+      <p style="color: var(--accent); font-size: 16px; font-weight: bold; margin-bottom: 20px;">
         <img src="https://flagcdn.com/w40/${country.code}.png" style="vertical-align: middle; margin-right: 8px; border-radius: 3px; width: 30px; height: 20px;">
         ${escapeHtml(tx('clubDetailTitle', '{{country}} shaxmat klubi', { country: (typeof countryName === 'function' ? countryName(country.name, country.code) : country.name) }))}
       </p>
       <button onclick="document.getElementById('joinSuccessModal').remove()" style="
-        background: #81b64c;
+        background: var(--accent);
         color: #111;
         border: none;
         padding: 10px 30px;
@@ -1214,7 +1214,7 @@ window.loadTournaments = function() {
               <b style="font-size: 14px; color: #fff; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px;">${escapeHtml(tournament.name)}</b>
               <span style="font-size: 11px; color: #88a;">${subInfo}</span>
               <div style="margin-top: 4px; display: flex; gap: 6px;">
-                <span style="font-size: 10px; padding: 2px 8px; border-radius: 10px; background: rgba(129,182,76,0.15); color: #81b64c; border: 1px solid rgba(129,182,76,0.3);">${typeLabel}</span>
+                <span style="font-size: 10px; padding: 2px 8px; border-radius: 10px; background: rgba(var(--accent-rgb),0.15); color: var(--accent); border: 1px solid rgba(var(--accent-rgb),0.3);">${typeLabel}</span>
                 <span style="font-size: 10px; padding: 2px 8px; border-radius: 10px; background: rgba(0,0,0,0.2); color: ${statusColor};">${statusLabel}</span>
               </div>
             </div>
@@ -1412,7 +1412,7 @@ window.loadFriendsList = function() {
         htmlContent += `
           <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-              <div class="mini-avatar" style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">
+              <div class="mini-avatar" style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: var(--accent); border-radius: 50%; color: white; font-weight: bold;">
                 ${friend.username.charAt(0).toUpperCase()}
               </div>
               <div>
@@ -1488,7 +1488,7 @@ window.loadChatMessages = function() {
         const isOwn = msg.sender_id === (window.currentUser?.id || 'guest');
         htmlContent += `
           <div style="text-align: ${isOwn ? 'right' : 'left'}; margin-bottom: 8px;">
-            <div style="display: inline-block; background: ${isOwn ? '#2ecc71' : '#2a3e3b'}; color: #fff; padding: 8px 12px; border-radius: 8px; max-width: 70%; text-align: left;">
+            <div style="display: inline-block; background: ${isOwn ? '#2ecc71' : 'var(--cd-border-strong)'}; color: #fff; padding: 8px 12px; border-radius: 8px; max-width: 70%; text-align: left;">
               <div style="font-size: 11px; color: #88a; margin-bottom: 4px;">${escapeHtml(msg.username || msg.sender_username || tx('userFallback', 'Foydalanuvchi'))}</div>
               <div style="font-size: 13px;">${escapeHtml(msg.message)}</div>
             </div>
@@ -1595,11 +1595,11 @@ window.showClubLeaderboard = async function(countryName) {
       <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
         <div style="display: flex; align-items: center; gap: 12px;">
           <span style="font-size: 14px; font-weight: bold; width: 22px; text-align: center; color: ${badgeColor};">#${index + 1}</span>
-          <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
+          <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: var(--accent); border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
           <b class="player-link" data-username="${escapeHtml(member.username)}" style="font-size: 14px; color: #fff;">${escapeHtml(member.username)}</b>
         </div>
         <div style="display: flex; gap: 15px; font-size: 12px; text-align: right;">
-          <span style="color: #81b64c; font-weight: bold;">${Number(member.rating) || 1500}</span>
+          <span style="color: var(--accent); font-weight: bold;">${Number(member.rating) || 1500}</span>
           <span style="color: #2ecc71;">🏆 ${member.wins}</span>
           <span style="color: #e74c3c;">❌ ${member.losses}</span>
           <span style="color: #e6b800;">🤝 ${member.draws}</span>
@@ -1913,8 +1913,8 @@ window.loadClubHistory = async function(countryName, container) {
   htmlContent += `
     <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;">
       <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
-        <div style="background: rgba(129, 182, 76, 0.08); border: 1px solid rgba(129, 182, 76, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
-          <div style="font-size: 24px; font-weight: bold; color: #81b64c;">${storedMembers.length}</div>
+        <div style="background: rgba(var(--accent-rgb), 0.08); border: 1px solid rgba(var(--accent-rgb), 0.3); border-radius: 10px; padding: 15px; text-align: center;">
+          <div style="font-size: 24px; font-weight: bold; color: var(--accent);">${storedMembers.length}</div>
           <div style="font-size: 11px; color: #88a;">${tr('clubDetailMembersCard', "A'zolar")}</div>
         </div>
         <div style="background: rgba(52, 152, 219, 0.08); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
@@ -1946,7 +1946,7 @@ window.loadClubHistory = async function(countryName, container) {
 
     htmlContent += `
       <div style="display: flex; align-items: center; gap: 12px; padding: 12px 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-        <div style="width: 36px; height: 36px; background: #81b64c; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">${firstLetter}</div>
+        <div style="width: 36px; height: 36px; background: var(--accent); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">${firstLetter}</div>
         <div style="flex: 1;">
           <div style="font-size: 14px; color: #fff; font-weight: bold; display: flex; align-items: center; gap: 8px;">
             <span class="player-link" data-username="${escapeHtml(member.username)}">${escapeHtml(member.username)}</span>
@@ -2016,18 +2016,18 @@ window.openTournamentDetail = async function(tournamentId) {
         if (isPlayer && m.status === 'active') {
           resultBtns = `
             <div style="display: flex; gap: 6px; margin-top: 8px;">
-               <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'white')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">${escapeHtml(tx('tdWhiteWins', 'Oq yutdi'))}</button>
-              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'draw')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">${escapeHtml(tx('btnDrawText', 'Durrang'))}</button>
-              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'black')" style="flex:1; font-size: 11px; padding: 6px 4px; background: #2a3e3b; color: #dbe8df; border: 1px solid #3d5a56; border-radius: 8px; font-weight: 700;">${escapeHtml(tx('tdBlackWins', 'Qora yutdi'))}</button>
+               <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'white')" style="flex:1; font-size: 11px; padding: 6px 4px; background: var(--cd-border-strong); color: #dbe8df; border: 1px solid var(--cd-border-strong); border-radius: 8px; font-weight: 700;">${escapeHtml(tx('tdWhiteWins', 'Oq yutdi'))}</button>
+              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'draw')" style="flex:1; font-size: 11px; padding: 6px 4px; background: var(--cd-border-strong); color: #dbe8df; border: 1px solid var(--cd-border-strong); border-radius: 8px; font-weight: 700;">${escapeHtml(tx('btnDrawText', 'Durrang'))}</button>
+              <button class="action-btn" onclick="reportTournamentMatchResult('${tournamentId}', '${m.id}', 'black')" style="flex:1; font-size: 11px; padding: 6px 4px; background: var(--cd-border-strong); color: #dbe8df; border: 1px solid var(--cd-border-strong); border-radius: 8px; font-weight: 700;">${escapeHtml(tx('tdBlackWins', 'Qora yutdi'))}</button>
             </div>`;
         } else if (m.status === 'completed') {
           const winnerName = m.winnerId === m.player1Id ? p1 : p2;
           const resultText = m.winnerId ? tx('tdPlayerWins', '{{name}} yutdi', { name: winnerName }) : tx('resultDraw', 'Durrang');
-          resultBtns = `<div style="font-size: 11px; color: #8fc95a; margin-top: 6px; font-weight: 700;">✓ ${escapeHtml(resultText)}</div>`;
+          resultBtns = `<div style="font-size: 11px; color: var(--accent-light); margin-top: 6px; font-weight: 700;">✓ ${escapeHtml(resultText)}</div>`;
         }
         pairingsHTML += `
           <div class="tournament-detail-standings-row" style="grid-template-columns: 18px minmax(0, 1fr) auto minmax(0, 1fr);">
-            <span style="font-size: 12px; color: #8fc95a; font-weight: 800;">#${m.board || (roundMatches.indexOf(m) + 1)}</span>
+            <span style="font-size: 12px; color: var(--accent-light); font-weight: 800;">#${m.board || (roundMatches.indexOf(m) + 1)}</span>
             <div style="min-width: 0;">
               <strong style="font-size: 13px; color: #f4fbf3;">${escapeHtml(p1)}</strong>
             </div>

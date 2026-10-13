@@ -1744,6 +1744,11 @@ const translationsExtra = {
     lgReady: "Tayyor",
     lgGathering: "Yig'ilmoqda",
     lgYourClub: "Sizning klubingiz",
+    settingsSiteTheme: "Sayt rangi:",
+    themeEmerald: "Zumrad",
+    themeOcean: "Okean",
+    themeAmethyst: "Ametist",
+    themeSunset: "Shafaq",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2023,6 +2028,11 @@ const translationsExtra = {
     lgReady: "Ready",
     lgGathering: "Gathering",
     lgYourClub: "Your club",
+    settingsSiteTheme: "Site colour:",
+    themeEmerald: "Emerald",
+    themeOcean: "Ocean",
+    themeAmethyst: "Amethyst",
+    themeSunset: "Sunset",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2302,6 +2312,11 @@ const translationsExtra = {
     lgReady: "Готов",
     lgGathering: "Набирается",
     lgYourClub: "Ваш клуб",
+    settingsSiteTheme: "Цвет сайта:",
+    themeEmerald: "Изумруд",
+    themeOcean: "Океан",
+    themeAmethyst: "Аметист",
+    themeSunset: "Закат",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2581,6 +2596,11 @@ const translationsExtra = {
     lgReady: "Listo",
     lgGathering: "Reuniendo",
     lgYourClub: "Tu club",
+    settingsSiteTheme: "Color del sitio:",
+    themeEmerald: "Esmeralda",
+    themeOcean: "Océano",
+    themeAmethyst: "Amatista",
+    themeSunset: "Atardecer",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2860,6 +2880,11 @@ const translationsExtra = {
     lgReady: "Bereit",
     lgGathering: "Sammelt",
     lgYourClub: "Dein Klub",
+    settingsSiteTheme: "Farbe der Seite:",
+    themeEmerald: "Smaragd",
+    themeOcean: "Ozean",
+    themeAmethyst: "Amethyst",
+    themeSunset: "Abendrot",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -3139,6 +3164,11 @@ const translationsExtra = {
     lgReady: "Prêt",
     lgGathering: "En cours",
     lgYourClub: "Votre club",
+    settingsSiteTheme: "Couleur du site :",
+    themeEmerald: "Émeraude",
+    themeOcean: "Océan",
+    themeAmethyst: "Améthyste",
+    themeSunset: "Crépuscule",
     searchNoResults: "Aucun résultat"
   }
 };

@@ -1767,6 +1767,9 @@ const translationsExtra = {
     aboutGoTo: "O'tish",
     aboutCtaTitle: "Birinchi yurish sizdan!",
     aboutCta: "O'ynashni boshlash",
+    clubDetailChatBtn: "Chat",
+    clubChatMembersOnly: "Klub chatiga faqat a'zolar yoza oladi.",
+    srvClubChatMembersOnly: "Klub chatiga faqat klub a'zolari yozishi mumkin!",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2069,6 +2072,9 @@ const translationsExtra = {
     aboutGoTo: "Open",
     aboutCtaTitle: "The first move is yours!",
     aboutCta: "Start playing",
+    clubDetailChatBtn: "Chat",
+    clubChatMembersOnly: "Only club members can write in the club chat.",
+    srvClubChatMembersOnly: "Only club members can write in the club chat!",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2371,6 +2377,9 @@ const translationsExtra = {
     aboutGoTo: "Перейти",
     aboutCtaTitle: "Первый ход за вами!",
     aboutCta: "Начать игру",
+    clubDetailChatBtn: "Чат",
+    clubChatMembersOnly: "Писать в чат клуба могут только его участники.",
+    srvClubChatMembersOnly: "Писать в чат клуба могут только его участники!",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2673,6 +2682,9 @@ const translationsExtra = {
     aboutGoTo: "Abrir",
     aboutCtaTitle: "¡El primer movimiento es tuyo!",
     aboutCta: "Empezar a jugar",
+    clubDetailChatBtn: "Chat",
+    clubChatMembersOnly: "Solo los miembros pueden escribir en el chat del club.",
+    srvClubChatMembersOnly: "¡Solo los miembros pueden escribir en el chat del club!",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2975,6 +2987,9 @@ const translationsExtra = {
     aboutGoTo: "Öffnen",
     aboutCtaTitle: "Der erste Zug gehört dir!",
     aboutCta: "Jetzt spielen",
+    clubDetailChatBtn: "Chat",
+    clubChatMembersOnly: "Nur Mitglieder können im Klubchat schreiben.",
+    srvClubChatMembersOnly: "Nur Mitglieder können im Klubchat schreiben!",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -3277,6 +3292,9 @@ const translationsExtra = {
     aboutGoTo: "Ouvrir",
     aboutCtaTitle: "Le premier coup est à vous !",
     aboutCta: "Commencer à jouer",
+    clubDetailChatBtn: "Chat",
+    clubChatMembersOnly: "Seuls les membres peuvent écrire dans le chat du club.",
+    srvClubChatMembersOnly: "Seuls les membres peuvent écrire dans le chat du club !",
     searchNoResults: "Aucun résultat"
   }
 };

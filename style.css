@@ -5805,6 +5805,40 @@ sidebar {
   .ab-hero-pieces span, .ab-duo-side span, .ab-hero-title span, .ab-scroll-hint span { animation: none; }
 }
 
+/* Klub chati: a'zo bo'lmaganlar uchun eslatma */
+.club-chat-locked {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13px;
+  color: #c9d2ce;
+}
+/* Klub chati sarlavhasi: "Orqaga" tugmasi o'z kengligida, nom o'rtada */
+.club-chat-header .control-btn {
+  flex: 0 0 auto;
+  width: auto;
+}
+#clubChatTitle {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+}
+.club-chat-join-btn {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+}
+
 /* ===== Kirish / ro'yxatdan o'tish sahifasi (tizimga kirilmaguncha) ===== */
 body.auth-locked {
   overflow: hidden;

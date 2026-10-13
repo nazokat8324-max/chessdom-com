@@ -577,7 +577,7 @@ window.openClubDetail = async function(countryName, countryCode) {
       </div>
 
        <!-- Action Buttons - Bitta qatorda -->
-       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 25px; max-width: 600px; margin-left: auto; margin-right: auto;">
+       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 25px; max-width: 760px; margin-left: auto; margin-right: auto;">
          <button id="clubDetailJoinBtn" data-name="${escapeHtml(countryName)}" data-code="${escapeHtml(countryCode)}" onclick="joinLeaveFromClubPage(this.dataset.name, this.dataset.code)" style="
            padding: 12px;
            background: ${isJoined ? '#3b1e1e' : 'var(--accent)'};
@@ -611,6 +611,17 @@ window.openClubDetail = async function(countryName, countryCode) {
             cursor: pointer;
             transition: all 0.2s;
           ">📜 ${tr('clubDetailHistoryBtn', "Tarix")}</button>
+          <button data-name="${escapeHtml(countryName)}" data-code="${escapeHtml(countryCode)}" onclick="showClubChat(this.dataset.name, this.dataset.code)" style="
+            padding: 12px;
+            background: var(--accent);
+            color: #fff;
+            border: 1px solid var(--accent);
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+          ">💬 ${tr('clubDetailChatBtn', "Chat")}</button>
           <button onclick="switchView('clubs')" style="
            padding: 12px;
            background: var(--cd-surface-2);
@@ -1743,7 +1754,7 @@ window.showClubChat = function(countryName, countryCode) {
   if (titleEl) {
     const safeCountryName = escapeHtml(countryName);
     const safeCountryCode = escapeHtml(countryCode);
-    titleEl.innerHTML = `<img src="https://flagcdn.com/w20/${safeCountryCode}.png" style="width: 20px; height: 14px; margin-right: 8px; border-radius: 2px;"> ${escapeHtml(tx('clubChatTitle', '{{country}} klub chati', { country: countryName }))}`;
+    titleEl.innerHTML = `<img src="https://flagcdn.com/w20/${safeCountryCode}.png" style="width: 20px; height: 14px; margin-right: 8px; border-radius: 2px;"> ${escapeHtml(tx('clubChatTitle', '{{country}} klub chati', { country: (typeof window.countryName === 'function' ? window.countryName(countryName, countryCode) : countryName) }))}`;
   }
 
   const container = document.getElementById("clubChatMessagesContainer");
@@ -1752,6 +1763,7 @@ window.showClubChat = function(countryName, countryCode) {
   container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
 
   loadClubChatMessages();
+  updateClubChatComposer(countryName, countryCode);
 
   // Socket.IO orqali klub xonasiga qo'shilish
   if (typeof socket !== 'undefined' && socket.connected) {
@@ -1767,6 +1779,32 @@ window.switchViewToClubChat = function() {
   document.getElementById("clubChatView").classList.add("active-view");
   document.getElementById("navClubs").classList.add("active");
 };
+
+// A'zo bo'lmaganlarga yozish maydoni o'rniga "klubga qo'shiling" eslatmasi
+function updateClubChatComposer(countryName, countryCode) {
+  const input = document.getElementById('clubChatMessageInput');
+  if (!input) return;
+  const row = input.parentElement;
+  const isMember = getUserClubs().includes(countryName);
+  row.style.display = isMember ? 'flex' : 'none';
+  let note = document.getElementById('clubChatLockedNote');
+  if (isMember) { if (note) note.remove(); return; }
+  if (!note) {
+    note = document.createElement('div');
+    note.id = 'clubChatLockedNote';
+    note.className = 'club-chat-locked';
+    row.parentElement.appendChild(note);
+  }
+  note.innerHTML = `<span>🔒 ${escapeHtml(tx('clubChatMembersOnly', "Klub chatiga faqat a'zolar yoza oladi."))}</span>`;
+  const btn = document.createElement('button');
+  btn.className = 'club-chat-join-btn';
+  btn.textContent = tx('clubDetailJoinBtn', "Klubga qo'shilish");
+  btn.onclick = async () => {
+    await window.joinLeaveFromClubPage(countryName, countryCode);
+    if (getUserClubs().includes(countryName)) window.showClubChat(countryName, countryCode);
+  };
+  note.appendChild(btn);
+}
 
 window.loadClubChatMessages = function() {
   if (!window.currentClubName) return;

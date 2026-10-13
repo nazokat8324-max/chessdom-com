@@ -53,6 +53,7 @@ const SERVER_MESSAGE_KEYS = {
   "Klub to'la!": 'srvClubFull',
   "Siz allaqachon klubdasiz!": 'srvAlreadyInClub',
   "Siz allaqachon boshqa klubga a'zosiz!": 'srvAlreadyInOtherClub',
+  "Klub chatiga faqat klub a'zolari yozishi mumkin!": 'srvClubChatMembersOnly',
   "Noto'g'ri davlat kodi!": 'srvBadCountry'
 };
 window.tServer = function(message) {

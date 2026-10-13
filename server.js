@@ -586,8 +586,8 @@ async function start() {
 
   app.post('/api/chat/messages', authMiddleware, [
     body('message').isLength({ min: 1, max: 1000 }).withMessage('Message must be 1-1000 characters'),
-    body('receiverId').optional().isUUID(),
-    body('roomId').optional().isLength({ max: 100 })
+    body('receiverId').optional({ values: 'null' }).isUUID(),
+    body('roomId').optional({ values: 'null' }).isLength({ max: 100 })
   ], async (req, res) => {
     try {
       const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
@@ -596,6 +596,11 @@ async function start() {
       const requested = req.body.roomId || (req.body.receiverId ? `user_${req.body.receiverId}` : null);
       const roomId = requested ? resolveChatRoom(String(requested), req.user.userId) : null;
       if (requested && !roomId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
+      // Klub chati (club_<davlat>): o'qish hammaga, yozish faqat shu klub a'zolariga
+      if (roomId && roomId.startsWith('club_')) {
+        const me = await db.getUserById(req.user.userId);
+        if (!me || me.club_country !== roomId.slice(5)) return res.status(403).json({ success: false, message: "Klub chatiga faqat klub a'zolari yozishi mumkin!" });
+      }
       const partnerId = roomId ? dmPartner(roomId, req.user.userId) : null;
       if (partnerId && !(await db.getUserById(partnerId))) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
       const { id } = await db.sendChatMessage(req.user.userId, partnerId, roomId, message);

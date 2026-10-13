@@ -1385,6 +1385,8 @@ window.updateProfileModalData = function() {
   const bulletRating = document.getElementById("statBullet");
 
   if (usernameDisplay) usernameDisplay.textContent = window.currentUser.username;
+  const avatarEl = document.getElementById("profileAvatarLetter");
+  if (avatarEl) avatarEl.textContent = (window.currentUser.username || "?").charAt(0).toUpperCase();
   if (handleDisplay) handleDisplay.textContent = "@" + window.currentUser.username;
 
   const countryCode = (window.currentUser.country || 'uz').toLowerCase();
@@ -1397,7 +1399,37 @@ window.updateProfileModalData = function() {
   const fideId = profileData.fideId || '';
   const goal = profileData.goal || '';
   const debut = profileData.debut || '';
-  const club = profileData.club || '';
+  // Klub — serverdagi a'zolik (o'yinchi faqat bitta klubda)
+  const myClub = window.currentUser.club || null;
+  const clubName = myClub ? ((typeof window.countryName === 'function') ? window.countryName(myClub.name, myClub.code) : myClub.name) : '';
+  const club = clubName || tx('profNoClub', "Klubga a'zo emas");
+  const clubChip = document.getElementById("profileClubChip");
+  if (clubChip) clubChip.style.display = myClub ? 'inline-flex' : 'none';
+  const clubChipName = document.getElementById("profileClubChipName");
+  if (clubChipName) clubChipName.textContent = clubName;
+  const clubChipFlag = document.getElementById("profileClubChipFlag");
+  if (clubChipFlag && myClub && myClub.code) clubChipFlag.src = `https://flagcdn.com/w40/${myClub.code}.png`;
+
+  // Rejimlar bo'yicha o'yinlar soni va umumiy natijalar
+  const byMode = window.currentUser.statsByMode || window.statsByMode || {};
+  const gamesOf = (s) => s ? (s.wins || 0) + (s.losses || 0) + (s.draws || 0) : 0;
+  ['rapid', 'blitz', 'bullet'].forEach(mode => {
+    const el = document.getElementById('stat' + mode.charAt(0).toUpperCase() + mode.slice(1) + 'Games');
+    if (el) el.textContent = tx('profModeGames', "{{count}} ta o'yin", { count: gamesOf(byMode[mode]) });
+  });
+  const totals = window.currentUser.stats || window.stats || { wins: 0, losses: 0, draws: 0 };
+  const total = gamesOf(totals);
+  const pct = (n) => total ? Math.round(((n || 0) / total) * 1000) / 10 : 0;
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText("profTotalGames", total);
+  setText("profWinsCount", totals.wins || 0);
+  setText("profDrawsCount", totals.draws || 0);
+  setText("profLossesCount", totals.losses || 0);
+  setText("profWinRate", pct(totals.wins) + '%');
+  [["profBarWin", totals.wins], ["profBarDraw", totals.draws], ["profBarLoss", totals.losses]].forEach(([id, n]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.width = pct(n) + '%';
+  });
   // Rejim reytinglari serverdan keladi (har o'yindan keyin yangilanadi)
   const ratingsByMode = window.currentUser.ratingsByMode || {};
   const baseRating = window.currentUser.rating || 1500;

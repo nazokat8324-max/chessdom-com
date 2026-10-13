@@ -2114,196 +2114,136 @@
     <!-- Profile Modal -->
     <div id="profileModal" class="profile-modal-overlay" style="display: none">
       <div class="profile-container">
-        <button class="profile-close-btn" id="closeProfileBtn">&larr;</button>
-
-        <div class="profile-sidebar-card">
-          <div class="profile-avatar-wrapper">
-            <div
-              style="
-                width: 90px;
-                height: 90px;
-                background: #2d4a41;
-                border-radius: 14px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 36px;
-              "
-            >
-              ♔
+        <!-- Chap ustun: o'yinchi kartasi -->
+        <aside class="profile-sidebar-card">
+          <button class="profile-close-btn" id="closeProfileBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z"/></svg><span data-i18n="clubDetailBack">Orqaga</span></button>
+          <div class="profile-hero">
+            <div class="profile-avatar-wrapper">
+              <div class="profile-avatar" id="profileAvatarLetter">♔</div>
+            </div>
+            <h2 class="profile-name" id="profileModalUsername"></h2>
+            <p class="profile-handle" id="profileModalHandle"></p>
+            <div id="profileModalCountry" class="profile-modal-country" style="display: none">
+              <img id="profileModalCountryFlag" src="" alt="" />
+              <span id="profileModalCountryName"></span>
+            </div>
+            <div class="profile-chips">
+              <span class="profile-badge">ChessDom</span>
+              <span class="profile-chip" id="profileClubChip" style="display: none">
+                <img id="profileClubChipFlag" src="" alt="" />
+                <span id="profileClubChipName"></span>
+              </span>
             </div>
           </div>
-          <p
-            style="color: #88a; font-size: 13px; margin-top: 6px"
-            id="profileModalHandle"
-          >
-            @Sarvarovich_Zafar
-          </p>
-          <div
-            id="profileModalCountry"
-            class="profile-modal-country"
-            style="display: none"
-          >
-            <img
-              id="profileModalCountryFlag"
-              src=""
-              alt=""
-              style="
-                width: 20px;
-                height: 14px;
-                border-radius: 2px;
-                margin-right: 6px;
-                vertical-align: middle;
-              "
-            />
-            <span
-              id="profileModalCountryName"
-              style="color: #88a; font-size: 14px"
-            ></span>
-          </div>
-          <span class="profile-badge">CHESSDOM</span>
 
           <div class="profile-meta-box">
             <div class="meta-row">
               <span id="profFideIdLabel">FIDE ID</span>
               <div class="meta-value">
                 <span class="editable-text" id="profileFideId"></span>
-                <input
-                  type="text"
-                  class="editable-input"
-                  id="inputFideId"
-                  value=""
-                  style="display: none"
-                />
+                <input type="text" class="editable-input" id="inputFideId" value="" style="display: none" />
               </div>
             </div>
             <div class="meta-row">
               <span id="profGoalLabel">Maqsad</span>
               <div class="meta-value">
                 <span class="editable-text" id="profileGoal"></span>
-                <input
-                  type="text"
-                  class="editable-input"
-                  id="inputGoal"
-                  value=""
-                  style="display: none"
-                />
+                <input type="text" class="editable-input" id="inputGoal" value="" style="display: none" />
               </div>
             </div>
-            <button class="copy-link-btn" id="copyProfileLinkBtn">
-              🔗 Profil havolasini nusxalash
-            </button>
-            <button
-              class="logout-btn"
-              id="logoutProfileBtn"
-              type="button"
-              onclick="window.handleLogoutFromProfile()"
-            >
-              🚪 Chiqish
-            </button>
-          </div>
-        </div>
-
-        <div class="profile-stats-content">
-          <div class="profile-tabs">
-            <button class="tab-btn active" id="profRatingsTab">📊 Reytinglar</button>
-            <button class="tab-btn edit-tab-btn" id="editProfileBtn">
-              ✏️ Tahrirlash
-            </button>
-            <button
-              class="tab-btn save-tab-btn"
-              id="saveProfileBtn"
-              style="display: none"
-            >
-              💾 Saqlash
-            </button>
-            <button
-              class="tab-btn cancel-tab-btn"
-              id="cancelProfileBtn"
-              style="display: none"
-            >
-              ✕ <span data-i18n="profCancel">Bekor</span>
-            </button>
           </div>
 
-          <div class="stats-grid">
-            <div class="stat-card editable-card rating-readonly">
-              <span class="stat-title" id="profStatRapidTitle">RAPID REYTING</span>
-              <span class="stat-value editable-text" id="statRapid">1500</span>
-              <input
-                type="number"
-                class="editable-input"
-                id="inputRapid"
-                value="1500"
-                style="display: none"
-                disabled
-              />
+          <div class="profile-sidebar-actions">
+            <button class="copy-link-btn" id="copyProfileLinkBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0zm-3.2 6.2a4.5 4.5 0 0 1-3.2-7.7l2.8-2.8a1 1 0 1 1 1.4 1.4L5.6 13.3a2.5 2.5 0 0 0 3.5 3.5l2.8-2.8a1 1 0 1 1 1.4 1.4l-2.8 2.8a4.5 4.5 0 0 1-3.1 1.4zm9.2-5.3a1 1 0 0 1-.7-1.7l2.8-2.8a2.5 2.5 0 0 0-3.5-3.5L12.4 9.1A1 1 0 1 1 11 7.7l2.8-2.8a4.5 4.5 0 0 1 6.4 6.4l-2.8 2.8a1 1 0 0 1-.8.2z"/></svg><span data-i18n="profCopyLinkBtn">Profil havolasini nusxalash</span></button>
+            <button class="logout-btn" id="logoutProfileBtn" type="button" onclick="window.handleLogoutFromProfile()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17v-2h6V9h-6V7l-5 5 5 5zm9-14H12v2h7v14h-7v2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg><span data-i18n="btnLogout">Chiqish</span></button>
+          </div>
+        </aside>
+
+        <div class="profile-atlas-ribbon" aria-hidden="true"></div>
+
+        <!-- O'ng tomon: reytinglar va statistika -->
+        <main class="profile-stats-content">
+          <div class="profile-content-head">
+            <div>
+              <h1 class="profile-title" data-i18n="profTitle">Profil</h1>
+              <p class="profile-subtitle" data-i18n="profSubtitle">Reytinglar va o'yin statistikasi</p>
             </div>
-            <div class="stat-card editable-card rating-readonly">
-              <span class="stat-title" id="profStatBlitzTitle">BLITZ REYTING</span>
-              <span class="stat-value editable-text" id="statBlitz">1500</span>
-              <input
-                type="number"
-                class="editable-input"
-                id="inputBlitz"
-                value="1500"
-                style="display: none"
-                disabled
-              />
-            </div>
-            <div class="stat-card editable-card rating-readonly">
-              <span class="stat-title" id="profStatBulletTitle">BULLET REYTING</span>
-              <span class="stat-value editable-text" id="statBullet">1500</span>
-              <input
-                type="number"
-                class="editable-input"
-                id="inputBullet"
-                value="1500"
-                style="display: none"
-                disabled
-              />
-            </div>
-            <div class="stat-card editable-card">
-              <span class="stat-title" id="profStatDebutTitle">ENG KUCHLI DEBYUT</span>
-              <span
-                class="stat-value editable-text"
-                id="statDebut"
-                style="font-size: 16px; margin-top: 5px"
-              ></span>
-              <input
-                type="text"
-                class="editable-input"
-                id="inputDebut"
-                value=""
-                style="display: none"
-              />
-            </div>
-            <div class="stat-card editable-card">
-              <span class="stat-title" id="profStatClubTitle">KLUB</span>
-              <span
-                class="stat-value editable-text"
-                id="statClub"
-                style="font-size: 16px; margin-top: 5px"
-              ></span>
-              <input
-                type="text"
-                class="editable-input"
-                id="inputClub"
-                value=""
-                style="display: none"
-              />
-            </div>
-            <div class="stat-card">
-              <span class="stat-title" id="profStatStatusTitle">STATUS</span>
-              <span
-                class="stat-value win"
-                id="profStatusActive"
-                style="font-size: 16px; margin-top: 5px"
-                >Faol o'yinchi</span
-              >
+            <div class="profile-tabs">
+              <button class="tab-btn edit-tab-btn" id="editProfileBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.2V21h3.8L17.8 10l-3.8-3.8L3 17.2zM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8L20.7 7z"/></svg><span data-i18n="profEditBtn">Tahrirlash</span></button>
+              <button class="tab-btn save-tab-btn" id="saveProfileBtn" type="button" style="display: none"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><span data-i18n="profSaveBtn">Saqlash</span></button>
+              <button class="tab-btn cancel-tab-btn" id="cancelProfileBtn" type="button" style="display: none"><span data-i18n="profCancel">Bekor</span></button>
             </div>
           </div>
-        </div>
+
+          <section class="profile-section">
+            <h3 class="profile-section-title" id="profRatingsTab" data-i18n="profRatingsBtn">Reytinglar</h3>
+            <div class="stats-grid profile-ratings-grid">
+              <div class="stat-card editable-card rating-readonly profile-rating-card mode-rapid">
+                <div class="profile-rating-top">
+                  <span class="profile-mode-icon">⏱️</span>
+                  <span class="stat-title" id="profStatRapidTitle">RAPID REYTING</span>
+                </div>
+                <span class="stat-value editable-text" id="statRapid">1500</span>
+                <input type="number" class="editable-input" id="inputRapid" value="1500" style="display: none" disabled />
+                <span class="profile-mode-games" id="statRapidGames">0 o'yin</span>
+              </div>
+              <div class="stat-card editable-card rating-readonly profile-rating-card mode-blitz">
+                <div class="profile-rating-top">
+                  <span class="profile-mode-icon">🔥</span>
+                  <span class="stat-title" id="profStatBlitzTitle">BLITZ REYTING</span>
+                </div>
+                <span class="stat-value editable-text" id="statBlitz">1500</span>
+                <input type="number" class="editable-input" id="inputBlitz" value="1500" style="display: none" disabled />
+                <span class="profile-mode-games" id="statBlitzGames">0 o'yin</span>
+              </div>
+              <div class="stat-card editable-card rating-readonly profile-rating-card mode-bullet">
+                <div class="profile-rating-top">
+                  <span class="profile-mode-icon">⚡</span>
+                  <span class="stat-title" id="profStatBulletTitle">BULLET REYTING</span>
+                </div>
+                <span class="stat-value editable-text" id="statBullet">1500</span>
+                <input type="number" class="editable-input" id="inputBullet" value="1500" style="display: none" disabled />
+                <span class="profile-mode-games" id="statBulletGames">0 o'yin</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="profile-section">
+            <h3 class="profile-section-title" data-i18n="profOverview">Umumiy natijalar</h3>
+            <div class="profile-overview">
+              <div class="profile-overview-numbers">
+                <div class="profile-num"><b id="profTotalGames">0</b><span data-i18n="profGamesLabel">O'yinlar</span></div>
+                <div class="profile-num win"><b id="profWinsCount">0</b><span data-i18n="profWinsLabel">G'alaba</span></div>
+                <div class="profile-num draw"><b id="profDrawsCount">0</b><span data-i18n="profDrawsLabel">Durrang</span></div>
+                <div class="profile-num loss"><b id="profLossesCount">0</b><span data-i18n="profLossesLabel">Mag'lubiyat</span></div>
+                <div class="profile-num rate"><b id="profWinRate">0%</b><span data-i18n="profWinRateLabel">G'alaba foizi</span></div>
+              </div>
+              <div class="profile-result-bar" aria-hidden="true">
+                <span class="seg win" id="profBarWin"></span><span class="seg draw" id="profBarDraw"></span><span class="seg loss" id="profBarLoss"></span>
+              </div>
+            </div>
+          </section>
+
+          <section class="profile-section">
+            <h3 class="profile-section-title" data-i18n="profDetails">Ma'lumotlar</h3>
+            <div class="stats-grid profile-details-grid">
+              <div class="stat-card editable-card">
+                <span class="stat-title" id="profStatDebutTitle">ENG KUCHLI DEBYUT</span>
+                <span class="stat-value editable-text" id="statDebut"></span>
+                <input type="text" class="editable-input" id="inputDebut" value="" style="display: none" />
+              </div>
+              <div class="stat-card editable-card rating-readonly">
+                <span class="stat-title" id="profStatClubTitle">KLUB</span>
+                <span class="stat-value editable-text" id="statClub"></span>
+                <input type="text" class="editable-input" id="inputClub" value="" style="display: none" disabled />
+              </div>
+              <div class="stat-card">
+                <span class="stat-title" id="profStatStatusTitle">STATUS</span>
+                <span class="stat-value win" id="profStatusActive">Faol o'yinchi</span>
+              </div>
+            </div>
+          </section>
+        </main>
       </div>
     </div>
   </body>

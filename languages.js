@@ -1657,6 +1657,17 @@ const translationsExtra = {
     authSignupSub: "Bir daqiqada ro'yxatdan o'ting va o'ynashni boshlang",
     authLoginTitle: "Xush kelibsiz",
     authLoginSub: "Davom etish uchun hisobingizga kiring",
+    profTitle: "Profil",
+    profSubtitle: "Reytinglar va o'yin statistikasi",
+    profOverview: "Umumiy natijalar",
+    profGamesLabel: "O'yinlar",
+    profWinsLabel: "G'alaba",
+    profDrawsLabel: "Durrang",
+    profLossesLabel: "Mag'lubiyat",
+    profWinRateLabel: "G'alaba foizi",
+    profDetails: "Ma'lumotlar",
+    profModeGames: "{{count}} ta o'yin",
+    profNoClub: "Klubga a'zo emas",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -1849,6 +1860,17 @@ const translationsExtra = {
     authSignupSub: "Sign up in a minute and start playing",
     authLoginTitle: "Welcome back",
     authLoginSub: "Log in to your account to continue",
+    profTitle: "Profile",
+    profSubtitle: "Ratings and game statistics",
+    profOverview: "Overall results",
+    profGamesLabel: "Games",
+    profWinsLabel: "Wins",
+    profDrawsLabel: "Draws",
+    profLossesLabel: "Losses",
+    profWinRateLabel: "Win rate",
+    profDetails: "Details",
+    profModeGames: "{{count}} games",
+    profNoClub: "Not in a club",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2041,6 +2063,17 @@ const translationsExtra = {
     authSignupSub: "Зарегистрируйтесь за минуту и начните играть",
     authLoginTitle: "С возвращением",
     authLoginSub: "Войдите в аккаунт, чтобы продолжить",
+    profTitle: "Профиль",
+    profSubtitle: "Рейтинги и статистика партий",
+    profOverview: "Общие результаты",
+    profGamesLabel: "Партии",
+    profWinsLabel: "Победы",
+    profDrawsLabel: "Ничьи",
+    profLossesLabel: "Поражения",
+    profWinRateLabel: "Процент побед",
+    profDetails: "Сведения",
+    profModeGames: "Партий: {{count}}",
+    profNoClub: "Не состоит в клубе",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2233,6 +2266,17 @@ const translationsExtra = {
     authSignupSub: "Regístrate en un minuto y empieza a jugar",
     authLoginTitle: "Bienvenido de nuevo",
     authLoginSub: "Inicia sesión en tu cuenta para continuar",
+    profTitle: "Perfil",
+    profSubtitle: "Puntuaciones y estadísticas de partidas",
+    profOverview: "Resultados generales",
+    profGamesLabel: "Partidas",
+    profWinsLabel: "Victorias",
+    profDrawsLabel: "Tablas",
+    profLossesLabel: "Derrotas",
+    profWinRateLabel: "% de victorias",
+    profDetails: "Detalles",
+    profModeGames: "{{count}} partidas",
+    profNoClub: "Sin club",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2425,6 +2469,17 @@ const translationsExtra = {
     authSignupSub: "In einer Minute registrieren und losspielen",
     authLoginTitle: "Willkommen zurück",
     authLoginSub: "Melde dich an, um fortzufahren",
+    profTitle: "Profil",
+    profSubtitle: "Wertungen und Partiestatistik",
+    profOverview: "Gesamtergebnisse",
+    profGamesLabel: "Partien",
+    profWinsLabel: "Siege",
+    profDrawsLabel: "Remis",
+    profLossesLabel: "Niederlagen",
+    profWinRateLabel: "Siegquote",
+    profDetails: "Details",
+    profModeGames: "{{count}} Partien",
+    profNoClub: "In keinem Klub",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -2617,6 +2672,17 @@ const translationsExtra = {
     authSignupSub: "Inscrivez-vous en une minute et commencez à jouer",
     authLoginTitle: "Bon retour",
     authLoginSub: "Connectez-vous à votre compte pour continuer",
+    profTitle: "Profil",
+    profSubtitle: "Classements et statistiques des parties",
+    profOverview: "Résultats globaux",
+    profGamesLabel: "Parties",
+    profWinsLabel: "Victoires",
+    profDrawsLabel: "Nulles",
+    profLossesLabel: "Défaites",
+    profWinRateLabel: "Taux de victoire",
+    profDetails: "Détails",
+    profModeGames: "{{count}} parties",
+    profNoClub: "Aucun club",
     searchNoResults: "Aucun résultat"
   }
 };
@@ -2696,11 +2762,6 @@ function updateUI() {
   // Profil modal oynasi
   const profFideIdLabel = document.getElementById("profFideIdLabel"); if (profFideIdLabel) profFideIdLabel.textContent = t('profFideIdLabel');
   const profGoalLabel = document.getElementById("profGoalLabel"); if (profGoalLabel) profGoalLabel.textContent = t('profGoalLabel');
-  const copyProfileLinkBtn = document.getElementById("copyProfileLinkBtn"); if (copyProfileLinkBtn) copyProfileLinkBtn.textContent = '🔗 ' + t('profCopyLinkBtn');
-  const logoutProfileBtn = document.getElementById("logoutProfileBtn"); if (logoutProfileBtn) logoutProfileBtn.textContent = '🚪 ' + t('btnLogout');
-  const profRatingsTab = document.getElementById("profRatingsTab"); if (profRatingsTab) profRatingsTab.textContent = '📊 ' + t('profRatingsBtn');
-  const editProfileBtn = document.getElementById("editProfileBtn"); if (editProfileBtn) editProfileBtn.textContent = '✏️ ' + t('profEditBtn');
-  const saveProfileBtn = document.getElementById("saveProfileBtn"); if (saveProfileBtn) saveProfileBtn.textContent = '💾 ' + t('profSaveBtn');
   const profStatRapidTitle = document.getElementById("profStatRapidTitle"); if (profStatRapidTitle) profStatRapidTitle.textContent = t('profRapidRating');
   const profStatBlitzTitle = document.getElementById("profStatBlitzTitle"); if (profStatBlitzTitle) profStatBlitzTitle.textContent = t('profBlitzRating');
   const profStatBulletTitle = document.getElementById("profStatBulletTitle"); if (profStatBulletTitle) profStatBulletTitle.textContent = t('profBulletRating');

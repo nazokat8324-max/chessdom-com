@@ -69,7 +69,7 @@ auth: `POST /api/auth/register|login|logout` · `GET /api/leaderboard` · `GET /
 turnirlar: `POST/GET /api/tournaments`, `GET /api/tournaments/:id`, `/:id/join`, `/:id/start`, `/:id/standings`, `/:id/matches` (GET/POST), `/:id/participants`, `/:id/pairings` (swiss; team → 501), `/:id/matches/:matchId/result` ·
 do'stlar: `POST /api/friends/request|accept`, `GET /api/friends`, `/api/friends/requests` · chat: `GET/POST /api/chat/messages` ·
 ligalar: `GET /api/leagues` (mavsum, divizionlar, qit'alar bo'yicha tayyorgarlik, qoidalar, oldingi chempionlar), `GET /api/leagues/divisions/:id` (jadval + bahslar + doskalar), `GET /api/leagues/champions`, `GET /api/leagues/my-games` (auth) ·
-davlat klublari: `GET /api/country-clubs` (a'zolar soni), `GET /api/country-clubs/:name/members` (a'zolar + stats {members, events, points}), `POST /api/country-clubs/join {country, code, switch?}` (boshqa klubda bo'lsa 409 `reason:'already_in_club'`), `POST /api/country-clubs/leave`; `GET /api/clubs/leaderboard` — davlat klublari bo'yicha · eski klublar: `POST/GET /api/clubs`, `GET /api/clubs/leaderboard`, `/api/clubs/:id`, `/:id/join`, `/:id/members`.
+davlat klublari: `GET /api/country-clubs` (a'zolar soni), `GET /api/country-clubs/:name/members` (a'zolar + stats {members, events — o'ynalgan liga/CL bahslari soni, points — liga ochkolari yig'indisi}), `POST /api/country-clubs/join {country, code, switch?}` (boshqa klubda bo'lsa 409 `reason:'already_in_club'`), `POST /api/country-clubs/leave`; `GET /api/clubs/leaderboard` — davlat klublari bo'yicha · eski klublar: `POST/GET /api/clubs`, `GET /api/clubs/leaderboard`, `/api/clubs/:id`, `/:id/join`, `/:id/members`.
 Javob formati doim `{ success: bool, message?, ... }`; xato matnlari o'zbekcha.
 
 ## Socket.io eventlar

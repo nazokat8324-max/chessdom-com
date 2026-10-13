@@ -585,15 +585,18 @@ async function getCountryClubSummary() {
 }
 
 // Klub a'zolari va umumiy statistika (o'yinlar soni, klub ballari: g'alaba 10, durrang 5, mag'lubiyat 1)
+// Klub a'zolari va statistikasi. Musobaqalar va klub ballari — faqat ligadagi ishtirokdan:
+// o'ynab bo'lingan liga/Chempionlar ligasi bahslari soni va ularda yig'ilgan ochkolar (g'alaba 3, durrang 1)
 async function getCountryClubMembers(name) {
   const rows = await dbAll('SELECT username, rating, ratings_by_mode, stats, club_joined_at FROM users WHERE club_country = ? ORDER BY rating DESC', [name]);
-  let events = 0, points = 0;
   const members = rows.map(r => {
     const s = statsTotals(parseJson(r.stats));
-    events += s.wins + s.losses + s.draws;
-    points += s.wins * 10 + s.draws * 5 + s.losses;
     return { username: r.username, rating: r.rating || 1500, ratingsByMode: normalizeRatingsByMode(r), ...s, joinedAt: r.club_joined_at };
   });
+  const eventsRow = await dbGet("SELECT COUNT(*) as \"n\" FROM league_matches WHERE status = 'finished' AND (home_club = ? OR away_club = ?)", [name, name]);
+  const pointsRow = await dbGet('SELECT COALESCE(SUM(match_points), 0) as \"p\" FROM league_clubs WHERE club_name = ?', [name]);
+  const events = Number(eventsRow && eventsRow.n) || 0;
+  const points = Number(pointsRow && pointsRow.p) || 0;
   return { members, stats: { members: members.length, events, points } };
 }
 

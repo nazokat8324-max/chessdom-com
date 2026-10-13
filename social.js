@@ -1919,7 +1919,7 @@ window.loadClubHistory = async function(countryName, container) {
         </div>
         <div style="background: rgba(52, 152, 219, 0.08); border: 1px solid rgba(52, 152, 219, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #3498db;">${stats.events}</div>
-          <div style="font-size: 11px; color: #88a;">${tr('clubHistoryGamesCard', "O'yinlar")}</div>
+          <div style="font-size: 11px; color: #88a;">${tr('clubDetailEventsCard', "O'tkazilgan musobaqalar")}</div>
         </div>
         <div style="background: rgba(241, 196, 15, 0.08); border: 1px solid rgba(241, 196, 15, 0.3); border-radius: 10px; padding: 15px; text-align: center;">
           <div style="font-size: 24px; font-weight: bold; color: #f1c40f;">${stats.points}</div>

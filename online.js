@@ -14,6 +14,11 @@ window.authenticateSocket = function() {
   }
 };
 
+// Token yaroqsiz — qaytadan kirish kerak
+socket.on('auth-error', () => {
+  if (typeof window.expireSession === 'function') window.expireSession();
+});
+
 socket.on('connect', () => {
   console.log('Serverga ulandi:', socket.id);
   window.authenticateSocket();

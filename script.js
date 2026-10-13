@@ -721,6 +721,19 @@ window.handleLogout = async function() {
   }
 };
 
+// Server tokenni rad etsa (muddati o'tgan yoki JWT_SECRET almashgan) — sessiyani tozalab, kirish sahifasini ochish
+window.expireSession = function() {
+  if (!window.currentUser && !window.authToken) return;
+  window.currentUser = null;
+  window.authToken = null;
+  localStorage.removeItem("justChessCurrentUser");
+  localStorage.removeItem("justChessAuthToken");
+  window.stats = { wins: 0, losses: 0, draws: 0 };
+  if (typeof window.updateAuthHeaderUI === "function") window.updateAuthHeaderUI();
+  window.showAuthGate('login');
+  if (typeof showToast === "function") showToast(tx('srvSessionExpired', "Sessiya tugagan. Qaytadan tizimga kiring."), 'warning', 5000);
+};
+
 window.handleLogoutFromProfile = function() {
   const profileModal = document.getElementById("profileModal");
   if (profileModal) {

@@ -1647,6 +1647,7 @@ const translationsExtra = {
     clubSwitchConfirm: "Siz {{current}} klubiga a'zosiz. O'yinchi faqat bitta klubda bo'lishi mumkin. {{current}} klubidan chiqib, {{country}} klubiga o'tasizmi?",
     clubLeaderboardTitle: "{{country}} klubi reytingi",
     srvAlreadyInOtherClub: "Siz allaqachon boshqa klubga a'zosiz!",
+    authTagline: "Onlayn shaxmat o'ynang va reytingingizni oshiring",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -1829,6 +1830,7 @@ const translationsExtra = {
     clubSwitchConfirm: "You are a member of the {{current}} club. A player can belong to only one club. Leave {{current}} and join {{country}}?",
     clubLeaderboardTitle: "{{country}} club rankings",
     srvAlreadyInOtherClub: "You are already a member of another club!",
+    authTagline: "Play chess online and raise your rating",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2011,6 +2013,7 @@ const translationsExtra = {
     clubSwitchConfirm: "Вы состоите в клубе «{{current}}». Игрок может состоять только в одном клубе. Выйти из «{{current}}» и вступить в «{{country}}»?",
     clubLeaderboardTitle: "Рейтинг клуба «{{country}}»",
     srvAlreadyInOtherClub: "Вы уже состоите в другом клубе!",
+    authTagline: "Играйте в шахматы онлайн и повышайте рейтинг",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2193,6 +2196,7 @@ const translationsExtra = {
     clubSwitchConfirm: "Eres miembro del club de {{current}}. Un jugador solo puede pertenecer a un club. ¿Salir de {{current}} y unirte a {{country}}?",
     clubLeaderboardTitle: "Clasificación del club de {{country}}",
     srvAlreadyInOtherClub: "¡Ya eres miembro de otro club!",
+    authTagline: "Juega al ajedrez en línea y sube tu puntuación",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2375,6 +2379,7 @@ const translationsExtra = {
     clubSwitchConfirm: "Du bist Mitglied im Klub {{current}}. Ein Spieler kann nur einem Klub angehören. {{current}} verlassen und {{country}} beitreten?",
     clubLeaderboardTitle: "Rangliste des Klubs {{country}}",
     srvAlreadyInOtherClub: "Du bist bereits Mitglied eines anderen Klubs!",
+    authTagline: "Spiele online Schach und verbessere deine Wertung",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -2557,6 +2562,7 @@ const translationsExtra = {
     clubSwitchConfirm: "Vous êtes membre du club {{current}}. Un joueur ne peut appartenir qu’à un seul club. Quitter {{current}} et rejoindre {{country}} ?",
     clubLeaderboardTitle: "Classement du club {{country}}",
     srvAlreadyInOtherClub: "Vous êtes déjà membre d’un autre club !",
+    authTagline: "Jouez aux échecs en ligne et améliorez votre classement",
     searchNoResults: "Aucun résultat"
   }
 };
@@ -2809,6 +2815,7 @@ function updateUI() {
   if (typeof window.updateAuthHeaderUI === 'function') window.updateAuthHeaderUI();
   if (typeof window.updateStreakUI === 'function') window.updateStreakUI();
   if (typeof window.updateTimersDisplay === 'function') window.updateTimersDisplay();
+  if (typeof window.updateAuthGateLanguage === 'function') window.updateAuthGateLanguage();
 }
 
 window.setLanguage = function(lang) {

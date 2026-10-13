@@ -1968,185 +1968,98 @@
       </div>
     </div>
 
-    <!-- Auth Modals (Chess.com style) -->
-    <!-- Login Modal -->
-    <div id="loginModal" class="auth-modal-overlay" style="display: none">
-      <div class="auth-modal-container" id="loginModalContainer">
-        <div class="auth-modal-header">
-          <h2 class="auth-modal-title" data-i18n="btnLoginSubmit">Kirish</h2>
-          <button class="auth-modal-close" id="closeLoginModal">✕</button>
-        </div>
-
-        <!-- Login Form Step -->
-        <div class="auth-login-step" id="authLoginStep">
-          <div class="auth-form-group">
-            <label class="auth-form-label" data-i18n="labelLoginUsername">Foydalanuvchi nomi</label>
-            <input
-              type="text"
-              id="loginModalUsername"
-              class="auth-form-input"
-              placeholder="Foydalanuvchi nomini kiriting"
-              data-i18n-placeholder="authUsernamePlaceholder"
-            />
-            <div class="auth-error" id="loginUsernameError" data-i18n="authUsernameRequired">
-              Foydalanuvchi nomini kiriting (3–30 belgi)
-            </div>
-          </div>
-          <div class="auth-form-group">
-            <label class="auth-form-label" data-i18n="labelLoginPassword">Parol</label>
-            <input
-              type="password"
-              id="loginModalPassword"
-              class="auth-form-input"
-              placeholder="••••••••"
-            />
-            <div class="auth-error" id="loginPasswordError" data-i18n="authPasswordRequired">
-              Parolni kiriting
-            </div>
-          </div>
-          <div class="auth-error" id="loginGeneralError" data-i18n="wrongCredentials">
-            Ism yoki parol xato!
-          </div>
-          <button
-            class="auth-submit-btn"
-            id="loginSubmitBtn"
-            onclick="window.handleLoginModal()"
-            data-i18n="btnLoginSubmit"
-          >
-            Kirish
-          </button>
-          <div class="auth-divider">
-            <span data-i18n="authOr">yoki</span>
-          </div>
-          <div class="auth-social-row">
-            <button
-              class="auth-social-btn google"
-              onclick="window.socialLogin('google')"
-            >
-              G
-            </button>
-            <button
-              class="auth-social-btn facebook"
-              onclick="window.socialLogin('facebook')"
-            >
-              f
-            </button>
-            <button
-              class="auth-social-btn apple"
-              onclick="window.socialLogin('apple')"
-            >
-              Apple
-            </button>
-          </div>
-        </div>
-
-        <div class="auth-switch">
-          <span class="auth-switch-text" data-i18n="authNewToSite">Chessdom'da yangimisiz?</span>
-          <a class="auth-switch-link" onclick="window.switchToSignUp()" data-i18n="goToRegisterLink"
-            >Ro'yxatdan o'tish</a
-          >
-        </div>
+    <!-- Kirish / ro'yxatdan o'tish sahifasi: tizimga kirilmaguncha sayt ko'rinmaydi -->
+    <div id="authGate" class="auth-gate" style="display: none">
+      <div class="auth-gate-bg" aria-hidden="true">
+        <div class="auth-gate-atlas"></div>
+        <span class="auth-gate-piece p1">♞&#xFE0E;</span>
+        <span class="auth-gate-piece p2">♜&#xFE0E;</span>
+        <span class="auth-gate-piece p3">♛&#xFE0E;</span>
+        <span class="auth-gate-piece p4">♝&#xFE0E;</span>
+        <span class="auth-gate-piece p5">♟&#xFE0E;</span>
       </div>
-    </div>
 
-    <!-- Sign Up Modal -->
-    <div id="signupModal" class="auth-modal-overlay" style="display: none">
-      <div class="auth-modal-container" id="signupModalContainer">
-        <div class="auth-modal-header">
-          <h2 class="auth-modal-title" data-i18n="regCardTitle">Ro'yxatdan o'tish</h2>
-          <button class="auth-modal-close" id="closeSignupModal">✕</button>
+      <div class="auth-gate-content">
+        <div class="auth-gate-logo">
+          <svg width="34" height="27" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 14L3 4L7 8L10 1L13 8L17 4L19 14H1Z" fill="url(#gateCrownGrad)" stroke="#FFD700" stroke-width="0.8" stroke-linejoin="round" />
+            <circle cx="1" cy="4.5" r="1.5" fill="#FFD700" />
+            <circle cx="10" cy="1.5" r="1.5" fill="#FFD700" />
+            <circle cx="19" cy="4.5" r="1.5" fill="#FFD700" />
+            <defs>
+              <linearGradient id="gateCrownGrad" x1="1" y1="1" x2="19" y2="14">
+                <stop offset="0%" stop-color="#FFD700" />
+                <stop offset="50%" stop-color="#CD7F32" />
+                <stop offset="100%" stop-color="#8B4513" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span>Chess<b>Dom</b></span>
         </div>
+        <p class="auth-gate-tagline" data-i18n="authTagline">Onlayn shaxmat o'ynang va reytingingizni oshiring</p>
 
-        <!-- Email Step (initial) -->
-        <div class="auth-email-step" id="authEmailStep">
-          <button
-            class="auth-submit-btn"
-            id="continueWithEmailBtn"
-            onclick="window.showSignupForm()"
-            data-i18n="authContinueEmail"
-          >
-            Email orqali davom etish
-          </button>
-          <div class="auth-divider">
-            <span data-i18n="authOr">yoki</span>
-          </div>
-          <div class="auth-social-row">
-            <button
-              class="auth-social-btn google"
-              onclick="window.socialLogin('google')"
-            >
-              G
-            </button>
-            <button
-              class="auth-social-btn facebook"
-              onclick="window.socialLogin('facebook')"
-            >
-              f
-            </button>
-            <button
-              class="auth-social-btn apple"
-              onclick="window.socialLogin('apple')"
-            >
-              Apple
-            </button>
-          </div>
-        </div>
-
-        <!-- Full Signup Form Step -->
-        <div
-          class="auth-signup-form-step"
-          id="authSignupFormStep"
-          style="display: none"
-        >
-          <div class="auth-form-group">
-            <label class="auth-form-label"><span data-i18n="labelRegUsername">Foydalanuvchi nomi</span> *</label>
-            <input
-              type="text"
-              id="signupUsername"
-              class="auth-form-input"
-              placeholder="Foydalanuvchi nomini tanlang"
-              data-i18n-placeholder="authChooseUsername"
-            />
-            <div class="auth-error" id="signupUsernameError" data-i18n="authUsernameRequired">
-              Foydalanuvchi nomini kiriting (3–30 belgi)
+        <div class="auth-gate-card">
+          <!-- Ro'yxatdan o'tish -->
+          <form class="auth-signup-form-step" id="authSignupFormStep" onsubmit="event.preventDefault(); window.handleSignupModal();" novalidate>
+            <h1 class="auth-gate-title" data-i18n="regCardTitle">Ro'yxatdan o'tish</h1>
+            <div class="auth-form-group">
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z" /></svg>
+                <input type="text" id="signupUsername" class="auth-form-input" autocomplete="username"
+                  placeholder="Foydalanuvchi nomini tanlang" data-i18n-placeholder="authChooseUsername" />
+              </div>
+              <div class="auth-error" id="signupUsernameError" data-i18n="authUsernameRequired">Foydalanuvchi nomini kiriting (3–30 belgi)</div>
+              <div class="auth-error" id="signupUsernameExistsError" data-i18n="userExists">Bu nomli foydalanuvchi mavjud!</div>
             </div>
-            <div class="auth-error" id="signupUsernameExistsError" data-i18n="userExists">
-              Bu nomli foydalanuvchi mavjud!
+            <div class="auth-form-group">
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
+                <input type="password" id="signupPassword" class="auth-form-input" autocomplete="new-password"
+                  placeholder="Kamida 6 ta belgi" data-i18n-placeholder="authPasswordMin" />
+                <button type="button" class="auth-eye-btn" onclick="window.togglePasswordVisibility('signupPassword', this)" aria-label="Parol">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z" /></svg>
+                </button>
+              </div>
+              <div class="auth-error" id="signupPasswordError" data-i18n="authPasswordMinError">Parol kamida 6 ta belgidan iborat bo'lishi kerak</div>
             </div>
-          </div>
-          <div class="auth-form-group">
-            <label class="auth-form-label"><span data-i18n="labelRegPassword">Parol</span> *</label>
-            <input
-              type="password"
-              id="signupPassword"
-              class="auth-form-input"
-              placeholder="Kamida 6 ta belgi"
-              data-i18n-placeholder="authPasswordMin"
-            />
-            <div class="auth-error" id="signupPasswordError" data-i18n="authPasswordMinError">
-              Parol kamida 6 ta belgidan iborat bo'lishi kerak
+            <button type="submit" class="auth-submit-btn" id="signupSubmitBtn" data-i18n="btnRegSubmit">Ro'yxatdan o'tish</button>
+            <div class="auth-switch">
+              <span class="auth-switch-text" data-i18n="authHaveAccount">Akkauntingiz bormi?</span>
+              <a class="auth-switch-link" onclick="window.switchToLogin()" data-i18n="goToLoginLink">Kirish</a>
             </div>
-          </div>
+          </form>
 
-          <button
-            class="auth-submit-btn"
-            id="signupSubmitBtn"
-            onclick="window.handleSignupModal()"
-            data-i18n="btnRegSubmit"
-          >
-            Ro'yxatdan o'tish
-          </button>
-          <div class="auth-back-link">
-            <a onclick="window.showEmailStep()">← <span data-i18n="clubDetailBack">Orqaga</span></a>
-          </div>
+          <!-- Kirish -->
+          <form class="auth-login-step" id="authLoginStep" onsubmit="event.preventDefault(); window.handleLoginModal();" novalidate style="display: none">
+            <h1 class="auth-gate-title" data-i18n="btnLoginSubmit">Kirish</h1>
+            <div class="auth-form-group">
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z" /></svg>
+                <input type="text" id="loginModalUsername" class="auth-form-input" autocomplete="username"
+                  placeholder="Foydalanuvchi nomini kiriting" data-i18n-placeholder="authUsernamePlaceholder" />
+              </div>
+              <div class="auth-error" id="loginUsernameError" data-i18n="authUsernameRequired">Foydalanuvchi nomini kiriting (3–30 belgi)</div>
+            </div>
+            <div class="auth-form-group">
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
+                <input type="password" id="loginModalPassword" class="auth-form-input" autocomplete="current-password" placeholder="••••••••" />
+                <button type="button" class="auth-eye-btn" onclick="window.togglePasswordVisibility('loginModalPassword', this)" aria-label="Parol">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z" /></svg>
+                </button>
+              </div>
+              <div class="auth-error" id="loginPasswordError" data-i18n="authPasswordRequired">Parolni kiriting</div>
+            </div>
+            <div class="auth-error" id="loginGeneralError" data-i18n="wrongCredentials">Ism yoki parol xato!</div>
+            <button type="submit" class="auth-submit-btn" id="loginSubmitBtn" data-i18n="btnLoginSubmit">Kirish</button>
+            <div class="auth-switch">
+              <span class="auth-switch-text" data-i18n="authNewToSite">Chessdom'da yangimisiz?</span>
+              <a class="auth-switch-link" onclick="window.switchToSignUp()" data-i18n="goToRegisterLink">Ro'yxatdan o'tish</a>
+            </div>
+          </form>
         </div>
 
-        <div class="auth-switch">
-          <span class="auth-switch-text" data-i18n="authHaveAccount">Akkauntingiz bormi?</span>
-          <a class="auth-switch-link" onclick="window.switchToLogin()" data-i18n="goToLoginLink"
-            >Kirish</a
-          >
-        </div>
+        <button type="button" class="auth-gate-lang" id="authGateLangBtn" onclick="window.openLanguageModal()">🌐 O'zbekcha</button>
       </div>
     </div>
 

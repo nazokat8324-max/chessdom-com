@@ -3418,4 +3418,189 @@
         color: #fff;
         text-decoration: underline;
       }
-    
+
+/* ===== Kirish / ro'yxatdan o'tish sahifasi (tizimga kirilmaguncha) ===== */
+body.auth-locked {
+  overflow: hidden;
+}
+.auth-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-y: auto;
+  background: #101a17;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+.auth-gate-bg {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+/* Atlas naqshi juda xira, markazda deyarli ko'rinmaydi — forma o'qilishi uchun */
+.auth-gate-atlas {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22160%22%20height%3D%22120%22%20viewBox%3D%220%200%20160%20120%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22a%22%20x%3D%22-5%25%22%20y%3D%220%22%20width%3D%22110%25%22%20height%3D%22100%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.05%200.6%22%20numOctaves%3D%222%22%20seed%3D%227%22%2F%3E%3CfeDisplacementMap%20in%3D%22SourceGraphic%22%20scale%3D%225%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20filter%3D%22url(%23a)%22%3E%3Cpath%20d%3D%22M4%2C0%20L10%2C10%20L4%2C20%20L10%2C30%20L4%2C40%20L10%2C50%20L4%2C60%20L10%2C70%20L4%2C80%20L10%2C90%20L4%2C100%20L10%2C110%20L4%2C120%20L34%2C120%20L28%2C110%20L34%2C100%20L28%2C90%20L34%2C80%20L28%2C70%20L34%2C60%20L28%2C50%20L34%2C40%20L28%2C30%20L34%2C20%20L28%2C10%20L34%2C0%20Z%22%20fill%3D%22%23c8102e%22%2F%3E%3Cpath%20d%3D%22M52%2C0%20L64%2C15%20L52%2C30%20L40%2C15%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M52%2C7.5%20L58%2C15%20L52%2C22.5%20L46%2C15%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M52%2C30%20L64%2C45%20L52%2C60%20L40%2C45%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M52%2C37.5%20L58%2C45%20L52%2C52.5%20L46%2C45%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M52%2C60%20L64%2C75%20L52%2C90%20L40%2C75%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M52%2C67.5%20L58%2C75%20L52%2C82.5%20L46%2C75%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M52%2C90%20L64%2C105%20L52%2C120%20L40%2C105%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M52%2C97.5%20L58%2C105%20L52%2C112.5%20L46%2C105%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M70%2C0%20L76%2C10%20L70%2C20%20L76%2C30%20L70%2C40%20L76%2C50%20L70%2C60%20L76%2C70%20L70%2C80%20L76%2C90%20L70%2C100%20L76%2C110%20L70%2C120%20L98%2C120%20L92%2C110%20L98%2C100%20L92%2C90%20L98%2C80%20L92%2C70%20L98%2C60%20L92%2C50%20L98%2C40%20L92%2C30%20L98%2C20%20L92%2C10%20L98%2C0%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M106%2C0%20L109%2C6%20L106%2C12%20L109%2C18%20L106%2C24%20L109%2C30%20L106%2C36%20L109%2C42%20L106%2C48%20L109%2C54%20L106%2C60%20L109%2C66%20L106%2C72%20L109%2C78%20L106%2C84%20L109%2C90%20L106%2C96%20L109%2C102%20L106%2C108%20L109%2C114%20L106%2C120%20L116%2C120%20L113%2C114%20L116%2C108%20L113%2C102%20L116%2C96%20L113%2C90%20L116%2C84%20L113%2C78%20L116%2C72%20L113%2C66%20L116%2C60%20L113%2C54%20L116%2C48%20L113%2C42%20L116%2C36%20L113%2C30%20L116%2C24%20L113%2C18%20L116%2C12%20L113%2C6%20L116%2C0%20Z%22%20fill%3D%22%231f8a5b%22%2F%3E%3Cpath%20d%3D%22M138%2C0%20L150%2C20%20L138%2C40%20L126%2C20%20Z%22%20fill%3D%22%238e2a6b%22%2F%3E%3Cpath%20d%3D%22M138%2C10%20L144%2C20%20L138%2C30%20L132%2C20%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M138%2C40%20L150%2C60%20L138%2C80%20L126%2C60%20Z%22%20fill%3D%22%238e2a6b%22%2F%3E%3Cpath%20d%3D%22M138%2C50%20L144%2C60%20L138%2C70%20L132%2C60%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M138%2C80%20L150%2C100%20L138%2C120%20L126%2C100%20Z%22%20fill%3D%22%238e2a6b%22%2F%3E%3Cpath%20d%3D%22M138%2C90%20L144%2C100%20L138%2C110%20L132%2C100%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  background-size: 240px 180px;
+  opacity: 0.13;
+}
+.auth-gate-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(16, 26, 23, 0.94) 0%, rgba(16, 26, 23, 0.8) 38%, rgba(16, 26, 23, 0.35) 100%);
+}
+.auth-gate-piece {
+  position: absolute;
+  z-index: 1;
+  color: rgba(255, 255, 255, 0.05);
+  font-family: "Segoe UI Symbol", "DejaVu Sans", "Noto Sans Symbols 2", serif;
+  line-height: 1;
+  user-select: none;
+}
+.auth-gate-piece.p1 { font-size: 260px; left: 4%; top: 8%; transform: rotate(-12deg); }
+.auth-gate-piece.p2 { font-size: 200px; right: 6%; top: 6%; transform: rotate(8deg); }
+.auth-gate-piece.p3 { font-size: 230px; right: 3%; bottom: 4%; transform: rotate(-6deg); }
+.auth-gate-piece.p4 { font-size: 180px; left: 8%; bottom: 6%; transform: rotate(10deg); }
+.auth-gate-piece.p5 { font-size: 120px; left: 30%; top: 2%; transform: rotate(-4deg); }
+
+.auth-gate-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: auto;
+}
+.auth-gate-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 34px;
+  font-weight: 800;
+  color: #f2f2ee;
+  letter-spacing: 0.5px;
+}
+.auth-gate-logo b {
+  color: #81b64c;
+}
+.auth-gate-tagline {
+  margin: 8px 0 22px;
+  color: #a7b3ad;
+  font-size: 14px;
+  text-align: center;
+}
+.auth-gate-card {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(24, 37, 33, 0.96);
+  border: 1px solid #2a3f38;
+  border-radius: 12px;
+  padding: 28px 28px 22px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+}
+.auth-gate-title {
+  margin: 0 0 20px;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+.auth-gate .auth-input-wrap {
+  position: relative;
+}
+.auth-gate .auth-input-icon {
+  position: absolute;
+  left: 13px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  transform: translateY(-50%);
+  fill: #7f8c86;
+  pointer-events: none;
+}
+.auth-gate .auth-form-input {
+  height: 48px;
+  padding: 0 44px 0 42px;
+  font-size: 15px;
+  background: #121c19;
+  border: 1px solid #2c403a;
+  border-radius: 8px;
+  transition: border-color 0.15s, background 0.15s;
+}
+.auth-gate .auth-form-input:focus {
+  border-color: #81b64c;
+  background: #15211d;
+}
+.auth-gate .auth-eye-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.auth-gate .auth-eye-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #7f8c86;
+}
+.auth-gate .auth-eye-btn.visible svg,
+.auth-gate .auth-eye-btn:hover svg {
+  fill: #dfe6e2;
+}
+.auth-gate .auth-submit-btn {
+  height: 52px;
+  margin: 6px 0 18px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  background: #81b64c;
+  border-radius: 10px;
+  box-shadow: 0 4px 0 #5d8a34;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.1s;
+}
+.auth-gate .auth-submit-btn:hover {
+  background: #95c95e;
+}
+.auth-gate .auth-submit-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #5d8a34;
+}
+.auth-gate .auth-switch-link {
+  font-weight: 700;
+}
+.auth-gate-lang {
+  margin-top: 18px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #2a3f38;
+  color: #c9d2ce;
+  border-radius: 20px;
+  padding: 7px 16px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.auth-gate-lang:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+@media (max-width: 600px) {
+  .auth-gate-piece.p2, .auth-gate-piece.p4, .auth-gate-piece.p5 { display: none; }
+  .auth-gate-piece.p1 { font-size: 180px; }
+  .auth-gate-piece.p3 { font-size: 160px; }
+  .auth-gate-card { padding: 24px 18px 18px; }
+  .auth-gate-logo { font-size: 28px; }
+}

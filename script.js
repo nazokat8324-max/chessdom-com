@@ -367,6 +367,13 @@ window.setupHistoryFilters = function() {
 };
 
 window.switchView = function(viewName) {
+  if (viewName === "login" || viewName === "register") {
+    if (!window.currentUser) {
+      window.showAuthGate(viewName === "login" ? 'login' : 'signup');
+      return;
+    }
+    viewName = "home";
+  }
   if (typeof window.closeTournamentDetail === 'function') {
     window.closeTournamentDetail();
   }
@@ -893,18 +900,53 @@ window.updateGameFlags = function() {
 // Country selection is now handled only in the Settings page
 window.populateCountrySelect = function() {};
 
-// --- Login Modal ---
-window.openLoginModal = function() {
+// --- Kirish sahifasi (authGate): tizimga kirilmaguncha saytning o'zi ko'rinmaydi ---
+// mode: 'signup' (yangi foydalanuvchi — standart) yoki 'login'
+window.showAuthGate = function(mode) {
+  const gate = document.getElementById("authGate");
+  if (!gate) return;
+  const isLogin = mode === 'login';
   window.resetLoginErrors();
-  window.showLoginStep();
-  const modal = document.getElementById("loginModal");
-  if (modal) modal.style.display = "flex";
+  window.resetSignupErrors();
+  const loginStep = document.getElementById("authLoginStep");
+  const signupStep = document.getElementById("authSignupFormStep");
+  if (loginStep) loginStep.style.display = isLogin ? "block" : "none";
+  if (signupStep) signupStep.style.display = isLogin ? "none" : "block";
+  gate.style.display = "flex";
+  document.body.classList.add("auth-locked");
+  window.updateAuthGateLanguage();
+  const focusEl = document.getElementById(isLogin ? "loginModalUsername" : "signupUsername");
+  if (focusEl) setTimeout(() => focusEl.focus(), 50);
 };
 
-window.closeLoginModal = function() {
-  const modal = document.getElementById("loginModal");
-  if (modal) modal.style.display = "none";
+window.hideAuthGate = function() {
+  const gate = document.getElementById("authGate");
+  if (gate) gate.style.display = "none";
+  document.body.classList.remove("auth-locked");
 };
+
+window.updateAuthGateLanguage = function() {
+  const btn = document.getElementById("authGateLangBtn");
+  if (!btn || typeof window.getLanguageInfo !== 'function') return;
+  const info = window.getLanguageInfo(window.currentLang);
+  btn.textContent = `🌐 ${info.name}`;
+};
+
+window.togglePasswordVisibility = function(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const show = input.type === "password";
+  input.type = show ? "text" : "password";
+  if (btn) btn.classList.toggle("visible", show);
+};
+
+// Eski nomlar (boshqa joylardan chaqiriladi) — endi kirish sahifasini ochadi/yopadi
+window.openLoginModal = function() { window.showAuthGate('login'); };
+window.openSignupModal = function() { window.showAuthGate('signup'); };
+window.closeLoginModal = window.hideAuthGate;
+window.closeSignupModal = window.hideAuthGate;
+window.switchToSignUp = function() { window.showAuthGate('signup'); };
+window.switchToLogin = function() { window.showAuthGate('login'); };
 
 window.resetLoginErrors = function() {
   const errorIds = ["loginUsernameError", "loginPasswordError", "loginGeneralError"];
@@ -912,49 +954,6 @@ window.resetLoginErrors = function() {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
   });
-};
-
-window.showLoginStep = function() {
-  const loginStep = document.getElementById("authLoginStep");
-  const signupFormStep = document.getElementById("authSignupFormStep");
-  if (loginStep) loginStep.style.display = "block";
-  if (signupFormStep) signupFormStep.style.display = "none";
-  const emailStep = document.getElementById("authEmailStep");
-  if (emailStep) emailStep.style.display = "none";
-  const signupModal = document.getElementById("signupModal");
-  if (signupModal) signupModal.style.display = "none";
-};
-
-// --- Signup Modal ---
-window.openSignupModal = function() {
-  window.resetSignupErrors();
-  window.showEmailStep();
-  const modal = document.getElementById("signupModal");
-  if (modal) {
-    modal.style.display = "flex";
-    window.populateCountrySelect();
-  }
-  const loginModal = document.getElementById("loginModal");
-  if (loginModal) loginModal.style.display = "none";
-};
-
-window.closeSignupModal = function() {
-  const modal = document.getElementById("signupModal");
-  if (modal) modal.style.display = "none";
-};
-
-window.showEmailStep = function() {
-  const emailStep = document.getElementById("authEmailStep");
-  const signupFormStep = document.getElementById("authSignupFormStep");
-  if (emailStep) emailStep.style.display = "block";
-  if (signupFormStep) signupFormStep.style.display = "none";
-};
-
-window.showSignupForm = function() {
-  const emailStep = document.getElementById("authEmailStep");
-  const signupFormStep = document.getElementById("authSignupFormStep");
-  if (emailStep) emailStep.style.display = "none";
-  if (signupFormStep) signupFormStep.style.display = "block";
 };
 
 window.resetSignupErrors = function() {
@@ -970,20 +969,6 @@ window.resetSignupErrors = function() {
   inputs.forEach(input => {
     if (input) input.style.borderColor = "";
   });
-};
-
-// --- Switch between modals ---
-window.switchToSignUp = function() {
-  window.openSignupModal();
-};
-
-window.switchToLogin = function() {
-  window.openLoginModal();
-};
-
-// --- Social Login (placeholder) ---
-window.socialLogin = function(provider) {
-  alert(tx('socialLoginSoon', "{{provider}} orqali kirish tez orada qo'shiladi.", { provider }));
 };
 
 /// --- Login handler ---
@@ -1719,62 +1704,14 @@ window.resetSettings = function() {
     });
   }
 
-  // Auth Modals
-  const loginModal = document.getElementById("loginModal");
-  const signupModal = document.getElementById("signupModal");
-  const closeLoginBtn = document.getElementById("closeLoginModal");
-  const closeSignupBtn = document.getElementById("closeSignupModal");
-
-  // Close buttons
-  if (closeLoginBtn && loginModal) {
-    closeLoginBtn.addEventListener("click", () => {
-      loginModal.style.display = "none";
-    });
-  }
-
-  if (closeSignupBtn && signupModal) {
-    closeSignupBtn.addEventListener("click", () => {
-      signupModal.style.display = "none";
-    });
-  }
-
-  // Backdrop click closes
-  if (loginModal) {
-    loginModal.addEventListener("click", (e) => {
-      if (e.target === loginModal) {
-        loginModal.style.display = "none";
-      }
-    });
-  }
-
-  if (signupModal) {
-    signupModal.addEventListener("click", (e) => {
-      if (e.target === signupModal) {
-        signupModal.style.display = "none";
-      }
-    });
-  }
-
-  // Escape key closes auth modals
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-      if (loginModal && loginModal.style.display === "flex") {
-        loginModal.style.display = "none";
-      }
-      if (signupModal && signupModal.style.display === "flex") {
-        signupModal.style.display = "none";
-      }
-    }
-  });
-
   // Initialize language button
   if (typeof window.updateLanguageButton === "function") {
     window.updateLanguageButton(window.currentLang);
   }
 
-  // Auto-open login modal if not logged in
+  // Tizimga kirilmagan bo'lsa — avval ro'yxatdan o'tish sahifasi
   if (!window.currentUser) {
-    window.openLoginModal();
+    window.showAuthGate('signup');
   }
 });
 

@@ -1648,6 +1648,15 @@ const translationsExtra = {
     clubLeaderboardTitle: "{{country}} klubi reytingi",
     srvAlreadyInOtherClub: "Siz allaqachon boshqa klubga a'zosiz!",
     authTagline: "Onlayn shaxmat o'ynang va reytingingizni oshiring",
+    authHeroTitle: "Shaxmat o'ynang. G'alaba qozoning.",
+    authHeroText: "Butun dunyodagi raqiblar bilan onlayn o'ynang, reytingingizni oshiring va davlatingiz klubini yuqoriga olib chiqing.",
+    authFeature1: "Bullet, Blits va Tezkor",
+    authFeature2: "Turnirlar va arenalar",
+    authFeature3: "Davlat klublari",
+    authSignupTitle: "Hisob yarating",
+    authSignupSub: "Bir daqiqada ro'yxatdan o'ting va o'ynashni boshlang",
+    authLoginTitle: "Xush kelibsiz",
+    authLoginSub: "Davom etish uchun hisobingizga kiring",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -1831,6 +1840,15 @@ const translationsExtra = {
     clubLeaderboardTitle: "{{country}} club rankings",
     srvAlreadyInOtherClub: "You are already a member of another club!",
     authTagline: "Play chess online and raise your rating",
+    authHeroTitle: "Play chess. Win games.",
+    authHeroText: "Play online against opponents from around the world, raise your rating and lead your country's club to the top.",
+    authFeature1: "Bullet, Blitz and Rapid",
+    authFeature2: "Tournaments and arenas",
+    authFeature3: "Country clubs",
+    authSignupTitle: "Create your account",
+    authSignupSub: "Sign up in a minute and start playing",
+    authLoginTitle: "Welcome back",
+    authLoginSub: "Log in to your account to continue",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2014,6 +2032,15 @@ const translationsExtra = {
     clubLeaderboardTitle: "Рейтинг клуба «{{country}}»",
     srvAlreadyInOtherClub: "Вы уже состоите в другом клубе!",
     authTagline: "Играйте в шахматы онлайн и повышайте рейтинг",
+    authHeroTitle: "Играйте в шахматы. Побеждайте.",
+    authHeroText: "Играйте онлайн с соперниками со всего мира, повышайте рейтинг и выводите клуб своей страны на вершину.",
+    authFeature1: "Пуля, блиц и рапид",
+    authFeature2: "Турниры и арены",
+    authFeature3: "Клубы стран",
+    authSignupTitle: "Создайте аккаунт",
+    authSignupSub: "Зарегистрируйтесь за минуту и начните играть",
+    authLoginTitle: "С возвращением",
+    authLoginSub: "Войдите в аккаунт, чтобы продолжить",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2197,6 +2224,15 @@ const translationsExtra = {
     clubLeaderboardTitle: "Clasificación del club de {{country}}",
     srvAlreadyInOtherClub: "¡Ya eres miembro de otro club!",
     authTagline: "Juega al ajedrez en línea y sube tu puntuación",
+    authHeroTitle: "Juega al ajedrez. Gana partidas.",
+    authHeroText: "Juega en línea contra rivales de todo el mundo, sube tu puntuación y lleva al club de tu país a la cima.",
+    authFeature1: "Bala, Blitz y Rápidas",
+    authFeature2: "Torneos y arenas",
+    authFeature3: "Clubes de países",
+    authSignupTitle: "Crea tu cuenta",
+    authSignupSub: "Regístrate en un minuto y empieza a jugar",
+    authLoginTitle: "Bienvenido de nuevo",
+    authLoginSub: "Inicia sesión en tu cuenta para continuar",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2380,6 +2416,15 @@ const translationsExtra = {
     clubLeaderboardTitle: "Rangliste des Klubs {{country}}",
     srvAlreadyInOtherClub: "Du bist bereits Mitglied eines anderen Klubs!",
     authTagline: "Spiele online Schach und verbessere deine Wertung",
+    authHeroTitle: "Spiele Schach. Gewinne Partien.",
+    authHeroText: "Spiele online gegen Gegner aus aller Welt, verbessere deine Wertung und bring den Klub deines Landes an die Spitze.",
+    authFeature1: "Bullet, Blitz und Schnellschach",
+    authFeature2: "Turniere und Arenen",
+    authFeature3: "Länderklubs",
+    authSignupTitle: "Konto erstellen",
+    authSignupSub: "In einer Minute registrieren und losspielen",
+    authLoginTitle: "Willkommen zurück",
+    authLoginSub: "Melde dich an, um fortzufahren",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -2563,6 +2608,15 @@ const translationsExtra = {
     clubLeaderboardTitle: "Classement du club {{country}}",
     srvAlreadyInOtherClub: "Vous êtes déjà membre d’un autre club !",
     authTagline: "Jouez aux échecs en ligne et améliorez votre classement",
+    authHeroTitle: "Jouez aux échecs. Gagnez.",
+    authHeroText: "Jouez en ligne contre des adversaires du monde entier, améliorez votre classement et menez le club de votre pays au sommet.",
+    authFeature1: "Bullet, Blitz et Rapide",
+    authFeature2: "Tournois et arènes",
+    authFeature3: "Clubs nationaux",
+    authSignupTitle: "Créez votre compte",
+    authSignupSub: "Inscrivez-vous en une minute et commencez à jouer",
+    authLoginTitle: "Bon retour",
+    authLoginSub: "Connectez-vous à votre compte pour continuer",
     searchNoResults: "Aucun résultat"
   }
 };

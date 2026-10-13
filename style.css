@@ -5292,6 +5292,37 @@ sidebar {
   width: 100%;
 }
 
+/* Yangi versiya chiqqanda pastda chiqadigan banner */
+.update-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  z-index: 10001;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: calc(100% - 32px);
+  padding: 12px 14px 12px 18px;
+  border-radius: 14px;
+  font-size: 14px;
+  color: #fff;
+  background: var(--cd-surface-2);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.update-banner button {
+  flex-shrink: 0;
+  height: 36px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--accent);
+  cursor: pointer;
+}
+
 /* Yon menyudagi kutayotgan liga o'yinlari soni */
 .lg-nav-badge {
   margin-left: auto;

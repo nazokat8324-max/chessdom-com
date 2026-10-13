@@ -24,6 +24,23 @@ socket.on('connect', () => {
   window.authenticateSocket();
 });
 
+// Yangi versiya chiqqanda (deploydan keyin socket qayta ulanadi) — sahifani yangilashni taklif qilish
+let loadedAppVersion = null;
+socket.on('app-version', (version) => {
+  if (!loadedAppVersion) { loadedAppVersion = version; return; }
+  if (version === loadedAppVersion || document.getElementById('updateBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'updateBanner';
+  banner.className = 'update-banner';
+  const text = document.createElement('span');
+  text.textContent = tx('appUpdated', "Sayt yangilandi! Yangi imkoniyatlarni ko'rish uchun sahifani yangilang.");
+  const btn = document.createElement('button');
+  btn.textContent = tx('appUpdateReload', 'Yangilash');
+  btn.onclick = () => window.location.reload();
+  banner.append(text, btn);
+  document.body.appendChild(banner);
+});
+
 function isViewActive(id) {
   const el = document.getElementById(id);
   return !!(el && el.classList.contains('active-view'));

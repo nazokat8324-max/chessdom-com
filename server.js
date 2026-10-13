@@ -21,6 +21,8 @@ if (!process.env.JWT_SECRET) {
   console.warn("OGOHLANTIRISH: JWT_SECRET o'rnatilmagan — koddagi standart kalit ishlatilmoqda. Production'da albatta o'rnating!");
 }
 const PORT = process.env.PORT || 3000;
+// Sayt versiyasi: Render har deployda RENDER_GIT_COMMIT beradi; lokal ishlashda — server ishga tushgan vaqt
+const APP_VERSION = process.env.RENDER_GIT_COMMIT || String(Date.now());
 
 const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
@@ -701,6 +703,8 @@ async function start() {
   });
 
   io.on('connection', (socket) => {
+    // Ochiq sahifalar yangi deployni sezishi uchun
+    socket.emit('app-version', APP_VERSION);
     console.log('Yangi o\'yinchi ulandi:', socket.id);
     // Shaxsiy xabarlar (do'stlik so'rovi, chat) uchun user_<id> xonasiga qo'shish
     socket.on('authenticate', (token) => {

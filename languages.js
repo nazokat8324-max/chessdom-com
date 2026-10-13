@@ -1752,6 +1752,8 @@ const translationsExtra = {
     settingsUnsaved: "Saqlanmagan o'zgarishlar bor",
     settingsDiscarded: "Saqlanmagan o'zgarishlar bekor qilindi",
     settingsResetPending: "Standart qiymatlar qo'yildi — saqlash uchun «Saqlash» tugmasini bosing",
+    appUpdated: "Sayt yangilandi! Yangi imkoniyatlarni ko'rish uchun sahifani yangilang.",
+    appUpdateReload: "Yangilash",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2039,6 +2041,8 @@ const translationsExtra = {
     settingsUnsaved: "You have unsaved changes",
     settingsDiscarded: "Unsaved changes were discarded",
     settingsResetPending: "Defaults restored — press \"Save\" to keep them",
+    appUpdated: "The site has been updated! Reload the page to see what is new.",
+    appUpdateReload: "Reload",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2326,6 +2330,8 @@ const translationsExtra = {
     settingsUnsaved: "Есть несохранённые изменения",
     settingsDiscarded: "Несохранённые изменения отменены",
     settingsResetPending: "Восстановлены значения по умолчанию — нажмите «Сохранить»",
+    appUpdated: "Сайт обновлён! Обновите страницу, чтобы увидеть новое.",
+    appUpdateReload: "Обновить",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2613,6 +2619,8 @@ const translationsExtra = {
     settingsUnsaved: "Hay cambios sin guardar",
     settingsDiscarded: "Se descartaron los cambios sin guardar",
     settingsResetPending: "Valores predeterminados restaurados — pulsa \"Guardar\" para mantenerlos",
+    appUpdated: "¡El sitio se ha actualizado! Recarga la página para ver las novedades.",
+    appUpdateReload: "Recargar",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2900,6 +2908,8 @@ const translationsExtra = {
     settingsUnsaved: "Ungespeicherte Änderungen",
     settingsDiscarded: "Ungespeicherte Änderungen wurden verworfen",
     settingsResetPending: "Standardwerte gesetzt — zum Übernehmen \"Speichern\" drücken",
+    appUpdated: "Die Seite wurde aktualisiert! Lade sie neu, um die Neuerungen zu sehen.",
+    appUpdateReload: "Neu laden",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -3187,6 +3197,8 @@ const translationsExtra = {
     settingsUnsaved: "Modifications non enregistrées",
     settingsDiscarded: "Les modifications non enregistrées ont été annulées",
     settingsResetPending: "Valeurs par défaut rétablies — cliquez sur « Enregistrer » pour les garder",
+    appUpdated: "Le site a été mis à jour ! Rechargez la page pour voir les nouveautés.",
+    appUpdateReload: "Recharger",
     searchNoResults: "Aucun résultat"
   }
 };

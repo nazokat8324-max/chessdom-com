@@ -3441,24 +3441,28 @@ body.auth-locked {
   overflow: hidden;
   pointer-events: none;
 }
-/* Atlas naqshi juda xira, markazda deyarli ko'rinmaydi — forma o'qilishi uchun */
+/* Xon-atlas naqshi (img/atlas.svg); markaz qorong'iroq — forma aniq o'qilsin */
 .auth-gate-atlas {
   position: absolute;
   inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22160%22%20height%3D%22120%22%20viewBox%3D%220%200%20160%20120%22%3E%3Cdefs%3E%3Cfilter%20id%3D%22a%22%20x%3D%22-5%25%22%20y%3D%220%22%20width%3D%22110%25%22%20height%3D%22100%25%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%220.05%200.6%22%20numOctaves%3D%222%22%20seed%3D%227%22%2F%3E%3CfeDisplacementMap%20in%3D%22SourceGraphic%22%20scale%3D%225%22%2F%3E%3C%2Ffilter%3E%3C%2Fdefs%3E%3Cg%20filter%3D%22url(%23a)%22%3E%3Cpath%20d%3D%22M4%2C0%20L10%2C10%20L4%2C20%20L10%2C30%20L4%2C40%20L10%2C50%20L4%2C60%20L10%2C70%20L4%2C80%20L10%2C90%20L4%2C100%20L10%2C110%20L4%2C120%20L34%2C120%20L28%2C110%20L34%2C100%20L28%2C90%20L34%2C80%20L28%2C70%20L34%2C60%20L28%2C50%20L34%2C40%20L28%2C30%20L34%2C20%20L28%2C10%20L34%2C0%20Z%22%20fill%3D%22%23c8102e%22%2F%3E%3Cpath%20d%3D%22M52%2C0%20L64%2C15%20L52%2C30%20L40%2C15%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M52%2C7.5%20L58%2C15%20L52%2C22.5%20L46%2C15%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M52%2C30%20L64%2C45%20L52%2C60%20L40%2C45%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M52%2C37.5%20L58%2C45%20L52%2C52.5%20L46%2C45%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M52%2C60%20L64%2C75%20L52%2C90%20L40%2C75%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M52%2C67.5%20L58%2C75%20L52%2C82.5%20L46%2C75%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M52%2C90%20L64%2C105%20L52%2C120%20L40%2C105%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M52%2C97.5%20L58%2C105%20L52%2C112.5%20L46%2C105%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M70%2C0%20L76%2C10%20L70%2C20%20L76%2C30%20L70%2C40%20L76%2C50%20L70%2C60%20L76%2C70%20L70%2C80%20L76%2C90%20L70%2C100%20L76%2C110%20L70%2C120%20L98%2C120%20L92%2C110%20L98%2C100%20L92%2C90%20L98%2C80%20L92%2C70%20L98%2C60%20L92%2C50%20L98%2C40%20L92%2C30%20L98%2C20%20L92%2C10%20L98%2C0%20Z%22%20fill%3D%22%231d4e89%22%2F%3E%3Cpath%20d%3D%22M106%2C0%20L109%2C6%20L106%2C12%20L109%2C18%20L106%2C24%20L109%2C30%20L106%2C36%20L109%2C42%20L106%2C48%20L109%2C54%20L106%2C60%20L109%2C66%20L106%2C72%20L109%2C78%20L106%2C84%20L109%2C90%20L106%2C96%20L109%2C102%20L106%2C108%20L109%2C114%20L106%2C120%20L116%2C120%20L113%2C114%20L116%2C108%20L113%2C102%20L116%2C96%20L113%2C90%20L116%2C84%20L113%2C78%20L116%2C72%20L113%2C66%20L116%2C60%20L113%2C54%20L116%2C48%20L113%2C42%20L116%2C36%20L113%2C30%20L116%2C24%20L113%2C18%20L116%2C12%20L113%2C6%20L116%2C0%20Z%22%20fill%3D%22%231f8a5b%22%2F%3E%3Cpath%20d%3D%22M138%2C0%20L150%2C20%20L138%2C40%20L126%2C20%20Z%22%20fill%3D%22%238e2a6b%22%2F%3E%3Cpath%20d%3D%22M138%2C10%20L144%2C20%20L138%2C30%20L132%2C20%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M138%2C40%20L150%2C60%20L138%2C80%20L126%2C60%20Z%22%20fill%3D%22%238e2a6b%22%2F%3E%3Cpath%20d%3D%22M138%2C50%20L144%2C60%20L138%2C70%20L132%2C60%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3Cpath%20d%3D%22M138%2C80%20L150%2C100%20L138%2C120%20L126%2C100%20Z%22%20fill%3D%22%238e2a6b%22%2F%3E%3Cpath%20d%3D%22M138%2C90%20L144%2C100%20L138%2C110%20L132%2C100%20Z%22%20fill%3D%22%23e8b130%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
-  background-size: 240px 180px;
-  opacity: 0.13;
+  background-image: url('img/atlas.svg');
+  background-size: 300px 375px;
+  background-position: center;
+  opacity: 0.62;
 }
 .auth-gate-bg::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at center, rgba(16, 26, 23, 0.94) 0%, rgba(16, 26, 23, 0.8) 38%, rgba(16, 26, 23, 0.35) 100%);
+  background:
+    radial-gradient(ellipse 520px 460px at center, rgba(12, 17, 15, 0.9) 0%, rgba(12, 17, 15, 0.72) 60%, rgba(12, 17, 15, 0) 100%),
+    linear-gradient(rgba(12, 17, 15, 0.35), rgba(12, 17, 15, 0.35));
 }
 .auth-gate-piece {
   position: absolute;
   z-index: 1;
-  color: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 245, 225, 0.16);
+  text-shadow: 0 6px 24px rgba(0, 0, 0, 0.6);
   font-family: "Segoe UI Symbol", "DejaVu Sans", "Noto Sans Symbols 2", serif;
   line-height: 1;
   user-select: none;
@@ -3480,6 +3484,7 @@ body.auth-locked {
   margin: auto;
 }
 .auth-gate-logo {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -3493,14 +3498,16 @@ body.auth-locked {
 }
 .auth-gate-tagline {
   margin: 8px 0 22px;
-  color: #a7b3ad;
+  color: #d5ddd9;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.8);
   font-size: 14px;
   text-align: center;
 }
 .auth-gate-card {
   width: 100%;
   box-sizing: border-box;
-  background: rgba(24, 37, 33, 0.96);
+  background: rgba(22, 33, 30, 0.97);
+  backdrop-filter: blur(6px);
   border: 1px solid #2a3f38;
   border-radius: 12px;
   padding: 28px 28px 22px;

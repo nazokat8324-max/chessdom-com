@@ -305,6 +305,15 @@ async function start() {
     catch (err) { console.error('Stats xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  // Ommaviy profil — istalgan o'yinchi boshqa o'yinchining profilini ko'ra oladi
+  app.get('/api/users/:username/profile', apiLimiter, async (req, res) => {
+    try {
+      const profile = await db.getPublicProfile(req.params.username);
+      if (!profile) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      res.json({ success: true, profile });
+    } catch (err) { console.error('Profile xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.get('/api/users/:username/games', authMiddleware, async (req, res) => {
     try { if (req.user.username !== req.params.username) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' }); const games = await db.getUserGames(req.user.userId); if (!games) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' }); res.json({ success: true, games }); }
     catch (err) { console.error('Games xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }

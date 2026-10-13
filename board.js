@@ -513,6 +513,11 @@ window.updatePlayerInfo = function(color, name, rating) {
   }
   if (nameEl) {
     nameEl.textContent = name || (color === 'white' ? tx('whiteText', 'Oq') : tx('blackText', 'Qora'));
+    // Haqiqiy o'yinchi (o'zimiz yoki raqib) bo'lsa — nomi ustiga bosib profilini ko'rish mumkin
+    const known = [window.currentUser && window.currentUser.username, window.currentOpponent && window.currentOpponent.username];
+    const isPlayer = !!name && known.includes(name);
+    nameEl.classList.toggle('player-link', isPlayer);
+    if (isPlayer) nameEl.dataset.username = name; else delete nameEl.dataset.username;
   }
   if (ratingEl) {
     ratingEl.dataset.rating = rating || 1500;

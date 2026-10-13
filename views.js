@@ -132,7 +132,7 @@ window.renderPlayersTable = function(players, filter) {
         <td>
           <div class="player-cell">
             <div class="player-avatar">${firstLetter}</div>
-            <span class="player-name">${escapeHtml(user.username)}</span>
+            <span class="player-name player-link" data-username="${escapeHtml(user.username)}">${escapeHtml(user.username)}</span>
           </div>
         </td>
         <td>${wins}</td>

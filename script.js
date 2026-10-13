@@ -230,7 +230,7 @@ window.renderTopPlayersList = function() {
             <td class="top-winners-user">
               <div class="top-winners-user-cell">
                 <div class="mini-avatar">${topPlayersEsc(initial)}</div>
-                <span class="top-winners-name">${topPlayersEsc(name)}</span>
+                <span class="top-winners-name player-link" data-username="${topPlayersEsc(name)}">${topPlayersEsc(name)}</span>
               </div>
             </td>
             <td class="top-winners-rating">${Number.isFinite(rating) ? rating : 1500}</td>
@@ -619,6 +619,7 @@ window.applyAuthSession = function(user, token) {
   if (typeof window.authenticateSocket === 'function') window.authenticateSocket();
   // Serverda davlat hali yo'q bo'lsa, Sozlamalardagisini yuboramiz
   if (!user.country && settings.country) window.syncMyCountry(settings.country);
+  setTimeout(() => window.openProfileFromUrl(), 0);
 };
 
 window.handleRegister = async function() {
@@ -747,13 +748,34 @@ window.closeProfileModal = function() {
   if (profileModal) {
     profileModal.style.display = "none";
   }
+  window.viewedProfileUsername = null;
 };
 
 window.openProfileModal = function() {
-  updateProfileModalData();
+  window.viewedProfileUsername = null;
   const profileModal = document.getElementById("profileModal");
+  if (profileModal) profileModal.classList.remove("viewing-other");
+  const friendBtn = document.getElementById("profileFriendBtn");
+  if (friendBtn) friendBtn.style.display = 'none';
+  updateProfileModalData();
   if (profileModal) {
     profileModal.style.display = "flex";
+  }
+  // Oxirgi o'yinlar va a'zo bo'lgan sana — serverdagi ommaviy profildan
+  if (window.currentUser) {
+    const me = window.currentUser.username;
+    window.renderRecentGames(null);
+    fetchPublicProfile(me).then(data => {
+      if (window.viewedProfileUsername || !data.success) return;
+      window.currentUser.createdAt = data.profile.createdAt;
+      window.renderRecentGames(data.profile.recentGames);
+      const joinedEl = document.getElementById("profileJoined");
+      const d = data.profile.createdAt ? new Date(data.profile.createdAt) : null;
+      if (joinedEl && d && !isNaN(d)) {
+        joinedEl.style.display = 'block';
+        joinedEl.textContent = tx('profJoined', "{{date}} dan beri a'zo", { date: d.toLocaleDateString() });
+      }
+    }).catch(() => window.renderRecentGames([]));
   }
   // Eng so'nggi reytinglarni serverdan olish (ochiq oyna avtomatik yangilanadi)
   if (typeof window.refreshCurrentUserRatings === 'function') window.refreshCurrentUserRatings();
@@ -1372,55 +1394,68 @@ window.renderLanguageCards = function(filter = '') {
     }).join('');
 };
 
-window.updateProfileModalData = function() {
-  if (!window.currentUser) return;
+// Davlat kodi bo'yicha (tarjima qilingan) davlat nomi
+function countryNameByCode(code) {
+  if (!code || typeof allCountries === 'undefined') return '';
+  const found = allCountries.find(c => c.code === code);
+  if (!found) return '';
+  return (typeof window.countryName === 'function') ? window.countryName(found.name, found.code) : found.name;
+}
 
-  const usernameDisplay = document.getElementById("profileModalUsername");
-  const handleDisplay = document.getElementById("profileModalHandle");
-  const countryFlagEl = document.getElementById("profileModalCountryFlag");
-  const countryNameEl = document.getElementById("profileModalCountryName");
+// Profil sahifasining umumiy qismini chizish (o'zimiz ham, boshqa o'yinchi ham)
+// p: { username, country, countryName, club, rating, ratingsByMode, stats, statsByMode, createdAt }
+window.renderProfileCommon = function(p) {
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const username = p.username || '';
+  setText("profileModalUsername", username);
+  setText("profileAvatarLetter", (username || "?").charAt(0).toUpperCase());
+  setText("profileModalHandle", username ? "@" + username : "");
+
+  const countryCode = (p.country || '').toLowerCase();
+  const countryName = p.countryName || countryNameByCode(countryCode);
   const countryWrapEl = document.getElementById("profileModalCountry");
-  const rapidRating = document.getElementById("statRapid");
-  const blitzRating = document.getElementById("statBlitz");
-  const bulletRating = document.getElementById("statBullet");
+  const countryFlagEl = document.getElementById("profileModalCountryFlag");
+  if (countryWrapEl) countryWrapEl.style.display = (countryName && countryCode) ? 'flex' : 'none';
+  if (countryFlagEl && countryCode) countryFlagEl.src = `https://flagcdn.com/w20/${countryCode}.png`;
+  setText("profileModalCountryName", countryName);
 
-  if (usernameDisplay) usernameDisplay.textContent = window.currentUser.username;
-  const avatarEl = document.getElementById("profileAvatarLetter");
-  if (avatarEl) avatarEl.textContent = (window.currentUser.username || "?").charAt(0).toUpperCase();
-  if (handleDisplay) handleDisplay.textContent = "@" + window.currentUser.username;
+  const joinedEl = document.getElementById("profileJoined");
+  if (joinedEl) {
+    const d = p.createdAt ? new Date(p.createdAt) : null;
+    joinedEl.style.display = d && !isNaN(d) ? 'block' : 'none';
+    if (d && !isNaN(d)) joinedEl.textContent = tx('profJoined', "{{date}} dan beri a'zo", { date: d.toLocaleDateString() });
+  }
 
-  const countryCode = (window.currentUser.country || 'uz').toLowerCase();
-  const countryName = window.currentUser.countryName || '';
-  if (countryWrapEl) countryWrapEl.style.display = countryName ? 'flex' : 'none';
-  if (countryFlagEl) countryFlagEl.src = `https://flagcdn.com/w20/${countryCode}.png`;
-  if (countryNameEl) countryNameEl.textContent = countryName;
-
-  const profileData = JSON.parse(localStorage.getItem("justChessProfileData")) || {};
-  const fideId = profileData.fideId || '';
-  const goal = profileData.goal || '';
-  const debut = profileData.debut || '';
   // Klub — serverdagi a'zolik (o'yinchi faqat bitta klubda)
-  const myClub = window.currentUser.club || null;
-  const clubName = myClub ? ((typeof window.countryName === 'function') ? window.countryName(myClub.name, myClub.code) : myClub.name) : '';
-  const club = clubName || tx('profNoClub', "Klubga a'zo emas");
+  const club = p.club || null;
+  const clubName = club ? ((typeof window.countryName === 'function') ? window.countryName(club.name, club.code) : club.name) : '';
   const clubChip = document.getElementById("profileClubChip");
-  if (clubChip) clubChip.style.display = myClub ? 'inline-flex' : 'none';
-  const clubChipName = document.getElementById("profileClubChipName");
-  if (clubChipName) clubChipName.textContent = clubName;
+  if (clubChip) clubChip.style.display = club ? 'inline-flex' : 'none';
+  setText("profileClubChipName", clubName);
   const clubChipFlag = document.getElementById("profileClubChipFlag");
-  if (clubChipFlag && myClub && myClub.code) clubChipFlag.src = `https://flagcdn.com/w40/${myClub.code}.png`;
+  if (clubChipFlag && club && club.code) clubChipFlag.src = `https://flagcdn.com/w40/${club.code}.png`;
+  setText("statClub", clubName || tx('profNoClub', "Klubga a'zo emas"));
+  const inputClub = document.getElementById("inputClub");
+  if (inputClub) inputClub.value = clubName;
 
-  // Rejimlar bo'yicha o'yinlar soni va umumiy natijalar
-  const byMode = window.currentUser.statsByMode || window.statsByMode || {};
+  // Rejim reytinglari va o'yinlar soni
+  const ratingsByMode = p.ratingsByMode || {};
+  const baseRating = p.rating || 1500;
+  const byMode = p.statsByMode || {};
   const gamesOf = (s) => s ? (s.wins || 0) + (s.losses || 0) + (s.draws || 0) : 0;
   ['rapid', 'blitz', 'bullet'].forEach(mode => {
-    const el = document.getElementById('stat' + mode.charAt(0).toUpperCase() + mode.slice(1) + 'Games');
-    if (el) el.textContent = tx('profModeGames', "{{count}} ta o'yin", { count: gamesOf(byMode[mode]) });
+    const cap = mode.charAt(0).toUpperCase() + mode.slice(1);
+    const rating = ratingsByMode[mode] || baseRating;
+    setText('stat' + cap, rating);
+    const input = document.getElementById('input' + cap);
+    if (input) input.value = rating;
+    setText('stat' + cap + 'Games', tx('profModeGames', "{{count}} ta o'yin", { count: gamesOf(byMode[mode]) }));
   });
-  const totals = window.currentUser.stats || window.stats || { wins: 0, losses: 0, draws: 0 };
+
+  // Umumiy natijalar
+  const totals = p.stats || { wins: 0, losses: 0, draws: 0 };
   const total = gamesOf(totals);
   const pct = (n) => total ? Math.round(((n || 0) / total) * 1000) / 10 : 0;
-  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   setText("profTotalGames", total);
   setText("profWinsCount", totals.wins || 0);
   setText("profDrawsCount", totals.draws || 0);
@@ -1430,42 +1465,157 @@ window.updateProfileModalData = function() {
     const el = document.getElementById(id);
     if (el) el.style.width = pct(n) + '%';
   });
-  // Rejim reytinglari serverdan keladi (har o'yindan keyin yangilanadi)
-  const ratingsByMode = window.currentUser.ratingsByMode || {};
-  const baseRating = window.currentUser.rating || 1500;
-  const rapid = ratingsByMode.rapid || baseRating;
-  const blitz = ratingsByMode.blitz || baseRating;
-  const bullet = ratingsByMode.bullet || baseRating;
+};
 
-  if (rapidRating) rapidRating.textContent = rapid;
-  if (blitzRating) blitzRating.textContent = blitz;
-  if (bulletRating) bulletRating.textContent = bullet;
+// Oxirgi o'yinlar ro'yxati (games === null — yuklanmoqda)
+window.renderRecentGames = function(games) {
+  const container = document.getElementById("profRecentGames");
+  if (!container) return;
+  if (games === null) {
+    container.innerHTML = `<div class="profile-games-empty">${escapeHtmlSafe(tx('loadingText', 'Yuklanmoqda...'))}</div>`;
+    return;
+  }
+  if (!games || games.length === 0) {
+    container.innerHTML = `<div class="profile-games-empty">${escapeHtmlSafe(tx('profNoGames', "Hali o'yinlar yo'q"))}</div>`;
+    return;
+  }
+  const labels = {
+    win: tx('profWinsLabel', "G'alaba"),
+    loss: tx('profLossesLabel', "Mag'lubiyat"),
+    draw: tx('profDrawsLabel', 'Durrang')
+  };
+  const isUsername = (s) => typeof s === 'string' && /^[\p{L}\p{N}_.-]{3,30}$/u.test(s) && s !== 'Online';
+  container.innerHTML = games.map(g => {
+    const result = ['win', 'loss', 'draw'].includes(g.result) ? g.result : 'draw';
+    const opponent = g.opponent || '—';
+    const opponentHtml = isUsername(opponent)
+      ? `<span class="player-link" data-username="${escapeHtmlSafe(opponent)}">${escapeHtmlSafe(opponent)}</span>`
+      : escapeHtmlSafe(opponent);
+    const d = g.date ? new Date(g.date) : null;
+    const date = d && !isNaN(d) ? d.toLocaleDateString() : '';
+    return `
+      <div class="profile-game-row">
+        <span class="profile-game-result ${result}">${escapeHtmlSafe(labels[result])}</span>
+        <span class="profile-game-opponent"><small>vs</small>${opponentHtml}</span>
+        <span class="profile-game-mode">${escapeHtmlSafe(g.timeControl || '')}</span>
+        <span class="profile-game-date">${escapeHtmlSafe(date)}</span>
+      </div>`;
+  }).join('');
+};
 
-  const fideIdEl = document.getElementById("profileFideId");
-  const goalEl = document.getElementById("profileGoal");
-  const debutEl = document.getElementById("statDebut");
-  const clubEl = document.getElementById("statClub");
+function escapeHtmlSafe(value) {
+  const div = document.createElement('div');
+  div.textContent = (value === null || value === undefined) ? '' : String(value);
+  return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 
-  if (fideIdEl) fideIdEl.textContent = fideId;
-  if (goalEl) goalEl.textContent = goal;
-  if (debutEl) debutEl.textContent = debut;
-  if (clubEl) clubEl.textContent = club;
+// Serverdan ommaviy profilni olish
+function fetchPublicProfile(username) {
+  return fetch('/api/users/' + encodeURIComponent(username) + '/profile').then(res => res.json());
+}
 
-  const inputFideId = document.getElementById("inputFideId");
-  const inputGoal = document.getElementById("inputGoal");
-  const inputDebut = document.getElementById("inputDebut");
-  const inputClub = document.getElementById("inputClub");
-  const inputRapid = document.getElementById("inputRapid");
-  const inputBlitz = document.getElementById("inputBlitz");
-  const inputBullet = document.getElementById("inputBullet");
+window.updateProfileModalData = function() {
+  if (!window.currentUser) return;
+  // Boshqa o'yinchi profili ochiq bo'lsa, uni o'zimizniki bilan almashtirmaymiz
+  if (window.viewedProfileUsername) return;
 
-  if (inputFideId) inputFideId.value = fideId;
-  if (inputGoal) inputGoal.value = goal;
-  if (inputDebut) inputDebut.value = debut;
-  if (inputClub) inputClub.value = club;
-  if (inputRapid) inputRapid.value = rapid;
-  if (inputBlitz) inputBlitz.value = blitz;
-  if (inputBullet) inputBullet.value = bullet;
+  window.renderProfileCommon({
+    ...window.currentUser,
+    stats: window.currentUser.stats || window.stats,
+    statsByMode: window.currentUser.statsByMode || window.statsByMode,
+    createdAt: window.currentUser.createdAt || window.currentUser.created_at || null
+  });
+
+  // Faqat o'zimizga tegishli (brauzerda saqlanadigan) maydonlar
+  const profileData = JSON.parse(localStorage.getItem("justChessProfileData")) || {};
+  const fideId = profileData.fideId || '';
+  const goal = profileData.goal || '';
+  const debut = profileData.debut || '';
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  const setValue = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  setText("profileFideId", fideId);
+  setText("profileGoal", goal);
+  setText("statDebut", debut);
+  setValue("inputFideId", fideId);
+  setValue("inputGoal", goal);
+  setValue("inputDebut", debut);
+};
+
+// Istalgan o'yinchining profilini ochish (o'zimizniki bo'lsa — tahrirlanadigan profil)
+window.openPlayerProfile = async function(username) {
+  if (!username) return;
+  if (window.currentUser && window.currentUser.username === username) {
+    window.openProfileModal();
+    return;
+  }
+  const modal = document.getElementById("profileModal");
+  if (!modal) return;
+  window.viewedProfileUsername = username;
+  if (typeof window.setProfileEditMode === 'function') window.setProfileEditMode(false);
+  modal.classList.add("viewing-other");
+  const friendBtn = document.getElementById("profileFriendBtn");
+  if (friendBtn) {
+    friendBtn.style.display = window.currentUser ? 'flex' : 'none';
+    friendBtn.disabled = false;
+  }
+  window.renderProfileCommon({ username });
+  window.renderRecentGames(null);
+  modal.style.display = "flex";
+  try {
+    const data = await fetchPublicProfile(username);
+    if (window.viewedProfileUsername !== username) return;
+    if (!data.success) {
+      showToast(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'error');
+      window.closeProfileModal();
+      return;
+    }
+    window.renderProfileCommon(data.profile);
+    window.renderRecentGames(data.profile.recentGames);
+  } catch (err) {
+    console.error('Profilni yuklash xatoligi:', err);
+    showToast(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), 'error');
+    window.closeProfileModal();
+  }
+};
+
+window.sendFriendRequestTo = async function(username) {
+  if (!username || !window.authToken) return;
+  const btn = document.getElementById("profileFriendBtn");
+  if (btn) btn.disabled = true;
+  try {
+    const data = await fetch('/api/friends/request', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.authToken}` },
+      body: JSON.stringify({ username })
+    }).then(res => res.json());
+    if (data.success) {
+      showToast(tx('friendRequestSentTo', "{{name}} ga do'stlik so'rovi yuborildi", { name: username }), 'success');
+    } else {
+      showToast(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning');
+      if (btn) btn.disabled = false;
+    }
+  } catch (err) {
+    showToast(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), 'error');
+    if (btn) btn.disabled = false;
+  }
+};
+
+// Username ustiga bosilganda — o'sha o'yinchining profili
+document.addEventListener("click", (e) => {
+  const link = e.target.closest && e.target.closest(".player-link[data-username]");
+  if (!link) return;
+  e.preventDefault();
+  e.stopPropagation();
+  window.openPlayerProfile(link.dataset.username);
+}, true);
+
+// Havola orqali kirish: /?profile=ism
+window.openProfileFromUrl = function() {
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('profile');
+  if (!name || !window.currentUser) return;
+  window.history.replaceState(null, '', window.location.pathname);
+  window.openPlayerProfile(name);
 };
 
 window.setProfileEditMode = function(enabled) {
@@ -1633,13 +1783,14 @@ window.resetSettings = function() {
 
   if (closeProfileBtn && profileModal) {
     closeProfileBtn.addEventListener("click", () => {
-      profileModal.style.display = "none";
+      window.closeProfileModal();
     });
   }
 
   if (copyProfileLinkBtn && profileModal) {
     copyProfileLinkBtn.addEventListener("click", () => {
-      const profileUrl = window.location.origin + "/profile/" + (window.currentUser ? window.currentUser.username : "");
+      const name = window.viewedProfileUsername || (window.currentUser ? window.currentUser.username : "");
+      const profileUrl = window.location.origin + "/?profile=" + encodeURIComponent(name);
       navigator.clipboard.writeText(profileUrl).then(() => {
         showToast(tx('profileLinkCopied', 'Profil havolasi nusxalandi'), "success");
       }).catch(() => {
@@ -1757,6 +1908,8 @@ window.resetSettings = function() {
   // Tizimga kirilmagan bo'lsa — avval ro'yxatdan o'tish sahifasi
   if (!window.currentUser) {
     window.showAuthGate('signup');
+  } else {
+    window.openProfileFromUrl();
   }
 });
 

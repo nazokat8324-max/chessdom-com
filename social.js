@@ -452,7 +452,7 @@ window.openClubDetail = async function(countryName, countryCode) {
         <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: ${bgColors[index]}; border-radius: 8px;">
           <span style="font-size: 20px;">${medals[index]}</span>
           <div>
-            <div style="font-size: 14px; color: #fff; font-weight: bold;">${escapeHtml(player.username)}</div>
+            <div class="player-link" data-username="${escapeHtml(player.username)}" style="font-size: 14px; color: #fff; font-weight: bold;">${escapeHtml(player.username)}</div>
             <div style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${player.rating} • 🏆 ${player.wins}</div>
           </div>
         </div>
@@ -1319,7 +1319,7 @@ window.loadFriendRequests = function() {
       htmlContent += `
         <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 10px 12px; border-radius: 8px;">
           <div>
-            <b style="font-size: 14px; color: #fff;">${escapeHtml(request.username)}</b>
+            <b class="player-link" data-username="${escapeHtml(request.username)}" style="font-size: 14px; color: #fff;">${escapeHtml(request.username)}</b>
             <span style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${request.rating || 1500}</span>
           </div>
           <div style="display: flex; gap: 8px;">
@@ -1416,7 +1416,7 @@ window.loadFriendsList = function() {
                 ${friend.username.charAt(0).toUpperCase()}
               </div>
               <div>
-                <b style="font-size: 14px; color: #fff; display: block;">${escapeHtml(friend.username)}</b>
+                <b class="player-link" data-username="${escapeHtml(friend.username)}" style="font-size: 14px; color: #fff; display: block;">${escapeHtml(friend.username)}</b>
                 <span style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${friend.rating || 1500}</span>
               </div>
             </div>
@@ -1596,7 +1596,7 @@ window.showClubLeaderboard = async function(countryName) {
         <div style="display: flex; align-items: center; gap: 12px;">
           <span style="font-size: 14px; font-weight: bold; width: 22px; text-align: center; color: ${badgeColor};">#${index + 1}</span>
           <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
-          <b style="font-size: 14px; color: #fff;">${escapeHtml(member.username)}</b>
+          <b class="player-link" data-username="${escapeHtml(member.username)}" style="font-size: 14px; color: #fff;">${escapeHtml(member.username)}</b>
         </div>
         <div style="display: flex; gap: 15px; font-size: 12px; text-align: right;">
           <span style="color: #81b64c; font-weight: bold;">${Number(member.rating) || 1500}</span>
@@ -1949,7 +1949,7 @@ window.loadClubHistory = async function(countryName, container) {
         <div style="width: 36px; height: 36px; background: #81b64c; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">${firstLetter}</div>
         <div style="flex: 1;">
           <div style="font-size: 14px; color: #fff; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            ${escapeHtml(member.username)}
+            <span class="player-link" data-username="${escapeHtml(member.username)}">${escapeHtml(member.username)}</span>
             ${index === 0 ? '<span style="font-size: 11px; color: #f1c40f;">🥇</span>' : ''}
           </div>
           <div style="font-size: 11px; color: #88a;">
@@ -2052,7 +2052,7 @@ window.openTournamentDetail = async function(tournamentId) {
         <div class="tournament-detail-standings-row">
           <span class="tournament-detail-rank">#${i + 1}</span>
           <div class="tournament-detail-player">
-            <strong>${escapeHtml(s.username)}</strong>
+            <strong class="player-link" data-username="${escapeHtml(s.username)}">${escapeHtml(s.username)}</strong>
             <span>${tx('profLabelRating', 'Reyting:')} ${Number(s.rating || 1500)}</span>
           </div>
           <span class="tournament-detail-score">${Number(s.score || 0)}</span>

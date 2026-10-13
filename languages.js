@@ -1668,6 +1668,10 @@ const translationsExtra = {
     profDetails: "Ma'lumotlar",
     profModeGames: "{{count}} ta o'yin",
     profNoClub: "Klubga a'zo emas",
+    profRecentGames: "Oxirgi o'yinlar",
+    profNoGames: "Hali o'yinlar yo'q",
+    profJoined: "{{date}} dan beri a'zo",
+    friendRequestSentTo: "{{name}} ga do'stlik so'rovi yuborildi",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -1871,6 +1875,10 @@ const translationsExtra = {
     profDetails: "Details",
     profModeGames: "{{count}} games",
     profNoClub: "Not in a club",
+    profRecentGames: "Recent games",
+    profNoGames: "No games yet",
+    profJoined: "Member since {{date}}",
+    friendRequestSentTo: "Friend request sent to {{name}}",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2074,6 +2082,10 @@ const translationsExtra = {
     profDetails: "Сведения",
     profModeGames: "Партий: {{count}}",
     profNoClub: "Не состоит в клубе",
+    profRecentGames: "Последние партии",
+    profNoGames: "Партий пока нет",
+    profJoined: "Участник с {{date}}",
+    friendRequestSentTo: "Запрос в друзья отправлен: {{name}}",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2277,6 +2289,10 @@ const translationsExtra = {
     profDetails: "Detalles",
     profModeGames: "{{count}} partidas",
     profNoClub: "Sin club",
+    profRecentGames: "Partidas recientes",
+    profNoGames: "Aún no hay partidas",
+    profJoined: "Miembro desde {{date}}",
+    friendRequestSentTo: "Solicitud de amistad enviada a {{name}}",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2480,6 +2496,10 @@ const translationsExtra = {
     profDetails: "Details",
     profModeGames: "{{count}} Partien",
     profNoClub: "In keinem Klub",
+    profRecentGames: "Letzte Partien",
+    profNoGames: "Noch keine Partien",
+    profJoined: "Mitglied seit {{date}}",
+    friendRequestSentTo: "Freundschaftsanfrage an {{name}} gesendet",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -2683,6 +2703,10 @@ const translationsExtra = {
     profDetails: "Détails",
     profModeGames: "{{count}} parties",
     profNoClub: "Aucun club",
+    profRecentGames: "Parties récentes",
+    profNoGames: "Aucune partie pour le moment",
+    profJoined: "Membre depuis le {{date}}",
+    friendRequestSentTo: "Demande d'ami envoyée à {{name}}",
     searchNoResults: "Aucun résultat"
   }
 };

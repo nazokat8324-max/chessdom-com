@@ -449,6 +449,30 @@ async function getStatsByUsername(username) {
   return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.stats_by_mode, rating: user.rating || 1500, ratingsByMode: user.ratings_by_mode, club: userClub(user) };
 }
 
+// Ommaviy profil: boshqa o'yinchilar ko'rishi mumkin bo'lgan ma'lumotlar (email va yurishlarsiz)
+async function getPublicProfile(username) {
+  const user = await getUserByUsername(username);
+  if (!user) return null;
+  const history = Array.isArray(user.history) ? user.history : [];
+  const recentGames = history.slice(-10).reverse().map(g => ({
+    result: g.result,
+    opponent: g.opponent || null,
+    timeControl: g.timeControl || null,
+    date: g.timestamp || g.date || null
+  }));
+  return {
+    username: user.username,
+    country: user.country || null,
+    club: userClub(user),
+    rating: user.rating || 1500,
+    ratingsByMode: user.ratings_by_mode,
+    stats: user.stats || { wins: 0, losses: 0, draws: 0 },
+    statsByMode: user.stats_by_mode,
+    createdAt: user.created_at || null,
+    recentGames
+  };
+}
+
 function userClub(user) {
   return user && user.club_country ? { name: user.club_country, code: user.club_code || null, joinedAt: user.club_joined_at || null } : null;
 }
@@ -795,5 +819,6 @@ module.exports = {
   getCountryClubSummary,
   getCountryClubMembers,
   userClub,
+  getPublicProfile,
   usePostgres,
 };

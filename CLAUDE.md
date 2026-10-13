@@ -55,6 +55,7 @@ Foydalanuvchi bilan **o'zbek tilida** gaplashiladi; koddagi foydalanuvchiga ko'r
   - Tarjima usullari: HTML'da `data-i18n="kalit"` (textContent) va `data-i18n-placeholder="kalit"` — `updateUI()` avtomatik qo'llaydi (element ichida faqat matn bo'lsin); JS'da `tx('kalit', "o'zbekcha fallback", { name })` ([script.js](script.js) boshida; qiymatlar escape qilinmaydi — innerHTML'ga `escapeHtml` bilan); eski kod `updateUI()` da id bo'yicha `t('kalit')`.
   - `updateUI()` til almashganda ochiq Do'stlar/Chat/Tarix/Klub chati/Turnir tafsiloti sahifalarini qayta chizadi.
   - Server xato matnlari (`data.message`) faqat o'zbekcha — klientda `alert(data.message || tx(...))`.
+- **Zamonaviy mavzu** — [style.css](style.css) oxirida `/* ===== Zamonaviy mavzu` bloki (kirish sahifasi uslubidan oldin): `--cd-*` CSS o'zgaruvchilari, Inter shrifti (index.html'da Google Fonts), kartalar/tugmalar/tablar/maydonlar/jadvallar uchun umumiy ko'rinish. Faqat rang, shrift, burchak, soya o'zgartiriladi — joylashuv (o'lcham, grid, margin) eski qoidalarda. JS ichidagi inline stillar bu qatlamga bo'ysunmaydi.
 - [sound.js](sound.js) — Howler, lichess ovozlari.
 - [style.css](style.css) — ~3400 qator, bitta fayl.
 

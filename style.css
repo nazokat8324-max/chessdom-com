@@ -3418,6 +3418,460 @@
         color: #fff;
         text-decoration: underline;
       }
+/* ===== Zamonaviy mavzu (faqat ko'rinish: rang, shrift, burchak, soya — joylashuv o'zgarmaydi) ===== */
+:root {
+  --cd-bg: #0d1311;
+  --cd-sidebar: #0f1513;
+  --cd-surface: #151c19;
+  --cd-surface-2: #1a2420;
+  --cd-surface-3: #212d28;
+  --cd-border: rgba(255, 255, 255, 0.07);
+  --cd-border-strong: #26332e;
+  --cd-text: #e8ece9;
+  --cd-muted: #8fa29a;
+  --cd-accent: #81b64c;
+  --cd-accent-hover: #95c95e;
+  --cd-accent-soft: rgba(129, 182, 76, 0.14);
+  --cd-radius: 16px;
+  --cd-radius-sm: 10px;
+  --cd-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --cd-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--cd-bg);
+  color: var(--cd-text);
+  font-family: var(--cd-font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+button, input, select, textarea {
+  font-family: inherit;
+}
+
+/* Ingichka zamonaviy scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a3833 transparent;
+}
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #2a3833; border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: #3a4a44; background-clip: padding-box; }
+
+/* --- Yon menyu --- */
+sidebar {
+  background: var(--cd-sidebar);
+  border-right: 1px solid var(--cd-border);
+}
+.logo-area .chessdom-text {
+  font-family: var(--cd-font);
+  text-transform: none;
+  letter-spacing: 0.2px;
+  font-weight: 800;
+}
+.logo-area .chessdom-text .cd-letter {
+  background: none !important;
+  -webkit-text-fill-color: currentColor !important;
+  filter: none !important;
+  text-shadow: none;
+  color: #f4f5f2;
+}
+.logo-area .chessdom-text .cd-letter:nth-child(n + 6) {
+  color: var(--cd-accent);
+}
+.menu-item {
+  color: #a9b6b0;
+  border-radius: 12px;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.menu-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff;
+}
+.menu-item.active {
+  background: linear-gradient(90deg, rgba(129, 182, 76, 0.18), rgba(129, 182, 76, 0.04));
+  color: #fff;
+  box-shadow: inset 3px 0 0 var(--cd-accent);
+}
+.sidebar-bottom {
+  border-top-color: var(--cd-border);
+}
+.user-mini-profile {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: 12px;
+  transition: background 0.15s, border-color 0.15s;
+}
+.user-mini-profile:hover {
+  background: var(--cd-surface-2);
+  border-color: var(--cd-border-strong);
+}
+.mini-avatar,
+.avatar-circle,
+.player-avatar {
+  background: linear-gradient(135deg, #8cc657, #5d8a34);
+  color: #fff;
+}
+
+/* --- Asosiy maydon --- */
+.main-wrapper {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(129, 182, 76, 0.07), transparent 38%),
+    radial-gradient(circle at 100% 100%, rgba(226, 165, 42, 0.04), transparent 35%),
+    var(--cd-bg);
+}
+.top-bar {
+  border-bottom-color: var(--cd-border);
+}
+
+/* --- Kartalar --- */
+.dash-card,
+.card-box,
+.panel,
+.leaderboard-card,
+.settings-container,
+.league-card,
+.info-card,
+.tournament-detail-card,
+.club-chat-container,
+.profile-container,
+.profile-sidebar-card,
+.profile-header-card,
+.arena-schedule-card {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius);
+  box-shadow: var(--cd-shadow);
+  backdrop-filter: none;
+}
+.settings-section,
+.stat-card {
+  background: var(--cd-surface-2);
+  border: 1px solid var(--cd-border);
+  border-radius: 14px;
+}
+.league-card,
+.arena-schedule-card,
+.stat-card {
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.league-card:hover,
+.arena-schedule-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(129, 182, 76, 0.35);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45);
+}
+.panel-header {
+  background: var(--cd-surface-2);
+  color: #fff;
+  border-bottom-color: var(--cd-border);
+  letter-spacing: 0.2px;
+}
+
+/* Sarlavhalar: oq va qalin, aksent faqat kerakli joyda */
+.card-title,
+.settings-header h2,
+.league-card-title {
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+}
+.settings-section h3 {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* --- Tugmalar --- */
+.play-big-btn,
+.form-submit,
+.start-game-btn,
+.settings-save-btn,
+.tournament-detail-join-btn {
+  background: linear-gradient(180deg, #8cc657 0%, #74a843 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  box-shadow: 0 8px 20px rgba(129, 182, 76, 0.25);
+  transition: transform 0.12s, box-shadow 0.12s, filter 0.12s;
+}
+.start-game-btn {
+  text-transform: none;
+  letter-spacing: 0.2px;
+}
+.play-big-btn:hover,
+.form-submit:hover,
+.start-game-btn:hover,
+.settings-save-btn:hover,
+.tournament-detail-join-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #8cc657 0%, #74a843 100%);
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 26px rgba(129, 182, 76, 0.32);
+}
+.play-big-btn:active,
+.form-submit:active,
+.start-game-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 12px rgba(129, 182, 76, 0.22);
+}
+.play-sub-btn,
+.control-btn,
+.time-btn,
+.action-btn,
+.tab-btn,
+.copy-link-btn,
+.edit-tab-btn,
+.cancel-tab-btn,
+.settings-reset-btn,
+.settings-language-btn,
+.league-mode-btn,
+.tournament-detail-back-btn {
+  background: var(--cd-surface-2);
+  color: #d5ddd9;
+  border: 1px solid var(--cd-border-strong);
+  border-radius: var(--cd-radius-sm);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.play-sub-btn:hover,
+.control-btn:hover,
+.time-btn:hover,
+.action-btn:hover,
+.tab-btn:hover,
+.copy-link-btn:hover,
+.edit-tab-btn:hover,
+.cancel-tab-btn:hover,
+.settings-reset-btn:hover,
+.settings-language-btn:hover,
+.league-mode-btn:hover,
+.tournament-detail-back-btn:hover {
+  background: var(--cd-surface-3);
+  border-color: #34443e;
+  color: #fff;
+}
+.time-btn.active {
+  background: var(--cd-accent-soft);
+  border-color: var(--cd-accent);
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(129, 182, 76, 0.12);
+}
+.logout-btn {
+  border-radius: var(--cd-radius-sm);
+}
+
+/* Tablar va filtrlar — "pill" uslubi, faol holati yashil */
+.filter-tab,
+.continent-tab,
+.mode-tab {
+  background: var(--cd-surface-2);
+  color: #b9c5bf;
+  border: 1px solid var(--cd-border-strong);
+  border-radius: 999px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.filter-tab:hover,
+.continent-tab:hover,
+.mode-tab:hover {
+  background: var(--cd-surface-3);
+  color: #fff;
+}
+.filter-tab.active,
+.continent-tab.active,
+.mode-tab.active {
+  background: var(--cd-accent);
+  border-color: var(--cd-accent);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(129, 182, 76, 0.25);
+}
+
+/* --- Maydonlar --- */
+.form-input,
+.settings-select,
+.lang-select,
+.language-search-input,
+.editable-input,
+#clubSearchInput,
+#chatMessageInput,
+#clubChatInput {
+  background: #0f1513;
+  border: 1px solid var(--cd-border-strong);
+  border-radius: 12px;
+  color: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.form-input:focus,
+.settings-select:focus,
+.lang-select:focus,
+.language-search-input:focus,
+.editable-input:focus,
+#clubSearchInput:focus,
+#chatMessageInput:focus,
+#clubChatInput:focus {
+  border-color: var(--cd-accent);
+  box-shadow: 0 0 0 4px rgba(129, 182, 76, 0.15);
+  outline: none;
+}
+.form-label {
+  color: #c3cdc8;
+  font-weight: 600;
+}
+.toggle-slider {
+  transition: background 0.2s;
+}
+.settings-range {
+  accent-color: var(--cd-accent);
+}
+
+/* --- Jadvallar --- */
+.leaderboard-table-wrapper {
+  border-radius: 14px;
+  border: 1px solid var(--cd-border);
+  overflow: hidden;
+}
+.leaderboard-table thead th {
+  background: var(--cd-surface-2);
+  color: var(--cd-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-color: var(--cd-border);
+}
+.leaderboard-table tbody td {
+  border-color: var(--cd-border);
+}
+.leaderboard-table tbody tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+.top-winners-table {
+  border-radius: 14px;
+  overflow: hidden;
+}
+.top-winners-row {
+  transition: background 0.15s;
+}
+
+/* --- O'yin sahifasi --- */
+.player-bar,
+.tournament-player-bar {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: 14px;
+}
+.timer,
+.player-timer,
+.tournament-player-clock {
+  font-family: var(--cd-font);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  background: #0f1513;
+  border: 1px solid var(--cd-border-strong);
+  border-radius: 10px;
+}
+.timer.active {
+  background: #fff;
+  color: #111;
+  border-color: #fff;
+}
+.board-wrapper {
+  border-radius: 14px;
+}
+.control-panel {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius);
+}
+.time-label,
+.rated-sublabel,
+.stat-title {
+  color: var(--cd-muted);
+}
+
+/* --- Klublar --- */
+.country-stamp {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: var(--cd-radius);
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.country-stamp:hover {
+  transform: translateY(-3px);
+  border-color: rgba(129, 182, 76, 0.4);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45);
+}
+.country-stamp.joined {
+  border-color: var(--cd-accent);
+  box-shadow: 0 0 0 3px rgba(129, 182, 76, 0.15);
+}
+.stamp-join-btn {
+  background: var(--cd-surface-2);
+  color: #d5ddd9;
+  border-top: 1px solid var(--cd-border);
+  transition: background 0.15s, color 0.15s;
+}
+.country-stamp:hover .stamp-join-btn {
+  background: var(--cd-accent);
+  color: #fff;
+}
+.stamp-flag img {
+  border-radius: 6px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Modallar --- */
+.info-modal-overlay,
+.language-modal-overlay,
+.profile-modal-overlay {
+  background: rgba(5, 8, 7, 0.72);
+  backdrop-filter: blur(8px);
+}
+.info-modal-container,
+.language-modal-container {
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  border-radius: 20px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+.language-card {
+  background: var(--cd-surface-2);
+  border: 1px solid var(--cd-border);
+  border-radius: 14px;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.language-card:hover {
+  border-color: rgba(129, 182, 76, 0.4);
+  transform: translateY(-2px);
+}
+
+/* --- Bildirishnomalar --- */
+.toast {
+  background: rgba(21, 28, 25, 0.96);
+  border: 1px solid var(--cd-border-strong);
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+}
+
+/* Bosh sahifadagi ketma-ket kunlar banneri — iliq rang saqlanadi */
+.dash-card.streak-banner,
+.streak-banner {
+  background: linear-gradient(135deg, rgba(255, 140, 50, 0.16), rgba(255, 140, 50, 0.04));
+  border: 1px solid rgba(255, 150, 70, 0.28);
+  color: #ffb366;
+  box-shadow: none;
+}
+
+/* Maydon yonidagi yuborish tugmasi (do'stlar, chat, klub chati) maydonni siqib qo'ymasin */
+.form-input + .form-submit {
+  width: auto;
+  flex: 0 0 auto;
+  margin-top: 0;
+  padding: 0 22px;
+}
+.form-input {
+  min-width: 0;
+}
+
 /* ===== Kirish / ro'yxatdan o'tish sahifasi (tizimga kirilmaguncha) ===== */
 body.auth-locked {
   overflow: hidden;

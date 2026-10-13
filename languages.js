@@ -1770,6 +1770,18 @@ const translationsExtra = {
     clubDetailChatBtn: "Chat",
     clubChatMembersOnly: "Klub chatiga faqat a'zolar yoza oladi.",
     srvClubChatMembersOnly: "Klub chatiga faqat klub a'zolari yozishi mumkin!",
+    mMessages: "Xabarlar",
+    msgTabChats: "Suhbatlar",
+    msgTabFriends: "Do'stlar",
+    msgTabRequests: "So'rovlar",
+    msgSearchPlaceholder: "O'yinchi nomi bilan yangi suhbat",
+    msgNoChats: "Hali suhbatlar yo'q. O'yinchi nomini qidirib, birinchi xabarni yozing!",
+    msgYou: "Siz",
+    msgWrite: "Yozish",
+    msgWantsFriend: "do'stlik so'ramoqda",
+    msgPickChat: "Suhbatni tanlang yoki yangisini boshlang",
+    msgSayHi: "Salom deb yozing 👋",
+    profileMessageBtn: "Xabar yozish",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2075,6 +2087,18 @@ const translationsExtra = {
     clubDetailChatBtn: "Chat",
     clubChatMembersOnly: "Only club members can write in the club chat.",
     srvClubChatMembersOnly: "Only club members can write in the club chat!",
+    mMessages: "Messages",
+    msgTabChats: "Chats",
+    msgTabFriends: "Friends",
+    msgTabRequests: "Requests",
+    msgSearchPlaceholder: "New chat by player name",
+    msgNoChats: "No chats yet. Search a player name and send the first message!",
+    msgYou: "You",
+    msgWrite: "Message",
+    msgWantsFriend: "wants to be friends",
+    msgPickChat: "Pick a chat or start a new one",
+    msgSayHi: "Say hi 👋",
+    profileMessageBtn: "Send message",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2380,6 +2404,18 @@ const translationsExtra = {
     clubDetailChatBtn: "Чат",
     clubChatMembersOnly: "Писать в чат клуба могут только его участники.",
     srvClubChatMembersOnly: "Писать в чат клуба могут только его участники!",
+    mMessages: "Сообщения",
+    msgTabChats: "Чаты",
+    msgTabFriends: "Друзья",
+    msgTabRequests: "Запросы",
+    msgSearchPlaceholder: "Новый чат по имени игрока",
+    msgNoChats: "Чатов пока нет. Найдите игрока по имени и напишите первым!",
+    msgYou: "Вы",
+    msgWrite: "Написать",
+    msgWantsFriend: "хочет добавить в друзья",
+    msgPickChat: "Выберите чат или начните новый",
+    msgSayHi: "Скажите привет 👋",
+    profileMessageBtn: "Написать сообщение",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2685,6 +2721,18 @@ const translationsExtra = {
     clubDetailChatBtn: "Chat",
     clubChatMembersOnly: "Solo los miembros pueden escribir en el chat del club.",
     srvClubChatMembersOnly: "¡Solo los miembros pueden escribir en el chat del club!",
+    mMessages: "Mensajes",
+    msgTabChats: "Chats",
+    msgTabFriends: "Amigos",
+    msgTabRequests: "Solicitudes",
+    msgSearchPlaceholder: "Nuevo chat por nombre de jugador",
+    msgNoChats: "Aún no hay chats. ¡Busca un jugador y escribe el primer mensaje!",
+    msgYou: "Tú",
+    msgWrite: "Escribir",
+    msgWantsFriend: "quiere ser tu amigo",
+    msgPickChat: "Elige un chat o empieza uno nuevo",
+    msgSayHi: "Saluda 👋",
+    profileMessageBtn: "Enviar mensaje",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -2990,6 +3038,18 @@ const translationsExtra = {
     clubDetailChatBtn: "Chat",
     clubChatMembersOnly: "Nur Mitglieder können im Klubchat schreiben.",
     srvClubChatMembersOnly: "Nur Mitglieder können im Klubchat schreiben!",
+    mMessages: "Nachrichten",
+    msgTabChats: "Chats",
+    msgTabFriends: "Freunde",
+    msgTabRequests: "Anfragen",
+    msgSearchPlaceholder: "Neuer Chat per Spielername",
+    msgNoChats: "Noch keine Chats. Suche einen Spielernamen und schreib die erste Nachricht!",
+    msgYou: "Du",
+    msgWrite: "Schreiben",
+    msgWantsFriend: "möchte befreundet sein",
+    msgPickChat: "Wähle einen Chat oder starte einen neuen",
+    msgSayHi: "Sag Hallo 👋",
+    profileMessageBtn: "Nachricht senden",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -3295,6 +3355,18 @@ const translationsExtra = {
     clubDetailChatBtn: "Chat",
     clubChatMembersOnly: "Seuls les membres peuvent écrire dans le chat du club.",
     srvClubChatMembersOnly: "Seuls les membres peuvent écrire dans le chat du club !",
+    mMessages: "Messages",
+    msgTabChats: "Discussions",
+    msgTabFriends: "Amis",
+    msgTabRequests: "Demandes",
+    msgSearchPlaceholder: "Nouvelle discussion par nom de joueur",
+    msgNoChats: "Pas encore de discussions. Cherchez un joueur et écrivez le premier message !",
+    msgYou: "Vous",
+    msgWrite: "Écrire",
+    msgWantsFriend: "souhaite devenir ami",
+    msgPickChat: "Choisissez une discussion ou commencez-en une",
+    msgSayHi: "Dites bonjour 👋",
+    profileMessageBtn: "Envoyer un message",
     searchNoResults: "Aucun résultat"
   }
 };
@@ -3545,6 +3617,7 @@ function updateUI() {
   if (typeof window.updateAuthGateLanguage === 'function') window.updateAuthGateLanguage();
   if (typeof window.refreshLeagueViews === 'function') window.refreshLeagueViews();
   if (typeof window.refreshAboutPage === 'function') window.refreshAboutPage();
+  if (typeof window.renderMessagesView === 'function' && isActive('messagesView')) window.renderMessagesView();
 }
 
 window.setLanguage = function(lang) {

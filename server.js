@@ -574,6 +574,26 @@ async function start() {
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  // Shaxsiy xabarlar: suhbatlar ro'yxati, o'qilmaganlar soni, "o'qildi" belgisi
+  app.get('/api/messages/conversations', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, conversations: await db.getConversations(req.user.userId) }); }
+    catch (err) { console.error('Conversations xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.get('/api/messages/unread', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, unread: await db.getUnreadTotal(req.user.userId) }); }
+    catch (err) { console.error('Unread xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/messages/read', authMiddleware, async (req, res) => {
+    try {
+      const roomId = req.body.roomId ? resolveChatRoom(String(req.body.roomId), req.user.userId) : null;
+      if (!roomId || !roomId.startsWith('dm_')) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
+      await db.markRoomRead(req.user.userId, roomId);
+      res.json({ success: true });
+    } catch (err) { console.error('Read xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.get('/api/chat/messages', authMiddleware, async (req, res) => {
     try {
       const roomId = req.query.roomId ? resolveChatRoom(String(req.query.roomId), req.user.userId) : null;

@@ -557,6 +557,12 @@ window.switchView = function(viewName) {
         window.loadChatMessages();
       }
     }
+  } else if (viewName === "messages") {
+    const messagesEl = document.getElementById("messagesView");
+    if (messagesEl) messagesEl.classList.add("active-view");
+    const navEl = document.getElementById("navMessages");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.renderMessagesView === "function") window.renderMessagesView();
   } else if (viewName === "settings") {
     const settingsEl = document.getElementById("settingsView");
     if (settingsEl) {
@@ -572,6 +578,8 @@ window.switchView = function(viewName) {
 };
 
 window.updateAuthHeaderUI = function() {
+  if (typeof window.refreshMessagesBadge === "function") window.refreshMessagesBadge();
+  if (typeof window.refreshLeagueBadge === "function") window.refreshLeagueBadge();
   const container = document.getElementById("sidebarAuthContainer");
   if (!container) return;
 
@@ -763,6 +771,8 @@ window.openProfileModal = function() {
   if (profileModal) profileModal.classList.remove("viewing-other");
   const friendBtn = document.getElementById("profileFriendBtn");
   if (friendBtn) friendBtn.style.display = 'none';
+  const messageBtn = document.getElementById("profileMessageBtn");
+  if (messageBtn) messageBtn.style.display = 'none';
   updateProfileModalData();
   if (profileModal) {
     profileModal.style.display = "flex";
@@ -1386,6 +1396,8 @@ window.openPlayerProfile = async function(username) {
     friendBtn.style.display = window.currentUser ? 'flex' : 'none';
     friendBtn.disabled = false;
   }
+  const messageBtn = document.getElementById("profileMessageBtn");
+  if (messageBtn) messageBtn.style.display = window.currentUser ? 'flex' : 'none';
   window.renderProfileCommon({ username });
   window.renderRecentGames(null);
   modal.style.display = "flex";

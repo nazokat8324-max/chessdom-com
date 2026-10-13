@@ -290,6 +290,17 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  // Shaxsiy xabarlar: har foydalanuvchi har suhbatni qachongacha o'qigani (o'qilmaganlar soni uchun)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS chat_reads (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      room_id TEXT NOT NULL,
+      last_read_at TEXT NOT NULL
+    )
+  `);
+  await dbExec(`CREATE INDEX IF NOT EXISTS idx_chat_reads_user_room ON chat_reads(user_id, room_id)`);
+
   // --- Jamoaviy ligalar (league.js) ---
   // Mavsum: barcha qit'a ligalari bir xil vaqt nazoratida, keyin Chempionlar ligasi va 1 haftalik tanaffus
   await dbExec(`
@@ -547,6 +558,7 @@ async function getPublicProfile(username) {
     date: g.timestamp || g.date || null
   }));
   return {
+    id: user.id,
     username: user.username,
     country: user.country || null,
     club: userClub(user),
@@ -802,8 +814,54 @@ async function getChatMessages({ userId, roomId }) {
   if (roomId) { sql += ' WHERE cm.room_id = ?'; params.push(roomId); }
   else if (userId) { sql += ' WHERE (cm.sender_id = ? AND cm.receiver_id = ?) OR (cm.sender_id = ? AND cm.receiver_id = ?)'; params.push(userId, userId, userId, userId); }
   else { sql += ' WHERE cm.receiver_id IS NULL AND cm.room_id IS NULL'; }
-  sql += ' ORDER BY cm.created_at ASC LIMIT 100';
-  return await dbAll(sql, ...params);
+  sql += ' ORDER BY cm.created_at DESC LIMIT 100';
+  const rows = await dbAll(sql, ...params);
+  return rows.reverse();
+}
+
+// --- Shaxsiy xabarlar (dm_<id1>_<id2> xonalari) ---
+async function markRoomRead(userId, roomId) {
+  const now = new Date().toISOString();
+  const existing = await dbGet('SELECT id FROM chat_reads WHERE user_id = ? AND room_id = ?', [userId, roomId]);
+  if (existing) await dbRun('UPDATE chat_reads SET last_read_at = ? WHERE id = ?', [now, existing.id]);
+  else await dbRun('INSERT INTO chat_reads (id, user_id, room_id, last_read_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, roomId, now]);
+}
+
+async function unreadInRoom(userId, roomId) {
+  const read = await dbGet('SELECT last_read_at FROM chat_reads WHERE user_id = ? AND room_id = ?', [userId, roomId]);
+  const row = await dbGet('SELECT COUNT(*) as "n" FROM chat_messages WHERE room_id = ? AND sender_id <> ? AND created_at > ?',
+    [roomId, userId, read ? read.last_read_at : '']);
+  return Number(row && row.n) || 0;
+}
+
+// Foydalanuvchining suhbatlari: sherik, oxirgi xabar va o'qilmaganlar soni (yangisi birinchi)
+async function getConversations(userId) {
+  const rooms = await dbAll(`SELECT room_id, MAX(created_at) as "last_at" FROM chat_messages
+    WHERE room_id LIKE 'dm%' AND (sender_id = ? OR receiver_id = ?)
+    GROUP BY room_id ORDER BY MAX(created_at) DESC LIMIT 50`, [userId, userId]);
+  const result = [];
+  for (const r of rooms) {
+    if (!r.room_id.startsWith('dm_')) continue;
+    const partnerId = r.room_id.slice(3).split('_').find(id => id !== userId);
+    if (!partnerId) continue;
+    const partner = await dbGet('SELECT id, username, country FROM users WHERE id = ?', [partnerId]);
+    if (!partner) continue;
+    const last = await dbGet('SELECT message, sender_id, created_at FROM chat_messages WHERE room_id = ? ORDER BY created_at DESC LIMIT 1', [r.room_id]);
+    result.push({
+      roomId: r.room_id,
+      partner: { id: partner.id, username: partner.username, country: partner.country || null },
+      lastMessage: last ? last.message : '',
+      lastFromMe: last ? last.sender_id === userId : false,
+      lastAt: last ? last.created_at : r.last_at,
+      unread: await unreadInRoom(userId, r.room_id)
+    });
+  }
+  return result;
+}
+
+async function getUnreadTotal(userId) {
+  const conversations = await getConversations(userId);
+  return conversations.reduce((sum, c) => sum + c.unread, 0);
 }
 
 async function sendChatMessage(senderId, receiverId, roomId, message) {
@@ -909,6 +967,9 @@ module.exports = {
   getCountryClubMembers,
   userClub,
   getPublicProfile,
+  markRoomRead,
+  getConversations,
+  getUnreadTotal,
   usePostgres,
   // Liga moduli (league.js) uchun past darajadagi so'rovlar
   dbGet,

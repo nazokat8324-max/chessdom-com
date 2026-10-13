@@ -12,6 +12,7 @@ const path = require('path');
 const { Chess } = require('chess.js');
 
 const db = require('./database');
+const league = require('./league');
 
 const app = express();
 const server = http.createServer(app);
@@ -154,6 +155,11 @@ async function endGame(roomId, room, winnerColor, reason) {
         };
       }
     } catch (err) { console.error("O'yin natijasini saqlash xatoligi:", err); }
+  }
+  // Liga o'yini bo'lsa — natija bahs hisobiga yoziladi
+  if (room.leagueGameId) {
+    try { await league.recordGameResult(room.leagueGameId, winnerColor, reason); }
+    catch (err) { console.error('Liga natijasini yozish xatoligi:', err); }
   }
 
   for (const p of players) {
@@ -599,6 +605,30 @@ async function start() {
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  // Jamoaviy ligalar (league.js)
+  app.get('/api/leagues', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, ...(await league.overview()) }); }
+    catch (err) { console.error('Leagues xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.get('/api/leagues/champions', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, detail: await league.championsDivision() }); }
+    catch (err) { console.error('Champions league xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.get('/api/leagues/divisions/:id', apiLimiter, async (req, res) => {
+    try {
+      const detail = await league.divisionDetail(req.params.id);
+      if (!detail) return res.status(404).json({ success: false, message: 'Liga topilmadi!' });
+      res.json({ success: true, ...detail });
+    } catch (err) { console.error('League division xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.get('/api/leagues/my-games', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, games: await league.myGames(req.user.userId) }); }
+    catch (err) { console.error('League my-games xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   // Davlat klublari: har bir o'yinchi faqat bitta klubga a'zo bo'ladi
   app.get('/api/country-clubs', apiLimiter, async (req, res) => {
     try { res.json({ success: true, clubs: await db.getCountryClubSummary() }); }
@@ -769,7 +799,11 @@ async function start() {
       if (data.roomId && isPublicSocketRoom(data.roomId)) io.to(data.roomId).emit('chat-message', { ...payload, roomId: data.roomId });
       else if (data.receiverId) io.to(`user_${data.receiverId}`).emit('chat-message', payload);
     });
+    // Liga: o'yinchi o'z doska o'yiniga tayyor (ikkalasi tayyor bo'lganda o'yin boshlanadi)
+    socket.on('league-ready', (data) => { league.ready(socket, data && data.gameId).catch(err => console.error('Liga ready xatoligi:', err)); });
+    socket.on('league-cancel', (data) => { league.cancel(socket, data && data.gameId); });
     socket.on('disconnect', () => {
+      league.socketGone(socket.id);
       pruneMatchmakingQueue();
       for (const [roomId, room] of rooms.entries()) {
         if (!findPlayer(room, socket.id)) continue;
@@ -781,6 +815,10 @@ async function start() {
   });
 
   setInterval(async () => { await db.closeStaleArenas(); }, 60 * 1000);
+
+  league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId });
+  setInterval(league.tick, league.CFG.tickMs);
+  league.tick();
 
   server.listen(PORT, () => {
     console.log('Server ishga tushdi: http://localhost:' + PORT);

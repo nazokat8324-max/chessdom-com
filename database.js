@@ -290,6 +290,92 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  // --- Jamoaviy ligalar (league.js) ---
+  // Mavsum: barcha qit'a ligalari bir xil vaqt nazoratida, keyin Chempionlar ligasi va 1 haftalik tanaffus
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS league_seasons (
+      id TEXT PRIMARY KEY,
+      number INTEGER NOT NULL,
+      initial_time INTEGER NOT NULL,
+      increment INTEGER NOT NULL,
+      phase TEXT NOT NULL,
+      champion_club TEXT,
+      champion_code TEXT,
+      started_at TEXT,
+      break_until TEXT,
+      created_at TEXT
+    )
+  `);
+  // Divizion: bitta qit'a ligasi yoki Chempionlar ligasi (round-robin jadvali schedule JSON'da)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS league_divisions (
+      id TEXT PRIMARY KEY,
+      season_id TEXT REFERENCES league_seasons(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL,
+      continent TEXT,
+      status TEXT NOT NULL,
+      current_round INTEGER DEFAULT 0,
+      rounds_total INTEGER DEFAULT 0,
+      schedule TEXT DEFAULT '[]',
+      champion_club TEXT,
+      champion_code TEXT,
+      created_at TEXT
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS league_clubs (
+      id TEXT PRIMARY KEY,
+      division_id TEXT REFERENCES league_divisions(id) ON DELETE CASCADE,
+      club_name TEXT NOT NULL,
+      club_code TEXT,
+      played INTEGER DEFAULT 0,
+      won INTEGER DEFAULT 0,
+      drawn INTEGER DEFAULT 0,
+      lost INTEGER DEFAULT 0,
+      match_points INTEGER DEFAULT 0,
+      board_points REAL DEFAULT 0
+    )
+  `);
+  // Bahs: ikki klub o'rtasidagi doskalar bo'yicha uchrashuv (Chempionlar ligasida bitta juftlikka 3 ta bahs)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS league_matches (
+      id TEXT PRIMARY KEY,
+      division_id TEXT REFERENCES league_divisions(id) ON DELETE CASCADE,
+      round INTEGER NOT NULL,
+      home_club TEXT NOT NULL,
+      home_code TEXT,
+      away_club TEXT NOT NULL,
+      away_code TEXT,
+      initial_time INTEGER NOT NULL,
+      increment INTEGER NOT NULL,
+      status TEXT NOT NULL,
+      home_score REAL DEFAULT 0,
+      away_score REAL DEFAULT 0,
+      deadline TEXT,
+      created_at TEXT
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS league_games (
+      id TEXT PRIMARY KEY,
+      match_id TEXT REFERENCES league_matches(id) ON DELETE CASCADE,
+      board INTEGER NOT NULL,
+      white_id TEXT,
+      white_name TEXT,
+      black_id TEXT,
+      black_name TEXT,
+      white_is_home INTEGER DEFAULT 1,
+      status TEXT NOT NULL,
+      result TEXT,
+      white_ready_at TEXT,
+      black_ready_at TEXT,
+      finished_at TEXT
+    )
+  `);
+  await dbExec(`CREATE INDEX IF NOT EXISTS idx_league_matches_division ON league_matches(division_id)`);
+  await dbExec(`CREATE INDEX IF NOT EXISTS idx_league_games_match ON league_games(match_id)`);
+  await dbExec(`CREATE INDEX IF NOT EXISTS idx_league_clubs_division ON league_clubs(division_id)`);
+
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
 
@@ -821,4 +907,9 @@ module.exports = {
   userClub,
   getPublicProfile,
   usePostgres,
+  // Liga moduli (league.js) uchun past darajadagi so'rovlar
+  dbGet,
+  dbAll,
+  dbRun,
+  parseJson,
 };

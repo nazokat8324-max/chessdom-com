@@ -4473,6 +4473,623 @@ sidebar {
   }
 }
 
+/* ===== Ligalar va Chempionlar ligasi (leagues.js) ===== */
+.view-section.lg-view.active-view {
+  display: block;
+}
+.lg-page {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 30px;
+}
+.lg-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--cd-muted, #8fa29a);
+}
+.lg-muted {
+  color: #6f7f78;
+  font-size: 13px;
+}
+.lg-flag {
+  width: 22px;
+  height: 15px;
+  border-radius: 3px;
+  object-fit: cover;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+.lg-flag-lg {
+  width: 30px;
+  height: 20px;
+}
+.lg-club {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-weight: 600;
+  color: #fff;
+}
+.lg-club > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Sarlavha bloki */
+.lg-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  gap: 20px;
+  padding: 26px 28px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(129, 182, 76, 0.18), transparent 45%),
+    linear-gradient(135deg, #16231e, #111816);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+.lg-hero-gold {
+  background:
+    radial-gradient(circle at 0% 0%, rgba(242, 196, 82, 0.2), transparent 45%),
+    linear-gradient(135deg, #1f1d14, #111816);
+}
+.lg-hero-main {
+  min-width: 0;
+}
+.lg-hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.lg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #c9d2ce;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.lg-chip-accent {
+  color: #8cc657;
+  background: rgba(129, 182, 76, 0.14);
+  border-color: rgba(129, 182, 76, 0.3);
+}
+.lg-chip-gold {
+  color: #f2d48a;
+  background: rgba(242, 196, 82, 0.14);
+  border-color: rgba(242, 196, 82, 0.3);
+}
+.lg-hero-title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #fff;
+}
+.lg-hero-text {
+  margin: 6px 0 0;
+  max-width: 560px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #9fb0a8;
+}
+.lg-hero-champion {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #f2d48a;
+  background: rgba(242, 196, 82, 0.1);
+  border: 1px solid rgba(242, 196, 82, 0.25);
+}
+.lg-hero-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-width: 210px;
+}
+.lg-stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  color: #8fa29a;
+}
+.lg-stat b {
+  color: #fff;
+  font-size: 15px;
+}
+
+/* Kartalar */
+.lg-card {
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: #151c19;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
+}
+.lg-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  color: #c9d2ce;
+}
+.lg-section-title {
+  margin: 0 0 14px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8fa29a;
+}
+.lg-btn {
+  flex-shrink: 0;
+  height: 40px;
+  padding: 0 18px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(180deg, #8cc657 0%, #74a843 100%);
+  box-shadow: 0 6px 16px rgba(129, 182, 76, 0.25);
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.12s;
+}
+.lg-btn:hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+}
+.lg-btn-ghost {
+  color: #e8ece9;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid #26332e;
+  box-shadow: none;
+}
+.lg-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #c9d2ce;
+  background: rgba(255, 255, 255, 0.07);
+  white-space: nowrap;
+}
+.lg-pill-live {
+  color: #8cc657;
+  background: rgba(129, 182, 76, 0.14);
+}
+.lg-pill-wait {
+  color: #f2d48a;
+  background: rgba(242, 196, 82, 0.12);
+}
+
+/* Mening o'yinlarim */
+.lg-games {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lg-game-row {
+  display: grid;
+  grid-template-columns: 82px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #1a2420;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.lg-game-board {
+  font-size: 13px;
+  font-weight: 800;
+  color: #8cc657;
+}
+.lg-game-clubs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.lg-vs {
+  font-size: 12px;
+  color: #6f7f78;
+}
+.lg-game-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #8fa29a;
+}
+.lg-game-deadline {
+  font-size: 13px;
+  color: #8fa29a;
+  white-space: nowrap;
+}
+.lg-ready {
+  color: #8cc657;
+  font-weight: 700;
+}
+.lg-color-dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid #56655f;
+  flex-shrink: 0;
+}
+.lg-color-dot.white { background: #f4f5f2; }
+.lg-color-dot.black { background: #111; }
+
+/* Liga kartalari */
+.lg-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.lg-league-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: 16px;
+  background: #151c19;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.lg-league-card.clickable {
+  cursor: pointer;
+}
+.lg-league-card.clickable:hover {
+  transform: translateY(-2px);
+  border-color: rgba(129, 182, 76, 0.35);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4);
+}
+.lg-league-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lg-league-icon {
+  font-size: 24px;
+}
+.lg-league-name {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 800;
+  color: #fff;
+}
+.lg-card-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: #8fa29a;
+}
+.lg-card-link {
+  margin-top: auto;
+  font-size: 13px;
+  font-weight: 700;
+  color: #8cc657;
+}
+.lg-progress-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 13px;
+}
+.lg-progress-row .lg-club {
+  font-weight: 500;
+  color: #d5ddd9;
+}
+.lg-progress-num {
+  font-size: 12px;
+  color: #8fa29a;
+}
+.lg-progress {
+  grid-column: 1 / -1;
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.lg-progress span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #74a843, #95c95e);
+}
+
+.lg-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+.lg-rules {
+  margin: 0;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #c3cdc8;
+}
+.lg-past {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.lg-past-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #1a2420;
+}
+
+/* Jadval */
+.lg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.lg-table th {
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #8fa29a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+.lg-table th:nth-child(2),
+.lg-table td:nth-child(2) {
+  text-align: left;
+}
+.lg-table td {
+  padding: 11px 8px;
+  text-align: center;
+  color: #d5ddd9;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.lg-table tr.lg-first td {
+  background: rgba(129, 182, 76, 0.07);
+}
+.lg-table td b {
+  color: #fff;
+}
+
+/* Bahslar */
+.lg-round-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.lg-round-btn,
+.lg-tab {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #b9c5bf;
+  background: #1a2420;
+  border: 1px solid #26332e;
+  cursor: pointer;
+}
+.lg-round-btn.active,
+.lg-tab.active {
+  color: #fff;
+  background: #81b64c;
+  border-color: #81b64c;
+}
+.lg-matches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lg-match {
+  border-radius: 14px;
+  background: #1a2420;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.lg-match summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  list-style: none;
+}
+.lg-match summary::-webkit-details-marker {
+  display: none;
+}
+.lg-match-side {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+.lg-match-side.right {
+  justify-content: flex-end;
+}
+.lg-match-score {
+  min-width: 70px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.lg-match-score.live {
+  color: #8cc657;
+}
+.lg-boards {
+  padding: 4px 16px 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+.lg-board-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) 70px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  padding: 7px 0;
+  font-size: 13px;
+  color: #d5ddd9;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+.lg-board-row:last-child {
+  border-bottom: none;
+}
+.lg-board-no {
+  font-weight: 700;
+  color: #6f7f78;
+}
+.lg-board-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.lg-board-player.right {
+  justify-content: flex-end;
+}
+.lg-board-result {
+  text-align: center;
+  font-weight: 800;
+  color: #fff;
+}
+.lg-board-result.forfeit {
+  color: #f2d48a;
+}
+
+/* Liga tafsiloti oynasi */
+.lg-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 7000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(5, 8, 7, 0.72);
+  backdrop-filter: blur(8px);
+}
+.lg-modal {
+  width: 820px;
+  max-width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 24px;
+  border-radius: 20px;
+  background: #151c19;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+}
+.lg-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.lg-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.lg-modal-title .lg-league-icon {
+  font-size: 34px;
+}
+.lg-modal-title h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+}
+.lg-modal-title p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #8fa29a;
+}
+.lg-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid #26332e;
+  background: rgba(255, 255, 255, 0.05);
+  color: #c9d2ce;
+  font-size: 16px;
+  cursor: pointer;
+}
+.lg-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+.lg-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* Yon menyudagi kutayotgan liga o'yinlari soni */
+.lg-nav-badge {
+  margin-left: auto;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  background: #e5484d;
+}
+
+@media (max-width: 900px) {
+  .lg-hero { flex-direction: column; }
+  .lg-grid { grid-template-columns: 1fr; }
+  .lg-two-col { grid-template-columns: 1fr; }
+  .lg-game-row { grid-template-columns: 1fr; gap: 8px; }
+}
+
 /* ===== Kirish / ro'yxatdan o'tish sahifasi (tizimga kirilmaguncha) ===== */
 body.auth-locked {
   overflow: hidden;

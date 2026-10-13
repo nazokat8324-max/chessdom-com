@@ -48,6 +48,11 @@ socket.on('friend-request-received', (data) => {
 
 // Matchmaking: server ikkala o'yinchini xonaga qo'shib, har biriga rangini yuboradi
 socket.on('match-found', (data) => {
+  // Liga o'yini boshqa sahifadan turib boshlanishi mumkin — avval o'yin sahifasiga o'tamiz
+  if (data.league) {
+    if (typeof window.leagueMatchStarted === 'function') window.leagueMatchStarted();
+    if (!isViewActive('gameView')) switchView('game');
+  }
   window.isSearchingOpponent = false;
   const statusEl = document.getElementById('matchmakingStatus');
   if (statusEl) statusEl.style.display = 'none';
@@ -71,7 +76,15 @@ socket.on('match-found', (data) => {
     setGameTime(data.clock.initial, null, data.clock.increment);
   }
   if (typeof startNewGame === 'function') startNewGame();
-  showToast(tx('opponentFoundName', 'Raqib topildi: {{name}}', { name: (data.opponent && data.opponent.username) || tx('colOpponent', 'Raqib') }), 'success');
+  if (data.league) {
+    showToast(tx('lgGameToast', "Liga o'yini: {{home}} — {{away}}, {{board}}-doska", {
+      home: window.countryName ? window.countryName(data.league.homeClub, null) : data.league.homeClub,
+      away: window.countryName ? window.countryName(data.league.awayClub, null) : data.league.awayClub,
+      board: data.league.board
+    }), 'success', 5000);
+  } else {
+    showToast(tx('opponentFoundName', 'Raqib topildi: {{name}}', { name: (data.opponent && data.opponent.username) || tx('colOpponent', 'Raqib') }), 'success');
+  }
 });
 
 socket.on('opponent-disconnected', () => {

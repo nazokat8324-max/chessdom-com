@@ -41,41 +41,6 @@ socket.on('friend-request-received', (data) => {
   }
 });
 
-socket.on('room-joined', (data) => {
-  const payload = (typeof data === 'string') ? { roomId: data } : (data || {});
-  window.currentRoomId = payload.roomId;
-  isOnlineMode = true;
-  updateOnlineStatus(true);
-  if (typeof window.applyMyColor === 'function') {
-    window.applyMyColor(payload.color);
-  }
-  if (!gameStartRequested && typeof startNewGame === 'function') {
-    gameStartRequested = true;
-    startNewGame();
-  }
-});
-
-socket.on('waiting-for-opponent', (data) => {
-  const payload = (typeof data === 'string') ? { roomId: data } : (data || {});
-  window.currentRoomId = payload.roomId;
-  if (typeof window.applyMyColor === 'function') {
-    window.applyMyColor(payload.color);
-  }
-  showToast(tx('waitingOpponent', 'Raqib kutilmoqda...'), 'info');
-});
-
-socket.on('opponent-connected', (data) => {
-  const payload = data || {};
-  if (typeof window.applyMyColor === 'function' && payload.color) {
-    window.applyMyColor(payload.color);
-  }
-  showToast(tx('opponentFoundStarting', "Raqib topildi! O'yin boshlanmoqda..."), 'success');
-  if (!gameStartRequested && typeof startNewGame === 'function') {
-    gameStartRequested = true;
-    startNewGame();
-  }
-});
-
 // Matchmaking: server ikkala o'yinchini xonaga qo'shib, har biriga rangini yuboradi
 socket.on('match-found', (data) => {
   window.isSearchingOpponent = false;
@@ -95,6 +60,10 @@ socket.on('match-found', (data) => {
   }
   if (typeof window.applyMyColor === 'function') {
     window.applyMyColor(data.color);
+  }
+  // Vaqt nazoratini server belgilaydi (ikkala o'yinchida bir xil)
+  if (data.clock && typeof setGameTime === 'function') {
+    setGameTime(data.clock.initial, null, data.clock.increment);
   }
   if (typeof startNewGame === 'function') startNewGame();
   showToast(tx('opponentFoundName', 'Raqib topildi: {{name}}', { name: (data.opponent && data.opponent.username) || tx('colOpponent', 'Raqib') }), 'success');
@@ -138,6 +107,7 @@ socket.on('move-rejected', (data) => {
     not_in_room: tx('moveRejectNotInRoom', 'Xona topilmadi yoki siz bu xonada emassiz.'),
     waiting_for_opponent: tx('moveRejectWaiting', 'Raqib hali ulanmagan.'),
     not_your_turn: tx('moveRejectNotYourTurn', 'Navbat sizda emas.'),
+    game_over: tx('moveRejectGameOver', "O'yin allaqachon tugagan."),
     invalid_move: tx('moveRejectInvalid', 'Yurish rad etildi.')
   };
   showToast(messages[reason] || messages.invalid_move, 'warning');
@@ -153,17 +123,8 @@ socket.on('move-rejected', (data) => {
 socket.on('draw-offered', () => {
   if (confirm(tx('drawOfferConfirm', 'Raqib sizga durrang taklif qildi. Qabul qilasizmi?'))) {
     socket.emit('accept-draw', { roomId: window.currentRoomId });
-    if (typeof window.finishGame === 'function') {
-      window.finishGame(null, tx('gameDraw', 'Durrang!'), 'info');
-    }
   } else {
     socket.emit('decline-draw', { roomId: window.currentRoomId });
-  }
-});
-
-socket.on('draw-accepted', () => {
-  if (typeof window.finishGame === 'function') {
-    window.finishGame(null, tx('drawAcceptedByOpponent', 'Raqib durrangni qabul qildi. Durrang!'), 'info');
   }
 });
 
@@ -171,10 +132,39 @@ socket.on('draw-declined', () => {
   showToast(tx('drawDeclinedByOpponent', 'Raqib durrang taklifini rad etdi.'), 'warning');
 });
 
-socket.on('game-ended', (result) => {
-  if (result && result.type === 'resign' && typeof window.finishGame === 'function') {
-    window.finishGame(result.winner, tx('opponentResigned', "Raqib taslim bo'ldi!"), 'success');
+socket.on('clock-update', (data) => {
+  if (typeof window.applyClockUpdate === 'function') window.applyClockUpdate(data);
+});
+
+// O'yin natijasini server aniqlaydi: mat, pat, taslim, vaqt, durrang, o'yinni tark etish
+function gameEndMessage(data) {
+  const won = data.result === 'win';
+  switch (data.reason) {
+    case 'checkmate': return tx('gameCheckmate', "Shaxmat! O'yin tugadi.");
+    case 'resign': return won ? tx('opponentResigned', "Raqib taslim bo'ldi!") : tx('youResigned', "Siz taslim bo'ldingiz.");
+    case 'timeout': return data.winner === 'w' ? tx('blackTimeUp', "Qoraning vaqti tugadi! Oq g'alaba.") : tx('whiteTimeUp', "Oqning vaqti tugadi! Qora g'alaba.");
+    case 'abandon': return won ? tx('opponentAbandoned', "Raqib o'yinni tark etdi. Siz g'olib bo'ldingiz!") : tx('youAbandoned', "Siz o'yinni tark etdingiz.");
+    case 'agreement': return tx('gameDrawAgreement', 'Kelishilgan durrang!');
+    case 'stalemate': return tx('gameDrawStalemate', 'Pat: Durrang!');
+    case 'threefold': return tx('gameDrawRepetition', '3 marta takrorlanish: Durrang!');
+    case 'fifty': return tx('gameDraw50', '50 yurish qoidasi: Durrang!');
+    case 'insufficient': return tx('gameDrawInsufficient', 'Mat uchun dona yetarli emas: Durrang!');
+    default: return tx('gameDraw', 'Durrang!');
   }
+}
+
+socket.on('game-ended', (data) => {
+  if (!data || (data.roomId && data.roomId !== window.currentRoomId)) return;
+  if (data.reason === 'aborted') {
+    if (typeof window.abortGame === 'function') window.abortGame();
+    showToast(tx('gameAborted', "O'yin bekor qilindi: birinchi yurish qilinmadi."), 'warning', 5000);
+    return;
+  }
+  if (typeof window.finishGame === 'function') {
+    const type = data.result === 'win' ? 'success' : (data.result === 'loss' ? 'error' : 'info');
+    window.finishGame(data.winner, gameEndMessage(data), type);
+  }
+  if (typeof window.applyServerGameResult === 'function') window.applyServerGameResult(data);
 });
 
 function leaveOnlineGame() {
@@ -264,13 +254,18 @@ window.startMatchmaking = async function() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${window.authToken}`
       },
-      body: JSON.stringify({ socketId: socket.id, country: getMyCountry() })
+      body: JSON.stringify({
+        socketId: socket.id,
+        country: getMyCountry(),
+        ...(typeof window.getSelectedClock === 'function' ? window.getSelectedClock() : {}),
+        rated: !document.getElementById('ratedToggle') || document.getElementById('ratedToggle').checked
+      })
     });
     const data = await res.json();
 
     // Raqib topilganda o'yin 'match-found' socket hodisasi orqali boshlanadi
     if (!data.success) {
-      alert(data.message || tx('errMatchmaking', 'Matchmaking xatoligi yuz berdi!'));
+      alert(tServer(data.message) || tx('errMatchmaking', 'Matchmaking xatoligi yuz berdi!'));
       window.isSearchingOpponent = false;
       if (typeof window.updateGameStatusText === 'function') {
         window.updateGameStatusText();

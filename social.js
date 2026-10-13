@@ -477,7 +477,7 @@ window.openClubDetail = function(countryName, countryCode) {
         <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: ${bgColors[index]}; border-radius: 8px;">
           <span style="font-size: 20px;">${medals[index]}</span>
           <div>
-            <div style="font-size: 14px; color: #fff; font-weight: bold;">${player.username}</div>
+            <div style="font-size: 14px; color: #fff; font-weight: bold;">${escapeHtml(player.username)}</div>
             <div style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${player.rating} • Wins: ${player.wins}</div>
           </div>
         </div>
@@ -846,8 +846,9 @@ window.loadClubs = function() {
 
 function escapeHtml(text) {
   const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
+  div.textContent = (text === null || text === undefined) ? '' : String(text);
+  // Atribut ichida ham xavfsiz bo'lishi uchun qo'shtirnoqlar ham ekranlanadi
+  return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 const FLAG_CODES = ['us','gb','de','fr','es','it','ru','cn','in','jp','kr','br','ca','au','nl','se','no','fi','dk','ch','at','pl','cz','hu','ro','bg','hr','rs','sk','si','ua','tr','gr','pt','ie','is','lu','lt','lv','ee','mt','cy','al','mk','me','ba','md','ge','am','az','by','kz','kg','tj','tm','uz','ae','sa','il','jo','lb','sy','iq','ir','pk','bd','lk','mm','th','vn','ph','my','id','sg','kh','la','mn','np','af','ir','pk','ma','dz','tn','ly','eg','sd','ss','et','so','ke','tz','ug','rw','bi','cd','cg','cm','ng','gh','ci','sn','ml','bf','ne','td','mr','gm','gn','sl','lr','gw','sn','cv','mz','zw','za','na','bw','sz','ls','mg','mu','sc','km','re','yt','pm','mf','gp','mq','gt','bz','sv','hn','ni','cr','pa','do','ht','jm','tt','tc','vg','ky','bb','gd','lc','vc','ag','dm','bs','cu','pr','mx','gu','ht','jm','tt','bs','cu','pr','mx','gt','bz','sv','hn','ni','cr','pa','do','ht','jm','tt','tc','vg','ky','bb','gd','lc','vc','ag','dm'];
@@ -1275,7 +1276,7 @@ window.loadTournaments = function() {
         htmlContent += `
           <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: rgba(255,255,255,0.05); padding: 12px 15px; border-radius: 8px;">
             <div style="min-width: 0;">
-              <b style="font-size: 14px; color: #fff; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px;">${tournament.name}</b>
+              <b style="font-size: 14px; color: #fff; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px;">${escapeHtml(tournament.name)}</b>
               <span style="font-size: 11px; color: #88a;">${subInfo}</span>
               <div style="margin-top: 4px; display: flex; gap: 6px;">
                 <span style="font-size: 10px; padding: 2px 8px; border-radius: 10px; background: rgba(129,182,76,0.15); color: #81b64c; border: 1px solid rgba(129,182,76,0.3);">${typeLabel}</span>
@@ -1319,7 +1320,7 @@ window.joinTournament = function(tournamentId, afterJoin) {
         loadTournaments();
       }
     } else {
-      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+      alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -1355,7 +1356,7 @@ window.sendFriendRequest = function() {
       alert(tx('friendRequestSent', "Do'stlik so'rovi yuborildi!"));
       document.getElementById('friendUsernameInput').value = '';
     } else {
-      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+      alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -1421,7 +1422,7 @@ window.acceptFriendRequest = function(requestId) {
       loadFriendRequests();
       loadFriendsList();
     } else {
-      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+      alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -1443,7 +1444,7 @@ window.declineFriendRequest = function(requestId) {
     if (data.success) {
       loadFriendRequests();
     } else {
-      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+      alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -1484,7 +1485,7 @@ window.loadFriendsList = function() {
                 <span style="font-size: 11px; color: #88a;">${tx('profLabelRating', 'Reyting:')} ${friend.rating || 1500}</span>
               </div>
             </div>
-            <button class="form-submit" onclick="startChatWith('${friend.id}', '${friend.username}')" style="padding: 6px 12px; font-size: 12px;">
+            <button class="form-submit" data-user-id="${escapeHtml(friend.id)}" data-username="${escapeHtml(friend.username)}" onclick="startChatWith(this.dataset.userId, this.dataset.username)" style="padding: 6px 12px; font-size: 12px;">
               ${tx('mChat', 'Chat')}
             </button>
           </div>
@@ -1501,7 +1502,16 @@ window.loadFriendsList = function() {
 
 window.startChatWith = function(userId, username) {
   switchView('chat');
-  document.getElementById('chatRoomSelect').value = `user_${userId}`;
+  const select = document.getElementById('chatRoomSelect');
+  const value = `user_${userId}`;
+  // Shaxsiy suhbat uchun variant ro'yxatda bo'lmasa qo'shiladi (aks holda select qiymatni qabul qilmaydi)
+  if (select && !Array.from(select.options).some(o => o.value === value)) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = username || tx('userFallback', 'Foydalanuvchi');
+    select.appendChild(option);
+  }
+  if (select) select.value = value;
   loadChatMessages();
 };
 
@@ -1591,7 +1601,7 @@ window.sendChatMessage = function() {
       input.value = '';
       loadChatMessages();
     } else {
-      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+      alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -1710,7 +1720,7 @@ window.showClubLeaderboard = function(countryName) {
             <div style="display: flex; align-items: center; gap: 12px;">
               <span style="font-size: 14px; font-weight: bold; width: 22px; text-align: center; color: ${badgeColor};">#${index + 1}</span>
               <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
-              <b style="font-size: 14px; color: #fff;">${member.username}</b>
+              <b style="font-size: 14px; color: #fff;">${escapeHtml(member.username)}</b>
             </div>
             <div style="display: flex; gap: 15px; font-size: 12px; text-align: right;">
               <span style="color: #81b64c; font-weight: bold;">${member.rating}</span>
@@ -1763,7 +1773,7 @@ window.showClubLeaderboard = function(countryName) {
             <div style="display: flex; align-items: center; gap: 12px;">
               <span style="font-size: 14px; font-weight: bold; width: 22px; text-align: center; color: ${badgeColor};">#${index + 1}</span>
               <div style="width: 35px; height: 35px; font-size: 15px; display: flex; align-items: center; justify-content: center; background: #81b64c; border-radius: 50%; color: white; font-weight: bold;">${firstLetter}</div>
-              <b style="font-size: 14px; color: #fff;">${member.username}</b>
+              <b style="font-size: 14px; color: #fff;">${escapeHtml(member.username)}</b>
             </div>
             <div style="display: flex; gap: 15px; font-size: 12px; text-align: right;">
               <span style="color: #81b64c; font-weight: bold;">${member.rating}</span>
@@ -2018,7 +2028,7 @@ window.sendClubChatMessage = function() {
       input.value = '';
       loadClubChatMessages();
     } else {
-      alert(data.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+      alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
     }
   })
   .catch(err => {
@@ -2138,7 +2148,7 @@ window.loadClubHistory = function(countryName, container) {
         <div style="width: 36px; height: 36px; background: #81b64c; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;">${firstLetter}</div>
         <div style="flex: 1;">
           <div style="font-size: 14px; color: #fff; font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            ${member.username}
+            ${escapeHtml(member.username)}
             ${index === 0 ? '<span style="font-size: 11px; color: #f1c40f;">🥇</span>' : ''}
           </div>
           <div style="font-size: 11px; color: #88a;">
@@ -2366,7 +2376,7 @@ window.generateTournamentPairings = function(tournamentId) {
         alert(tx('pairingsGenerated', '{{round}}-raund juftliklari yaratildi!', { round: d.round }));
         window.openTournamentDetail(tournamentId);
       } else {
-        alert(d.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+        alert(tServer(d.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
       }
     })
     .catch(err => {
@@ -2386,7 +2396,7 @@ window.reportTournamentMatchResult = function(tournamentId, matchId, result) {
       if (d.success) {
         window.openTournamentDetail(tournamentId);
       } else {
-        alert(d.message || tx('errGeneric', 'Xatolik yuz berdi!'));
+        alert(tServer(d.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
       }
     })
     .catch(err => {

@@ -11,6 +11,54 @@ window.tx = function(key, fallback, opts) {
   }
   return String(fallback).replace(/\{\{(\w+)\}\}/g, (m, k) => (k in vars ? vars[k] : m));
 };
+
+// Server xato/xabar matnlari o'zbekcha keladi — tanish matnlar joriy tilga tarjima qilinadi
+const SERVER_MESSAGE_KEYS = {
+  "Server xatoligi!": 'srvError',
+  "Foydalanuvchi topilmadi!": 'srvUserNotFound',
+  "Ism yoki parol xato!": 'srvBadCredentials',
+  "Bu nomli foydalanuvchi mavjud!": 'srvUsernameTaken',
+  "Foydalanuvchi nomida faqat harf, raqam, _ . - bo'lishi mumkin": 'srvUsernameChars',
+  "Username must be 3-30 characters": 'srvUsernameLength',
+  "Username is required": 'srvUsernameRequired',
+  "Password is required": 'srvPasswordRequired',
+  "Invalid email": 'srvInvalidEmail',
+  "Password must be at least 6 characters": 'srvPasswordShort',
+  "Too many authentication attempts, please try again later.": 'srvTooManyAuth',
+  "Too many requests, please try again later.": 'srvTooManyRequests',
+  "Invalid or expired token": 'srvSessionExpired',
+  "No token provided": 'srvSessionExpired',
+  "Ruxsat yo'q": 'srvForbidden',
+  "Already in queue": 'srvAlreadyInQueue',
+  "Serverga socket orqali ulanmagansiz!": 'srvSocketNotConnected',
+  "Message must be 1-1000 characters": 'srvMessageLength',
+  "Tournament name must be 3-255 characters": 'srvTournamentNameLength',
+  "Turnir topilmadi!": 'srvTournamentNotFound',
+  "Turnir to'la!": 'srvTournamentFull',
+  "Siz allaqachon turnirdasiz!": 'srvAlreadyInTournament',
+  "Turnir allaqachon boshlangan!": 'srvTournamentStarted',
+  "Faqat yaratuvchi boshlashi mumkin!": 'srvOnlyCreatorStart',
+  "Kamida 2 o'yinchi kerak!": 'srvMinTwoPlayers',
+  "Juftlik uchun kamida 2 o'yinchi kerak!": 'srvMinTwoPlayers',
+  "Barcha raundlar o'ynalib bo'ldi!": 'srvAllRoundsPlayed',
+  "Faqat turnir yaratuvchisi yoki ishtirokchilari juftlik yarata oladi!": 'srvPairingsForbidden',
+  "Bu o'yin natijasini kiritishga ruxsatingiz yo'q!": 'srvResultForbidden',
+  "O'yin allaqachon yakunlangan!": 'srvMatchFinished',
+  "O'yin topilmadi!": 'srvMatchNotFound',
+  "Jamoaviy turnirlar hali qo'llab-quvvatlanmaydi!": 'srvTeamNotImplemented',
+  "So'rov allaqachon yuborilgan!": 'srvFriendRequestExists',
+  "O'zingizga do'stlik so'rovini yuborib bo'lmaydi!": 'srvFriendSelf',
+  "So'rov topilmadi!": 'srvRequestNotFound',
+  "Klub topilmadi!": 'srvClubNotFound',
+  "Klub to'la!": 'srvClubFull',
+  "Siz allaqachon klubdasiz!": 'srvAlreadyInClub',
+  "Noto'g'ri davlat kodi!": 'srvBadCountry'
+};
+window.tServer = function(message) {
+  if (!message) return message;
+  const key = SERVER_MESSAGE_KEYS[message];
+  return key ? window.tx(key, message) : message;
+};
 // Eski versiyadagi faqat brauzerda yaratilgan ("local_" tokenli) akkauntlar serverda ishlamaydi — sessiyani tozalash
 if ((localStorage.getItem("justChessAuthToken") || "").startsWith("local_")) {
   localStorage.removeItem("justChessAuthToken");
@@ -349,8 +397,10 @@ window.switchView = function(viewName) {
       window.playAnimation("gameView", "fadeIn");
     }
     if (navEl) navEl.classList.add("active");
-    
-    if (typeof window.updatePlayerInfo === 'function') {
+
+    // O'yin davom etayotgan bo'lsa (boshqa sahifadan qaytilganda) doska va panellar tozalanmaydi
+    const gameInProgress = typeof window.isGameInProgress === 'function' && window.isGameInProgress();
+    if (!gameInProgress && typeof window.updatePlayerInfo === 'function') {
       if (window.currentUser) {
         window.updatePlayerInfo('white', window.currentUser.username, window.currentUser.rating || 1500);
         window.updatePlayerInfo('black', tx('colOpponent', 'Raqib'), '⏳');
@@ -368,7 +418,7 @@ window.switchView = function(viewName) {
       window.updateGameFlags();
     }
 
-    if (typeof window.setOpponentFound === 'function') {
+    if (!gameInProgress && typeof window.setOpponentFound === 'function') {
       window.setOpponentFound(false);
     }
   } else if (viewName === "login") {
@@ -516,7 +566,7 @@ window.updateAuthHeaderUI = function() {
       <div class="user-mini-profile" onclick="window.openProfileModal()">
         <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}</div>
         <div class="mini-info">
-          <b>${window.currentUser.username}</b>
+          <b>${topPlayersEsc(window.currentUser.username)}</b>
         </div>
       </div>`;
   } else {
@@ -583,7 +633,7 @@ window.handleRegister = async function() {
     });
     const data = await res.json();
     if (!data.success) {
-      alert(data.message);
+      alert(tServer(data.message));
       window.playAnimation("regCardTitle", "shakeX");
       return;
     }
@@ -617,7 +667,7 @@ window.handleLogin = async function() {
     });
     const data = await res.json();
     if (!data.success) {
-      alert(data.message);
+      alert(tServer(data.message));
       window.playAnimation("loginCardTitle", "shakeX");
       return;
     }
@@ -1025,7 +1075,7 @@ window.handleSignupModal = async function() {
       if (response.status === 409) {
         if (usernameExistsError) usernameExistsError.style.display = "block";
       } else {
-        alert(data.message || tx('errSignupFailed', "Ro'yxatdan o'tib bo'lmadi!"));
+        alert(tServer(data.message) || tx('errSignupFailed', "Ro'yxatdan o'tib bo'lmadi!"));
       }
       return;
     }

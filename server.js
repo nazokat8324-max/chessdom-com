@@ -9,12 +9,16 @@ const helmet = require('helmet');
 const cors = require('cors');
 const { body, validationResult } = require('express-validator');
 const path = require('path');
+const { Chess } = require('chess.js');
 
 const db = require('./database');
 
 const app = express();
 const server = http.createServer(app);
 const JWT_SECRET = process.env.JWT_SECRET || 'justchess_secret_key_2024';
+if (!process.env.JWT_SECRET) {
+  console.warn("OGOHLANTIRISH: JWT_SECRET o'rnatilmagan — koddagi standart kalit ishlatilmoqda. Production'da albatta o'rnating!");
+}
 const PORT = process.env.PORT || 3000;
 
 const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
@@ -29,16 +33,32 @@ app.use(express.static(__dirname));
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { success: false, message: 'Too many requests, please try again later.' } });
 const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { success: false, message: 'Too many authentication attempts, please try again later.' } });
 
+// O'yin xonalari: roomId → { players, chess, clock, status, ... }. O'yin holati faqat serverda hisoblanadi.
 const rooms = new Map();
 const matchmakingQueue = [];
 
+// Ruxsat etilgan vaqt nazoratlari: [boshlang'ich soniya, har yurishdan keyin qo'shiladigan soniya]
+const ALLOWED_CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
+// Birinchi yurish shu vaqt ichida qilinmasa, o'yin reytingsiz bekor qilinadi
+const FIRST_MOVE_TIMEOUT_MS = 30 * 1000;
+// Tugagan o'yin xonasi shu vaqtdan keyin xotiradan o'chiriladi
+const FINISHED_ROOM_TTL_MS = 5 * 60 * 1000;
+
 function generateRoomId() { return Math.random().toString(36).substring(2, 8).toUpperCase(); }
 
-function createRoom() { return { players: [], gameState: null, turn: 'w', colorMap: {} }; }
+function normalizeClock(initial, increment) {
+  const base = Number(initial);
+  const inc = Number(increment) || 0;
+  if (ALLOWED_CLOCKS.some(([b, i]) => b === base && i === inc)) return { initial: base, increment: inc };
+  return { initial: 300, increment: 0 };
+}
 
-function colorForRoom(room, socketId) {
-  if (room.colorMap && room.colorMap[socketId]) return room.colorMap[socketId];
-  return room.players.length === 0 ? 'w' : 'b';
+// Lichess usuli: taxminiy davomiylik = boshlang'ich + 40 × qo'shimcha
+function clockMode(clock) {
+  const estimate = clock.initial + 40 * clock.increment;
+  if (estimate < 180) return 'bullet';
+  if (estimate < 480) return 'blitz';
+  return 'rapid';
 }
 
 // Uzilib qolgan socketlarni matchmaking navbatidan olib tashlash
@@ -50,15 +70,112 @@ function pruneMatchmakingQueue() {
 
 function findPlayer(room, socketId) { return room.players.find(p => p.socketId === socketId); }
 
-function removePlayerFromRoom(room) {
-  if (room.players.length === 0) return;
-  room.turn = room.players[0].color;
+function otherColor(color) { return color === 'w' ? 'b' : 'w'; }
+
+function createGameRoom(white, black, clock, rated) {
+  return {
+    players: [{ ...white, color: 'w' }, { ...black, color: 'b' }],
+    chess: new Chess(),
+    clock: { w: clock.initial * 1000, b: clock.initial * 1000, increment: clock.increment, initial: clock.initial },
+    mode: clockMode(clock),
+    rated: !!rated,
+    status: 'active',
+    turnStartedAt: null,
+    timer: null,
+    drawOfferBy: null
+  };
 }
 
-function notifyRoomPlayers(roomId, room, event, extra) {
-  for (const player of room.players) {
-    io.to(player.socketId).emit(event, { roomId, color: player.color, ...(extra || {}) });
+function clockPayload(room) {
+  const running = room.status === 'active' && room.turnStartedAt !== null;
+  const clock = { w: room.clock.w, b: room.clock.b };
+  // Hozir yurayotgan tomonning o'tgan vaqtini ham hisobga olamiz
+  if (running) clock[room.chess.turn()] = Math.max(0, clock[room.chess.turn()] - (Date.now() - room.turnStartedAt));
+  return { w: clock.w, b: clock.b, turn: room.chess.turn(), running };
+}
+
+function emitClock(roomId, room) { io.to(roomId).emit('clock-update', clockPayload(room)); }
+
+function scheduleRoomTimer(roomId, room) {
+  clearTimeout(room.timer);
+  if (room.status !== 'active') return;
+  const moves = room.chess.history().length;
+  if (moves < 2) {
+    // Har ikki tomon birinchi yurishini qilmaguncha soat yurmaydi
+    room.timer = setTimeout(() => endGame(roomId, room, null, 'aborted'), FIRST_MOVE_TIMEOUT_MS);
+    return;
   }
+  const side = room.chess.turn();
+  room.timer = setTimeout(() => {
+    room.clock[side] = 0;
+    endGame(roomId, room, otherColor(side), 'timeout');
+  }, room.clock[side]);
+}
+
+function scoreFor(color, winnerColor) {
+  if (winnerColor === null) return 'draw';
+  return color === winnerColor ? 'win' : 'loss';
+}
+
+// O'yinni yakunlash: natija, statistika va reyting faqat shu yerda yoziladi
+async function endGame(roomId, room, winnerColor, reason) {
+  if (room.status !== 'active') return;
+  room.status = 'over';
+  clearTimeout(room.timer);
+  room.turnStartedAt = null;
+  setTimeout(() => { if (rooms.get(roomId) === room) rooms.delete(roomId); }, FINISHED_ROOM_TTL_MS);
+
+  const moves = room.chess.history();
+  // O'yinchilar ro'yxati keyinroq o'zgarishi mumkin (chiqib ketish) — natija shu holat bo'yicha yoziladi
+  const players = room.players.slice();
+  const recorded = reason !== 'aborted' && players.every(p => p.userId);
+  const updates = {};
+  if (recorded) {
+    try {
+      // Ikkala o'yinchining o'yindan oldingi reytinglari bilan hisoblaymiz
+      const before = {};
+      for (const p of players) before[p.color] = await db.getUserById(p.userId);
+      for (const p of players) {
+        const opp = players.find(o => o.color !== p.color);
+        const oppUser = before[opp.color];
+        const result = scoreFor(p.color, winnerColor);
+        await db.saveGame(p.userId, { result, opponent: opp.username, mode: "Online o'yin", timeControl: room.mode, moves });
+        const statsData = await db.updateUserStats(p.userId, result, opp.username, "Online o'yin", moves, room.mode);
+        let ratingData = null;
+        if (room.rated && oppUser) {
+          ratingData = await db.updateUserRatingByResult(p.userId, result, oppUser.rating || 1500, room.mode, oppUser.ratings_by_mode[room.mode]);
+        }
+        updates[p.color] = {
+          stats: statsData && statsData.stats,
+          statsByMode: statsData && statsData.statsByMode,
+          newRating: ratingData ? ratingData.newRating : (before[p.color] && before[p.color].rating) || 1500,
+          ratingsByMode: ratingData ? ratingData.ratingsByMode : (before[p.color] && before[p.color].ratings_by_mode),
+          modeChange: ratingData ? ratingData.modeChange : null
+        };
+      }
+    } catch (err) { console.error("O'yin natijasini saqlash xatoligi:", err); }
+  }
+
+  for (const p of players) {
+    io.to(p.socketId).emit('game-ended', {
+      roomId, winner: winnerColor, reason, result: scoreFor(p.color, winnerColor),
+      rated: room.rated && recorded, mode: room.mode, ...(updates[p.color] || {})
+    });
+  }
+  emitClock(roomId, room);
+}
+
+// O'yinchi xonani tark etsa: o'yin davom etayotgan bo'lsa — mag'lubiyat (yoki bekor qilish)
+function handlePlayerLeave(socket, roomId, room) {
+  const player = findPlayer(room, socket.id);
+  if (!player) return;
+  socket.leave(roomId);
+  if (room.status === 'active') {
+    const winner = room.chess.history().length < 2 ? null : otherColor(player.color);
+    endGame(roomId, room, winner, winner ? 'abandon' : 'aborted');
+  }
+  room.players = room.players.filter(p => p.socketId !== socket.id);
+  if (room.players.length === 0) rooms.delete(roomId);
 }
 
 function authMiddleware(req, res, next) {
@@ -77,6 +194,36 @@ function isValidCountry(country) {
   return typeof country === 'string' && /^[a-z]{2}$/.test(country);
 }
 
+// Yaratuvchisi bor turnirni faqat yaratuvchi, yaratuvchisiz (avtomatik arena) turnirni ishtirokchilar boshqaradi
+function canManageTournament(tournament, participants, userId) {
+  if (tournament.creator_id) return tournament.creator_id === userId;
+  return participants.some(p => p.userId === userId);
+}
+
+// Chat xonasi: "user_<sherik id>" → "dm_<id1>_<id2>" (tartiblangan); dm_ xonasini faqat ikki ishtirokchi o'qiydi.
+// Ruxsat yo'q bo'lsa null qaytaradi.
+function resolveChatRoom(roomId, userId) {
+  if (roomId.startsWith('user_')) {
+    const partnerId = roomId.slice(5);
+    if (!partnerId || partnerId === userId) return null;
+    return 'dm_' + [userId, partnerId].sort().join('_');
+  }
+  if (roomId.startsWith('dm_')) return roomId.slice(3).split('_').includes(userId) ? roomId : null;
+  if (rooms.has(roomId)) return null;
+  return roomId;
+}
+
+function dmPartner(roomId, userId) {
+  if (!roomId.startsWith('dm_')) return null;
+  return roomId.slice(3).split('_').find(id => id !== userId) || null;
+}
+
+// Socket orqali qo'shilish mumkin bo'lgan ochiq xonalar (shaxsiy va o'yin xonalari emas)
+function isPublicSocketRoom(roomId) {
+  return typeof roomId === 'string' && roomId.length > 0 && roomId.length <= 100
+    && !roomId.startsWith('user_') && !roomId.startsWith('dm_') && !rooms.has(roomId);
+}
+
 function validateMove(move) {
   if (!move || typeof move !== 'object') return { valid: false, error: 'Invalid move format' };
   const { from, to, promotion } = move;
@@ -92,7 +239,9 @@ async function start() {
   await db.initDatabase();
 
   app.post('/api/auth/register', authLimiter, [
-    body('username').isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters'),
+    body('username').isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters')
+      // Faqat harf, raqam, _ . - (HTML/JS ga xavfli belgilarsiz)
+      .matches(/^[\p{L}\p{N}_.-]+$/u).withMessage("Foydalanuvchi nomida faqat harf, raqam, _ . - bo'lishi mumkin"),
     body('email').isEmail().withMessage('Invalid email'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
   ], async (req, res) => {
@@ -152,37 +301,7 @@ async function start() {
     catch (err) { console.error('Games xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  app.post('/api/games', authMiddleware, [
-    body('result').isIn(['win', 'loss', 'draw']).withMessage('Invalid result'),
-    body('opponent').optional().isLength({ max: 100 }),
-    body('mode').optional().isLength({ max: 50 }),
-    body('moves').optional().isArray(),
-    body('timeControl').optional().isIn(['rapid', 'blitz', 'bullet']).withMessage('Invalid time control')
-  ], async (req, res) => {
-    try {
-      const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
-      const { result, opponent, mode, moves, timeControl } = req.body;
-      const game = await db.saveGame(req.user.userId, { result, opponent, mode, timeControl, moves });
-      const updated = await db.updateUserStats(req.user.userId, result, opponent, mode, moves, timeControl);
-      if (!updated) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      res.json({ success: true, game });
-    } catch (err) { console.error('Game save xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/ratings/update', authMiddleware, [
-    body('result').isIn(['win', 'loss', 'draw']).withMessage('Invalid result'),
-    body('opponentRating').optional().isNumeric(),
-    body('opponentModeRating').optional({ values: 'null' }).isNumeric(),
-    body('timeControl').optional().isIn(['rapid', 'blitz', 'bullet']).withMessage('Invalid time control')
-  ], async (req, res) => {
-    try {
-      const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
-      const { result, opponentRating, timeControl, opponentModeRating } = req.body;
-      const data = await db.updateUserRatingByResult(req.user.userId, result, opponentRating, timeControl, opponentModeRating);
-      if (!data) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      res.json(data);
-    } catch (err) { console.error('Rating xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
+  // O'yin natijasi va reyting klientdan qabul qilinmaydi — ularni server endGame() da yozadi
 
   app.post('/api/users/me/country', authMiddleware, async (req, res) => {
     try {
@@ -199,6 +318,11 @@ async function start() {
       const username = req.user.username;
       const playerSocket = socketId ? io.sockets.sockets.get(socketId) : null;
       if (!playerSocket) return res.status(400).json({ success: false, message: 'Serverga socket orqali ulanmagansiz!' });
+      if (playerSocket.data.userId && playerSocket.data.userId !== req.user.userId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
+      playerSocket.data.userId = req.user.userId;
+      playerSocket.data.username = username;
+      const clock = normalizeClock(req.body.initialTime, req.body.increment);
+      const rated = req.body.rated !== false;
       pruneMatchmakingQueue();
       if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
       const user = await db.getUserById(req.user.userId);
@@ -208,23 +332,27 @@ async function start() {
         myCountry = country;
         await db.updateUserCountry(req.user.userId, country);
       }
-      const me = { username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId };
-      const waiting = matchmakingQueue.shift();
-      if (!waiting) {
+      const me = { userId: req.user.userId, username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId, clock, rated };
+      // Faqat bir xil vaqt nazorati va reyting turini tanlagan o'yinchi bilan juftlanadi
+      const waitingIndex = matchmakingQueue.findIndex(u => u.clock.initial === clock.initial && u.clock.increment === clock.increment && u.rated === rated);
+      if (waitingIndex === -1) {
         matchmakingQueue.push(me);
         return res.json({ success: true, matched: false, position: matchmakingQueue.length });
       }
+      const [waiting] = matchmakingQueue.splice(waitingIndex, 1);
       // Navbatda kutgan o'yinchi oq, yangi kelgan o'yinchi qora bilan o'ynaydi.
       const roomId = generateRoomId();
-      const room = createRoom();
-      room.players.push({ socketId: waiting.socketId, color: 'w' }, { socketId: me.socketId, color: 'b' });
+      const playerInfo = (u) => ({ socketId: u.socketId, userId: u.userId, username: u.username });
+      const room = createGameRoom(playerInfo(waiting), playerInfo(me), clock, rated);
       rooms.set(roomId, room);
+      const opponentInfo = (u) => ({ username: u.username, rating: u.rating, ratingsByMode: u.ratingsByMode, country: u.country });
       for (const [player, opponent, color] of [[waiting, me, 'w'], [me, waiting, 'b']]) {
         const s = io.sockets.sockets.get(player.socketId);
         if (s) s.join(roomId);
-        io.to(player.socketId).emit('match-found', { roomId, color, opponent: { username: opponent.username, rating: opponent.rating, ratingsByMode: opponent.ratingsByMode, country: opponent.country } });
+        io.to(player.socketId).emit('match-found', { roomId, color, opponent: opponentInfo(opponent), clock, rated, mode: room.mode });
       }
-      res.json({ success: true, matched: true, roomId, color: 'b', opponent: { username: waiting.username, rating: waiting.rating, ratingsByMode: waiting.ratingsByMode, country: waiting.country } });
+      scheduleRoomTimer(roomId, room);
+      res.json({ success: true, matched: true, roomId, color: 'b', opponent: opponentInfo(waiting) });
     } catch (err) { console.error('Matchmaking xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -310,6 +438,9 @@ async function start() {
   app.post('/api/tournaments/:id/matches', authMiddleware, async (req, res) => {
     try {
       const { id } = req.params; const { matches } = req.body;
+      const tournament = await db.getTournamentById(id);
+      if (!tournament) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
+      if (tournament.creator_id !== req.user.userId) return res.status(403).json({ success: false, message: 'Faqat turnir yaratuvchisi o\'yinlarni qo\'sha oladi!' });
       if (!Array.isArray(matches) || matches.length === 0) return res.status(400).json({ success: false, message: 'O\'yinlar ro\'yxati kerak!' });
       const saved = [];
       for (const m of matches) { await db.saveTournamentMatch(m); saved.push(m); }
@@ -323,6 +454,7 @@ async function start() {
       const tournament = await db.getTournamentById(id);
       if (!tournament) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
       const participants = await db.getTournamentParticipants(id);
+      if (!canManageTournament(tournament, participants, req.user.userId)) return res.status(403).json({ success: false, message: 'Faqat turnir yaratuvchisi yoki ishtirokchilari juftlik yarata oladi!' });
       if (participants.length < 2) return res.status(400).json({ success: false, message: 'Juftlik uchun kamida 2 o\'yinchi kerak!' });
       const { swissPairings } = require('./server-helpers');
       const round = (tournament.current_round || 0) + 1;
@@ -330,7 +462,7 @@ async function start() {
       if (round > maxRounds) return res.status(400).json({ success: false, message: 'Barcha raundlar o\'ynalib bo\'ldi!' });
       let createdMatches = [];
       if (tournament.tournament_type === 'team') {
-        res.status(501).json({ success: false, message: 'Team tournaments not implemented in SQLite mode' }); return;
+        res.status(501).json({ success: false, message: "Jamoaviy turnirlar hali qo'llab-quvvatlanmaydi!" }); return;
       } else {
         const pairings = swissPairings(participants, round);
         for (const p of pairings) {
@@ -358,6 +490,9 @@ async function start() {
       const match = matches.find(m => m.id === matchId);
       if (!match) return res.status(404).json({ success: false, message: 'O\'yin topilmadi!' });
       if (match.status === 'completed' || match.status === 'bye') return res.status(400).json({ success: false, message: 'O\'yin allaqachon yakunlangan!' });
+      // Natijani faqat turnir yaratuvchisi yoki shu o'yinning o'yinchilari kiritadi
+      const isMatchPlayer = [match.player1Id, match.player2Id].includes(req.user.userId);
+      if (tournament.creator_id !== req.user.userId && !isMatchPlayer) return res.status(403).json({ success: false, message: 'Bu o\'yin natijasini kiritishga ruxsatingiz yo\'q!' });
       let winnerId = null;
       if (match.player1Id && match.player2Id) {
         if (result === 'white') winnerId = match.player1Id;
@@ -414,7 +549,12 @@ async function start() {
   });
 
   app.get('/api/chat/messages', authMiddleware, async (req, res) => {
-    try { const messages = await db.getChatMessages({ userId: req.query.userId, roomId: req.query.roomId }); res.json({ success: true, messages }); }
+    try {
+      const roomId = req.query.roomId ? resolveChatRoom(String(req.query.roomId), req.user.userId) : null;
+      if (req.query.roomId && !roomId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
+      const messages = await db.getChatMessages({ roomId });
+      res.json({ success: true, messages });
+    }
     catch (err) { console.error('Chat xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -425,10 +565,18 @@ async function start() {
   ], async (req, res) => {
     try {
       const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
-      const { message, receiverId, roomId } = req.body;
-      const { id } = await db.sendChatMessage(req.user.userId, receiverId || null, roomId || null, message);
-      if (roomId) { io.to(roomId).emit('chat-message', { messageId: id, senderId: req.user.userId, senderName: req.user.username, message, roomId, createdAt: new Date().toISOString() }); }
-      else if (receiverId) { io.to(`user_${receiverId}`).emit('chat-message', { messageId: id, senderId: req.user.userId, senderName: req.user.username, message, createdAt: new Date().toISOString() }); }
+      const { message } = req.body;
+      // Shaxsiy xabar: "user_<id>" yoki receiverId → ikki tomon uchun umumiy dm_ xonasi
+      const requested = req.body.roomId || (req.body.receiverId ? `user_${req.body.receiverId}` : null);
+      const roomId = requested ? resolveChatRoom(String(requested), req.user.userId) : null;
+      if (requested && !roomId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
+      const partnerId = roomId ? dmPartner(roomId, req.user.userId) : null;
+      if (partnerId && !(await db.getUserById(partnerId))) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const { id } = await db.sendChatMessage(req.user.userId, partnerId, roomId, message);
+      const payload = { messageId: id, senderId: req.user.userId, senderName: req.user.username, message, roomId, createdAt: new Date().toISOString() };
+      if (partnerId) io.to(`user_${partnerId}`).to(`user_${req.user.userId}`).emit('chat-message', payload);
+      else if (roomId) io.to(roomId).emit('chat-message', payload);
+      else io.emit('chat-message', payload);
       res.json({ success: true, messageId: id });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -482,63 +630,102 @@ async function start() {
         socket.join(`user_${decoded.userId}`);
       } catch (err) { socket.emit('auth-error', { message: 'Invalid or expired token' }); }
     });
-    socket.on('join-club-room', (clubRoomId) => { socket.join(clubRoomId); console.log(`Klub xonasiga qo'shildi: ${clubRoomId}`); });
-    socket.on('join-room', (roomId) => {
-      if (!rooms.has(roomId)) { rooms.set(roomId, createRoom()); }
-      const room = rooms.get(roomId);
-      if (room.players.length >= 2) { socket.emit('error', { message: 'Room is full' }); return; }
-      if (findPlayer(room, socket.id)) return;
-      const color = colorForRoom(room, socket.id);
-      room.players.push({ socketId: socket.id, color });
-      socket.join(roomId);
-      socket.emit('room-joined', { roomId, color });
-      notifyRoomPlayers(roomId, room, 'opponent-connected');
-    });
-    socket.on('create-room', () => { const roomId = generateRoomId(); socket.join(roomId); const room = createRoom(); room.players.push({ socketId: socket.id, color: 'w' }); rooms.set(roomId, room); socket.emit('room-created', { roomId, color: 'w' }); });
-    socket.on('join-random-room', () => {
-      const availableRooms = Array.from(rooms.entries()).filter(([id, room]) => room.players.length < 2);
-      if (availableRooms.length > 0) {
-        const [roomId, room] = availableRooms[0];
-        const color = colorForRoom(room, socket.id);
-        room.players.push({ socketId: socket.id, color });
-        socket.join(roomId);
-        socket.emit('room-joined', { roomId, color });
-        notifyRoomPlayers(roomId, room, 'opponent-connected');
-      }
-      else { const roomId = generateRoomId(); const room = createRoom(); room.players.push({ socketId: socket.id, color: 'w' }); rooms.set(roomId, room); socket.join(roomId); socket.emit('waiting-for-opponent', { roomId, color: 'w' }); }
-    });
+    socket.on('join-club-room', (clubRoomId) => { if (isPublicSocketRoom(clubRoomId)) socket.join(clubRoomId); });
     socket.on('make-move', (data) => {
-      const { roomId, move } = data;
-      if (!rooms.has(roomId)) { socket.emit('error', { message: 'Room not found' }); return; }
+      const { roomId, move } = data || {};
       const room = rooms.get(roomId);
+      if (!room) { socket.emit('move-rejected', { reason: 'not_in_room', error: 'Room not found' }); return; }
       const player = findPlayer(room, socket.id);
       if (!player) { socket.emit('move-rejected', { reason: 'not_in_room', error: 'Socket is not in this room' }); return; }
-      if (room.players.length < 2) { socket.emit('move-rejected', { reason: 'waiting_for_opponent', error: 'Opponent has not joined yet' }); return; }
-      if (player.color !== room.turn) { socket.emit('move-rejected', { reason: 'not_your_turn', error: 'Not your turn' }); return; }
+      if (room.status !== 'active') { socket.emit('move-rejected', { reason: 'game_over', error: 'Game is over' }); return; }
+      if (player.color !== room.chess.turn()) { socket.emit('move-rejected', { reason: 'not_your_turn', error: 'Not your turn' }); return; }
       const validation = validateMove(move);
       if (!validation.valid) { socket.emit('move-rejected', { reason: 'invalid_move', error: validation.error }); return; }
-      room.turn = player.color === 'w' ? 'b' : 'w';
-      socket.to(roomId).emit('opponent-move', move);
+      // Soat: yurgan tomonning o'tgan vaqtini ayiramiz; vaqti tugagan bo'lsa yurish qabul qilinmaydi
+      const now = Date.now();
+      if (room.turnStartedAt !== null) {
+        room.clock[player.color] -= now - room.turnStartedAt;
+        if (room.clock[player.color] <= 0) {
+          room.clock[player.color] = 0;
+          socket.emit('move-rejected', { reason: 'game_over', error: 'Time is up' });
+          endGame(roomId, room, otherColor(player.color), 'timeout');
+          return;
+        }
+      }
+      // Qonun-qoidaga zid yurish rad etiladi (chess.js serverda ham tekshiradi)
+      const result = room.chess.move({ from: move.from, to: move.to, promotion: move.promotion || 'q' });
+      if (!result) { socket.emit('move-rejected', { reason: 'invalid_move', error: 'Illegal move' }); return; }
+      if (room.turnStartedAt !== null) room.clock[player.color] += room.clock.increment * 1000;
+      room.drawOfferBy = null;
+      room.turnStartedAt = room.chess.history().length >= 2 ? now : null;
+      socket.to(roomId).emit('opponent-move', { from: result.from, to: result.to, promotion: result.promotion });
+      if (room.chess.game_over()) {
+        const chess = room.chess;
+        let reason = 'draw';
+        if (chess.in_checkmate()) reason = 'checkmate';
+        else if (chess.in_stalemate()) reason = 'stalemate';
+        else if (chess.in_threefold_repetition()) reason = 'threefold';
+        else if (chess.insufficient_material()) reason = 'insufficient';
+        else reason = 'fifty';
+        endGame(roomId, room, reason === 'checkmate' ? player.color : null, reason);
+        return;
+      }
+      scheduleRoomTimer(roomId, room);
+      emitClock(roomId, room);
     });
-    socket.on('offer-draw', (data) => { socket.to(data.roomId).emit('draw-offered', { roomId: data.roomId }); });
-    socket.on('accept-draw', (data) => { socket.to(data.roomId).emit('draw-accepted', { roomId: data.roomId }); });
-    socket.on('decline-draw', (data) => { socket.to(data.roomId).emit('draw-declined', { roomId: data.roomId }); });
-    socket.on('game-over', (data) => { socket.to(data.roomId).emit('game-ended', data.result); });
+    // Durrang taklifi faqat davom etayotgan o'yinda va raqib taklifini qabul qilish orqali
+    const activeRoomOf = (data) => {
+      const roomId = data && data.roomId;
+      const room = rooms.get(roomId);
+      if (!room || room.status !== 'active') return null;
+      const player = findPlayer(room, socket.id);
+      return player ? { roomId, room, player } : null;
+    };
+    socket.on('offer-draw', (data) => {
+      const ctx = activeRoomOf(data); if (!ctx) return;
+      ctx.room.drawOfferBy = ctx.player.color;
+      socket.to(ctx.roomId).emit('draw-offered', { roomId: ctx.roomId });
+    });
+    socket.on('accept-draw', (data) => {
+      const ctx = activeRoomOf(data); if (!ctx) return;
+      if (ctx.room.drawOfferBy !== otherColor(ctx.player.color)) return;
+      endGame(ctx.roomId, ctx.room, null, 'agreement');
+    });
+    socket.on('decline-draw', (data) => {
+      const ctx = activeRoomOf(data); if (!ctx) return;
+      ctx.room.drawOfferBy = null;
+      socket.to(ctx.roomId).emit('draw-declined', { roomId: ctx.roomId });
+    });
+    // Taslim bo'lish
+    socket.on('game-over', (data) => {
+      const ctx = activeRoomOf(data); if (!ctx) return;
+      if (data.result && data.result.type === 'resign') endGame(ctx.roomId, ctx.room, otherColor(ctx.player.color), 'resign');
+    });
     socket.on('leave-room', (roomId) => {
-      socket.leave(roomId); socket.to(roomId).emit('opponent-disconnected');
-      if (rooms.has(roomId)) { const room = rooms.get(roomId); const index = room.players.findIndex(p => p.socketId === socket.id); if (index !== -1) { room.players.splice(index, 1); } if (room.players.length === 0) { rooms.delete(roomId); } else { removePlayerFromRoom(room); } }
+      const room = rooms.get(roomId);
+      if (!room) { socket.leave(roomId); return; }
+      const wasActive = room.status === 'active';
+      handlePlayerLeave(socket, roomId, room);
+      if (!wasActive) socket.to(roomId).emit('opponent-disconnected');
     });
-    socket.on('join-tournament-room', (tournamentId) => { socket.join(`tournament_${tournamentId}`); console.log(`O'yinchi ${socket.id} turnir xonasiga qo'shildi: ${tournamentId}`); });
-    socket.on('join-chat-room', (roomId) => { socket.join(roomId); console.log(`O'yinchi ${socket.id} chat xonasiga qo'shildi: ${roomId}`); });
+    socket.on('join-tournament-room', (tournamentId) => { socket.join(`tournament_${tournamentId}`); });
+    socket.on('join-chat-room', (roomId) => { if (isPublicSocketRoom(roomId)) socket.join(roomId); });
     socket.on('send-chat-message', (data) => {
-      const { message, roomId, receiverId } = data;
-      if (roomId) { io.to(roomId).emit('chat-message', { senderId: socket.id, message, roomId, createdAt: new Date().toISOString() }); }
-      else if (receiverId) { io.to(`user_${receiverId}`).emit('chat-message', { senderId: socket.id, message, createdAt: new Date().toISOString() }); }
+      if (!socket.data.userId || !data) return;
+      const message = typeof data.message === 'string' ? data.message.slice(0, 1000) : '';
+      if (!message) return;
+      const payload = { senderId: socket.data.userId, senderName: socket.data.username, message, createdAt: new Date().toISOString() };
+      if (data.roomId && isPublicSocketRoom(data.roomId)) io.to(data.roomId).emit('chat-message', { ...payload, roomId: data.roomId });
+      else if (data.receiverId) io.to(`user_${data.receiverId}`).emit('chat-message', payload);
     });
     socket.on('disconnect', () => {
-      console.log('O\'yinchi chiqib ketdi:', socket.id);
       pruneMatchmakingQueue();
-      for (const [roomId, room] of rooms.entries()) { const index = room.players.findIndex(p => p.socketId === socket.id); if (index !== -1) { room.players.splice(index, 1); socket.to(roomId).emit('opponent-disconnected'); if (room.players.length === 0) { rooms.delete(roomId); } else { removePlayerFromRoom(room); } break; } }
+      for (const [roomId, room] of rooms.entries()) {
+        if (!findPlayer(room, socket.id)) continue;
+        const wasActive = room.status === 'active';
+        handlePlayerLeave(socket, roomId, room);
+        if (!wasActive) io.to(roomId).emit('opponent-disconnected');
+      }
     });
   });
 

@@ -132,7 +132,7 @@ window.renderPlayersTable = function(players, filter) {
         <td>
           <div class="player-cell">
             <div class="player-avatar">${firstLetter}</div>
-            <span class="player-name">${user.username}</span>
+            <span class="player-name">${escapeHtml(user.username)}</span>
           </div>
         </td>
         <td>${wins}</td>
@@ -179,7 +179,7 @@ window.renderClubsTable = function(clubs) {
     html += `
       <tr class="${rankClass}">
         <td><span class="rank-badge ${rankClass}">${rankIcon}${index + 1}</span></td>
-        <td><span class="player-name">${club.name}</span></td>
+        <td><span class="player-name">${escapeHtml(club.name)}</span></td>
         <td>${games}</td>
         <td>${wins}</td>
         <td>${losses}</td>

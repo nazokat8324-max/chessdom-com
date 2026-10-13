@@ -285,6 +285,7 @@ async function initDatabase() {
   } catch (e) {}
 
   await migrateRatingsByMode();
+  await migrateDirectChatRooms();
 
   console.log(usePostgres ? '✅ PostgreSQL jadvallari tayyor.' : '✅ Database SQLite sahifalari yaratildi.');
 }
@@ -328,6 +329,17 @@ async function migrateRatingsByMode() {
     if (JSON.stringify(fixed) !== JSON.stringify(stored)) {
       await dbRun('UPDATE users SET ratings_by_mode = ? WHERE id = ?', [JSON.stringify(fixed), row.id]);
     }
+  }
+}
+
+// Eski shaxsiy xabarlar "user_<qabul qiluvchi>" xonasida edi — ikki tomon uchun umumiy "dm_<id1>_<id2>" ga o'tkazish
+async function migrateDirectChatRooms() {
+  const rows = await dbAll("SELECT id, sender_id, room_id FROM chat_messages WHERE room_id LIKE 'user%'");
+  for (const row of rows) {
+    if (!row.room_id.startsWith('user_')) continue;
+    const partnerId = row.room_id.slice(5);
+    const roomId = 'dm_' + [row.sender_id, partnerId].sort().join('_');
+    await dbRun('UPDATE chat_messages SET room_id = ?, receiver_id = ? WHERE id = ?', [roomId, partnerId, row.id]);
   }
 }
 

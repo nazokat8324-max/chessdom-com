@@ -1,36 +1,4 @@
-function updateRating(result) {
-    if (typeof window.currentUser === 'undefined' || !window.currentUser) {
-        console.log("Tizimga kirilmagan, reyting hisoblanmadi.");
-        return;
-    }
-
-    if (typeof window.currentUser.rating === 'undefined') {
-        window.currentUser.rating = 1500;
-    }
-
-    const opponentRating = window.opponentRating || 1500;
-    // O'yin rejimi (rapid/blitz/bullet) va raqibning shu rejimdagi reytingi
-    const timeControl = window.currentGameTimeControl || 'blitz';
-    const opponentModeRating = (window.opponentRatingsByMode && window.opponentRatingsByMode[timeControl]) || null;
-
-    // Yangi reytingni server hisoblaydi; klient faqat javobni ko'rsatadi
-    fetch('/api/ratings/update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${window.authToken}`
-        },
-        body: JSON.stringify({ result, opponentRating, timeControl, opponentModeRating })
-    }).then(res => res.json()).then(data => {
-        if (data.success) {
-            window.currentUser.rating = data.newRating;
-            if (data.ratingsByMode) window.currentUser.ratingsByMode = data.ratingsByMode;
-            localStorage.setItem('justChessCurrentUser', JSON.stringify(window.currentUser));
-            console.log(`Reyting o'zgardi: ${data.change >= 0 ? '+' + data.change : data.change}. Yangi reyting: ${data.newRating}`);
-            updateRatingDisplay();
-        }
-    }).catch(err => console.error('Rating update xatoligi:', err));
-}
+// Reyting va statistika faqat serverda hisoblanadi (o'yin tugaganda 'game-ended' bilan keladi)
 
 // Serverdan joriy reyting va statistikani olib, profilni yangilash (boshqa qurilmada o'ynalgan bo'lsa ham)
 function refreshCurrentUserRatings() {

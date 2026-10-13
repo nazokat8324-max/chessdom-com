@@ -6,6 +6,7 @@ const blackTimerElement = document.getElementById("blackTimer");
 const historyListElement = document.getElementById("historyList");
 
 let initialTime = 300,
+  timeIncrement = 0,
   whiteTimeLeft = 300,
   blackTimeLeft = 300;
 let timerInterval = null;
@@ -105,11 +106,17 @@ window.clearMyColor = function() {
 
 window.currentGameTimeControl = 'blitz';
 
-function getGameModeFromTime(sec) {
-  if (sec <= 120) return 'bullet';
-  if (sec <= 300) return 'blitz';
+// Server bilan bir xil: taxminiy davomiylik = boshlang'ich + 40 × qo'shimcha soniya
+function getGameModeFromTime(sec, increment) {
+  const estimate = sec + 40 * (increment || 0);
+  if (estimate < 180) return 'bullet';
+  if (estimate < 480) return 'blitz';
   return 'rapid';
 }
+
+window.getSelectedClock = function() {
+  return { initialTime, increment: timeIncrement };
+};
 
 function updateStatsDisplay() {
   const sWins = document.getElementById("statWins");
@@ -146,9 +153,43 @@ window.finishGame = function(winnerColor, message, toastType) {
     : tx('opponentLocal', 'Oq va Qora');
   saveGameHistory(result, opponentName, "Online o'yin");
   recordResult(result);
+  updateTimersDisplay();
   if (message) showToast(message, toastType || 'info', 5000);
   // Doska va panellar "Yangi o'yin" bosilguncha o'yinchi tomonida qoladi
   window.setGamePanelMode('over');
+};
+
+// Server 'game-ended' bilan yuborgan reyting va statistikani profilga qo'llash
+window.applyServerGameResult = function(data) {
+  if (!data || !window.currentUser) return;
+  if (data.stats) window.stats = { ...data.stats };
+  if (data.statsByMode) window.statsByMode = data.statsByMode;
+  if (typeof data.newRating === 'number') window.currentUser.rating = data.newRating;
+  if (data.ratingsByMode) window.currentUser.ratingsByMode = data.ratingsByMode;
+  window.currentUser.stats = window.stats;
+  window.currentUser.statsByMode = window.statsByMode;
+  localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+  updateStatsDisplay();
+  if (typeof updateRatingDisplay === 'function') updateRatingDisplay();
+  if (data.rated && typeof data.modeChange === 'number') {
+    const change = data.modeChange >= 0 ? '+' + data.modeChange : String(data.modeChange);
+    const modeRating = data.ratingsByMode && data.ratingsByMode[data.mode];
+    showToast(tx('ratingChangeToast', 'Reyting: {{change}} ({{rating}})', { change, rating: modeRating || data.newRating }), 'info', 5000);
+  }
+};
+
+// Serverdan kelgan soat holati (millisekund); taymer faqat server aytganda yuradi
+window.applyClockUpdate = function(data) {
+  if (!data) return;
+  whiteTimeLeft = Math.max(0, data.w / 1000);
+  blackTimeLeft = Math.max(0, data.b / 1000);
+  updateTimersDisplay();
+  if (data.running && !gameFinished) {
+    gameStarted = true;
+    startTimer();
+  } else {
+    clearInterval(timerInterval);
+  }
 };
 
 // Yurishdan keyin (o'zimizning yoki raqibning) o'yin tugaganini tekshiradi.
@@ -159,7 +200,9 @@ window.checkGameOverAfterMove = function() {
     confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
   }
   if (game.in_checkmate()) {
-    window.finishGame(game.turn() === 'w' ? 'b' : 'w', tx('gameCheckmate', "Shaxmat! O'yin tugadi."), 'success');
+    const winner = game.turn() === 'w' ? 'b' : 'w';
+    const toastType = (window.myColor && window.myColor !== winner) ? 'error' : 'success';
+    window.finishGame(winner, tx('gameCheckmate', "Shaxmat! O'yin tugadi."), toastType);
   } else {
     window.finishGame(null, tx('gameDraw', 'Durrang!'), 'warning');
   }
@@ -181,15 +224,12 @@ function recordResult(res) {
   if (res === "win") {
     window.stats.wins++;
     window.statsByMode[mode].wins++;
-    if (typeof updateRating === 'function') updateRating('win');
   } else if (res === "loss") {
     window.stats.losses++;
     window.statsByMode[mode].losses++;
-    if (typeof updateRating === 'function') updateRating('loss');
   } else if (res === "draw") {
     window.stats.draws++;
     window.statsByMode[mode].draws++;
-    if (typeof updateRating === 'function') updateRating('draw');
   }
   updateStatsDisplay();
   if (window.currentUser) {
@@ -299,22 +339,7 @@ function saveGameHistory(result, opponent, mode) {
     let users = JSON.parse(localStorage.getItem("justChessAllUsers")) || [];
     users = users.map((u) => u.username === window.currentUser.username ? window.currentUser : u);
     localStorage.setItem("justChessAllUsers", JSON.stringify(users));
-
-    const headers = { 'Content-Type': 'application/json' };
-    if (window.authToken) {
-      headers['Authorization'] = `Bearer ${window.authToken}`;
-    }
-    fetch('/api/games', {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify({
-        result: result,
-        opponent: opponent || 'Online',
-        mode: mode || 'Online o\'yin',
-        timeControl: window.currentGameTimeControl || 'blitz',
-        moves: game.history()
-      })
-    }).catch(err => console.error('Game save xatoligi:', err));
+    // Server natijani o'zi saqlaydi (o'yin xonasi tugaganda)
   } else {
     let guestHistory = JSON.parse(localStorage.getItem("justChessGameHistory")) || [];
     guestHistory.push(gameRecord);
@@ -355,7 +380,7 @@ function startTimer() {
         }
       }
       if (blackTimerElement) blackTimerElement.classList.remove("active");
-      if (whiteTimeLeft <= 0) {
+      if (whiteTimeLeft <= 0 && !window.currentRoomId) {
         window.finishGame('b', t.whiteTimeUp, 'error');
       }
     } else {
@@ -368,7 +393,7 @@ function startTimer() {
         }
       }
       if (whiteTimerElement) whiteTimerElement.classList.remove("active");
-      if (blackTimeLeft <= 0) {
+      if (blackTimeLeft <= 0 && !window.currentRoomId) {
         window.finishGame('w', t.blackTimeUp, 'error');
       }
     }
@@ -376,15 +401,15 @@ function startTimer() {
   }, 200);
 }
 
-function setGameTime(sec, btnElement) {
+function setGameTime(sec, btnElement, increment) {
   clearInterval(timerInterval);
   initialTime = whiteTimeLeft = blackTimeLeft = sec;
+  // Tugma bosilganda yangi qo'shimcha soniya; ichki chaqiruvlarda avvalgisi saqlanadi
+  if (btnElement || increment !== undefined) timeIncrement = increment || 0;
   gameStarted = false;
   gameFinished = false;
-  halfMoveClock = 0;
-  positionHistory = [];
   game.reset();
-  window.currentGameTimeControl = getGameModeFromTime(sec);
+  window.currentGameTimeControl = getGameModeFromTime(sec, timeIncrement);
   updateTimersDisplay();
   updateHistory();
   
@@ -445,6 +470,7 @@ function resignGame() {
 }
 
 window.undoMove = function() {
+  if (window.currentRoomId) return;
   if (!game || game.history().length === 0) {
     showToast(tx('noMovesToUndo', "Qaytarish uchun yurishlar yo'q!"), 'warning');
     return;
@@ -453,7 +479,6 @@ window.undoMove = function() {
   game.undo();
   if (board) board.position(game.fen());
   updateHistory();
-  saveGameState();
   showToast(tx('lastMoveUndone', 'Oxirgi yurish qaytarildi'), 'info');
 };
 
@@ -506,11 +531,6 @@ function onDragStart(source, piece, position, orientation) {
   if (!opponentFound) {
     showToast(tx('waitingOpponentToast', 'Raqib topilishi kutilmoqda...'), 'warning', 2000);
     return false;
-  }
-
-  if (!gameStarted) {
-    gameStarted = true;
-    startTimer();
   }
 
   if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
@@ -593,7 +613,7 @@ document.addEventListener("DOMContentLoaded", () => {
     board = Chessboard('chessBoard', config);
   }
   
-  restoreGameState();
+  sessionStorage.removeItem('chessGameState');
 });
 
 // Toast notification system
@@ -611,7 +631,12 @@ function showToast(message, type = 'info', duration = 3000) {
     warning: '⚠'
   };
   
-  toast.innerHTML = `<span>${icons[type] || 'ℹ'}</span><span>${message}</span>`;
+  // Xabar ichida foydalanuvchi nomi bo'lishi mumkin — HTML sifatida emas, matn sifatida qo'yiladi
+  const icon = document.createElement('span');
+  icon.textContent = icons[type] || 'ℹ';
+  const text = document.createElement('span');
+  text.textContent = message;
+  toast.append(icon, text);
   container.appendChild(toast);
   
   setTimeout(() => {
@@ -622,61 +647,6 @@ function showToast(message, type = 'info', duration = 3000) {
       }
     }, 300);
   }, duration);
-}
-
-// Game state preservation
-function saveGameState() {
-  if (!game || !board) return;
-  
-  const state = {
-    fen: game.fen(),
-    history: game.history(),
-    whiteTime: whiteTimeLeft,
-    blackTime: blackTimeLeft,
-    initialTime: initialTime,
-    gameStarted: gameStarted,
-    timestamp: Date.now()
-  };
-  
-  sessionStorage.setItem('chessGameState', JSON.stringify(state));
-}
-
-function restoreGameState() {
-  const saved = sessionStorage.getItem('chessGameState');
-  if (!saved) return;
-  
-  try {
-    const state = JSON.parse(saved);
-    const timeDiff = Date.now() - state.timestamp;
-    
-    if (timeDiff < 3600000 && state.fen) {
-      game.load(state.fen);
-      if (board) board.position(state.fen);
-      
-      whiteTimeLeft = state.whiteTime || 300;
-      blackTimeLeft = state.blackTime || 300;
-      initialTime = state.initialTime || 300;
-      gameStarted = state.gameStarted || false;
-      
-      updateTimersDisplay();
-      
-      if (gameStarted) {
-        window.setGamePanelMode('in');
-        startTimer();
-      }
-
-      if (state.history && state.history.length > 0) {
-        updateHistory();
-      }
-      
-      showToast(tx('gameStateRestored', "O'yin holati tiklandi"), 'success');
-    } else {
-      sessionStorage.removeItem('chessGameState');
-    }
-  } catch (e) {
-    console.error('Game state restore error:', e);
-    sessionStorage.removeItem('chessGameState');
-  }
 }
 
 // Keyboard shortcuts
@@ -705,34 +675,6 @@ document.addEventListener('keydown', (e) => {
     }
   }
 });
-
-// 50-move rule and 3-fold repetition
-let halfMoveClock = 0;
-let positionHistory = [];
-
-const originalOnSnapEnd = onSnapEnd;
-onSnapEnd = function() {
-  originalOnSnapEnd();
-  
-  const history = game.history();
-  if (history.length > 0 && (history[history.length - 1].includes('x') || history[history.length - 1].includes('O-O'))) {
-    halfMoveClock = 0;
-  } else {
-    halfMoveClock++;
-  }
-  
-  const fen = game.fen();
-  positionHistory.push(fen);
-  const repetitions = positionHistory.filter(pos => pos === fen).length;
-  
-  if (halfMoveClock >= 100) {
-    window.finishGame(null, tx('gameDraw50', '50 yurish qoidasi: Durrang!'), 'warning');
-  } else if (repetitions >= 3) {
-    window.finishGame(null, tx('gameDrawRepetition', '3 marta takrorlanish: Durrang!'), 'warning');
-  }
-  
-  saveGameState();
-};
 
 // Debounce utility
 function debounce(func, wait) {

@@ -290,6 +290,13 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  // Arena: ishtirokchining o'yinlar soni va natijalari (arena.js)
+  for (const col of ['games', 'wins', 'draws', 'losses']) {
+    try {
+      await dbExec(`ALTER TABLE tournament_participants ADD COLUMN ${col} INTEGER DEFAULT 0`);
+    } catch (e) {}
+  }
+
   // Shaxsiy xabarlar: har foydalanuvchi har suhbatni qachongacha o'qigani (o'qilmaganlar soni uchun)
   await dbExec(`
     CREATE TABLE IF NOT EXISTS chat_reads (

@@ -6219,6 +6219,617 @@ sidebar {
   .msg-bubble { max-width: 85%; }
 }
 
+/* ===== Turnirlar: 24/7 Arena (tournaments.js) ===== */
+.view-section.ar-view.active-view {
+  display: block;
+}
+.ar-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: arFade 0.35s ease;
+}
+@keyframes arFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Bosh blok: tablo */
+.ar-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 210px;
+  gap: 28px;
+  align-items: center;
+  padding: 30px 34px;
+  border-radius: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(var(--accent-rgb), 0.28);
+  background:
+    radial-gradient(ellipse at 85% 50%, rgba(var(--accent-rgb), 0.28), transparent 55%),
+    linear-gradient(135deg, var(--cd-surface-2), var(--cd-bg-2));
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+}
+.ar-hero::before {
+  /* shaxmat katakchalari — yengil fon naqshi */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: conic-gradient(rgba(255, 255, 255, 0.035) 25%, transparent 0 50%, rgba(255, 255, 255, 0.035) 0 75%, transparent 0);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(100deg, transparent 35%, #000 100%);
+  -webkit-mask-image: linear-gradient(100deg, transparent 35%, #000 100%);
+  pointer-events: none;
+}
+.ar-hero > * {
+  position: relative;
+}
+.ar-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #ffd6d6;
+  background: rgba(229, 72, 77, 0.16);
+  border: 1px solid rgba(229, 72, 77, 0.35);
+}
+.ar-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff5a5f;
+  box-shadow: 0 0 0 0 rgba(255, 90, 95, 0.7);
+  animation: arPulse 1.6s infinite;
+}
+@keyframes arPulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 90, 95, 0.7); }
+  70% { box-shadow: 0 0 0 9px rgba(255, 90, 95, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 90, 95, 0); }
+}
+.ar-hero h1 {
+  margin: 14px 0 6px;
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.ar-hero h1 span {
+  color: var(--accent-light);
+}
+.ar-hero-sub {
+  margin: 0 0 18px;
+  font-size: 15px;
+  color: #b9c5bf;
+}
+.ar-counts {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.ar-counts div {
+  min-width: 108px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ar-counts b {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+}
+.ar-counts span {
+  font-size: 12px;
+  color: #9fb0a8;
+}
+.ar-mine {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  color: #d9e4de;
+  background: rgba(var(--accent-rgb), 0.14);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+}
+.ar-mine b {
+  font-size: 18px;
+  color: var(--accent-light);
+}
+.ar-cta-wrap {
+  min-height: 58px;
+}
+.ar-cta {
+  height: 58px;
+  padding: 0 42px;
+  border: none;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, var(--accent-light), var(--accent-dark));
+  box-shadow: 0 10px 26px rgba(var(--accent-rgb), 0.4);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+}
+.ar-cta:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.5);
+  filter: brightness(1.05);
+}
+.ar-cta:disabled {
+  cursor: default;
+  opacity: 0.55;
+  box-shadow: none;
+}
+.ar-searching {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px 10px 18px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.45);
+}
+.ar-searching b {
+  display: block;
+  font-size: 16px;
+  color: #fff;
+}
+.ar-searching small {
+  font-size: 12px;
+  color: #9fb0a8;
+}
+.ar-spinner {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 3px solid rgba(var(--accent-rgb), 0.25);
+  border-top-color: var(--accent-light);
+  animation: arSpin 0.8s linear infinite;
+}
+@keyframes arSpin {
+  to { transform: rotate(360deg); }
+}
+.ar-cancel {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 10px;
+  border: 1px solid var(--cd-border-strong);
+  background: var(--cd-surface-2);
+  color: #e8ece9;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Soat halqasi */
+.ar-ring {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  justify-self: center;
+}
+.ar-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.ar-ring circle {
+  fill: none;
+  stroke-width: 9;
+}
+.ar-ring-bg {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+.ar-ring-fg {
+  stroke: var(--accent-light);
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(var(--accent-rgb), 0.6));
+  transition: stroke-dashoffset 0.9s linear;
+}
+.ar-ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ar-ring-text b {
+  font-size: 40px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+.ar-ring-text span {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #9fb0a8;
+}
+
+/* Qanday ishlaydi: 3 qadam */
+.ar-how {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.ar-step {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 18px 18px 18px 16px;
+  border-radius: 18px;
+  background: var(--cd-surface);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ar-step-num {
+  position: absolute;
+  top: 10px;
+  right: 14px;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+  color: rgba(var(--accent-rgb), 0.18);
+}
+.ar-step-icon {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #fff;
+  background: rgba(var(--accent-rgb), 0.16);
+}
+.ar-step b {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+  color: #fff;
+}
+.ar-step p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #9fb0a8;
+}
+
+/* Asosiy panel */
+.ar-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 18px;
+  align-items: start;
+}
+.ar-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.ar-card {
+  padding: 20px;
+  border-radius: 20px;
+  background: var(--cd-surface);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+.ar-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.ar-card-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+}
+.ar-card-note,
+.ar-card-sub {
+  font-size: 12px;
+  color: #7f908a;
+}
+.ar-card-sub {
+  margin: -8px 0 14px;
+}
+.ar-link {
+  border: none;
+  background: none;
+  color: var(--accent-light);
+  font-weight: 700;
+  cursor: pointer;
+}
+.ar-empty {
+  padding: 30px 10px;
+  text-align: center;
+  font-size: 14px;
+  color: #7f908a;
+}
+.ar-empty.small {
+  padding: 14px 6px;
+  font-size: 13px;
+}
+.ar-flag {
+  width: 20px;
+  height: 14px;
+  border-radius: 3px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* Shohsupa */
+.ar-podium {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.ar-pod {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  min-width: 0;
+}
+.ar-pod-medal {
+  font-size: 26px;
+}
+.ar-pod b {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: #fff;
+}
+.ar-pod-score {
+  font-size: 12px;
+  color: #9fb0a8;
+}
+.ar-pod-step {
+  width: 100%;
+  margin-top: 6px;
+  border-radius: 12px 12px 4px 4px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 8px;
+  font-size: 22px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.85);
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.35), rgba(var(--accent-rgb), 0.08));
+}
+.ar-pod.p1 .ar-pod-step { height: 86px; background: linear-gradient(180deg, rgba(246, 196, 69, 0.45), rgba(246, 196, 69, 0.08)); }
+.ar-pod.p2 .ar-pod-step { height: 62px; }
+.ar-pod.p3 .ar-pod-step { height: 46px; }
+
+/* Jadval */
+.ar-table {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ar-tr {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 56px 92px 64px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #d9e4de;
+  background: rgba(255, 255, 255, 0.025);
+}
+.ar-tr > span:nth-child(n + 3) {
+  text-align: center;
+}
+.ar-th {
+  background: none;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #7f908a;
+}
+.ar-tr.me {
+  background: rgba(var(--accent-rgb), 0.14);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.ar-rank {
+  font-weight: 800;
+  color: #9fb0a8;
+}
+.ar-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ar-player b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+}
+.ar-player small {
+  font-size: 12px;
+  color: #7f908a;
+}
+.ar-tag {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-style: normal;
+  color: #b9c5bf;
+  background: rgba(255, 255, 255, 0.07);
+}
+.ar-tag.playing {
+  color: #fff;
+  background: rgba(var(--accent-rgb), 0.35);
+}
+.ar-wdl i {
+  font-style: normal;
+  font-weight: 700;
+}
+.ar-wdl .w { color: #6fdc8c; }
+.ar-wdl .d { color: #c7cdd1; }
+.ar-wdl .l { color: #f87171; }
+.ar-points {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--accent-light);
+}
+
+/* So'nggi o'yinlar */
+.ar-games {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ar-game {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 46px minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.03);
+}
+.ar-game span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #b9c5bf;
+}
+.ar-game span:last-child {
+  text-align: right;
+}
+.ar-game span.won {
+  color: #fff;
+  font-weight: 700;
+}
+.ar-game b {
+  text-align: center;
+  font-size: 12px;
+  color: var(--accent-light);
+}
+
+/* Bugungi jadval */
+.ar-sched {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 380px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.ar-slot {
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: #d9e4de;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+}
+button.ar-slot {
+  cursor: pointer;
+}
+button.ar-slot:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.ar-slot.completed {
+  opacity: 0.75;
+}
+.ar-slot.current {
+  border-color: rgba(var(--accent-rgb), 0.5);
+  background: rgba(var(--accent-rgb), 0.12);
+}
+.ar-slot-time {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+.ar-slot-name small {
+  color: #7f908a;
+}
+.ar-pill {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  color: #b9c5bf;
+  background: rgba(255, 255, 255, 0.06);
+}
+.ar-pill.live {
+  color: #fff;
+  background: #e5484d;
+}
+.ar-pill.done {
+  color: #f6d77a;
+  background: rgba(246, 196, 69, 0.12);
+}
+.ar-pill.muted {
+  color: #6f7f78;
+}
+
+/* O'yin sahifasidagi "Keyingi arena o'yini" */
+.start-game-btn.arena-next-btn {
+  margin-bottom: 8px;
+}
+
+@media (max-width: 1100px) {
+  .ar-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .ar-hero { grid-template-columns: 1fr; padding: 22px 18px; gap: 18px; }
+  .ar-ring { order: -1; width: 150px; height: 150px; }
+  .ar-ring-text b { font-size: 30px; }
+  .ar-hero h1 { font-size: 34px; }
+  .ar-cta { width: 100%; padding: 0 20px; }
+  .ar-searching { display: flex; width: 100%; box-sizing: border-box; }
+  .ar-counts div { min-width: 0; flex: 1; }
+  .ar-how { grid-template-columns: 1fr; }
+  .ar-tr { grid-template-columns: 30px minmax(0, 1fr) 40px 72px 44px; padding: 9px 8px; font-size: 13px; }
+  .ar-player small { display: none; }
+  .ar-card { padding: 16px 12px; }
+}
+
 /* ===== Kirish / ro'yxatdan o'tish sahifasi (tizimga kirilmaguncha) ===== */
 body.auth-locked {
   overflow: hidden;

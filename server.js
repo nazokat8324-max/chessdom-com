@@ -13,6 +13,7 @@ const { Chess } = require('chess.js');
 
 const db = require('./database');
 const league = require('./league');
+const arena = require('./arena');
 
 const app = express();
 const server = http.createServer(app);
@@ -164,10 +165,16 @@ async function endGame(roomId, room, winnerColor, reason) {
     catch (err) { console.error('Liga natijasini yozish xatoligi:', err); }
   }
 
+  // Arena o'yini bo'lsa — ochko arena jadvaliga yoziladi
+  if (room.arenaId) {
+    try { await arena.recordGameResult({ arenaId: room.arenaId, players }, winnerColor, reason); }
+    catch (err) { console.error('Arena natijasini yozish xatoligi:', err); }
+  }
+
   for (const p of players) {
     io.to(p.socketId).emit('game-ended', {
       roomId, winner: winnerColor, reason, result: scoreFor(p.color, winnerColor),
-      rated: room.rated && recorded, mode: room.mode, ...(updates[p.color] || {})
+      rated: room.rated && recorded, mode: room.mode, arena: room.arenaId ? { id: room.arenaId } : null, ...(updates[p.color] || {})
     });
   }
   emitClock(roomId, room);
@@ -350,6 +357,7 @@ async function start() {
       const clock = normalizeClock(req.body.initialTime, req.body.increment);
       const rated = req.body.rated !== false;
       pruneMatchmakingQueue();
+      arena.leaveUser(req.user.userId);
       if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
       const user = await db.getUserById(req.user.userId);
       // Klient yuborgan davlatni (Sozlamalardan) bazaga ham yozib qo'yamiz
@@ -416,6 +424,26 @@ async function start() {
       const timeUntilNext = Math.max(0, new Date(slot.slotEnd).getTime() - now.getTime());
       res.json({ success: true, currentArena, timeControl: slot, timeUntilNext, schedule: getArenaSchedule(now) });
     } catch (err) { console.error('Arenas xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // 24/7 Arena (arena.js): joriy turnir, jonli jadval, bugungi jadval
+  app.get('/api/arena', async (req, res) => {
+    try {
+      let userId = null;
+      const auth = req.headers.authorization;
+      if (auth && auth.startsWith('Bearer ')) {
+        try { userId = jwt.verify(auth.slice(7), JWT_SECRET).userId; } catch (e) {}
+      }
+      res.json({ success: true, ...(await arena.overview(userId)) });
+    } catch (err) { console.error('Arena xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.get('/api/arena/:id/results', async (req, res) => {
+    try {
+      const data = await arena.results(req.params.id);
+      if (!data) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
+      res.json({ success: true, ...data });
+    } catch (err) { console.error('Arena natijalari xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.get('/api/tournaments', apiLimiter, async (req, res) => {
@@ -831,8 +859,11 @@ async function start() {
     // Liga: o'yinchi o'z doska o'yiniga tayyor (ikkalasi tayyor bo'lganda o'yin boshlanadi)
     socket.on('league-ready', (data) => { league.ready(socket, data && data.gameId).catch(err => console.error('Liga ready xatoligi:', err)); });
     socket.on('league-cancel', (data) => { league.cancel(socket, data && data.gameId); });
+    socket.on('arena-play', (data) => { arena.play(socket, data && data.arenaId).catch(err => console.error('Arena play xatoligi:', err)); });
+    socket.on('arena-leave', () => { arena.leave(socket); });
     socket.on('disconnect', () => {
       league.socketGone(socket.id);
+      arena.socketGone(socket.id);
       pruneMatchmakingQueue();
       for (const [roomId, room] of rooms.entries()) {
         if (!findPlayer(room, socket.id)) continue;
@@ -846,6 +877,11 @@ async function start() {
   setInterval(async () => { await db.closeStaleArenas(); }, 60 * 1000);
 
   league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId });
+  arena.init({
+    db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId,
+    leaveMatchmaking: (userId) => { const i = matchmakingQueue.findIndex(u => u.userId === userId); if (i !== -1) matchmakingQueue.splice(i, 1); }
+  });
+  setInterval(arena.pairPlayers, arena.CFG.pairMs);
   setInterval(league.tick, league.CFG.tickMs);
   league.tick();
 

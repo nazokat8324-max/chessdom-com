@@ -640,6 +640,14 @@
             </div>
 
             <button
+              class="start-game-btn arena-next-btn"
+              onclick="window.arenaPlayNext()"
+              id="btnArenaNext"
+              hidden
+            >
+              🏁 <span data-i18n="arNextGame">Keyingi arena o'yini</span>
+            </button>
+            <button
               class="start-game-btn"
               onclick="resetToPreGame()"
               id="btnPlayAgain"
@@ -1034,29 +1042,9 @@
     </div>
 
     <!-- 8. TURNIRLAR -->
-    <div
-      id="tournamentsView"
-      class="view-section"
-      style="justify-content: center; align-items: center"
-    >
-      <div
-        class="card-box tournaments-card"
-        style="width: min(940px, 100%); max-height: 88vh; overflow-y: auto"
-      >
-        <div class="card-title" id="tournamentsCardTitle">Turnirlar</div>
-        <div
-          style="
-            font-size: 13px;
-            color: #88a;
-            margin-bottom: 18px;
-            text-align: center;
-          "
-          id="tournamentsDesc"
-        >
-          24 soat davomida har soatda yangi arena turniri
-        </div>
-        <div id="arenaScheduleContainer"></div>
-      </div>
+    <!-- 8. TURNIRLAR: 24/7 Arena (tournaments.js) -->
+    <div id="tournamentsView" class="view-section ar-view">
+      <div class="ar-page" id="arenaRoot"></div>
     </div>
 
     <!-- 8b. TURNIR TAFSILOTI -->
@@ -1777,6 +1765,7 @@
     <script src="leagues.js"></script>
     <script src="about.js"></script>
     <script src="messages.js"></script>
+    <script src="tournaments.js"></script>
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>

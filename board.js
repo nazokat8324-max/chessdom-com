@@ -26,6 +26,9 @@ window.setGamePanelMode = function(mode) {
   if (drawBtn) drawBtn.hidden = mode !== 'in';
   if (resignBtn) resignBtn.hidden = mode !== 'in';
   if (newGameBtn) newGameBtn.hidden = mode !== 'over';
+  // Arena o'yini tugaganda — "Keyingi arena o'yini" tugmasi
+  const arenaBtn = document.getElementById('btnArenaNext');
+  if (arenaBtn) arenaBtn.hidden = !(mode === 'over' && window.lastGameArena);
 };
 
 window.resetToPreGame = function() {

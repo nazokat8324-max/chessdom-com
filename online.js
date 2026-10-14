@@ -70,6 +70,9 @@ socket.on('match-found', (data) => {
     if (typeof window.leagueMatchStarted === 'function') window.leagueMatchStarted();
     if (!isViewActive('gameView')) switchView('game');
   }
+  // Arena o'yini turnirlar sahifasidan boshlanadi
+  window.lastGameArena = data.arena || null;
+  if (data.arena && !isViewActive('gameView')) switchView('game');
   window.isSearchingOpponent = false;
   const statusEl = document.getElementById('matchmakingStatus');
   if (statusEl) statusEl.style.display = 'none';
@@ -99,6 +102,8 @@ socket.on('match-found', (data) => {
       away: window.countryName ? window.countryName(data.league.awayClub, null) : data.league.awayClub,
       board: data.league.board
     }), 'success', 5000);
+  } else if (data.arena) {
+    showToast(tx('arGameToast', "Arena o'yini: raqibingiz {{name}}", { name: (data.opponent && data.opponent.username) || tx('colOpponent', 'Raqib') }), 'success', 4000);
   } else {
     showToast(tx('opponentFoundName', 'Raqib topildi: {{name}}', { name: (data.opponent && data.opponent.username) || tx('colOpponent', 'Raqib') }), 'success');
   }
@@ -200,6 +205,10 @@ socket.on('game-ended', (data) => {
     window.finishGame(data.winner, gameEndMessage(data), type);
   }
   if (typeof window.applyServerGameResult === 'function') window.applyServerGameResult(data);
+  if (data.arena) {
+    const pts = data.result === 'win' ? 2 : (data.result === 'draw' ? 1 : 0);
+    setTimeout(() => showToast(tx('arPointsToast', 'Arena: +{{n}} ochko', { n: pts }), pts ? 'success' : 'info', 4000), 1200);
+  }
 });
 
 function leaveOnlineGame() {

@@ -228,6 +228,9 @@ async function sendChallenge(socket, data) {
   const target = data && data.username ? await db.getUserByUsername(String(data.username)) : null;
   if (!target) return socket.emit('challenge-error', { reason: 'not_found' });
   if (target.id === fromId) return socket.emit('challenge-error', { reason: 'self' });
+  const targetPrivacy = db.userPrivacy(target).challenges;
+  if (targetPrivacy === 'none') return socket.emit('challenge-error', { reason: 'disabled' });
+  if (targetPrivacy === 'friends' && !(await db.areFriends(target.id, fromId))) return socket.emit('challenge-error', { reason: 'friends_only' });
   if (!userSocket(target.id)) return socket.emit('challenge-error', { reason: 'offline' });
   if (inActiveGame(fromId)) return socket.emit('challenge-error', { reason: 'you_busy' });
   if (inActiveGame(target.id)) return socket.emit('challenge-error', { reason: 'busy' });
@@ -602,6 +605,29 @@ async function start() {
     } catch (err) { res.status(500).end(); }
   });
 
+  // --- Sozlamalar: maxfiylik va parol ---
+  app.get('/api/users/me/privacy', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, privacy: db.userPrivacy(await db.getUserById(req.user.userId)) }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/users/me/privacy', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, privacy: await db.updatePrivacy(req.user.userId, req.body || {}) }); }
+    catch (err) { console.error('Privacy xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/users/me/password', authMiddleware, loginLimiter, async (req, res) => {
+    try {
+      const current = String((req.body && req.body.current) || '').trim();
+      const next = String((req.body && req.body.next) || '').trim();
+      if (next.length < 6) return res.status(400).json({ success: false, message: "Parol kamida 6 ta belgidan iborat bo'lishi kerak" });
+      const user = await db.getUserById(req.user.userId);
+      if (!user || !(await bcrypt.compare(current, user.password_hash))) return res.status(401).json({ success: false, message: "Joriy parol noto'g'ri!" });
+      await db.updateUserPassword(user.id, await bcrypt.hash(next, 10));
+      res.json({ success: true, message: "Parol o'zgartirildi!" });
+    } catch (err) { console.error('Parol xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.post('/api/users/me/country', authMiddleware, async (req, res) => {
     try {
       const { country } = req.body;
@@ -961,7 +987,11 @@ async function start() {
         if (!me || me.club_country !== roomId.slice(5)) return res.status(403).json({ success: false, message: "Klub chatiga faqat klub a'zolari yozishi mumkin!" });
       }
       const partnerId = roomId ? dmPartner(roomId, req.user.userId) : null;
-      if (partnerId && !(await db.getUserById(partnerId))) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const partner = partnerId ? await db.getUserById(partnerId) : null;
+      if (partnerId && !partner) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      if (partner && db.userPrivacy(partner).messages === 'friends' && !(await db.areFriends(partnerId, req.user.userId))) {
+        return res.status(403).json({ success: false, message: "Bu o'yinchi faqat do'stlaridan xabar qabul qiladi" });
+      }
       const { id } = await db.sendChatMessage(req.user.userId, partnerId, roomId, message);
       const payload = { messageId: id, senderId: req.user.userId, senderName: req.user.username, message, roomId, createdAt: new Date().toISOString() };
       if (partnerId) io.to(`user_${partnerId}`).to(`user_${req.user.userId}`).emit('chat-message', payload);

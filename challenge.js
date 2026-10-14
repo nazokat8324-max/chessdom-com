@@ -153,6 +153,8 @@
         you_busy: tx('arErrInGame', "Avval joriy o'yiningizni tugating."),
         not_found: tx('srvUserNotFound', 'Foydalanuvchi topilmadi!'),
         gone: tx('chErrGone', 'Chaqiruv endi amal qilmaydi'),
+        disabled: tx('chErrDisabled', "Bu o'yinchi chaqiruvlarni qabul qilmaydi"),
+        friends_only: tx('chErrFriendsOnly', "Bu o'yinchi faqat do'stlaridan chaqiruv qabul qiladi"),
         auth: tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!')
       }[reason] || tx('errGeneric', 'Xatolik yuz berdi!');
       showToast(msg, 'warning', 4000);

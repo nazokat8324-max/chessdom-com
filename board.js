@@ -465,6 +465,7 @@ window.startNewGame = function() {
 
 function resignGame() {
   if (gameFinished) return;
+  if (window.boardPrefs.confirmResign && !confirm(tx('resignConfirm', "Rostdan ham taslim bo'lasizmi?"))) return;
   const lang = (typeof window.currentLang !== 'undefined') ? window.currentLang : 'uz';
   if (typeof translations === 'undefined') return;
   const t = translations[lang];
@@ -626,7 +627,7 @@ function askPromotion(target) {
       b.dataset.piece = p;
       b.title = names[p];
       b.style.height = r.height + 'px';
-      b.innerHTML = '<img src="img/chesspieces/wikipedia/' + color + p.toUpperCase() + '.png" alt="' + names[p] + '">';
+      b.innerHTML = '<img src="' + window.pieceUrl(color + p.toUpperCase()) + '" alt="' + names[p] + '">';
       return b;
     });
     (downward ? items.concat(cancel) : [cancel].concat(items)).forEach(el => picker.appendChild(el));
@@ -707,7 +708,7 @@ document.addEventListener('click', (e) => {
     if (!p || p.color !== game.turn()) clearMoveHints();
     return;
   }
-  if (isPromotionMove(selectedSquare, sq)) { promoteAndMove(selectedSquare, sq); return; }
+  if (isPromotionMove(selectedSquare, sq) && !window.boardPrefs.autoQueen) { promoteAndMove(selectedSquare, sq); return; }
   if (executeMove(selectedSquare, sq) && board) board.position(game.fen());
 });
 
@@ -740,7 +741,7 @@ function onDrop(source, target) {
     if (dragFromSelected) clearMoveHints();
     return 'snapback';
   }
-  if (isPromotionMove(source, target)) {
+  if (isPromotionMove(source, target) && !window.boardPrefs.autoQueen) {
     // Tanlov oynasi ochiladi; dona tanlangach pozitsiya yangilanadi
     promoteAndMove(source, target);
     return 'snapback';
@@ -755,13 +756,44 @@ function onSnapEnd() {
   board.position(game.fen());
 }
 
+// --- Donalar to'plami (Sozlamalar → Taxta) ---
+// 'wikipedia' — loyihadagi rasmlar; qolganlari lichess'ning ochiq SVG to'plamlari
+window.PIECE_SETS = ['wikipedia', 'cburnett', 'merida', 'alpha', 'california', 'staunty'];
+window.currentPieceSet = 'wikipedia';
+window.pieceUrl = function(code, set) {
+  const s = set || window.currentPieceSet;
+  if (s === 'wikipedia' || !window.PIECE_SETS.includes(s)) return 'img/chesspieces/wikipedia/' + code + '.png';
+  return 'https://lichess1.org/assets/piece/' + s + '/' + code + '.svg';
+};
+
+// Taxta afzalliklari: nuqtalar, oxirgi yurish, avtomatik farzin, taslimdan oldin so'rash
+window.boardPrefs = { showHints: true, showLastMove: true, autoQueen: false, confirmResign: true };
+window.applyBoardPrefs = function(prefs) {
+  window.boardPrefs = { ...window.boardPrefs, ...(prefs || {}) };
+  document.documentElement.classList.toggle('hide-move-hints', !window.boardPrefs.showHints);
+  document.documentElement.classList.toggle('hide-last-move', !window.boardPrefs.showLastMove);
+};
+
 let config = {
   draggable: true,
   position: 'start',
-  pieceTheme: 'img/chesspieces/wikipedia/{piece}.png',
+  pieceTheme: (piece) => window.pieceUrl(piece),
   onDragStart: onDragStart,
   onDrop: onDrop,
   onSnapEnd: onSnapEnd
+};
+
+// Donalar to'plami o'zgarganda taxtani pozitsiya va tomonni saqlagan holda qayta chizamiz
+window.applyPieceSet = function(set) {
+  const next = window.PIECE_SETS.includes(set) ? set : 'wikipedia';
+  if (next === window.currentPieceSet && board) return;
+  window.currentPieceSet = next;
+  if (!board || !document.getElementById('chessBoard')) return;
+  const orientation = typeof board.orientation === 'function' ? board.orientation() : 'white';
+  if (typeof board.destroy === 'function') board.destroy();
+  board = Chessboard('chessBoard', { ...config, position: game.fen(), orientation });
+  selectedSquare = null;
+  if (lastMove) window.markLastMove(lastMove.from, lastMove.to);
 };
 
 // Qayta ulanganda: o'yinni serverdagi yurishlar bo'yicha tiklash

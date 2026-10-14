@@ -93,7 +93,7 @@
     st.chess = new Chess();
     (data.history || []).forEach(m => st.chess.move({ from: m.from, to: m.to, promotion: m.promotion || 'q' }));
     if (st.board && typeof st.board.destroy === 'function') st.board.destroy();
-    st.board = Chessboard('liveBoard', { position: st.chess.fen(), draggable: false, pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' });
+    st.board = Chessboard('liveBoard', { position: st.chess.fen(), draggable: false, pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png') });
     setClock(data.clockState);
     if (data.status !== 'active') st.ended = { winner: null, reason: 'over' };
     renderMoves();

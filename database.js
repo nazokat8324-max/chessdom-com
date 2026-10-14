@@ -290,6 +290,11 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  // Maxfiylik: kim xabar yozadi / o'yinga chaqiradi (JSON: {messages: 'all'|'friends', challenges: 'all'|'friends'|'none'})
+  try {
+    await dbExec(`ALTER TABLE users ADD COLUMN privacy TEXT DEFAULT NULL`);
+  } catch (e) {}
+
   // Profil rasmlari: alohida jadvalda (users so'rovlari og'irlashmasligi uchun); users.avatar_version — keshni yangilash uchun
   await dbExec(`
     CREATE TABLE IF NOT EXISTS avatars (
@@ -545,6 +550,28 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
 }
 
 // Davlat kodi (masalan 'uz', 'pk') — raqibga bayroq ko'rsatish uchun
+const PRIVACY_DEFAULTS = { messages: 'all', challenges: 'all' };
+function userPrivacy(user) {
+  const p = parseJson(user && user.privacy) || {};
+  return {
+    messages: ['all', 'friends'].includes(p.messages) ? p.messages : PRIVACY_DEFAULTS.messages,
+    challenges: ['all', 'friends', 'none'].includes(p.challenges) ? p.challenges : PRIVACY_DEFAULTS.challenges
+  };
+}
+
+async function updatePrivacy(userId, privacy) {
+  const user = await getUserById(userId);
+  const next = { ...userPrivacy(user) };
+  if (['all', 'friends'].includes(privacy.messages)) next.messages = privacy.messages;
+  if (['all', 'friends', 'none'].includes(privacy.challenges)) next.challenges = privacy.challenges;
+  await dbRun('UPDATE users SET privacy = ? WHERE id = ?', [JSON.stringify(next), userId]);
+  return next;
+}
+
+async function areFriends(userId, otherId) {
+  return !!(await dbGet('SELECT id FROM friends WHERE user_id = ? AND friend_id = ?', [userId, otherId]));
+}
+
 async function setAvatar(userId, mime, data) {
   const now = new Date().toISOString();
   const existing = await dbGet('SELECT user_id FROM avatars WHERE user_id = ?', [userId]);
@@ -1119,6 +1146,9 @@ module.exports = {
   userClub,
   getPublicProfile,
   markRoomRead,
+  userPrivacy,
+  updatePrivacy,
+  areFriends,
   getFriendshipStatus,
   removeFriend,
   cancelFriendRequest,

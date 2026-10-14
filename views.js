@@ -131,7 +131,7 @@ window.renderPlayersTable = function(players, filter) {
         <td><span class="rank-badge ${rankClass}">${rankIcon}${index + 1}</span></td>
         <td>
           <div class="player-cell">
-            <div class="player-avatar">${firstLetter}</div>
+            <div class="player-avatar">${firstLetter}${window.avatarOverlay ? window.avatarOverlay(user.username, window.myAvatarVersion(user.username)) : ''}</div>
             <span class="player-name player-link" data-username="${escapeHtml(user.username)}">${escapeHtml(user.username)}</span>
           </div>
         </td>

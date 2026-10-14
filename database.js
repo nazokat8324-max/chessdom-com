@@ -290,6 +290,19 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  // Profil rasmlari: alohida jadvalda (users so'rovlari og'irlashmasligi uchun); users.avatar_version — keshni yangilash uchun
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS avatars (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      mime TEXT NOT NULL,
+      data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `);
+  try {
+    await dbExec(`ALTER TABLE users ADD COLUMN avatar_version TEXT DEFAULT NULL`);
+  } catch (e) {}
+
   // Reyting tarixi (profil grafigi): har reytingli o'yindan keyingi rejim reytingi
   await dbExec(`
     CREATE TABLE IF NOT EXISTS rating_history (
@@ -532,6 +545,24 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
 }
 
 // Davlat kodi (masalan 'uz', 'pk') — raqibga bayroq ko'rsatish uchun
+async function setAvatar(userId, mime, data) {
+  const now = new Date().toISOString();
+  const existing = await dbGet('SELECT user_id FROM avatars WHERE user_id = ?', [userId]);
+  if (existing) await dbRun('UPDATE avatars SET mime = ?, data = ?, updated_at = ? WHERE user_id = ?', [mime, data, now, userId]);
+  else await dbRun('INSERT INTO avatars (user_id, mime, data, updated_at) VALUES (?, ?, ?, ?)', [userId, mime, data, now]);
+  await dbRun('UPDATE users SET avatar_version = ? WHERE id = ?', [now, userId]);
+  return now;
+}
+
+async function deleteAvatar(userId) {
+  await dbRun('DELETE FROM avatars WHERE user_id = ?', [userId]);
+  await dbRun('UPDATE users SET avatar_version = NULL WHERE id = ?', [userId]);
+}
+
+async function getAvatarByUsername(username) {
+  return dbGet('SELECT a.mime, a.data, a.updated_at as "updatedAt" FROM avatars a JOIN users u ON u.id = a.user_id WHERE u.username = ?', [username]);
+}
+
 async function getUserByEmail(email) {
   const row = await dbGet('SELECT * FROM users WHERE LOWER(email) = ?', [String(email).toLowerCase()]);
   return row ? mapUserRow(row) : null;
@@ -608,7 +639,7 @@ async function getDailyWinners() {
 async function getStatsByUsername(username) {
   const user = await getUserByUsername(username);
   if (!user) return null;
-  return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.stats_by_mode, rating: user.rating || 1500, ratingsByMode: user.ratings_by_mode, club: userClub(user) };
+  return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.stats_by_mode, rating: user.rating || 1500, ratingsByMode: user.ratings_by_mode, club: userClub(user), avatarVersion: user.avatar_version || null };
 }
 
 // Ommaviy profil: boshqa o'yinchilar ko'rishi mumkin bo'lgan ma'lumotlar (email va yurishlarsiz)
@@ -635,6 +666,7 @@ async function getPublicProfile(username) {
     country: user.country || null,
     club: userClub(user),
     ratingHistory,
+    avatarVersion: user.avatar_version || null,
     rating: user.rating || 1500,
     ratingsByMode: user.ratings_by_mode,
     stats: user.stats || { wins: 0, losses: 0, draws: 0 },
@@ -1043,6 +1075,9 @@ module.exports = {
   userClub,
   getPublicProfile,
   markRoomRead,
+  setAvatar,
+  deleteAvatar,
+  getAvatarByUsername,
   getUserByEmail,
   updateUserEmail,
   updateUserPassword,

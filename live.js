@@ -52,7 +52,7 @@
   function stageHtml(info) {
     const bar = (side, p) => `
       <div class="lv-bar" data-side="${side}">
-        <span class="lv-avatar ${side}">${esc((p.username || '?').charAt(0).toUpperCase())}</span>
+        <span class="lv-avatar ${side}">${esc((p.username || '?').charAt(0).toUpperCase())}${window.avatarOverlay ? window.avatarOverlay(p.username, window.myAvatarVersion(p.username)) : ''}</span>
         <div class="lv-bar-name">${flag(p.country)}<b class="player-link" data-username="${esc(p.username)}">${esc(p.username)}</b><small>${p.rating}</small></div>
         <span class="lv-clock" id="lvClock${side}">--:--</span>
       </div>`;

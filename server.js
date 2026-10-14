@@ -459,7 +459,7 @@ async function start() {
       if (!valid) return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
       await db.touchUserLastActive(user.id);
-      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, ratingsByMode: user.ratings_by_mode, country: user.country || null, club: db.userClub(user) }, token });
+      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, ratingsByMode: user.ratings_by_mode, country: user.country || null, club: db.userClub(user), avatarVersion: user.avatar_version || null }, token });
     } catch (err) { console.error('Login xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -555,6 +555,44 @@ async function start() {
       await db.updateUserEmail(req.user.userId, email);
       res.json({ success: true, email });
     } catch (err) { console.error('Email xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // --- Profil rasmi ---
+  // Klient rasmni 256×256 ga kichraytirib data URL sifatida yuboradi; turi fayl baytlari bo'yicha ham tekshiriladi
+  const AVATAR_MAX_BYTES = 200 * 1024;
+  const avatarMime = (buf) => {
+    if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg';
+    if (buf.length > 8 && buf.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'image/png';
+    if (buf.length > 12 && buf.slice(0, 4).toString() === 'RIFF' && buf.slice(8, 12).toString() === 'WEBP') return 'image/webp';
+    return null;
+  };
+
+  app.post('/api/users/me/avatar', authMiddleware, async (req, res) => {
+    try {
+      const m = String((req.body && req.body.image) || '').match(/^data:image\/(jpeg|png|webp);base64,([A-Za-z0-9+/=]+)$/);
+      if (!m) return res.status(400).json({ success: false, message: "Rasm formati noto'g'ri!" });
+      const buf = Buffer.from(m[2], 'base64');
+      if (buf.length > AVATAR_MAX_BYTES) return res.status(413).json({ success: false, message: 'Rasm hajmi juda katta!' });
+      const mime = avatarMime(buf);
+      if (!mime) return res.status(400).json({ success: false, message: "Rasm formati noto'g'ri!" });
+      const version = await db.setAvatar(req.user.userId, mime, buf.toString('base64'));
+      res.json({ success: true, avatarVersion: version });
+    } catch (err) { console.error('Avatar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.delete('/api/users/me/avatar', authMiddleware, async (req, res) => {
+    try { await db.deleteAvatar(req.user.userId); res.json({ success: true }); }
+    catch (err) { console.error('Avatar o\'chirish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Rasmning o'zi (img src). Yo'q bo'lsa 404 — klient harf ko'rsatadi
+  app.get('/api/users/:username/avatar', async (req, res) => {
+    try {
+      const row = await db.getAvatarByUsername(req.params.username);
+      res.set('Cache-Control', req.query.v ? 'public, max-age=31536000, immutable' : 'public, max-age=300');
+      if (!row) return res.status(404).end();
+      res.type(row.mime).send(Buffer.from(row.data, 'base64'));
+    } catch (err) { res.status(500).end(); }
   });
 
   app.post('/api/users/me/country', authMiddleware, async (req, res) => {

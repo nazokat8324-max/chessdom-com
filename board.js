@@ -513,6 +513,8 @@ window.updatePlayerInfo = function(color, name, rating) {
   
   if (avatarEl) {
     avatarEl.textContent = color === 'white' ? '♔' : '♚';
+    const knownPlayer = !!name && [window.currentUser && window.currentUser.username, window.currentOpponent && window.currentOpponent.username].includes(name);
+    if (knownPlayer && typeof window.avatarOverlay === 'function') avatarEl.insertAdjacentHTML('beforeend', window.avatarOverlay(name, window.myAvatarVersion(name)));
   }
   if (nameEl) {
     nameEl.textContent = name || (color === 'white' ? tx('whiteText', 'Oq') : tx('blackText', 'Qora'));

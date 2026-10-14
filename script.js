@@ -34,6 +34,8 @@ const SERVER_MESSAGE_KEYS = {
   "Message must be 1-1000 characters": 'srvMessageLength',
   "Tournament name must be 3-255 characters": 'srvTournamentNameLength',
   "Turnir topilmadi!": 'srvTournamentNotFound',
+  "Rasm formati noto'g'ri!": 'srvAvatarBad',
+  "Rasm hajmi juda katta!": 'srvAvatarBig',
   "Foydalanuvchi nomi yoki emailni kiriting!": 'authForgotEmpty',
   "Email xizmati hali sozlanmagan. Administratorga murojaat qiling.": 'srvMailOff',
   "Agar akkaunt topilsa, emailga parolni tiklash havolasi yuborildi.": 'srvMailSent',
@@ -66,6 +68,22 @@ const SERVER_MESSAGE_KEYS = {
   "Klub chatiga faqat klub a'zolari yozishi mumkin!": 'srvClubChatMembersOnly',
   "Noto'g'ri davlat kodi!": 'srvBadCountry'
 };
+// --- Profil rasmlari ---
+// Rasm manzili; version bo'lsa brauzer uni uzoq keshlaydi (rasm o'zgarsa version ham o'zgaradi)
+window.avatarUrl = function(username, version) {
+  return '/api/users/' + encodeURIComponent(username) + '/avatar' + (version ? '?v=' + encodeURIComponent(version) : '');
+};
+// Harfli avatar ustiga rasm: rasm bo'lmasa (404) o'zi o'chadi va harf ko'rinib qoladi.
+// version === null — rasmi yo'qligi aniq (so'rov yuborilmaydi), undefined — noma'lum (tekshiriladi)
+window.avatarOverlay = function(username, version) {
+  if (!username || version === null) return '';
+  const src = window.avatarUrl(username, version).replace(/"/g, '&quot;');
+  return '<img class="av-img" src="' + src + '" alt="" loading="lazy" onerror="this.remove()">';
+};
+window.myAvatarVersion = function(username) {
+  return window.currentUser && username === window.currentUser.username ? (window.currentUser.avatarVersion || null) : undefined;
+};
+
 window.tServer = function(message) {
   if (!message) return message;
   const key = SERVER_MESSAGE_KEYS[message];
@@ -240,7 +258,7 @@ window.renderTopPlayersList = function() {
             <td class="top-winners-rank">${index + 1}</td>
             <td class="top-winners-user">
               <div class="top-winners-user-cell">
-                <div class="mini-avatar">${topPlayersEsc(initial)}</div>
+                <div class="mini-avatar">${topPlayersEsc(initial)}${window.avatarOverlay(name, window.myAvatarVersion(name))}</div>
                 <span class="top-winners-name player-link" data-username="${topPlayersEsc(name)}">${topPlayersEsc(name)}</span>
               </div>
             </td>
@@ -611,7 +629,7 @@ window.updateAuthHeaderUI = function() {
   if (window.currentUser) {
     container.innerHTML = `
       <div class="user-mini-profile" onclick="window.openProfileModal()">
-        <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}</div>
+        <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}${window.avatarOverlay(window.currentUser.username, window.currentUser.avatarVersion || null)}</div>
         <div class="mini-info">
           <b>${topPlayersEsc(window.currentUser.username)}</b>
         </div>
@@ -810,6 +828,11 @@ window.openProfileModal = function() {
     window.renderRecentGames(null); if (typeof window.renderRatingChart === "function") window.renderRatingChart(null);
     fetchPublicProfile(me).then(data => {
       if (window.viewedProfileUsername || !data.success) return;
+      if (data.profile.avatarVersion !== undefined && data.profile.avatarVersion !== window.currentUser.avatarVersion) {
+        window.currentUser.avatarVersion = data.profile.avatarVersion;
+        localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+        window.refreshMyAvatar();
+      }
       window.currentUser.createdAt = data.profile.createdAt;
       window.renderRecentGames(data.profile.recentGames); if (typeof window.renderRatingChart === "function") window.renderRatingChart(data.profile);
       const joinedEl = document.getElementById("profileJoined");
@@ -1097,6 +1120,69 @@ window.editProfileEmail = async function() {
   }
 };
 
+// Profil rasmini yuklash: markazdan kvadrat qirqib 256×256 JPEG ga kichraytiramiz
+window.handleAvatarFile = function(input) {
+  const file = input.files && input.files[0];
+  input.value = '';
+  if (!file || !window.currentUser) return;
+  if (!/^image\//.test(file.type)) { showToast(tx('avatarBadType', "Faqat rasm faylini tanlang"), 'warning'); return; }
+  if (file.size > 15 * 1024 * 1024) { showToast(tx('avatarTooBig', "Rasm juda katta (15 MB dan oshmasin)"), 'warning'); return; }
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = async () => {
+    URL.revokeObjectURL(url);
+    const size = 256;
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const side = Math.min(img.naturalWidth, img.naturalHeight);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, size, size);
+    ctx.drawImage(img, (img.naturalWidth - side) / 2, (img.naturalHeight - side) / 2, side, side, 0, 0, size, size);
+    let data = canvas.toDataURL('image/jpeg', 0.86);
+    if (data.length > 250000) data = canvas.toDataURL('image/jpeg', 0.7);
+    try {
+      const d = await fetch('/api/users/me/avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.authToken },
+        body: JSON.stringify({ image: data })
+      }).then(r => r.json());
+      if (!d.success) { showToast(tServer(d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning'); return; }
+      window.currentUser.avatarVersion = d.avatarVersion;
+      localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+      window.refreshMyAvatar();
+      showToast(tx('avatarSaved', 'Profil rasmi yangilandi'), 'success');
+    } catch (e) {
+      showToast(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), 'warning');
+    }
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); showToast(tx('avatarBadType', "Faqat rasm faylini tanlang"), 'warning'); };
+  img.src = url;
+};
+
+window.removeAvatar = async function() {
+  if (!window.currentUser || !confirm(tx('avatarRemoveConfirm', "Profil rasmini o'chirasizmi?"))) return;
+  try {
+    const d = await fetch('/api/users/me/avatar', { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + window.authToken } }).then(r => r.json());
+    if (!d.success) return;
+    window.currentUser.avatarVersion = null;
+    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+    window.refreshMyAvatar();
+  } catch (e) {
+    showToast(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), 'warning');
+  }
+};
+
+// O'z rasmimiz o'zgarganda ko'rinib turgan joylarni yangilash
+window.refreshMyAvatar = function() {
+  window.updateAuthHeaderUI();
+  const modal = document.getElementById("profileModal");
+  if (modal && modal.style.display === "flex" && !window.viewedProfileUsername) {
+    window.renderProfileCommon({ ...window.currentUser });
+    if (typeof updateProfileModalData === "function") updateProfileModalData();
+  }
+};
+
 window.renderProfileEmail = function() {
   const el = document.getElementById("profileEmailText");
   if (!el || !window.currentUser) return;
@@ -1365,6 +1451,12 @@ window.renderProfileCommon = function(p) {
   const username = p.username || '';
   setText("profileModalUsername", username);
   setText("profileAvatarLetter", (username || "?").charAt(0).toUpperCase());
+  const avatarEl = document.getElementById("profileAvatarLetter");
+  const isMe = window.currentUser && username === window.currentUser.username;
+  const avatarVersion = isMe ? (window.currentUser.avatarVersion || null) : (p.avatarVersion === undefined ? null : p.avatarVersion);
+  if (avatarEl && username) avatarEl.insertAdjacentHTML('beforeend', window.avatarOverlay(username, avatarVersion));
+  const removeBtn = document.getElementById("avatarRemoveBtn");
+  if (removeBtn) removeBtn.style.display = isMe && avatarVersion ? '' : 'none';
   setText("profileModalHandle", username ? "@" + username : "");
 
   const countryCode = (p.country || '').toLowerCase();

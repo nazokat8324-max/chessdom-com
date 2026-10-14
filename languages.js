@@ -1936,6 +1936,14 @@ const translationsExtra = {
     srvResetBad: "Havola noto'g'ri yoki eskirgan!",
     srvResetOk: "Parol yangilandi! Endi kirishingiz mumkin.",
     srvEmailTaken: "Bu email boshqa akkauntga biriktirilgan!",
+    avatarChange: "Rasm qo'yish",
+    avatarRemove: "Rasmni o'chirish",
+    avatarRemoveConfirm: "Profil rasmini o'chirasizmi?",
+    avatarSaved: "Profil rasmi yangilandi",
+    avatarBadType: "Faqat rasm faylini tanlang",
+    avatarTooBig: "Rasm juda katta (15 MB dan oshmasin)",
+    srvAvatarBad: "Rasm formati noto'g'ri!",
+    srvAvatarBig: "Rasm hajmi juda katta!",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2407,6 +2415,14 @@ const translationsExtra = {
     srvResetBad: "The link is invalid or expired!",
     srvResetOk: "Password updated! You can log in now.",
     srvEmailTaken: "This email is linked to another account!",
+    avatarChange: "Change photo",
+    avatarRemove: "Remove photo",
+    avatarRemoveConfirm: "Remove your profile photo?",
+    avatarSaved: "Profile photo updated",
+    avatarBadType: "Please choose an image file",
+    avatarTooBig: "Image is too large (max 15 MB)",
+    srvAvatarBad: "Invalid image format!",
+    srvAvatarBig: "The image is too large!",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2878,6 +2894,14 @@ const translationsExtra = {
     srvResetBad: "Ссылка неверна или устарела!",
     srvResetOk: "Пароль обновлён! Теперь можно войти.",
     srvEmailTaken: "Этот email привязан к другому аккаунту!",
+    avatarChange: "Изменить фото",
+    avatarRemove: "Удалить фото",
+    avatarRemoveConfirm: "Удалить фото профиля?",
+    avatarSaved: "Фото профиля обновлено",
+    avatarBadType: "Выберите файл изображения",
+    avatarTooBig: "Слишком большое изображение (до 15 МБ)",
+    srvAvatarBad: "Неверный формат изображения!",
+    srvAvatarBig: "Изображение слишком большое!",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -3349,6 +3373,14 @@ const translationsExtra = {
     srvResetBad: "¡El enlace no es válido o ha caducado!",
     srvResetOk: "¡Contraseña actualizada! Ya puedes iniciar sesión.",
     srvEmailTaken: "¡Este email pertenece a otra cuenta!",
+    avatarChange: "Cambiar foto",
+    avatarRemove: "Quitar foto",
+    avatarRemoveConfirm: "¿Quitar tu foto de perfil?",
+    avatarSaved: "Foto de perfil actualizada",
+    avatarBadType: "Elige un archivo de imagen",
+    avatarTooBig: "Imagen demasiado grande (máx. 15 MB)",
+    srvAvatarBad: "¡Formato de imagen no válido!",
+    srvAvatarBig: "¡La imagen es demasiado grande!",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -3820,6 +3852,14 @@ const translationsExtra = {
     srvResetBad: "Der Link ist ungültig oder abgelaufen!",
     srvResetOk: "Passwort aktualisiert! Du kannst dich jetzt anmelden.",
     srvEmailTaken: "Diese E-Mail gehört zu einem anderen Konto!",
+    avatarChange: "Foto ändern",
+    avatarRemove: "Foto entfernen",
+    avatarRemoveConfirm: "Profilfoto entfernen?",
+    avatarSaved: "Profilfoto aktualisiert",
+    avatarBadType: "Bitte eine Bilddatei wählen",
+    avatarTooBig: "Bild zu groß (max. 15 MB)",
+    srvAvatarBad: "Ungültiges Bildformat!",
+    srvAvatarBig: "Das Bild ist zu groß!",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -4291,6 +4331,14 @@ const translationsExtra = {
     srvResetBad: "Le lien est invalide ou expiré !",
     srvResetOk: "Mot de passe mis à jour ! Vous pouvez vous connecter.",
     srvEmailTaken: "Cet e-mail est lié à un autre compte !",
+    avatarChange: "Changer la photo",
+    avatarRemove: "Supprimer la photo",
+    avatarRemoveConfirm: "Supprimer votre photo de profil ?",
+    avatarSaved: "Photo de profil mise à jour",
+    avatarBadType: "Choisissez un fichier image",
+    avatarTooBig: "Image trop grande (15 Mo max.)",
+    srvAvatarBad: "Format d’image invalide !",
+    srvAvatarBig: "L’image est trop grande !",
     searchNoResults: "Aucun résultat"
   }
 };

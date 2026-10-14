@@ -11,7 +11,7 @@
   const getJson = (url) => fetch(url, { headers: authHeaders() }).then(r => r.json());
   const postJson = (url, body) => fetch(url, { method: 'POST', headers: authHeaders(), body: JSON.stringify(body || {}) }).then(r => r.json());
   const flag = (code) => code ? `<img class="msg-flag" src="https://flagcdn.com/w40/${esc(code)}.png" alt="">` : '';
-  const avatar = (name, size) => `<span class="msg-avatar${size ? ' ' + size : ''}">${esc((name || '?').charAt(0).toUpperCase())}</span>`;
+  const avatar = (name, size) => `<span class="msg-avatar${size ? ' ' + size : ''}">${esc((name || '?').charAt(0).toUpperCase())}${window.avatarOverlay ? window.avatarOverlay(name, window.myAvatarVersion(name)) : ''}</span>`;
   const isActiveView = () => { const v = document.getElementById('messagesView'); return !!(v && v.classList.contains('active-view')); };
 
   function timeLabel(iso) {

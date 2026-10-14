@@ -68,7 +68,7 @@
       if (!state.conversations.length) return `<div class="msg-empty-list">${esc(tx('msgNoChats', "Hali suhbatlar yo'q. O'yinchi nomini qidirib, birinchi xabarni yozing!"))}</div>`;
       return state.conversations.map(c => `
         <button class="msg-item${state.active && state.active.id === c.partner.id ? ' active' : ''}" data-user-id="${esc(c.partner.id)}" data-username="${esc(c.partner.username)}" data-country="${esc(c.partner.country || '')}">
-          ${avatar(c.partner.username)}
+          <span class="msg-av-wrap">${avatar(c.partner.username)}${window.presenceDot ? window.presenceDot(c.partner.id, c.partner.online) : ''}</span>
           <span class="msg-item-main">
             <span class="msg-item-top"><b>${esc(c.partner.username)}</b>${flag(c.partner.country)}<small>${esc(timeLabel(c.lastAt))}</small></span>
             <span class="msg-item-last">${c.lastFromMe ? `<em>${esc(tx('msgYou', 'Siz'))}:</em> ` : ''}${esc(previewText(c.lastMessage))}</span>
@@ -80,7 +80,7 @@
       if (!state.friends.length) return `<div class="msg-empty-list">${esc(tx('friendsEmpty', "Do'stlar ro'yxati bo'sh"))}</div>`;
       return state.friends.map(f => `
         <div class="msg-friend">
-          ${avatar(f.username)}
+          <span class="msg-av-wrap">${avatar(f.username)}${window.presenceDot ? window.presenceDot(f.id, f.online) : ''}</span>
           <span class="msg-item-main">
             <b class="player-link" data-username="${esc(f.username)}">${esc(f.username)}</b>
             <small>${esc(tx('profLabelRating', 'Reyting:'))} ${Number(f.rating) || 1500}</small>
@@ -123,6 +123,7 @@
         <button class="msg-back" data-back="1">←</button>
         ${avatar(p.username, 'lg')}
         <div class="msg-chat-title">
+          ${window.presenceDot ? window.presenceDot(p.id) : ''}
           <b class="player-link" data-username="${esc(p.username)}">${esc(p.username)}</b>
           ${p.country ? `<small>${flag(p.country)}</small>` : ''}
         </div>

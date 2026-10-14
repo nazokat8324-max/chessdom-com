@@ -213,6 +213,11 @@
           <span><b>${esc(tx('setPrivChallenges', "Kim meni o'yinga chaqira oladi"))}</b></span>
           ${seg('challenges', [['all', 'setPrivAll', 'Hamma'], ['friends', 'setPrivFriends', "Faqat do'stlar"], ['none', 'setPrivNone', 'Hech kim']])}
         </div>
+      </div>
+      <div class="set-card">
+        <h3>${esc(tx('blkListTitle', "Bloklangan o'yinchilar"))}</h3>
+        <p class="set-hint">${esc(tx('blkListHint', "Ular sizga yozolmaydi, o'yinga chaqira olmaydi va siz bilan juftlanmaydi"))}</p>
+        <div id="setBlockedList"></div>
       </div>`;
   }
 
@@ -275,6 +280,8 @@
     const main = el.querySelector('.set-main');
     if (main) main.scrollTop = scroll;
     bind(el);
+    const blocked = el.querySelector('#setBlockedList');
+    if (blocked && typeof window.loadBlockedList === 'function') window.loadBlockedList(blocked);
   }
 
   function change(patch) {

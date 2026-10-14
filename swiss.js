@@ -472,4 +472,23 @@ async function overview(userId) {
   return { serverNow: nowIso(), tournaments: list, featuredId: featured ? featured.id : null };
 }
 
-module.exports = { CFG, POINTS, CYCLE, init, tick, join, leave, recordGameResult, overview, detail, pairPlayers };
+// Admin: ro'yxatga olinayotgan yoki davom etayotgan turnirni bekor qilish (davom etayotgan o'yinlar natijasi yozilmaydi)
+async function cancelTournament(tournamentId) {
+  const t = await q.get("SELECT * FROM tournaments WHERE id = ? AND tournament_type = 'swiss'", [tournamentId]);
+  if (!t) return { success: false, message: 'Turnir topilmadi!' };
+  if (t.status !== 'registration' && t.status !== 'active') return { success: false, message: 'Turnir allaqachon tugagan' };
+  await q.run("UPDATE tournaments SET status = 'cancelled', finished_at = ?, next_round_at = NULL WHERE id = ?", [nowIso(), t.id]);
+  await q.run("UPDATE tournament_matches SET status = 'finished', result = '1/2' WHERE tournament_id = ? AND status = 'playing'", [t.id]);
+  for (const [matchId, entry] of matchRooms) {
+    if (entry.room.swissMatch && entry.room.swissMatch.tournamentId === t.id) { entry.room.swissMatch = null; matchRooms.delete(matchId); }
+  }
+  emitUpdate();
+  return { success: true };
+}
+
+// Server qayta ishga tushganda tiklangan turnir o'yinini qayta bog'lash
+function adoptRoom(matchId, roomId, room) {
+  matchRooms.set(matchId, { roomId, room });
+}
+
+module.exports = { CFG, POINTS, CYCLE, init, tick, adoptRoom, cancelTournament, join, leave, recordGameResult, overview, detail, pairPlayers };

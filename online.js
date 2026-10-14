@@ -181,6 +181,8 @@ socket.on('opponent-move', (move) => {
     board.position(game.fen());
     if (typeof window.clearMoveHints === 'function') window.clearMoveHints();
     if (typeof window.markLastMove === 'function') window.markLastMove(result.from, result.to);
+    // Belgilangan premove (agar bo'lsa) — raqib yurishidan keyin darhol
+    if (typeof window.tryPremove === 'function') setTimeout(window.tryPremove, 0);
     if (typeof updateHistory === 'function') {
       updateHistory();
     }

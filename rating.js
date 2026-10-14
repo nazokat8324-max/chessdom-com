@@ -12,6 +12,10 @@ function refreshCurrentUserRatings() {
             if (data.stats) window.currentUser.stats = data.stats;
             if (data.statsByMode) window.currentUser.statsByMode = data.statsByMode;
             if (data.club !== undefined) window.currentUser.club = data.club;
+            if (data.role !== undefined && data.role !== window.currentUser.role) {
+                window.currentUser.role = data.role;
+                if (typeof window.updateAdminNav === 'function') window.updateAdminNav();
+            }
             // Boshqa qurilmada rasm o'zgartirilgan bo'lsa ham yangilanadi
             if (data.avatarVersion !== undefined && data.avatarVersion !== window.currentUser.avatarVersion) {
                 window.currentUser.avatarVersion = data.avatarVersion;

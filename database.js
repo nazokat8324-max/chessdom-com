@@ -290,6 +290,45 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  // Bloklash va shikoyatlar; admin roli va hisobni bloklash (ban)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS user_blocks (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      blocked_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      created_at TEXT NOT NULL,
+      UNIQUE(user_id, blocked_id)
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS reports (
+      id TEXT PRIMARY KEY,
+      reporter_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      target_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      reason TEXT NOT NULL,
+      details TEXT,
+      status TEXT DEFAULT 'open',
+      created_at TEXT NOT NULL,
+      resolved_at TEXT,
+      resolved_by TEXT,
+      resolution TEXT
+    )
+  `);
+  for (const col of ['role', 'banned_until', 'ban_reason']) {
+    try {
+      await dbExec(`ALTER TABLE users ADD COLUMN ${col} TEXT DEFAULT NULL`);
+    } catch (e) {}
+  }
+
+  // Davom etayotgan o'yinlar (server qayta ishga tushsa tiklash uchun): har yurishdan keyin yangilanadi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS active_games (
+      room_id TEXT PRIMARY KEY,
+      data TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `);
+
   // Maxfiylik: kim xabar yozadi / o'yinga chaqiradi (JSON: {messages: 'all'|'friends', challenges: 'all'|'friends'|'none'})
   try {
     await dbExec(`ALTER TABLE users ADD COLUMN privacy TEXT DEFAULT NULL`);
@@ -525,7 +564,7 @@ async function createUser(user) {
   return { id, username: user.username, email: user.email, rating: user.rating || 1500, ratingsByMode: { rapid: 1500, blitz: 1500, bullet: 1500 }, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }, history: user.history || [], created_at: new Date().toISOString() };
 }
 
-async function updateUserStats(userId, result, opponent, mode, moves, timeControl) {
+async function updateUserStats(userId, result, opponent, mode, moves, timeControl, extra) {
   const user = await getUserById(userId);
   if (!user) return null;
 
@@ -542,7 +581,7 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
   else statsByMode[modeKey].draws++;
 
   const history = user.history || [];
-  history.push({ id: uuidv4(), date: new Date().toLocaleDateString(), timestamp: new Date().toISOString(), result, opponent: opponent || 'Online', mode: mode || 'Online o\'yin', timeControl: timeControl || 'blitz', moves: moves || [] });
+  history.push({ id: uuidv4(), date: new Date().toLocaleDateString(), timestamp: new Date().toISOString(), result, opponent: opponent || 'Online', mode: mode || 'Online o\'yin', timeControl: timeControl || 'blitz', moves: moves || [], ...(extra || {}) });
 
   await dbRun('UPDATE users SET stats = ?, stats_by_mode = ?, history = ?, last_active = ? WHERE id = ?', [JSON.stringify(stats), JSON.stringify(statsByMode), JSON.stringify(history), new Date().toISOString(), userId]);
 
@@ -550,6 +589,105 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
 }
 
 // Davlat kodi (masalan 'uz', 'pk') — raqibga bayroq ko'rsatish uchun
+// --- Bloklash ---
+async function blockUser(userId, blockedId) {
+  const existing = await dbGet('SELECT id FROM user_blocks WHERE user_id = ? AND blocked_id = ?', [userId, blockedId]);
+  if (!existing) await dbRun('INSERT INTO user_blocks (id, user_id, blocked_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, blockedId, new Date().toISOString()]);
+  // Bloklanganda do'stlik va kutilayotgan so'rovlar bekor bo'ladi
+  await dbRun('DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)', [userId, blockedId, blockedId, userId]);
+  await dbRun("UPDATE friend_requests SET status = 'cancelled' WHERE status = 'pending' AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))", [userId, blockedId, blockedId, userId]);
+}
+
+async function unblockUser(userId, blockedId) {
+  await dbRun('DELETE FROM user_blocks WHERE user_id = ? AND blocked_id = ?', [userId, blockedId]);
+}
+
+async function getBlockedUsers(userId) {
+  return dbAll('SELECT u.id, u.username, b.created_at as "blockedAt" FROM user_blocks b JOIN users u ON u.id = b.blocked_id WHERE b.user_id = ? ORDER BY b.created_at DESC', [userId]);
+}
+
+async function loadAllBlocks() {
+  return dbAll('SELECT user_id as "userId", blocked_id as "blockedId" FROM user_blocks');
+}
+
+// --- Shikoyatlar ---
+async function createReport(reporterId, targetId, reason, details) {
+  const open = await dbGet("SELECT id FROM reports WHERE reporter_id = ? AND target_id = ? AND status = 'open'", [reporterId, targetId]);
+  if (open) return { success: false, message: 'Bu o\'yinchi haqida shikoyatingiz ko\'rib chiqilmoqda' };
+  await dbRun('INSERT INTO reports (id, reporter_id, target_id, reason, details, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [uuidv4(), reporterId, targetId, reason, details || '', 'open', new Date().toISOString()]);
+  return { success: true, message: 'Shikoyatingiz yuborildi. Rahmat!' };
+}
+
+// Har o'yinchi ustidan jami shikoyatlar soni (ichki so'rovsiz — ikkala bazada bir xil ishlaydi)
+async function reportCounts() {
+  const rows = await dbAll('SELECT target_id as "id", COUNT(*) as "n" FROM reports GROUP BY target_id');
+  return new Map(rows.map(r => [r.id, Number(r.n) || 0]));
+}
+
+async function listReports(status) {
+  const rows = await dbAll(`SELECT r.id, r.reason, r.details, r.status, r.created_at as "createdAt", r.resolved_at as "resolvedAt", r.resolution,
+      ru.username as "reporter", tu.username as "target", tu.id as "targetId", tu.banned_until as "targetBannedUntil"
+    FROM reports r LEFT JOIN users ru ON ru.id = r.reporter_id LEFT JOIN users tu ON tu.id = r.target_id
+    WHERE r.status = ? ORDER BY r.created_at DESC LIMIT 200`, [status]);
+  const counts = await reportCounts();
+  return rows.map(r => ({ ...r, targetReports: counts.get(r.targetId) || 0 }));
+}
+
+async function resolveReport(id, adminId, resolution) {
+  await dbRun("UPDATE reports SET status = 'resolved', resolved_at = ?, resolved_by = ?, resolution = ? WHERE id = ?", [new Date().toISOString(), adminId, resolution || '', id]);
+}
+
+// --- Admin ---
+async function setAdmins(usernames) {
+  for (const name of usernames) await dbRun("UPDATE users SET role = 'admin' WHERE username = ?", [name]);
+}
+
+async function setBan(userId, until, reason) {
+  await dbRun('UPDATE users SET banned_until = ?, ban_reason = ? WHERE id = ?', [until, until ? (reason || '') : null, userId]);
+}
+
+async function loadBans() {
+  return dbAll('SELECT id, banned_until as "until", ban_reason as "reason" FROM users WHERE banned_until IS NOT NULL');
+}
+
+async function adminSearchUsers(q) {
+  const like = '%' + String(q || '').toLowerCase().replace(/[%_]/g, '') + '%';
+  const rows = await dbAll(`SELECT id, username, email, rating, country, created_at as "createdAt", last_active as "lastActive", role, banned_until as "bannedUntil", ban_reason as "banReason", stats
+    FROM users WHERE LOWER(username) LIKE ? ORDER BY last_active DESC LIMIT 50`, [like]);
+  const counts = await reportCounts();
+  return rows.map(u => ({ ...u, reports: counts.get(u.id) || 0 }));
+}
+
+async function adminStats() {
+  const one = async (sql, params) => Number((await dbGet(sql, params || [])).n) || 0;
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  return {
+    users: await one('SELECT COUNT(*) as "n" FROM users'),
+    newUsers24h: await one('SELECT COUNT(*) as "n" FROM users WHERE created_at >= ?', [dayAgo]),
+    games24h: await one('SELECT COUNT(*) as "n" FROM games WHERE date >= ?', [dayAgo]),
+    openReports: await one("SELECT COUNT(*) as \"n\" FROM reports WHERE status = 'open'"),
+    banned: await one('SELECT COUNT(*) as "n" FROM users WHERE banned_until IS NOT NULL')
+  };
+}
+
+async function saveActiveGame(roomId, data) {
+  const now = new Date().toISOString();
+  const json = JSON.stringify(data);
+  const existing = await dbGet('SELECT room_id FROM active_games WHERE room_id = ?', [roomId]);
+  if (existing) await dbRun('UPDATE active_games SET data = ?, updated_at = ? WHERE room_id = ?', [json, now, roomId]);
+  else await dbRun('INSERT INTO active_games (room_id, data, updated_at) VALUES (?, ?, ?)', [roomId, json, now]);
+}
+
+async function deleteActiveGame(roomId) {
+  await dbRun('DELETE FROM active_games WHERE room_id = ?', [roomId]);
+}
+
+async function loadActiveGames() {
+  const rows = await dbAll('SELECT room_id as "roomId", data FROM active_games');
+  return rows.map(r => ({ roomId: r.roomId, data: parseJson(r.data) })).filter(r => r.data);
+}
+
 const PRIVACY_DEFAULTS = { messages: 'all', challenges: 'all' };
 function userPrivacy(user) {
   const p = parseJson(user && user.privacy) || {};
@@ -669,15 +807,30 @@ async function getDailyWinners() {
 async function getStatsByUsername(username) {
   const user = await getUserByUsername(username);
   if (!user) return null;
-  return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.stats_by_mode, rating: user.rating || 1500, ratingsByMode: user.ratings_by_mode, club: userClub(user), avatarVersion: user.avatar_version || null };
+  return { success: true, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.stats_by_mode, rating: user.rating || 1500, ratingsByMode: user.ratings_by_mode, club: userClub(user), avatarVersion: user.avatar_version || null, role: user.role || null };
 }
 
 // Ommaviy profil: boshqa o'yinchilar ko'rishi mumkin bo'lgan ma'lumotlar (email va yurishlarsiz)
+// Bitta o'yinni qayta ko'rish uchun (ommaviy: yurishlar, natija, raqib)
+async function getGameReplay(username, gameId) {
+  const user = await getUserByUsername(username);
+  if (!user) return null;
+  const g = (Array.isArray(user.history) ? user.history : []).find(x => x.id === gameId);
+  if (!g) return null;
+  return {
+    id: g.id, player: user.username, opponent: g.opponent || null, result: g.result, color: g.color || null,
+    reason: g.reason || null, timeControl: g.timeControl || null, clock: g.clock || null,
+    date: g.timestamp || g.date || null, moves: Array.isArray(g.moves) ? g.moves : []
+  };
+}
+
 async function getPublicProfile(username) {
   const user = await getUserByUsername(username);
   if (!user) return null;
   const history = Array.isArray(user.history) ? user.history : [];
   const recentGames = history.slice(-10).reverse().map(g => ({
+    id: g.id || null,
+    hasMoves: Array.isArray(g.moves) && g.moves.length > 0,
     result: g.result,
     opponent: g.opponent || null,
     timeControl: g.timeControl || null,
@@ -1146,6 +1299,22 @@ module.exports = {
   userClub,
   getPublicProfile,
   markRoomRead,
+  getGameReplay,
+  blockUser,
+  unblockUser,
+  getBlockedUsers,
+  loadAllBlocks,
+  createReport,
+  listReports,
+  resolveReport,
+  setAdmins,
+  setBan,
+  loadBans,
+  adminSearchUsers,
+  adminStats,
+  saveActiveGame,
+  deleteActiveGame,
+  loadActiveGames,
   userPrivacy,
   updatePrivacy,
   areFriends,

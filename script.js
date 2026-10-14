@@ -34,6 +34,15 @@ const SERVER_MESSAGE_KEYS = {
   "Message must be 1-1000 characters": 'srvMessageLength',
   "Tournament name must be 3-255 characters": 'srvTournamentNameLength',
   "Turnir topilmadi!": 'srvTournamentNotFound',
+  "O'yinchi bloklandi": 'blkDone',
+  "Blokdan chiqarildi": 'blkUndone',
+  "Bu o'yinchi bilan aloqa cheklangan": 'srvBlocked',
+  "Shikoyatingiz yuborildi. Rahmat!": 'rpSent',
+  "Bu o'yinchi haqida shikoyatingiz ko'rib chiqilmoqda": 'srvReportPending',
+  "Sababni tanlang!": 'srvPickReason',
+  "O'yin topilmadi!": 'srvGameNotFound',
+  "Adminni bloklab bo'lmaydi": 'srvCantBanAdmin',
+  "Turnir allaqachon tugagan": 'srvTournamentOver',
   "Bu o'yinchi faqat do'stlaridan xabar qabul qiladi": 'srvMsgFriendsOnly',
   "Joriy parol noto'g'ri!": 'srvWrongPassword',
   "Parol o'zgartirildi!": 'srvPasswordChanged',
@@ -599,6 +608,12 @@ window.switchView = function(viewName) {
         window.loadChatMessages();
       }
     }
+  } else if (viewName === "admin") {
+    const adminEl = document.getElementById("adminView");
+    if (adminEl) adminEl.classList.add("active-view");
+    const navEl = document.getElementById("navAdmin");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.renderAdminView === "function") window.renderAdminView();
   } else if (viewName === "live") {
     const liveEl = document.getElementById("liveView");
     if (liveEl) liveEl.classList.add("active-view");
@@ -626,6 +641,7 @@ window.switchView = function(viewName) {
 };
 
 window.updateAuthHeaderUI = function() {
+  if (typeof window.updateAdminNav === "function") window.updateAdminNav();
   if (typeof window.refreshMessagesBadge === "function") window.refreshMessagesBadge();
   if (typeof window.refreshLeagueBadge === "function") window.refreshLeagueBadge();
   const container = document.getElementById("sidebarAuthContainer");
@@ -823,6 +839,8 @@ window.openProfileModal = function() {
   if (messageBtn) messageBtn.style.display = 'none';
   const challengeBtn = document.getElementById("profileChallengeBtn");
   if (challengeBtn) challengeBtn.style.display = 'none';
+  const modActions = document.getElementById("profileModActions");
+  if (modActions) modActions.style.display = 'none';
   updateProfileModalData();
   if (profileModal) {
     profileModal.style.display = "flex";
@@ -1477,6 +1495,7 @@ window.renderProfileCommon = function(p) {
   const editBtn = document.getElementById("avatarEditBtn");
   if (editBtn) editBtn.title = editBtn.ariaLabel = tx('avatarChange', "Rasm qo'yish");
   setText("profileModalHandle", username ? "@" + username : "");
+  if (typeof window.renderProfilePresence === "function") window.renderProfilePresence(p);
 
   const countryCode = (p.country || '').toLowerCase();
   const countryName = p.countryName || countryNameByCode(countryCode);
@@ -1560,14 +1579,25 @@ window.renderRecentGames = function(games) {
       : escapeHtmlSafe(opponent);
     const d = g.date ? new Date(g.date) : null;
     const date = d && !isNaN(d) ? d.toLocaleDateString() : '';
+    const replayable = g.id && g.hasMoves;
     return `
-      <div class="profile-game-row">
+      <div class="profile-game-row${replayable ? ' replayable' : ''}"${replayable ? ` data-replay="${escapeHtmlSafe(g.id)}" title="${escapeHtmlSafe(tx('rpWatchGame', "O'yinni ko'rish"))}"` : ''}>
         <span class="profile-game-result ${result}">${escapeHtmlSafe(labels[result])}</span>
         <span class="profile-game-opponent"><small>vs</small>${opponentHtml}</span>
         <span class="profile-game-mode">${escapeHtmlSafe(g.timeControl || '')}</span>
-        <span class="profile-game-date">${escapeHtmlSafe(date)}</span>
+        <span class="profile-game-date">${escapeHtmlSafe(date)}${replayable ? ' <i class="rp-play">▶</i>' : ''}</span>
       </div>`;
   }).join('');
+  if (!container.dataset.replayBound) {
+    container.dataset.replayBound = '1';
+    container.addEventListener('click', (e) => {
+      if (e.target.closest('.player-link')) return;
+      const row = e.target.closest('[data-replay]');
+      if (!row || typeof window.openReplay !== 'function') return;
+      const owner = window.viewedProfileUsername || (window.currentUser && window.currentUser.username);
+      window.openReplay(owner, row.dataset.replay);
+    });
+  }
 };
 
 function escapeHtmlSafe(value) {
@@ -1630,6 +1660,10 @@ window.openPlayerProfile = async function(username) {
   if (messageBtn) messageBtn.style.display = window.currentUser ? 'flex' : 'none';
   const challengeBtn = document.getElementById("profileChallengeBtn");
   if (challengeBtn) challengeBtn.style.display = window.currentUser ? 'flex' : 'none';
+  const modActions = document.getElementById("profileModActions");
+  if (modActions) modActions.style.display = window.currentUser ? 'grid' : 'none';
+  window.profileBlocked = false;
+  if (typeof window.renderBlockButton === "function") window.renderBlockButton();
   window.renderProfileCommon({ username });
   window.renderRecentGames(null); if (typeof window.renderRatingChart === "function") window.renderRatingChart(null);
   modal.style.display = "flex";
@@ -1677,6 +1711,8 @@ window.loadFriendButton = async function(username) {
     const d = await fetch('/api/friends/status/' + encodeURIComponent(username), { headers: { 'Authorization': `Bearer ${window.authToken}` } }).then(r => r.json());
     if (window.viewedProfileUsername !== username) return;
     window.profileFriendState = { username, status: d.success ? d.status : 'none', requestId: d.requestId || null };
+    window.profileBlocked = !!(d && d.blockedByMe);
+    if (typeof window.renderBlockButton === 'function') window.renderBlockButton();
   } catch (e) {
     window.profileFriendState = { username, status: 'none', requestId: null };
   }

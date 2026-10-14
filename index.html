@@ -352,6 +352,10 @@
             <span class="icon">⚙️</span>
             <span id="mSettings">Sozlamalar</span>
           </a>
+          <a class="menu-item" id="navAdmin" style="display: none" onclick="switchView('admin')">
+            <span class="icon">🛡️</span>
+            <span data-i18n="mAdmin">Admin</span>
+          </a>
           <a class="menu-item mobile-main mobile-only" id="navMore" onclick="window.toggleMobileMenu()">
             <span class="icon">☰</span>
             <span data-i18n="mMore">Ko'proq</span>
@@ -628,6 +632,27 @@
               >
                 📄 <span id="btnPgnText">PGN</span>
               </button>
+            </div>
+
+            <!-- Revansh (gameextras.js): tugagan oddiy onlayn o'yindan keyin -->
+            <div class="rematch-box" id="rematchBox" hidden>
+              <p class="rm-msg" hidden></p>
+              <button class="start-game-btn rm-btn" id="btnRematch" type="button" onclick="window.offerRematch()">🔁 Revansh</button>
+              <div class="rm-actions" hidden>
+                <button type="button" class="control-btn" onclick="window.declineRematch()">✕ <span data-i18n="chDecline">Rad etish</span></button>
+                <button type="button" class="start-game-btn" onclick="window.acceptRematch()">✓ <span data-i18n="chAccept">Qabul qilish</span></button>
+              </div>
+            </div>
+
+            <!-- O'yin ichidagi chat (gameextras.js) -->
+            <div class="gc-box" id="gameChatBox" hidden>
+              <div class="gc-head"><span>💬 <span data-i18n="gcTitle">O'yin chati</span></span><button type="button" id="gameChatMute" class="gc-mute">🔔</button></div>
+              <div class="gc-list" id="gameChatList"></div>
+              <form class="gc-composer" id="gameChatComposer" autocomplete="off">
+                <button type="button" class="msg-emoji-btn" id="gameChatEmoji">😊</button>
+                <input id="gameChatInput" class="form-input" maxlength="200" placeholder="Xabar..." data-i18n-placeholder="gcPlaceholder" />
+                <button type="submit" class="gc-send">➤</button>
+              </form>
             </div>
 
             <button
@@ -1342,6 +1367,11 @@
       </div>
     </div>
 
+    <!-- ADMIN PANELI (admin.js) -->
+    <div id="adminView" class="view-section set-view">
+      <div class="set-page" id="adminRoot"></div>
+    </div>
+
     <!-- 12. SOZLAMALAR (settings.js) -->
     <div id="settingsView" class="view-section set-view">
       <div class="set-page" id="settingsRoot"></div>
@@ -1620,6 +1650,10 @@
     <script src="home.js"></script>
     <script src="leaderboard.js"></script>
     <script src="settings.js"></script>
+    <script src="gameextras.js"></script>
+    <script src="replay.js"></script>
+    <script src="safety.js"></script>
+    <script src="admin.js"></script>
     <script src="rating-chart.js"></script>
 
     <!-- Toast Container -->
@@ -1654,6 +1688,7 @@
             </div>
             <h2 class="profile-name" id="profileModalUsername"></h2>
             <p class="profile-handle" id="profileModalHandle"></p>
+            <p class="profile-presence" id="profilePresence" hidden></p>
             <p class="profile-joined" id="profileJoined" style="display: none"></p>
             <div id="profileModalCountry" class="profile-modal-country" style="display: none">
               <img id="profileModalCountryFlag" src="" alt="" />
@@ -1696,6 +1731,10 @@
             <button class="profile-message-btn profile-challenge-btn" id="profileChallengeBtn" type="button" style="display: none" onclick="window.openChallengeDialog(window.viewedProfileUsername)">⚔️ <span data-i18n="chProfileBtn">O'yinga chaqirish</span></button>
             <button class="profile-message-btn" id="profileMessageBtn" type="button" style="display: none" onclick="window.openMessagesWith(window.viewedProfileUsername)">✉️ <span data-i18n="profileMessageBtn">Xabar yozish</span></button>
             <button class="profile-friend-btn" id="profileFriendBtn" type="button" style="display: none" onclick="window.sendFriendRequestTo(window.viewedProfileUsername)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2zm9 4c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg><span data-i18n="btnSendFriendRequest">Do'stlik so'rash</span></button>
+            <div class="profile-mod-actions" id="profileModActions" style="display: none">
+              <button type="button" id="profileBlockBtn" onclick="window.toggleBlockUser(window.viewedProfileUsername)">🚫 Bloklash</button>
+              <button type="button" id="profileReportBtn" onclick="window.openReportDialog(window.viewedProfileUsername)">⚠️ <span data-i18n="rpShort">Shikoyat</span></button>
+            </div>
             <button class="copy-link-btn" id="copyProfileLinkBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0zm-3.2 6.2a4.5 4.5 0 0 1-3.2-7.7l2.8-2.8a1 1 0 1 1 1.4 1.4L5.6 13.3a2.5 2.5 0 0 0 3.5 3.5l2.8-2.8a1 1 0 1 1 1.4 1.4l-2.8 2.8a4.5 4.5 0 0 1-3.1 1.4zm9.2-5.3a1 1 0 0 1-.7-1.7l2.8-2.8a2.5 2.5 0 0 0-3.5-3.5L12.4 9.1A1 1 0 1 1 11 7.7l2.8-2.8a4.5 4.5 0 0 1 6.4 6.4l-2.8 2.8a1 1 0 0 1-.8.2z"/></svg><span data-i18n="profCopyLinkBtn">Profil havolasini nusxalash</span></button>
             <button class="logout-btn" id="logoutProfileBtn" type="button" onclick="window.handleLogoutFromProfile()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17v-2h6V9h-6V7l-5 5 5 5zm9-14H12v2h7v14h-7v2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg><span data-i18n="btnLogout">Chiqish</span></button>
           </div>

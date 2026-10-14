@@ -29,6 +29,8 @@ window.setGamePanelMode = function(mode) {
   // Turnir o'yini tugaganda — "Turnir jadvaliga qaytish" tugmasi (keyingi tur o'zi boshlanadi)
   const tournamentBtn = document.getElementById('btnTournamentBack');
   if (tournamentBtn) tournamentBtn.hidden = !(mode === 'over' && window.lastGameSwiss);
+  if (typeof window.updateRematchBox === 'function') window.updateRematchBox(mode);
+  if (typeof window.updateGameChatBox === 'function') window.updateGameChatBox(mode);
 };
 
 window.resetToPreGame = function() {
@@ -151,6 +153,7 @@ window.finishGame = function(winnerColor, message, toastType) {
   if (gameFinished) return;
   gameFinished = true;
   clearInterval(timerInterval);
+  window.clearPremove();
   const myColor = window.myColor || 'w';
   const result = winnerColor === null ? 'draw' : (winnerColor === myColor ? 'win' : 'loss');
   const opponentName = window.myColor
@@ -416,6 +419,8 @@ function setGameTime(sec, btnElement, increment) {
   game.reset();
   closePromotionPicker();
   clearMoveHints();
+  premove = null;
+  premoveSelected = null;
   window.markLastMove(null, null);
   window.currentGameTimeControl = getGameModeFromTime(sec, timeIncrement);
   updateTimersDisplay();
@@ -693,11 +698,68 @@ function executeMove(source, target, promotion) {
   return move;
 }
 
+// --- Premove: raqib o'ylayotganda yurishni oldindan belgilash (onlayn o'yinda) ---
+let premove = null;          // { from, to }
+let premoveSelected = null;  // premove uchun tanlangan dona katagi
+let dragIsPremove = false;
+
+function isPremoveTime() {
+  return !!(window.myColor && window.currentRoomId && opponentFound && !gameFinished && game.turn() !== window.myColor);
+}
+
+function renderPremove() {
+  const el = document.getElementById('chessBoard');
+  if (el) el.querySelectorAll('.sq-premove, .sq-premove-sel').forEach(s => s.classList.remove('sq-premove', 'sq-premove-sel'));
+  if (premoveSelected) { const s = boardSquare(premoveSelected); if (s) s.classList.add('sq-premove-sel'); }
+  if (premove) [premove.from, premove.to].forEach(sq => { const s = boardSquare(sq); if (s) s.classList.add('sq-premove'); });
+}
+
+window.clearPremove = function() {
+  premove = null;
+  premoveSelected = null;
+  renderPremove();
+};
+
+function setPremove(from, to) {
+  premove = { from, to };
+  premoveSelected = null;
+  renderPremove();
+}
+
+// Raqib yurgandan keyin online.js chaqiradi: belgilangan yurish qonuniy bo'lsa — darhol bajariladi
+window.tryPremove = function() {
+  if (!premove) { if (premoveSelected) window.clearPremove(); return; }
+  const { from, to } = premove;
+  window.clearPremove();
+  if (gameFinished || game.turn() !== window.myColor) return;
+  const legal = game.moves({ square: from, verbose: true }).some(m => m.to === to);
+  if (!legal) return;
+  if (executeMove(from, to, 'q') && board) board.position(game.fen());
+};
+
+// O'ng tugma — premove bekor
+document.addEventListener('contextmenu', (e) => {
+  const boardEl = document.getElementById('chessBoard');
+  if (!boardEl || !boardEl.contains(e.target) || (!premove && !premoveSelected)) return;
+  e.preventDefault();
+  window.clearPremove();
+});
+
 // Bo'sh katak yoki raqib donasini bosish: tanlangan dona shu yerga yuradi
 document.addEventListener('click', (e) => {
   const boardEl = document.getElementById('chessBoard');
   if (!boardEl || !boardEl.contains(e.target)) return;
   const squareEl = e.target.closest('[data-square]');
+  // Premove: o'z donamiz tanlangan, boshqa katak bosildi
+  if (squareEl && premoveSelected && isPremoveTime()) {
+    const target = squareEl.dataset.square;
+    if (target === premoveSelected) return;
+    const p = game.get(target);
+    if (p && p.color === window.myColor) return; // boshqa o'z donasi — onDragStart tanladi
+    setPremove(premoveSelected, target);
+    return;
+  }
+  if (squareEl && premove && !premoveSelected) { window.clearPremove(); }
   if (!squareEl || !selectedSquare) return;
   const sq = squareEl.dataset.square;
   if (sq === selectedSquare) return;
@@ -714,6 +776,18 @@ document.addEventListener('click', (e) => {
 
 function onDragStart(source, piece, position, orientation) {
   if (game.game_over() || gameFinished || promotionPending) return false;
+
+  // Raqib navbatida o'z donamiz — premove (yurish oldindan belgilanadi)
+  dragIsPremove = false;
+  if (window.myColor && piece.charAt(0) === window.myColor && isPremoveTime()) {
+    clearMoveHints();
+    dragFromSelected = premoveSelected === source;
+    premoveSelected = source;
+    premove = null;
+    renderPremove();
+    dragIsPremove = true;
+    return true;
+  }
 
   // Onlayn o'yinda faqat o'z donalarimizni va faqat o'z navbatimizda yuramiz
   if (window.myColor && (piece.charAt(0) !== window.myColor || game.turn() !== window.myColor)) {
@@ -736,6 +810,15 @@ function onDragStart(source, piece, position, orientation) {
 }
 
 function onDrop(source, target) {
+  if (dragIsPremove) {
+    dragIsPremove = false;
+    if (source === target || target === 'offboard') {
+      if (dragFromSelected) window.clearPremove();
+      return 'snapback';
+    }
+    setPremove(source, target);
+    return 'snapback';
+  }
   // Joyida bosildi (sudralmadi): tanlov qoladi; ikkinchi marta bosilsa — bekor
   if (source === target || target === 'offboard') {
     if (dragFromSelected) clearMoveHints();

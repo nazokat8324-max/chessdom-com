@@ -607,9 +607,12 @@ async function updateUserRating(userId, newRating) {
 }
 
 async function getLeaderboard() {
-  const rows = await dbAll('SELECT username, rating, ratings_by_mode, stats, stats_by_mode FROM users ORDER BY rating DESC LIMIT 100');
+  const rows = await dbAll('SELECT username, rating, ratings_by_mode, stats, stats_by_mode, country, club_country, club_code, avatar_version FROM users ORDER BY rating DESC LIMIT 300');
   return rows.map(u => ({
     username: u.username,
+    country: u.country || null,
+    club: u.club_country ? { name: u.club_country, code: u.club_code || null } : null,
+    avatarVersion: u.avatar_version || null,
     wins: parseInt(u.stats ? JSON.parse(u.stats).wins : 0) || 0,
     losses: parseInt(u.stats ? JSON.parse(u.stats).losses : 0) || 0,
     draws: parseInt(u.stats ? JSON.parse(u.stats).draws : 0) || 0,
@@ -1009,18 +1012,30 @@ async function getClubMembers(clubId) {
 
 // Klublar reytingi — davlat klublari, a'zolarning umumiy natijalari bo'yicha
 async function getClubLeaderboard() {
-  const rows = await dbAll('SELECT club_country, club_code, stats FROM users WHERE club_country IS NOT NULL');
+  const rows = await dbAll('SELECT username, rating, club_country, club_code, stats FROM users WHERE club_country IS NOT NULL');
   const byClub = {};
   for (const r of rows) {
-    const club = byClub[r.club_country] || (byClub[r.club_country] = { name: r.club_country, code: r.club_code, members: 0, wins: 0, losses: 0, draws: 0 });
+    const club = byClub[r.club_country] || (byClub[r.club_country] = { name: r.club_country, code: r.club_code, members: 0, wins: 0, losses: 0, draws: 0, ratingSum: 0, top: null });
     const s = statsTotals(parseJson(r.stats));
-    club.members++; club.wins += s.wins; club.losses += s.losses; club.draws += s.draws;
+    const rating = Number(r.rating) || 1500;
+    club.members++; club.wins += s.wins; club.losses += s.losses; club.draws += s.draws; club.ratingSum += rating;
+    if (!club.top || rating > club.top.rating) club.top = { username: r.username, rating };
   }
+  // Liga ochkolari va o'ynalgan bahslar (league.js jadvallaridan)
+  const points = await dbAll('SELECT club_name as "name", COALESCE(SUM(match_points), 0) as "points" FROM league_clubs GROUP BY club_name');
+  const pointsBy = new Map(points.map(p => [p.name, Number(p.points) || 0]));
   const leaderboard = Object.values(byClub).map(c => {
     const games = c.wins + c.losses + c.draws;
-    return { ...c, games, winPercentage: games > 0 ? Math.round((c.wins / games) * 1000) / 10 : 0 };
+    const { ratingSum, ...rest } = c;
+    return {
+      ...rest, games,
+      avgRating: c.members ? Math.round(ratingSum / c.members) : 0,
+      leaguePoints: pointsBy.get(c.name) || 0,
+      winPercentage: games > 0 ? Math.round((c.wins / games) * 1000) / 10 : 0
+    };
   });
-  leaderboard.sort((x, y) => (y.games - x.games) || (y.winPercentage - x.winPercentage));
+  // Tartib: liga ochkolari, o'rtacha reyting, a'zolar soni
+  leaderboard.sort((x, y) => (y.leaguePoints - x.leaguePoints) || (y.avgRating - x.avgRating) || (y.members - x.members));
   return { success: true, leaderboard };
 }
 

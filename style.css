@@ -5739,6 +5739,32 @@ sidebar {
   transition: transform 0.15s, filter 0.15s;
 }
 .ab-cta-btn:hover { transform: translateY(-2px); filter: brightness(1.07); }
+.ab-credits {
+  max-width: 760px;
+  margin: 40px auto 0;
+  padding: 20px 22px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #8fa29a;
+}
+.ab-credits h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #d9e4de;
+}
+.ab-credits ul {
+  margin: 0;
+  padding-left: 18px;
+}
+.ab-credits b {
+  color: #d9e4de;
+}
+.ab-credits a {
+  color: var(--accent-light);
+}
 .ab-footer {
   padding: 40px 16px;
   text-align: center;

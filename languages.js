@@ -2053,6 +2053,11 @@ const translationsExtra = {
     stkRematch: "Revansh?",
     stkLuck: "Omad!",
     stkOops: "Ups...",
+    aboutCreditsTitle: "Foydalanilgan ochiq resurslar",
+    aboutCreditNoto: "animatsiyali stikerlar",
+    aboutCreditLichess: "donalar to'plamlari va o'yin ovozlari (har biri o'z erkin litsenziyasi ostida)",
+    aboutCreditChess: "shaxmat qoidalari va taxta",
+    aboutCreditFlags: "davlat bayroqlari",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2641,6 +2646,11 @@ const translationsExtra = {
     stkRematch: "Rematch?",
     stkLuck: "Good luck!",
     stkOops: "Oops...",
+    aboutCreditsTitle: "Open-source credits",
+    aboutCreditNoto: "animated stickers",
+    aboutCreditLichess: "piece sets and game sounds (each under its own free license)",
+    aboutCreditChess: "chess rules and board",
+    aboutCreditFlags: "country flags",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -3229,6 +3239,11 @@ const translationsExtra = {
     stkRematch: "Реванш?",
     stkLuck: "Удачи!",
     stkOops: "Упс...",
+    aboutCreditsTitle: "Использованные открытые ресурсы",
+    aboutCreditNoto: "анимированные стикеры",
+    aboutCreditLichess: "наборы фигур и звуки (каждый под своей свободной лицензией)",
+    aboutCreditChess: "шахматные правила и доска",
+    aboutCreditFlags: "флаги стран",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -3817,6 +3832,11 @@ const translationsExtra = {
     stkRematch: "¿Revancha?",
     stkLuck: "¡Suerte!",
     stkOops: "Ups...",
+    aboutCreditsTitle: "Recursos abiertos utilizados",
+    aboutCreditNoto: "stickers animados",
+    aboutCreditLichess: "juegos de piezas y sonidos (cada uno con su licencia libre)",
+    aboutCreditChess: "reglas y tablero",
+    aboutCreditFlags: "banderas",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -4405,6 +4425,11 @@ const translationsExtra = {
     stkRematch: "Revanche?",
     stkLuck: "Viel Glück!",
     stkOops: "Hoppla...",
+    aboutCreditsTitle: "Verwendete offene Ressourcen",
+    aboutCreditNoto: "animierte Sticker",
+    aboutCreditLichess: "Figurensätze und Spieltöne (jeweils unter eigener freier Lizenz)",
+    aboutCreditChess: "Schachregeln und Brett",
+    aboutCreditFlags: "Landesflaggen",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -4993,6 +5018,11 @@ const translationsExtra = {
     stkRematch: "Revanche ?",
     stkLuck: "Bonne chance !",
     stkOops: "Oups...",
+    aboutCreditsTitle: "Ressources libres utilisées",
+    aboutCreditNoto: "stickers animés",
+    aboutCreditLichess: "jeux de pièces et sons (chacun sous sa propre licence libre)",
+    aboutCreditChess: "règles et échiquier",
+    aboutCreditFlags: "drapeaux",
     searchNoResults: "Aucun résultat"
   }
 };

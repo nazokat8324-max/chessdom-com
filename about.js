@@ -111,6 +111,17 @@
         <h2>${esc(t('aboutCtaTitle', 'Birinchi yurish sizdan!'))}</h2>
         <button class="ab-cta-btn" data-view="game">⚡ ${esc(t('aboutCta', "O'ynashni boshlash"))}</button>
       </section>
+      <section class="ab-credits">
+        <h3>${esc(t('aboutCreditsTitle', 'Foydalanilgan ochiq resurslar'))}</h3>
+        <ul>
+          <li><b>Noto Emoji</b> — ${esc(t('aboutCreditNoto', 'animatsiyali stikerlar'))} · © Google ·
+            <a href="https://googlefonts.github.io/noto-emoji-animation/" target="_blank" rel="noopener">CC BY 4.0</a></li>
+          <li><b>lichess.org</b> — ${esc(t('aboutCreditLichess', "donalar to'plamlari va o'yin ovozlari (har biri o'z erkin litsenziyasi ostida)"))} ·
+            <a href="https://github.com/lichess-org/lila" target="_blank" rel="noopener">github.com/lichess-org/lila</a></li>
+          <li><b>chess.js</b>, <b>chessboard.js</b> — ${esc(t('aboutCreditChess', "shaxmat qoidalari va taxta"))}</li>
+          <li><b>flagcdn.com</b> — ${esc(t('aboutCreditFlags', 'davlat bayroqlari'))}</li>
+        </ul>
+      </section>
       <footer class="ab-footer">© 2026 ChessDom</footer>`;
 
     bindInteractions(root);

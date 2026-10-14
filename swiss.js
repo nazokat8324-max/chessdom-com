@@ -27,6 +27,8 @@ const CYCLE = [
 let deps = null; // { db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId }
 const matchRooms = new Map(); // matchId -> { roomId, room } (server qayta ishga tushsa bo'sh — o'sha o'yinlar durrang deb yopiladi)
 let ticking = false;
+const reminded = new Set(); // eslatma yuborilganlar: "<turnir>:<o'yinchi>"
+const REMIND_MS = Number(process.env.SWISS_REMIND_MS) || 60 * 1000;
 
 const nowIso = () => new Date().toISOString();
 const q = {
@@ -303,6 +305,17 @@ async function tick() {
   try {
     await ensureUpcoming();
     const now = nowIso();
+    // Boshlanishiga 1 daqiqa qolganda ro'yxatdagilarga eslatma
+    const soon = new Date(Date.now() + REMIND_MS).toISOString();
+    for (const t of await q.all("SELECT * FROM tournaments WHERE tournament_type = 'swiss' AND status = 'registration' AND started_at <= ? AND started_at > ?", [soon, now])) {
+      const players = await q.all('SELECT user_id as "userId" FROM tournament_participants WHERE tournament_id = ? AND withdrawn = 0', [t.id]);
+      for (const p of players) {
+        const key = t.id + ':' + p.userId;
+        if (reminded.has(key)) continue;
+        reminded.add(key);
+        deps.io.to(`user_${p.userId}`).emit('swiss-reminder', { id: t.id, name: t.name, startsAt: t.started_at });
+      }
+    }
     for (const t of await q.all("SELECT * FROM tournaments WHERE tournament_type = 'swiss' AND status = 'registration' AND started_at <= ?", [now])) {
       await startTournament(t);
     }
@@ -409,7 +422,8 @@ async function detail(tournamentId, userId) {
   for (const m of matches) {
     (rounds[m.round] = rounds[m.round] || []).push({
       white: names.get(m.whiteId) || null, black: m.blackId ? (names.get(m.blackId) || null) : null,
-      result: m.status === 'playing' ? null : m.result
+      result: m.status === 'playing' ? null : m.result,
+      roomId: m.status === 'playing' && matchRooms.has(m.id) ? matchRooms.get(m.id).roomId : null
     });
   }
   const meIndex = userId ? table.findIndex(p => p.userId === userId) : -1;

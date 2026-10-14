@@ -14,6 +14,9 @@ const { Chess } = require('chess.js');
 const db = require('./database');
 const league = require('./league');
 const swiss = require('./swiss');
+const mailer = require('./mailer');
+const crypto = require('crypto');
+const escapeHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const app = express();
 const server = http.createServer(app);
@@ -47,6 +50,8 @@ const ALLOWED_CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0]
 const FIRST_MOVE_TIMEOUT_MS = 30 * 1000;
 // Tugagan o'yin xonasi shu vaqtdan keyin xotiradan o'chiriladi
 const FINISHED_ROOM_TTL_MS = 5 * 60 * 1000;
+// Uzilgan o'yinchi shu vaqt ichida qaytsa o'yin davom etadi (soati yuraveradi)
+const RECONNECT_GRACE_MS = Number(process.env.RECONNECT_GRACE_MS) || 60 * 1000;
 
 function generateRoomId() { return Math.random().toString(36).substring(2, 8).toUpperCase(); }
 
@@ -171,13 +176,171 @@ async function endGame(roomId, room, winnerColor, reason) {
     catch (err) { console.error('Swiss natijasini yozish xatoligi:', err); }
   }
 
+  room.endedAt = Date.now();
+  room.endPayloads = {};
   for (const p of players) {
-    io.to(p.socketId).emit('game-ended', {
+    clearTimeout(p.awayTimer);
+    const payload = {
       roomId, winner: winnerColor, reason, result: scoreFor(p.color, winnerColor),
       rated: room.rated && recorded, mode: room.mode, swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null, ...(updates[p.color] || {})
-    });
+    };
+    room.endPayloads[p.color] = payload;
+    // O'yin davomida qayta ulangan bo'lsa — yangi socketiga
+    const current = room.players.find(x => x.color === p.color) || p;
+    io.to(current.socketId).emit('game-ended', payload);
   }
   emitClock(roomId, room);
+  io.to('watch_' + roomId).emit('watch-ended', { roomId, winner: winnerColor, reason, clock: clockPayload(room) });
+}
+
+// --- O'yinga chaqirish (do'st yoki istalgan o'yinchi) ---
+const CHALLENGE_TTL_MS = 60 * 1000;
+const challenges = new Map(); // id -> { id, fromId, fromName, toId, toName, clock, rated, timer }
+
+function userSocket(userId) {
+  const set = io.sockets.adapter.rooms.get(`user_${userId}`);
+  if (!set) return null;
+  for (const id of set) { const s = io.sockets.sockets.get(id); if (s && s.connected) return s; }
+  return null;
+}
+
+function inActiveGame(userId) {
+  for (const room of rooms.values()) if (room.status === 'active' && room.players.some(p => p.userId === userId)) return true;
+  return false;
+}
+
+function dropChallenge(id) {
+  const c = challenges.get(id);
+  if (c) { clearTimeout(c.timer); challenges.delete(id); }
+  return c;
+}
+
+async function sendChallenge(socket, data) {
+  const fromId = socket.data.userId;
+  if (!fromId) return socket.emit('challenge-error', { reason: 'auth' });
+  const target = data && data.username ? await db.getUserByUsername(String(data.username)) : null;
+  if (!target) return socket.emit('challenge-error', { reason: 'not_found' });
+  if (target.id === fromId) return socket.emit('challenge-error', { reason: 'self' });
+  if (!userSocket(target.id)) return socket.emit('challenge-error', { reason: 'offline' });
+  if (inActiveGame(fromId)) return socket.emit('challenge-error', { reason: 'you_busy' });
+  if (inActiveGame(target.id)) return socket.emit('challenge-error', { reason: 'busy' });
+  // Bir o'yinchiga bitta faol chaqiruv
+  for (const c of challenges.values()) if (c.fromId === fromId) { dropChallenge(c.id); io.to(`user_${c.toId}`).emit('challenge-cancelled', { id: c.id }); }
+  const clock = normalizeClock(data.initial, data.increment);
+  const me = await db.getUserById(fromId);
+  const mode = clockMode(clock);
+  const id = uuidv4();
+  const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, rated: data.rated !== false };
+  c.timer = setTimeout(() => {
+    if (!dropChallenge(id)) return;
+    io.to(`user_${fromId}`).emit('challenge-expired', { id, to: target.username });
+    io.to(`user_${target.id}`).emit('challenge-expired', { id });
+  }, CHALLENGE_TTL_MS);
+  challenges.set(id, c);
+  io.to(`user_${target.id}`).emit('challenge-received', {
+    id, clock, rated: c.rated, mode, seconds: CHALLENGE_TTL_MS / 1000,
+    from: { username: c.fromName, rating: (me && me.ratings_by_mode && me.ratings_by_mode[mode]) || (me && me.rating) || 1500, country: me ? me.country || null : null }
+  });
+  socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, seconds: CHALLENGE_TTL_MS / 1000 });
+}
+
+async function acceptChallenge(socket, id) {
+  const c = challenges.get(id);
+  if (!c || c.toId !== socket.data.userId) return socket.emit('challenge-error', { reason: 'gone' });
+  dropChallenge(id);
+  const fromSocket = userSocket(c.fromId);
+  if (!fromSocket) return socket.emit('challenge-error', { reason: 'offline' });
+  if (inActiveGame(c.fromId) || inActiveGame(c.toId)) return socket.emit('challenge-error', { reason: 'busy' });
+  for (const uid of [c.fromId, c.toId]) {
+    const i = matchmakingQueue.findIndex(u => u.userId === uid);
+    if (i !== -1) matchmakingQueue.splice(i, 1);
+  }
+  const [fromUser, toUser] = await Promise.all([db.getUserById(c.fromId), db.getUserById(c.toId)]);
+  const challenger = { socket: fromSocket, user: fromUser }, accepter = { socket, user: toUser };
+  const [white, black] = Math.random() < 0.5 ? [challenger, accepter] : [accepter, challenger];
+  const roomId = generateRoomId();
+  const room = createGameRoom(
+    { socketId: white.socket.id, userId: white.user.id, username: white.user.username },
+    { socketId: black.socket.id, userId: black.user.id, username: black.user.username },
+    c.clock, c.rated
+  );
+  rooms.set(roomId, room);
+  const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null });
+  for (const [side, color, opp] of [[white, 'w', black], [black, 'b', white]]) {
+    side.socket.join(roomId);
+    side.socket.emit('match-found', { roomId, color, opponent: info(opp.user), clock: c.clock, rated: c.rated, mode: room.mode, challenge: true });
+  }
+  scheduleRoomTimer(roomId, room);
+}
+
+// Jonli o'yin haqida ma'lumot (tomosha qilish ro'yxati va tomoshabin uchun)
+async function liveGameInfo(roomId, room) {
+  const side = async (color) => {
+    const p = room.players.find(x => x.color === color);
+    const u = p && p.userId ? await db.getUserById(p.userId) : null;
+    return {
+      username: p ? p.username : '?',
+      rating: u ? (Number(u.ratings_by_mode && u.ratings_by_mode[room.mode]) || u.rating || 1500) : 1500,
+      country: u ? u.country || null : null
+    };
+  };
+  let kind = 'casual', label = null;
+  if (room.swissMatch) {
+    kind = 'swiss';
+    const t = await db.getTournamentById(room.swissMatch.tournamentId);
+    label = t ? t.name : null;
+  } else if (room.leagueGameId) {
+    kind = 'league';
+  }
+  return {
+    roomId, kind, label, mode: room.mode, rated: room.rated,
+    clock: { initial: room.clock.initial, increment: room.clock.increment },
+    white: await side('w'), black: await side('b'),
+    moves: room.chess.history().length,
+    watchers: (io.sockets.adapter.rooms.get('watch_' + roomId) || new Set()).size
+  };
+}
+
+// Uzilgan o'yinchi qaytdi (yangi socket bilan authenticate qildi): davom etayotgan o'yinini tiklaymiz
+async function resumeGames(socket) {
+  const userId = socket.data.userId;
+  for (const [roomId, room] of rooms.entries()) {
+    const player = room.players.find(p => p.userId === userId);
+    if (!player || player.socketId === socket.id) continue;
+    if (room.status !== 'active') {
+      // Uzilib turgan paytda tugagan o'yin natijasi
+      if (room.endPayloads && room.endPayloads[player.color] && Date.now() - room.endedAt < FINISHED_ROOM_TTL_MS && !io.sockets.sockets.get(player.socketId)) {
+        player.socketId = socket.id;
+        socket.emit('game-ended', room.endPayloads[player.color]);
+      }
+      continue;
+    }
+    clearTimeout(player.awayTimer);
+    player.away = false;
+    const oldSocket = io.sockets.sockets.get(player.socketId);
+    if (oldSocket) oldSocket.leave(roomId);
+    player.socketId = socket.id;
+    socket.join(roomId);
+    const opponent = room.players.find(p => p.color !== player.color);
+    const oppUser = opponent && opponent.userId ? await db.getUserById(opponent.userId) : null;
+    socket.emit('game-resume', {
+      roomId,
+      color: player.color,
+      moves: room.chess.history({ verbose: true }).map(m => ({ from: m.from, to: m.to, promotion: m.promotion })),
+      clock: { initial: room.clock.initial, increment: room.clock.increment },
+      clockState: clockPayload(room),
+      rated: room.rated,
+      mode: room.mode,
+      drawOffered: room.drawOfferBy === otherColor(player.color),
+      opponentAway: !!(opponent && opponent.away),
+      opponent: oppUser
+        ? { username: oppUser.username, rating: oppUser.rating || 1500, ratingsByMode: oppUser.ratings_by_mode, country: oppUser.country || null }
+        : { username: opponent ? opponent.username : '?', rating: 1500 },
+      league: room.leagueGameId ? { gameId: room.leagueGameId } : null,
+      swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null
+    });
+    socket.to(roomId).emit('opponent-back', { roomId });
+  }
 }
 
 // O'yinchi xonani tark etsa: o'yin davom etayotgan bo'lsa — mag'lubiyat (yoki bekor qilish)
@@ -336,6 +499,64 @@ async function start() {
 
   // O'yin natijasi va reyting klientdan qabul qilinmaydi — ularni server endGame() da yozadi
 
+  // --- Parolni tiklash (email orqali) ---
+  const realEmail = (email) => !!email && !/@justchess\.local$/i.test(email);
+  const appUrl = (req) => process.env.APP_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`;
+
+  app.post('/api/auth/forgot', authLimiter, async (req, res) => {
+    try {
+      const login = String((req.body && req.body.login) || '').trim();
+      if (!login) return res.status(400).json({ success: false, message: 'Foydalanuvchi nomi yoki emailni kiriting!' });
+      if (!mailer.isConfigured()) return res.status(503).json({ success: false, message: 'Email xizmati hali sozlanmagan. Administratorga murojaat qiling.' });
+      const user = login.includes('@') ? await db.getUserByEmail(login) : await db.getUserByUsername(login);
+      const sent = { success: true, message: "Agar akkaunt topilsa, emailga parolni tiklash havolasi yuborildi." };
+      if (!user) return res.json(sent);
+      if (!realEmail(user.email)) return res.status(400).json({ success: false, message: "Bu akkauntga email biriktirilmagan. Profilingizda email qo'shib qo'ying." });
+      const token = crypto.randomBytes(32).toString('hex');
+      const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+      await db.createPasswordReset(user.id, tokenHash, new Date(Date.now() + 30 * 60 * 1000).toISOString());
+      const link = `${appUrl(req)}/?reset=${token}`;
+      await mailer.sendMail({
+        to: user.email,
+        subject: 'ChessDom — parolni tiklash',
+        text: `Salom, ${user.username}!\n\nParolingizni tiklash uchun havola (30 daqiqa amal qiladi):\n${link}\n\nAgar siz so'ramagan bo'lsangiz, bu xatni e'tiborsiz qoldiring.`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;background:#141b19;color:#e8ece9;border-radius:16px">
+          <h2 style="margin:0 0 12px;color:#fff">♞ ChessDom</h2>
+          <p>Salom, <b>${escapeHtml(user.username)}</b>!</p>
+          <p>Parolingizni tiklash uchun quyidagi tugmani bosing. Havola 30 daqiqa amal qiladi.</p>
+          <p style="text-align:center;margin:28px 0"><a href="${link}" style="background:#81b64c;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold">Parolni tiklash</a></p>
+          <p style="font-size:12px;color:#8fa29a">Agar siz so'ramagan bo'lsangiz, bu xatni e'tiborsiz qoldiring.</p></div>`
+      });
+      res.json(sent);
+    } catch (err) { console.error('Forgot xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/auth/reset', authLimiter, async (req, res) => {
+    try {
+      const token = String((req.body && req.body.token) || '');
+      const password = String((req.body && req.body.password) || '');
+      if (password.length < 6) return res.status(400).json({ success: false, message: "Parol kamida 6 ta belgidan iborat bo'lishi kerak" });
+      if (!/^[a-f0-9]{64}$/.test(token)) return res.status(400).json({ success: false, message: "Havola noto'g'ri yoki eskirgan!" });
+      const userId = await db.usePasswordReset(crypto.createHash('sha256').update(token).digest('hex'));
+      if (!userId) return res.status(400).json({ success: false, message: "Havola noto'g'ri yoki eskirgan!" });
+      await db.updateUserPassword(userId, await bcrypt.hash(password, 10));
+      res.json({ success: true, message: 'Parol yangilandi! Endi kirishingiz mumkin.' });
+    } catch (err) { console.error('Reset xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Profilda email biriktirish (parolni tiklash uchun)
+  app.post('/api/users/me/email', authMiddleware, [body('email').isEmail().withMessage('Invalid email')], async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
+      const email = String(req.body.email).trim().toLowerCase();
+      const other = await db.getUserByEmail(email);
+      if (other && other.id !== req.user.userId) return res.status(409).json({ success: false, message: 'Bu email boshqa akkauntga biriktirilgan!' });
+      await db.updateUserEmail(req.user.userId, email);
+      res.json({ success: true, email });
+    } catch (err) { console.error('Email xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.post('/api/users/me/country', authMiddleware, async (req, res) => {
     try {
       const { country } = req.body;
@@ -453,6 +674,19 @@ async function start() {
   app.post('/api/swiss/:id/leave', authMiddleware, async (req, res) => {
     try { res.json(await swiss.leave(req.params.id, req.user.userId)); }
     catch (err) { console.error('Swiss leave xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Jonli o'yinlar: hozir davom etayotgan barcha o'yinlar (tomosha qilish uchun)
+  app.get('/api/games/live', async (req, res) => {
+    try {
+      const games = [];
+      for (const [roomId, room] of rooms.entries()) {
+        if (room.status === 'active' && room.players.length === 2) games.push(await liveGameInfo(roomId, room));
+      }
+      const weight = { swiss: 0, league: 1, casual: 2 };
+      games.sort((a, b) => weight[a.kind] - weight[b.kind] || (b.white.rating + b.black.rating) - (a.white.rating + a.black.rating));
+      res.json({ success: true, games: games.slice(0, 60) });
+    } catch (err) { console.error('Jonli o\'yinlar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.get('/api/tournaments', apiLimiter, async (req, res) => {
@@ -775,6 +1009,7 @@ async function start() {
         socket.data.userId = decoded.userId;
         socket.data.username = decoded.username;
         socket.join(`user_${decoded.userId}`);
+        resumeGames(socket).catch(err => console.error("O'yinni tiklash xatoligi:", err));
       } catch (err) { socket.emit('auth-error', { message: 'Invalid or expired token' }); }
     });
     socket.on('join-club-room', (clubRoomId) => { if (isPublicSocketRoom(clubRoomId)) socket.join(clubRoomId); });
@@ -806,6 +1041,7 @@ async function start() {
       room.drawOfferBy = null;
       room.turnStartedAt = room.chess.history().length >= 2 ? now : null;
       socket.to(roomId).emit('opponent-move', { from: result.from, to: result.to, promotion: result.promotion });
+      const watchMove = { roomId, move: { from: result.from, to: result.to, promotion: result.promotion } };
       if (room.chess.game_over()) {
         const chess = room.chess;
         let reason = 'draw';
@@ -814,11 +1050,13 @@ async function start() {
         else if (chess.in_threefold_repetition()) reason = 'threefold';
         else if (chess.insufficient_material()) reason = 'insufficient';
         else reason = 'fifty';
+        io.to('watch_' + roomId).emit('watch-move', { ...watchMove, clock: clockPayload(room) });
         endGame(roomId, room, reason === 'checkmate' ? player.color : null, reason);
         return;
       }
       scheduleRoomTimer(roomId, room);
       emitClock(roomId, room);
+      io.to('watch_' + roomId).emit('watch-move', { ...watchMove, clock: clockPayload(room) });
     });
     // Durrang taklifi faqat davom etayotgan o'yinda va raqib taklifini qabul qilish orqali
     const activeRoomOf = (data) => {
@@ -856,6 +1094,37 @@ async function start() {
       if (!wasActive) socket.to(roomId).emit('opponent-disconnected');
     });
     socket.on('join-tournament-room', (tournamentId) => { socket.join(`tournament_${tournamentId}`); });
+    // O'yinga chaqirish
+    socket.on('challenge-send', (data) => { sendChallenge(socket, data).catch(err => console.error('Challenge xatoligi:', err)); });
+    socket.on('challenge-accept', (data) => { acceptChallenge(socket, data && data.id).catch(err => console.error('Challenge accept xatoligi:', err)); });
+    socket.on('challenge-decline', (data) => {
+      const c = challenges.get(data && data.id);
+      if (!c || c.toId !== socket.data.userId) return;
+      dropChallenge(c.id);
+      io.to(`user_${c.fromId}`).emit('challenge-declined', { id: c.id, by: c.toName });
+    });
+    socket.on('challenge-cancel', (data) => {
+      const c = challenges.get(data && data.id);
+      if (!c || c.fromId !== socket.data.userId) return;
+      dropChallenge(c.id);
+      io.to(`user_${c.toId}`).emit('challenge-cancelled', { id: c.id });
+    });
+    // Tomosha qilish: tomoshabin faqat watch_<roomId> xonasiga qo'shiladi (o'yin xonasiga emas)
+    socket.on('watch-game', async (roomId) => {
+      try {
+        for (const r of socket.rooms) if (r.startsWith('watch_')) socket.leave(r);
+        const room = typeof roomId === 'string' ? rooms.get(roomId) : null;
+        if (!room) return socket.emit('watch-state', { roomId, missing: true });
+        socket.join('watch_' + roomId);
+        socket.emit('watch-state', {
+          ...(await liveGameInfo(roomId, room)),
+          status: room.status,
+          history: room.chess.history({ verbose: true }).map(m => ({ from: m.from, to: m.to, promotion: m.promotion })),
+          clockState: clockPayload(room)
+        });
+      } catch (err) { console.error('Watch xatoligi:', err); }
+    });
+    socket.on('unwatch-game', () => { for (const r of socket.rooms) if (r.startsWith('watch_')) socket.leave(r); });
     socket.on('join-chat-room', (roomId) => { if (isPublicSocketRoom(roomId)) socket.join(roomId); });
     socket.on('send-chat-message', (data) => {
       if (!socket.data.userId || !data) return;
@@ -872,7 +1141,20 @@ async function start() {
       league.socketGone(socket.id);
       pruneMatchmakingQueue();
       for (const [roomId, room] of rooms.entries()) {
-        if (!findPlayer(room, socket.id)) continue;
+        const player = findPlayer(room, socket.id);
+        if (!player) continue;
+        // Davom etayotgan o'yin darhol tugamaydi: o'yinchi RECONNECT_GRACE_MS ichida qaytishi mumkin
+        if (room.status === 'active' && player.userId) {
+          player.away = true;
+          clearTimeout(player.awayTimer);
+          player.awayTimer = setTimeout(() => {
+            if (!player.away || room.status !== 'active') return;
+            const winner = room.chess.history().length < 2 ? null : otherColor(player.color);
+            endGame(roomId, room, winner, winner ? 'abandon' : 'aborted');
+          }, RECONNECT_GRACE_MS);
+          io.to(roomId).emit('opponent-away', { roomId, seconds: Math.round(RECONNECT_GRACE_MS / 1000) });
+          continue;
+        }
         const wasActive = room.status === 'active';
         handlePlayerLeave(socket, roomId, room);
         if (!wasActive) io.to(roomId).emit('opponent-disconnected');

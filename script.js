@@ -34,6 +34,14 @@ const SERVER_MESSAGE_KEYS = {
   "Message must be 1-1000 characters": 'srvMessageLength',
   "Tournament name must be 3-255 characters": 'srvTournamentNameLength',
   "Turnir topilmadi!": 'srvTournamentNotFound',
+  "Foydalanuvchi nomi yoki emailni kiriting!": 'authForgotEmpty',
+  "Email xizmati hali sozlanmagan. Administratorga murojaat qiling.": 'srvMailOff',
+  "Agar akkaunt topilsa, emailga parolni tiklash havolasi yuborildi.": 'srvMailSent',
+  "Bu akkauntga email biriktirilmagan. Profilingizda email qo'shib qo'ying.": 'srvNoEmail',
+  "Parol kamida 6 ta belgidan iborat bo'lishi kerak": 'authPasswordMinError',
+  "Havola noto'g'ri yoki eskirgan!": 'srvResetBad',
+  "Parol yangilandi! Endi kirishingiz mumkin.": 'srvResetOk',
+  "Bu email boshqa akkauntga biriktirilgan!": 'srvEmailTaken',
   "Turnirga qo'shilish yopilgan!": 'srvSwissClosed',
   "Siz boshqa turnirda ishtirok etyapsiz!": 'srvSwissBusy',
   "Turnir to'la!": 'srvTournamentFull',
@@ -369,7 +377,15 @@ window.setupHistoryFilters = function() {
   });
 };
 
+// Telefonda: pastki paneldagi "Ko'proq" — qolgan bo'limlar ro'yxati
+window.toggleMobileMenu = function(open) {
+  const next = typeof open === 'boolean' ? open : !document.body.classList.contains('mobile-menu-open');
+  document.body.classList.toggle('mobile-menu-open', next);
+};
+
 window.switchView = function(viewName) {
+  document.body.classList.remove('mobile-menu-open');
+  if (viewName !== 'live' && typeof window.stopWatching === 'function') window.stopWatching();
   if (viewName !== "settings" && typeof window.discardSettingsChanges === "function") {
     const settingsEl = document.getElementById("settingsView");
     if (settingsEl && settingsEl.classList.contains("active-view")) window.discardSettingsChanges();
@@ -404,6 +420,7 @@ window.switchView = function(viewName) {
     }
     if (navEl) navEl.classList.add("active");
     window.loadTopPlayers();
+    if (typeof window.refreshHomeWidgets === "function") window.refreshHomeWidgets();
   } else if (viewName === "game") {
     const gameEl = document.getElementById("gameView");
     const navEl = document.getElementById("navPlay");
@@ -559,6 +576,12 @@ window.switchView = function(viewName) {
         window.loadChatMessages();
       }
     }
+  } else if (viewName === "live") {
+    const liveEl = document.getElementById("liveView");
+    if (liveEl) liveEl.classList.add("active-view");
+    const navEl = document.getElementById("navLive");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.renderLiveView === "function") window.renderLiveView();
   } else if (viewName === "messages") {
     const messagesEl = document.getElementById("messagesView");
     if (messagesEl) messagesEl.classList.add("active-view");
@@ -775,6 +798,8 @@ window.openProfileModal = function() {
   if (friendBtn) friendBtn.style.display = 'none';
   const messageBtn = document.getElementById("profileMessageBtn");
   if (messageBtn) messageBtn.style.display = 'none';
+  const challengeBtn = document.getElementById("profileChallengeBtn");
+  if (challengeBtn) challengeBtn.style.display = 'none';
   updateProfileModalData();
   if (profileModal) {
     profileModal.style.display = "flex";
@@ -782,11 +807,11 @@ window.openProfileModal = function() {
   // Oxirgi o'yinlar va a'zo bo'lgan sana — serverdagi ommaviy profildan
   if (window.currentUser) {
     const me = window.currentUser.username;
-    window.renderRecentGames(null);
+    window.renderRecentGames(null); if (typeof window.renderRatingChart === "function") window.renderRatingChart(null);
     fetchPublicProfile(me).then(data => {
       if (window.viewedProfileUsername || !data.success) return;
       window.currentUser.createdAt = data.profile.createdAt;
-      window.renderRecentGames(data.profile.recentGames);
+      window.renderRecentGames(data.profile.recentGames); if (typeof window.renderRatingChart === "function") window.renderRatingChart(data.profile);
       const joinedEl = document.getElementById("profileJoined");
       const d = data.profile.createdAt ? new Date(data.profile.createdAt) : null;
       if (joinedEl && d && !isNaN(d)) {
@@ -958,17 +983,19 @@ window.populateCountrySelect = function() {};
 window.showAuthGate = function(mode) {
   const gate = document.getElementById("authGate");
   if (!gate) return;
-  const isLogin = mode === 'login';
   window.resetLoginErrors();
   window.resetSignupErrors();
-  const loginStep = document.getElementById("authLoginStep");
-  const signupStep = document.getElementById("authSignupFormStep");
-  if (loginStep) loginStep.style.display = isLogin ? "block" : "none";
-  if (signupStep) signupStep.style.display = isLogin ? "none" : "block";
+  const steps = { login: "authLoginStep", signup: "authSignupFormStep", forgot: "authForgotStep", reset: "authResetStep" };
+  const active = steps[mode] ? mode : 'signup';
+  Object.entries(steps).forEach(([key, id]) => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = key === active ? "block" : "none";
+  });
+  ['forgotResult', 'resetResult'].forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = ''; el.className = 'auth-note'; } });
   gate.style.display = "flex";
   document.body.classList.add("auth-locked");
   window.updateAuthGateLanguage();
-  const focusEl = document.getElementById(isLogin ? "loginModalUsername" : "signupUsername");
+  const focusEl = document.getElementById({ login: "loginModalUsername", signup: "signupUsername", forgot: "forgotLogin", reset: "resetPassword" }[active]);
   if (focusEl) setTimeout(() => focusEl.focus(), 50);
 };
 
@@ -999,6 +1026,85 @@ window.openSignupModal = function() { window.showAuthGate('signup'); };
 window.closeLoginModal = window.hideAuthGate;
 window.closeSignupModal = window.hideAuthGate;
 window.switchToSignUp = function() { window.showAuthGate('signup'); };
+
+// --- Parolni tiklash ---
+function setAuthNote(id, text, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'auth-note ' + (ok ? 'ok' : 'err');
+}
+
+window.handleForgotPassword = async function() {
+  const login = (document.getElementById("forgotLogin").value || '').trim();
+  if (!login) { setAuthNote('forgotResult', tx('authForgotEmpty', "Foydalanuvchi nomi yoki emailni kiriting"), false); return; }
+  const btn = document.getElementById("forgotSubmitBtn");
+  if (btn) btn.disabled = true;
+  try {
+    const d = await fetch('/api/auth/forgot', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ login }) }).then(r => r.json());
+    setAuthNote('forgotResult', tServer(d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), !!d.success);
+  } catch (e) {
+    setAuthNote('forgotResult', tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), false);
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+};
+
+window.handleResetPassword = async function() {
+  const p1 = document.getElementById("resetPassword").value;
+  const p2 = document.getElementById("resetPassword2").value;
+  if (!p1 || p1.length < 6) { setAuthNote('resetResult', tx('authPasswordMinError', "Parol kamida 6 ta belgidan iborat bo'lishi kerak"), false); return; }
+  if (p1 !== p2) { setAuthNote('resetResult', tx('authPasswordMismatch', 'Parollar bir xil emas'), false); return; }
+  try {
+    const d = await fetch('/api/auth/reset', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: window.pendingResetToken, password: p1 }) }).then(r => r.json());
+    if (!d.success) { setAuthNote('resetResult', tServer(d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), false); return; }
+    window.pendingResetToken = null;
+    showToast(tServer(d.message), 'success', 5000);
+    if (window.currentUser) window.hideAuthGate(); else window.showAuthGate('login');
+  } catch (e) {
+    setAuthNote('resetResult', tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), false);
+  }
+};
+
+// Emaildagi havola: /?reset=<token>
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('reset');
+  if (!token) return;
+  window.pendingResetToken = token;
+  params.delete('reset');
+  history.replaceState(null, '', window.location.pathname + (params.toString() ? '?' + params : ''));
+  setTimeout(() => window.showAuthGate('reset'), 300);
+});
+
+// Profil: parolni tiklash uchun email
+window.editProfileEmail = async function() {
+  if (!window.currentUser) return;
+  const current = window.currentUser.email && !/@justchess\.local$/i.test(window.currentUser.email) ? window.currentUser.email : '';
+  const email = prompt(tx('profEmailPrompt', "Emailingizni kiriting (parolni unutsangiz tiklash havolasi shu manzilga yuboriladi):"), current);
+  if (email === null) return;
+  const value = email.trim();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) { alert(tx('authEmailInvalid', "Email manzili noto'g'ri")); return; }
+  try {
+    const d = await fetch('/api/users/me/email', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + window.authToken }, body: JSON.stringify({ email: value }) }).then(r => r.json());
+    if (!d.success) { alert(tServer(d.message) || tx('errGeneric', 'Xatolik yuz berdi!')); return; }
+    window.currentUser.email = d.email;
+    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
+    window.renderProfileEmail();
+    showToast(tx('profEmailSaved', 'Email saqlandi'), 'success');
+  } catch (e) {
+    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
+  }
+};
+
+window.renderProfileEmail = function() {
+  const el = document.getElementById("profileEmailText");
+  if (!el || !window.currentUser) return;
+  const email = window.currentUser.email;
+  const real = email && !/@justchess\.local$/i.test(email);
+  el.textContent = real ? email : tx('profEmailNone', 'Biriktirilmagan');
+  el.classList.toggle('muted', !real);
+};
 window.switchToLogin = function() { window.showAuthGate('login'); };
 
 window.resetLoginErrors = function() {
@@ -1010,7 +1116,7 @@ window.resetLoginErrors = function() {
 };
 
 window.resetSignupErrors = function() {
-  const errorIds = ["signupUsernameError", "signupUsernameExistsError", "signupPasswordError"];
+  const errorIds = ["signupUsernameError", "signupUsernameExistsError", "signupPasswordError", "signupEmailError"];
   errorIds.forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = "none";
@@ -1100,14 +1206,24 @@ window.handleSignupModal = async function() {
     if (passwordError) passwordError.style.display = "none";
   }
 
+  const signupEmailEl = document.getElementById("signupEmail");
+  const signupEmail = signupEmailEl ? signupEmailEl.value.trim() : '';
+  const signupEmailError = document.getElementById("signupEmailError");
+  if (signupEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(signupEmail)) {
+    if (signupEmailError) signupEmailError.style.display = "block";
+    valid = false;
+  } else if (signupEmailError) {
+    signupEmailError.style.display = "none";
+  }
+
   if (!valid) return;
 
   try {
-    // Modalda email maydoni yo'q — server talab qilgani uchun username asosida yaratiladi
+    // Email ixtiyoriy — kiritilmasa server talab qilgani uchun username asosida yaratiladi
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email: username.toLowerCase() + '@justchess.local', password })
+      body: JSON.stringify({ username, email: signupEmail || username.toLowerCase() + '@justchess.local', password })
     });
     const data = await response.json();
     if (!data.success) {
@@ -1374,6 +1490,7 @@ window.updateProfileModalData = function() {
   const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
   const setValue = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
   setText("profileFideId", fideId);
+  if (typeof window.renderProfileEmail === "function") window.renderProfileEmail();
   setText("profileGoal", goal);
   setText("statDebut", debut);
   setValue("inputFideId", fideId);
@@ -1400,8 +1517,10 @@ window.openPlayerProfile = async function(username) {
   }
   const messageBtn = document.getElementById("profileMessageBtn");
   if (messageBtn) messageBtn.style.display = window.currentUser ? 'flex' : 'none';
+  const challengeBtn = document.getElementById("profileChallengeBtn");
+  if (challengeBtn) challengeBtn.style.display = window.currentUser ? 'flex' : 'none';
   window.renderProfileCommon({ username });
-  window.renderRecentGames(null);
+  window.renderRecentGames(null); if (typeof window.renderRatingChart === "function") window.renderRatingChart(null);
   modal.style.display = "flex";
   try {
     const data = await fetchPublicProfile(username);
@@ -1412,7 +1531,7 @@ window.openPlayerProfile = async function(username) {
       return;
     }
     window.renderProfileCommon(data.profile);
-    window.renderRecentGames(data.profile.recentGames);
+    window.renderRecentGames(data.profile.recentGames); if (typeof window.renderRatingChart === "function") window.renderRatingChart(data.profile);
   } catch (err) {
     console.error('Profilni yuklash xatoligi:', err);
     showToast(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), 'error');

@@ -302,10 +302,10 @@
           </div>
         </div>
         <div class="menu-list">
-          <a class="menu-item active" id="navHome" onclick="switchView('home')"
+          <a class="menu-item mobile-main active" id="navHome" onclick="switchView('home')"
             ><span class="icon">🏡</span> <span id="mHome">Bosh sahifa</span></a
           >
-          <a class="menu-item" id="navPlay" onclick="switchView('game')"
+          <a class="menu-item mobile-main" id="navPlay" onclick="switchView('game')"
             ><span class="icon">🎮</span> <span id="mPlay">O'yin</span></a
           >
           <a
@@ -316,11 +316,15 @@
             <span class="icon">🥇</span>
             <span id="mLeaderboard">Reyting</span>
           </a>
-          <a class="menu-item" id="navTournaments" onclick="switchView('tournaments')">
+          <a class="menu-item mobile-main" id="navTournaments" onclick="switchView('tournaments')">
             <span class="icon">🏁</span>
             <span id="mTournaments">Turnirlar</span>
           </a>
-          <a class="menu-item" id="navMessages" onclick="switchView('messages')">
+          <a class="menu-item" id="navLive" onclick="switchView('live')">
+            <span class="icon">📺</span>
+            <span data-i18n="mLive">Jonli o'yinlar</span>
+          </a>
+          <a class="menu-item mobile-main" id="navMessages" onclick="switchView('messages')">
             <span class="icon">💬</span>
             <span data-i18n="mMessages">Xabarlar</span>
           </a>
@@ -348,6 +352,10 @@
             <span class="icon">⚙️</span>
             <span id="mSettings">Sozlamalar</span>
           </a>
+          <a class="menu-item mobile-main mobile-only" id="navMore" onclick="window.toggleMobileMenu()">
+            <span class="icon">☰</span>
+            <span data-i18n="mMore">Ko'proq</span>
+          </a>
         </div>
       </div>
       <div class="sidebar-bottom" id="sidebarAuthContainer">
@@ -360,6 +368,7 @@
         </div>
       </div>
     </sidebar>
+    <div class="mobile-menu-backdrop" onclick="window.toggleMobileMenu(false)"></div>
 
     <!-- ASOSIY QISM -->
     <div class="main-wrapper">
@@ -392,6 +401,7 @@
             >
               ⚡ Play Online (Matchmaking)
             </button>
+            <div class="home-widgets" id="homeWidgets"></div>
           </div>
           <!-- O'rtada: sayt bilan tanishtiruv ("ChessDom haqida" sahifasini ochadi) -->
           <div class="dash-card home-about" id="dashAboutPageBtn" role="button" tabindex="0"
@@ -1214,6 +1224,11 @@
       </div>
     </div>
 
+    <!-- Jonli o'yinlar: tomosha qilish (live.js) -->
+    <div id="liveView" class="view-section lv-view">
+      <div id="liveRoot" class="lv-page"></div>
+    </div>
+
     <!-- Xabarlar: shaxsiy suhbatlar, do'stlar va so'rovlar (messages.js) -->
     <div id="messagesView" class="view-section msg-view">
       <div id="messagesRoot"></div>
@@ -1677,6 +1692,14 @@
               <div class="auth-error" id="signupUsernameExistsError" data-i18n="userExists">Bu nomli foydalanuvchi mavjud!</div>
             </div>
             <div class="auth-form-group">
+              <label class="auth-form-label" for="signupEmail" data-i18n="authEmailOptional">Email (ixtiyoriy — parolni tiklash uchun)</label>
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg>
+                <input type="email" id="signupEmail" class="auth-form-input" autocomplete="email" placeholder="email@example.com" />
+              </div>
+              <div class="auth-error" id="signupEmailError" data-i18n="authEmailInvalid">Email manzili noto'g'ri</div>
+            </div>
+            <div class="auth-form-group">
               <label class="auth-form-label" for="signupPassword" data-i18n="labelRegPassword">Parol</label>
               <div class="auth-input-wrap">
                 <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
@@ -1714,12 +1737,56 @@
                 <button type="button" class="auth-eye-btn" onclick="window.togglePasswordVisibility('loginModalPassword', this)" aria-label="Parol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z" /></svg></button>
               </div>
               <div class="auth-error" id="loginPasswordError" data-i18n="authPasswordRequired">Parolni kiriting</div>
+              <a class="auth-forgot-link" onclick="window.showAuthGate('forgot')" data-i18n="authForgotLink">Parolni unutdingizmi?</a>
             </div>
             <div class="auth-error auth-error-box" id="loginGeneralError" data-i18n="wrongCredentials">Ism yoki parol xato!</div>
             <button type="submit" class="auth-submit-btn" id="loginSubmitBtn" data-i18n="btnLoginSubmit">Kirish</button>
             <div class="auth-switch">
               <span class="auth-switch-text" data-i18n="authNewToSite">Chessdom'da yangimisiz?</span>
               <a class="auth-switch-link" onclick="window.switchToSignUp()" data-i18n="goToRegisterLink">Ro'yxatdan o'tish</a>
+            </div>
+          </form>
+
+          <!-- Parolni tiklash: havola so'rash -->
+          <form class="auth-login-step" id="authForgotStep" onsubmit="event.preventDefault(); window.handleForgotPassword();" novalidate style="display: none">
+            <h1 class="auth-gate-title" data-i18n="authForgotTitle">Parolni tiklash</h1>
+            <p class="auth-gate-sub" data-i18n="authForgotSub">Foydalanuvchi nomi yoki emailingizni kiriting — emailingizga tiklash havolasini yuboramiz</p>
+            <div class="auth-form-group">
+              <label class="auth-form-label" for="forgotLogin" data-i18n="authForgotLabel">Foydalanuvchi nomi yoki email</label>
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z" /></svg>
+                <input type="text" id="forgotLogin" class="auth-form-input" autocomplete="username" />
+              </div>
+            </div>
+            <div class="auth-note" id="forgotResult"></div>
+            <button type="submit" class="auth-submit-btn" id="forgotSubmitBtn" data-i18n="authForgotSubmit">Havola yuborish</button>
+            <div class="auth-switch">
+              <a class="auth-switch-link" onclick="window.switchToLogin()" data-i18n="authBackToLogin">← Kirishga qaytish</a>
+            </div>
+          </form>
+
+          <!-- Parolni tiklash: yangi parol (emaildagi havola orqali) -->
+          <form class="auth-login-step" id="authResetStep" onsubmit="event.preventDefault(); window.handleResetPassword();" novalidate style="display: none">
+            <h1 class="auth-gate-title" data-i18n="authResetTitle">Yangi parol</h1>
+            <p class="auth-gate-sub" data-i18n="authResetSub">Akkauntingiz uchun yangi parol o'ylab toping</p>
+            <div class="auth-form-group">
+              <label class="auth-form-label" for="resetPassword" data-i18n="authNewPassword">Yangi parol</label>
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
+                <input type="password" id="resetPassword" class="auth-form-input" autocomplete="new-password" placeholder="Kamida 6 ta belgi" data-i18n-placeholder="authPasswordMin" />
+              </div>
+            </div>
+            <div class="auth-form-group">
+              <label class="auth-form-label" for="resetPassword2" data-i18n="authRepeatPassword">Parolni takrorlang</label>
+              <div class="auth-input-wrap">
+                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
+                <input type="password" id="resetPassword2" class="auth-form-input" autocomplete="new-password" />
+              </div>
+            </div>
+            <div class="auth-note" id="resetResult"></div>
+            <button type="submit" class="auth-submit-btn" id="resetSubmitBtn" data-i18n="authResetSubmit">Parolni saqlash</button>
+            <div class="auth-switch">
+              <a class="auth-switch-link" onclick="window.switchToLogin()" data-i18n="authBackToLogin">← Kirishga qaytish</a>
             </div>
           </form>
         </div>
@@ -1747,6 +1814,10 @@
     <script src="about.js"></script>
     <script src="messages.js"></script>
     <script src="tournaments.js"></script>
+    <script src="live.js"></script>
+    <script src="challenge.js"></script>
+    <script src="home.js"></script>
+    <script src="rating-chart.js"></script>
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
@@ -1806,9 +1877,17 @@
                 <input type="text" class="editable-input" id="inputGoal" value="" style="display: none" />
               </div>
             </div>
+            <div class="meta-row">
+              <span data-i18n="profEmailLabel">Email</span>
+              <div class="meta-value">
+                <span id="profileEmailText"></span>
+                <button type="button" class="meta-edit-btn" onclick="window.editProfileEmail()" data-i18n="profEmailEdit">O'zgartirish</button>
+              </div>
+            </div>
           </div>
 
           <div class="profile-sidebar-actions">
+            <button class="profile-message-btn profile-challenge-btn" id="profileChallengeBtn" type="button" style="display: none" onclick="window.openChallengeDialog(window.viewedProfileUsername)">⚔️ <span data-i18n="chProfileBtn">O'yinga chaqirish</span></button>
             <button class="profile-message-btn" id="profileMessageBtn" type="button" style="display: none" onclick="window.openMessagesWith(window.viewedProfileUsername)">✉️ <span data-i18n="profileMessageBtn">Xabar yozish</span></button>
             <button class="profile-friend-btn" id="profileFriendBtn" type="button" style="display: none" onclick="window.sendFriendRequestTo(window.viewedProfileUsername)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2zm9 4c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg><span data-i18n="btnSendFriendRequest">Do'stlik so'rash</span></button>
             <button class="copy-link-btn" id="copyProfileLinkBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0zm-3.2 6.2a4.5 4.5 0 0 1-3.2-7.7l2.8-2.8a1 1 0 1 1 1.4 1.4L5.6 13.3a2.5 2.5 0 0 0 3.5 3.5l2.8-2.8a1 1 0 1 1 1.4 1.4l-2.8 2.8a4.5 4.5 0 0 1-3.1 1.4zm9.2-5.3a1 1 0 0 1-.7-1.7l2.8-2.8a2.5 2.5 0 0 0-3.5-3.5L12.4 9.1A1 1 0 1 1 11 7.7l2.8-2.8a4.5 4.5 0 0 1 6.4 6.4l-2.8 2.8a1 1 0 0 1-.8.2z"/></svg><span data-i18n="profCopyLinkBtn">Profil havolasini nusxalash</span></button>
@@ -1862,6 +1941,21 @@
                 <input type="number" class="editable-input" id="inputBullet" value="1500" style="display: none" disabled />
                 <span class="profile-mode-games" id="statBulletGames">0 o'yin</span>
               </div>
+            </div>
+          </section>
+
+          <section class="profile-section profile-chart-section">
+            <div class="profile-chart-head">
+              <h3 class="profile-section-title" data-i18n="profChartTitle">Reyting o'zgarishi</h3>
+              <div class="profile-chart-tabs" id="profileChartTabs">
+                <button type="button" data-mode="rapid">⏱️ Rapid</button>
+                <button type="button" data-mode="blitz">⚡ Blitz</button>
+                <button type="button" data-mode="bullet">🔥 Bullet</button>
+              </div>
+            </div>
+            <div class="profile-chart-box">
+              <canvas id="profileRatingChart"></canvas>
+              <div class="profile-chart-empty" id="profileChartEmpty" data-i18n="profChartEmpty">Grafik shu rejimdagi reytingli o'yinlardan keyin paydo bo'ladi</div>
             </div>
           </section>
 

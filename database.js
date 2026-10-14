@@ -290,6 +290,31 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  // Reyting tarixi (profil grafigi): har reytingli o'yindan keyingi rejim reytingi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS rating_history (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      mode TEXT NOT NULL,
+      rating_before INTEGER NOT NULL,
+      rating INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `);
+  await dbExec(`CREATE INDEX IF NOT EXISTS idx_rating_history_user ON rating_history(user_id, mode)`);
+
+  // Parolni tiklash: bir martalik token (bazada faqat sha256 xeshi)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS password_resets (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      token_hash TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      used INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    )
+  `);
+
   // Swiss turnirlari (swiss.js): ishtirokchi natijalari, turnirdan chiqqanlik, o'yin natijasi, keyingi tur vaqti
   for (const col of ['games', 'wins', 'draws', 'losses', 'withdrawn']) {
     try {
@@ -507,6 +532,33 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
 }
 
 // Davlat kodi (masalan 'uz', 'pk') — raqibga bayroq ko'rsatish uchun
+async function getUserByEmail(email) {
+  const row = await dbGet('SELECT * FROM users WHERE LOWER(email) = ?', [String(email).toLowerCase()]);
+  return row ? mapUserRow(row) : null;
+}
+
+async function updateUserEmail(userId, email) {
+  await dbRun('UPDATE users SET email = ? WHERE id = ?', [email, userId]);
+}
+
+async function updateUserPassword(userId, passwordHash) {
+  await dbRun('UPDATE users SET password_hash = ? WHERE id = ?', [passwordHash, userId]);
+}
+
+async function createPasswordReset(userId, tokenHash, expiresAt) {
+  // Avvalgi ishlatilmagan tokenlar bekor qilinadi
+  await dbRun('UPDATE password_resets SET used = 1 WHERE user_id = ? AND used = 0', [userId]);
+  await dbRun('INSERT INTO password_resets (id, user_id, token_hash, expires_at, used, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    [uuidv4(), userId, tokenHash, expiresAt, 0, new Date().toISOString()]);
+}
+
+async function usePasswordReset(tokenHash) {
+  const row = await dbGet('SELECT * FROM password_resets WHERE token_hash = ? AND used = 0', [tokenHash]);
+  if (!row || row.expires_at < new Date().toISOString()) return null;
+  await dbRun('UPDATE password_resets SET used = 1 WHERE id = ?', [row.id]);
+  return row.user_id;
+}
+
 async function updateUserCountry(userId, country) {
   await dbRun('UPDATE users SET country = ? WHERE id = ?', [country, userId]);
 }
@@ -570,11 +622,19 @@ async function getPublicProfile(username) {
     timeControl: g.timeControl || null,
     date: g.timestamp || g.date || null
   }));
+  // Reyting grafigi: har rejim bo'yicha oxirgi 100 nuqta (birinchisi — o'yindan oldingi reyting)
+  const ratingHistory = {};
+  for (const mode of RATING_MODES) {
+    const rows = await dbAll('SELECT rating_before as "before", rating, created_at as "t" FROM rating_history WHERE user_id = ? AND mode = ? ORDER BY created_at DESC LIMIT 100', [user.id, mode]);
+    rows.reverse();
+    ratingHistory[mode] = rows.length ? [{ t: rows[0].t, r: Number(rows[0].before) }].concat(rows.map(x => ({ t: x.t, r: Number(x.rating) }))) : [];
+  }
   return {
     id: user.id,
     username: user.username,
     country: user.country || null,
     club: userClub(user),
+    ratingHistory,
     rating: user.rating || 1500,
     ratingsByMode: user.ratings_by_mode,
     stats: user.stats || { wins: 0, losses: 0, draws: 0 },
@@ -657,6 +717,8 @@ async function updateUserRatingByResult(userId, result, opponentRating, timeCont
     const modeRating = ratingsByMode[timeControl];
     modeChange = eloChange(modeRating, Number(opponentModeRating) || Number(opponentRating) || 1500, result);
     ratingsByMode[timeControl] = Math.max(100, modeRating + modeChange);
+    await dbRun('INSERT INTO rating_history (id, user_id, mode, rating_before, rating, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+      [uuidv4(), userId, timeControl, modeRating, ratingsByMode[timeControl], new Date().toISOString()]);
   }
 
   await dbRun('UPDATE users SET rating = ?, ratings_by_mode = ? WHERE id = ?', [newRating, JSON.stringify(ratingsByMode), userId]);
@@ -981,6 +1043,11 @@ module.exports = {
   userClub,
   getPublicProfile,
   markRoomRead,
+  getUserByEmail,
+  updateUserEmail,
+  updateUserPassword,
+  createPasswordReset,
+  usePasswordReset,
   getConversations,
   getUnreadTotal,
   usePostgres,

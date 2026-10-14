@@ -594,6 +594,14 @@ let config = {
   onSnapEnd: onSnapEnd
 };
 
+// Qayta ulanganda: o'yinni serverdagi yurishlar bo'yicha tiklash
+window.loadServerPosition = function(moves) {
+  game.reset();
+  (moves || []).forEach(m => game.move({ from: m.from, to: m.to, promotion: m.promotion || 'q' }));
+  if (board) board.position(game.fen(), false);
+  updateHistory();
+};
+
 function updateHistory() {
   if (!historyListElement) return;
   historyListElement.innerHTML = "";

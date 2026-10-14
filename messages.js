@@ -118,6 +118,7 @@
           <b class="player-link" data-username="${esc(p.username)}">${esc(p.username)}</b>
           ${p.country ? `<small>${flag(p.country)}</small>` : ''}
         </div>
+        <button class="msg-challenge" data-challenge="${esc(p.username)}" title="${esc(tx('chProfileBtn', "O'yinga chaqirish"))}">⚔️ <span>${esc(tx('chPlayShort', "O'ynash"))}</span></button>
       </div>
       <div class="msg-thread" id="msgThread">${bubbles || `<div class="msg-placeholder small"><p>${esc(tx('msgSayHi', "Salom deb yozing 👋"))}</p></div>`}</div>
       <form class="msg-composer" id="msgComposer">
@@ -172,6 +173,8 @@
     }));
     root.querySelectorAll('[data-accept]').forEach(b => b.addEventListener('click', () => answerRequest('accept', b.dataset.accept)));
     root.querySelectorAll('[data-decline]').forEach(b => b.addEventListener('click', () => answerRequest('decline', b.dataset.decline)));
+    const challenge = root.querySelector('[data-challenge]');
+    if (challenge) challenge.addEventListener('click', () => { if (typeof window.openChallengeDialog === 'function') window.openChallengeDialog(challenge.dataset.challenge); });
     const back = root.querySelector('[data-back]');
     if (back) back.addEventListener('click', () => { state.active = null; render(); });
     const search = document.getElementById('msgSearch');

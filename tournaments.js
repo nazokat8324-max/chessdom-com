@@ -200,7 +200,9 @@
       <div class="ar-games">${list.map(p => p.black ? `
         <div class="ar-game">
           <span class="${p.result === '1-0' || p.result === '+-' ? 'won' : ''}">♔ ${player(p.white)}</span>
-          <b>${p.result ? esc(resText(p.result)) : `<em class="ar-tag playing">${esc(tx('arTagPlaying', "o'ynamoqda"))}</em>`}</b>
+          <b>${p.result ? esc(resText(p.result)) : (p.roomId
+            ? `<button class="sw-watch" data-watch="${esc(p.roomId)}">👁 ${esc(tx('lvWatch', 'Tomosha'))}</button>`
+            : `<em class="ar-tag playing">${esc(tx('arTagPlaying', "o'ynamoqda"))}</em>`)}</b>
           <span class="${p.result === '0-1' || p.result === '-+' ? 'won' : ''}">${player(p.black)} ♚</span>
         </div>` : `
         <div class="ar-game bye"><span>${player(p.white)}</span><b>bye</b><span>+1</span></div>`).join('')}</div>`;
@@ -258,6 +260,7 @@
     el.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => { st.tab = b.dataset.tab; render(); }));
     el.querySelectorAll('[data-round]').forEach(b => b.addEventListener('click', () => { st.round = Number(b.dataset.round); render(); }));
     el.querySelectorAll('[data-select]').forEach(b => b.addEventListener('click', () => select(b.dataset.select)));
+    el.querySelectorAll('[data-watch]').forEach(b => b.addEventListener('click', () => { if (typeof window.watchGame === 'function') window.watchGame(b.dataset.watch); }));
   }
 
   async function joinOrLeave(action) {
@@ -270,7 +273,13 @@
         method: 'POST', headers: { 'Content-Type': 'application/json', ...authHeaders() }
       }).then(r => r.json());
       if (!d.success) showToast(tServer(d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning', 5000);
-      else showToast(action === 'join' ? tx('swJoinedToast', "Turnirga qo'shildingiz! Boshlanganda o'yin o'zi ochiladi.") : tx('swLeftToast', 'Turnirdan chiqdingiz'), action === 'join' ? 'success' : 'info', 4000);
+      else {
+        // Eslatma boshqa oynada turganda ham ko'rinishi uchun brauzer bildirishnomasiga ruxsat so'raymiz
+        if (action === 'join' && 'Notification' in window && Notification.permission === 'default') {
+          try { Notification.requestPermission(); } catch (e) {}
+        }
+      }
+      if (d.success) showToast(action === 'join' ? tx('swJoinedToast', "Turnirga qo'shildingiz! Boshlanganda o'yin o'zi ochiladi.") : tx('swLeftToast', 'Turnirdan chiqdingiz'), action === 'join' ? 'success' : 'info', 4000);
       await load();
     } catch (err) {
       showToast(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), 'warning');
@@ -316,5 +325,15 @@
   document.addEventListener('DOMContentLoaded', () => {
     if (typeof socket === 'undefined') return;
     socket.on('swiss-update', () => { if (isActiveView()) scheduleReload(400); });
+    // Turnir boshlanishiga 1 daqiqa qoldi
+    socket.on('swiss-reminder', (data) => {
+      const text = tx('swReminder', "«{{name}}» turniri 1 daqiqadan keyin boshlanadi! Saytda qoling va boshqa o'yin boshlamang.", { name: (data && data.name) || '' });
+      showToast('⏰ ' + text, 'warning', 10000);
+      try {
+        if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
+          new Notification('ChessDom', { body: text, icon: 'img/chesspieces/wikipedia/wN.png' });
+        }
+      } catch (e) {}
+    });
   });
 })();

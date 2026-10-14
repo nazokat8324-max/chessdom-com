@@ -1189,6 +1189,7 @@ window.renderProfileEmail = function() {
   const email = window.currentUser.email;
   const real = email && !/@justchess\.local$/i.test(email);
   el.textContent = real ? email : tx('profEmailNone', 'Biriktirilmagan');
+  el.title = real ? email : '';
   el.classList.toggle('muted', !real);
 };
 window.switchToLogin = function() { window.showAuthGate('login'); };
@@ -1456,7 +1457,12 @@ window.renderProfileCommon = function(p) {
   const avatarVersion = isMe ? (window.currentUser.avatarVersion || null) : (p.avatarVersion === undefined ? null : p.avatarVersion);
   if (avatarEl && username) avatarEl.insertAdjacentHTML('beforeend', window.avatarOverlay(username, avatarVersion));
   const removeBtn = document.getElementById("avatarRemoveBtn");
-  if (removeBtn) removeBtn.style.display = isMe && avatarVersion ? '' : 'none';
+  if (removeBtn) {
+    removeBtn.style.display = isMe && avatarVersion ? '' : 'none';
+    removeBtn.title = removeBtn.ariaLabel = tx('avatarRemove', "Rasmni o'chirish");
+  }
+  const editBtn = document.getElementById("avatarEditBtn");
+  if (editBtn) editBtn.title = editBtn.ariaLabel = tx('avatarChange', "Rasm qo'yish");
   setText("profileModalHandle", username ? "@" + username : "");
 
   const countryCode = (p.country || '').toLowerCase();

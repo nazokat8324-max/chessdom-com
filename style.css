@@ -7598,8 +7598,24 @@ button.ar-slot:hover {
   background: rgba(229, 72, 77, 0.12);
   border: 1px solid rgba(229, 72, 77, 0.4);
 }
-#profileEmailText {
-  word-break: break-all;
+/* Email bitta qatorda: sig'masa "…" bilan qisqaradi (to'liq manzil — title'da) */
+#profileModal .meta-value:has(.profile-email-text) {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 1;
+}
+#profileModal .profile-email-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+#profileModal .meta-edit-btn {
+  flex-shrink: 0;
+  margin-left: 0;
 }
 #profileEmailText.muted {
   color: #7f908a;
@@ -7883,18 +7899,27 @@ button.ar-slot:hover {
   transform: scale(1.08);
   filter: brightness(1.08);
 }
+/* Rasmni o'chirish: avatarning chap pastki burchagida kichik tugma */
 .avatar-remove-btn {
-  margin-top: 8px;
-  padding: 2px 8px;
-  border: none;
-  background: none;
-  color: #f87171;
-  font-size: 12px;
-  font-weight: 600;
+  position: absolute;
+  left: 4px;
+  bottom: 4px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 3px solid var(--cd-bg-2);
+  background: #3a1f22;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
   cursor: pointer;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s, background 0.15s;
 }
 .avatar-remove-btn:hover {
-  text-decoration: underline;
+  transform: scale(1.08);
+  background: #e5484d;
 }
 #profileModal.viewing-other .avatar-edit-btn,
 #profileModal.viewing-other .avatar-remove-btn {

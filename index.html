@@ -1847,8 +1847,8 @@
               <div class="profile-avatar" id="profileAvatarLetter">♔</div>
               <button type="button" class="avatar-edit-btn" id="avatarEditBtn" onclick="document.getElementById('avatarFileInput').click()" data-i18n-title="avatarChange" title="Rasm qo'yish">📷</button>
               <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/*" hidden onchange="window.handleAvatarFile(this)" />
+              <button type="button" class="avatar-remove-btn" id="avatarRemoveBtn" style="display: none" onclick="window.removeAvatar()" title="Rasmni o'chirish" aria-label="Rasmni o'chirish">🗑</button>
             </div>
-            <button type="button" class="avatar-remove-btn" id="avatarRemoveBtn" style="display: none" onclick="window.removeAvatar()" data-i18n="avatarRemove">Rasmni o'chirish</button>
             <h2 class="profile-name" id="profileModalUsername"></h2>
             <p class="profile-handle" id="profileModalHandle"></p>
             <p class="profile-joined" id="profileJoined" style="display: none"></p>
@@ -1883,7 +1883,7 @@
             <div class="meta-row">
               <span data-i18n="profEmailLabel">Email</span>
               <div class="meta-value">
-                <span id="profileEmailText"></span>
+                <span id="profileEmailText" class="profile-email-text"></span>
                 <button type="button" class="meta-edit-btn" onclick="window.editProfileEmail()" data-i18n="profEmailEdit">O'zgartirish</button>
               </div>
             </div>

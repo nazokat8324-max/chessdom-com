@@ -1764,6 +1764,14 @@ window.showClubChat = function(countryName, countryCode) {
 
   loadClubChatMessages();
   updateClubChatComposer(countryName, countryCode);
+  if (window.ChatStickers) {
+    window.ChatStickers.attachPicker({
+      button: document.getElementById('clubChatEmojiBtn'),
+      input: document.getElementById('clubChatMessageInput'),
+      mount: document.getElementById('clubChatComposer'),
+      onSticker: (sid) => window.sendClubChatMessage('[sticker:' + sid + ']')
+    });
+  }
 
   // Socket.IO orqali klub xonasiga qo'shilish
   if (typeof socket !== 'undefined' && socket.connected) {
@@ -1836,10 +1844,11 @@ window.loadClubChatMessages = function() {
         const time = new Date(msg.created_at || msg.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const authorName = msg.username || msg.sender_username || (isOwn ? (window.currentUser ? window.currentUser.username : tx('youLabel', 'Siz')) : tx('userFallback', 'Foydalanuvchi'));
         
+        const sticker = window.ChatStickers ? window.ChatStickers.id(msg.message) : null;
         htmlContent += `
-          <div class="club-chat-message ${isOwn ? 'own' : 'other'}">
-            <span class="club-chat-message-author">${escapeHtml(authorName)}</span>
-            <div>${escapeHtml(msg.message)}</div>
+          <div class="club-chat-message ${isOwn ? 'own' : 'other'}${sticker ? ' sticker' : ''}">
+            <span class="club-chat-message-author player-link" data-username="${escapeHtml(authorName)}">${escapeHtml(authorName)}</span>
+            <div>${sticker ? window.ChatStickers.html(sticker) : escapeHtml(msg.message)}</div>
             <div class="club-chat-message-time">${time}</div>
           </div>
         `;
@@ -1854,7 +1863,7 @@ window.loadClubChatMessages = function() {
     });
 };
 
-window.sendClubChatMessage = function() {
+window.sendClubChatMessage = function(stickerMessage) {
   if (!window.currentUser) {
     alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));
     return;
@@ -1864,7 +1873,8 @@ window.sendClubChatMessage = function() {
 
   const input = document.getElementById('clubChatMessageInput');
   if (!input) return;
-  const message = input.value.trim();
+  const isSticker = typeof stickerMessage === 'string';
+  const message = isSticker ? stickerMessage : input.value.trim();
   if (!message) return;
 
   const roomId = 'club_' + window.currentClubName;
@@ -1884,7 +1894,7 @@ window.sendClubChatMessage = function() {
   .then(res => res.json())
   .then(data => {
     if (data.success) {
-      input.value = '';
+      if (!isSticker) input.value = '';
       loadClubChatMessages();
     } else {
       alert(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'));

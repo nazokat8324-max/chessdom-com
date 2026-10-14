@@ -9215,6 +9215,19 @@ html.hide-last-move #chessBoard .sq-last {
   .stk-anim { width: 110px; height: 110px; }
 }
 
+/* ===== Klub chati: stikerlar ===== */
+#clubChatComposer .msg-picker {
+  left: 0;
+  bottom: 58px;
+}
+.club-chat-message.sticker {
+  background: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

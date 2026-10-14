@@ -1317,7 +1317,8 @@
             background: var(--cd-surface-2);
           "
         >
-          <div style="display: flex; gap: 10px">
+          <div style="display: flex; gap: 10px; position: relative" id="clubChatComposer">
+            <button type="button" class="msg-emoji-btn" id="clubChatEmojiBtn" title="Stikerlar va emoji">😊</button>
             <input
               type="text"
               id="clubChatMessageInput"
@@ -1611,6 +1612,7 @@
     <script src="rating.js"></script>
     <script src="leagues.js"></script>
     <script src="about.js"></script>
+    <script src="stickers.js"></script>
     <script src="messages.js"></script>
     <script src="tournaments.js"></script>
     <script src="live.js"></script>

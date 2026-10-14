@@ -7815,6 +7815,33 @@ button.ar-slot:hover {
   visibility: hidden;
 }
 
+/* ===== Kompyuter: ixcham yon menyu ===== */
+@media (min-width: 769px) {
+  sidebar {
+    padding: 16px 12px;
+  }
+  .sidebar-top {
+    gap: 14px;
+  }
+  .menu-list {
+    gap: 2px;
+  }
+  .menu-list .menu-item {
+    gap: 12px;
+    padding: 8px 12px;
+    font-size: 13.5px;
+    border-radius: 10px;
+  }
+  .menu-list .menu-item span.icon {
+    width: 20px;
+    font-size: 16px;
+    text-align: center;
+  }
+  .sidebar-bottom {
+    padding-top: 12px;
+  }
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

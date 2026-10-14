@@ -1,6 +1,37 @@
 // "Xabarlar" bo'limi: shaxsiy suhbatlar (istalgan o'yinchiga), do'stlar va do'stlik so'rovlari
 (function () {
-  const state = { tab: 'chats', conversations: [], friends: [], requests: [], active: null, messages: [], unread: 0 };
+  const state = { tab: 'chats', conversations: [], friends: [], requests: [], active: null, messages: [], unread: 0, picker: false, pickerTab: 'stickers' };
+
+  // --- Stikerlar: xabar matni "[sticker:<id>]" ko'rinishida saqlanadi, faqat ro'yxatdagilari rasm bo'lib chiziladi ---
+  // a-<kod> — Google Noto animatsiyali emoji (CC BY 4.0), c-<nom> — shaxmat stikerlari
+  const NOTO = (code, anim) => 'https://fonts.gstatic.com/s/e/notoemoji/latest/' + code + '/' + (anim ? '512.webp' : 'emoji.svg');
+  const ANIM_STICKERS = ['1f600', '1f602', '1f923', '1f60a', '1f60e', '1f60d', '1f618', '1f973', '1f914', '1f92f', '1f631', '1f605',
+    '1f622', '1f62d', '1f621', '1f634', '1f97a', '1f440', '1f480', '1f44d', '1f44f', '1f64f', '1f4aa', '1f525', '2764_fe0f', '1f389', '1f3c6', '1f451'];
+  const CHESS_STICKERS = [
+    ['hi', 'wK', 'stkHi', 'Salom!', 'teal'], ['gg', 'wN', 'stkGG', "Yaxshi o'yin!", 'green'], ['check', 'wQ', 'stkCheck', 'Shax!', 'red'],
+    ['mate', 'bK', 'stkMate', 'Mat!', 'dark'], ['nice', 'wB', 'stkNice', "Zo'r yurish!", 'gold'], ['rematch', 'bN', 'stkRematch', 'Revansh?', 'blue'],
+    ['luck', 'wR', 'stkLuck', 'Omad!', 'purple'], ['oops', 'bP', 'stkOops', 'Ups...', 'orange']
+  ];
+  const EMOJIS = '😀 😂 🤣 😊 😍 😘 😎 🤩 🤔 😏 😅 😬 😢 😭 😡 😱 🥳 😴 🙈 🫡 👋 🙏 👍 👎 👏 💪 🤝 🔥 ❤️ 💔 💯 🎉 🏆 👑 ⚡ ⏱️ ♟️ ✅ ❌ 👀'.split(' ');
+  const pieceSrc = (code) => (window.pieceUrl ? window.pieceUrl(code) : 'img/chesspieces/wikipedia/' + code + '.png');
+  const stickerId = (msg) => {
+    const m = /^\[sticker:([a-z0-9_-]{1,32})\]$/.exec(String(msg || '').trim());
+    if (!m) return null;
+    const id = m[1];
+    if (id.startsWith('a-') && ANIM_STICKERS.includes(id.slice(2))) return id;
+    if (id.startsWith('c-') && CHESS_STICKERS.some(s => s[0] === id.slice(2))) return id;
+    return null;
+  };
+  const chessStickerHtml = (name, small) => {
+    const s = CHESS_STICKERS.find(x => x[0] === name);
+    return `<span class="stk-chess c-${s[4]}${small ? ' small' : ''}"><img src="${esc(pieceSrc(s[1]))}" alt=""><b>${esc(tx(s[2], s[3]))}</b></span>`;
+  };
+  const stickerHtml = (id) => id.startsWith('a-')
+    ? `<img class="stk-anim" src="${NOTO(id.slice(2), true)}" alt="" loading="lazy" onerror="this.src='${NOTO(id.slice(2), false)}'">`
+    : chessStickerHtml(id.slice(2));
+  // Suhbatlar ro'yxati va bildirishnomalar uchun qisqa matn
+  const previewText = (msg) => stickerId(msg) ? '🎨 ' + tx('msgSticker', 'Stiker') : msg;
+  window.chatPreviewText = previewText;
 
   const esc = (v) => {
     const div = document.createElement('div');
@@ -66,7 +97,7 @@
           ${avatar(c.partner.username)}
           <span class="msg-item-main">
             <span class="msg-item-top"><b>${esc(c.partner.username)}</b>${flag(c.partner.country)}<small>${esc(timeLabel(c.lastAt))}</small></span>
-            <span class="msg-item-last">${c.lastFromMe ? `<em>${esc(tx('msgYou', 'Siz'))}:</em> ` : ''}${esc(c.lastMessage)}</span>
+            <span class="msg-item-last">${c.lastFromMe ? `<em>${esc(tx('msgYou', 'Siz'))}:</em> ` : ''}${esc(previewText(c.lastMessage))}</span>
           </span>
           ${c.unread ? `<span class="msg-unread">${c.unread}</span>` : ''}
         </button>`).join('');
@@ -108,7 +139,10 @@
       const day = isNaN(d) ? '' : d.toLocaleDateString();
       const sep = day && day !== lastDay ? `<div class="msg-day">${esc(day)}</div>` : '';
       lastDay = day;
-      return `${sep}<div class="msg-bubble ${mine ? 'mine' : 'theirs'}"><span>${esc(m.message)}</span><time>${esc(isNaN(d) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}</time></div>`;
+      const time = esc(isNaN(d) ? '' : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+      const sticker = stickerId(m.message);
+      if (sticker) return `${sep}<div class="msg-bubble sticker ${mine ? 'mine' : 'theirs'}">${stickerHtml(sticker)}<time>${time}</time></div>`;
+      return `${sep}<div class="msg-bubble ${mine ? 'mine' : 'theirs'}"><span>${esc(m.message)}</span><time>${time}</time></div>`;
     }).join('');
     return `
       <div class="msg-chat-head">
@@ -121,15 +155,31 @@
         <button class="msg-challenge" data-challenge="${esc(p.username)}" title="${esc(tx('chProfileBtn', "O'yinga chaqirish"))}">⚔️ <span>${esc(tx('chPlayShort', "O'ynash"))}</span></button>
       </div>
       <div class="msg-thread" id="msgThread">${bubbles || `<div class="msg-placeholder small"><p>${esc(tx('msgSayHi', "Salom deb yozing 👋"))}</p></div>`}</div>
+      ${state.picker ? pickerHtml() : ''}
       <form class="msg-composer" id="msgComposer">
+        <button type="button" class="msg-emoji-btn${state.picker ? ' active' : ''}" data-picker="1" title="${esc(tx('msgStickers', 'Stikerlar va emoji'))}">😊</button>
         <input id="msgInput" class="form-input" maxlength="1000" autocomplete="off" placeholder="${esc(tx('chatPlaceholder', 'Xabar yozing...'))}">
         <button type="submit" class="msg-send">➤</button>
       </form>`;
   }
 
+  function pickerHtml() {
+    const tabs = [['stickers', '✨ ' + tx('msgTabStickers', 'Stikerlar')], ['chess', '♟ ' + tx('msgTabChessStickers', 'Shaxmat')], ['emoji', '😊 Emoji']];
+    let grid;
+    if (state.pickerTab === 'chess') grid = `<div class="msg-picker-grid chess">${CHESS_STICKERS.map(s => `<button type="button" data-sticker="c-${s[0]}">${chessStickerHtml(s[0], true)}</button>`).join('')}</div>`;
+    else if (state.pickerTab === 'emoji') grid = `<div class="msg-picker-grid emoji">${EMOJIS.map(e => `<button type="button" data-emoji="${esc(e)}">${esc(e)}</button>`).join('')}</div>`;
+    else grid = `<div class="msg-picker-grid anim">${ANIM_STICKERS.map(c => `<button type="button" data-sticker="a-${c}"><img src="${NOTO(c, false)}" alt="" loading="lazy"></button>`).join('')}</div>`;
+    return `<div class="msg-picker">
+      <div class="msg-picker-tabs">${tabs.map(([id, label]) => `<button type="button" class="${state.pickerTab === id ? 'active' : ''}" data-ptab="${id}">${esc(label)}</button>`).join('')}</div>
+      ${grid}
+    </div>`;
+  }
+
   function render() {
     const root = document.getElementById('messagesRoot');
     if (!root) return;
+    const oldInput = document.getElementById('msgInput');
+    const draft = oldInput ? { value: oldInput.value, focused: document.activeElement === oldInput, caret: oldInput.selectionStart } : null;
     const tabs = [
       ['chats', tx('msgTabChats', 'Suhbatlar'), state.unread],
       ['friends', tx('msgTabFriends', "Do'stlar"), 0],
@@ -151,6 +201,11 @@
         <section class="msg-chat" id="msgChat">${chatHtml()}</section>
       </div>`;
     bind(root);
+    const newInput = document.getElementById('msgInput');
+    if (draft && newInput && draft.value) {
+      newInput.value = draft.value;
+      if (draft.focused) { newInput.focus(); newInput.setSelectionRange(draft.caret, draft.caret); }
+    }
     scrollThread();
   }
 
@@ -184,7 +239,19 @@
       if (name) window.openMessagesWith(name);
     });
     const composer = document.getElementById('msgComposer');
-    if (composer) composer.addEventListener('submit', (e) => { e.preventDefault(); sendMessage(); });
+    if (composer) composer.addEventListener('submit', (e) => { e.preventDefault(); state.picker = false; sendMessage(); });
+    root.querySelectorAll('[data-picker]').forEach(b => b.addEventListener('click', () => { state.picker = !state.picker; render(); }));
+    root.querySelectorAll('[data-ptab]').forEach(b => b.addEventListener('click', () => { state.pickerTab = b.dataset.ptab; render(); }));
+    root.querySelectorAll('[data-sticker]').forEach(b => b.addEventListener('click', () => sendSticker(b.dataset.sticker)));
+    root.querySelectorAll('[data-emoji]').forEach(b => b.addEventListener('click', () => {
+      const input = document.getElementById('msgInput');
+      if (!input) return;
+      const start = input.selectionStart ?? input.value.length, end = input.selectionEnd ?? input.value.length;
+      input.value = input.value.slice(0, start) + b.dataset.emoji + input.value.slice(end);
+      input.focus();
+      const pos = start + b.dataset.emoji.length;
+      input.setSelectionRange(pos, pos);
+    }));
     const input = document.getElementById('msgInput');
     if (input && !matchMedia('(max-width: 900px)').matches) input.focus();
   }
@@ -202,6 +269,7 @@
     if (!partner || !partner.id) return;
     if (window.currentUser && partner.id === window.currentUser.id) return;
     state.active = partner;
+    state.picker = false;
     state.tab = 'chats';
     state.messages = [];
     render();
@@ -211,6 +279,15 @@
     await postJson('/api/messages/read', { roomId: 'user_' + partner.id }).catch(() => {});
     await loadConversations();
     render();
+  }
+
+  async function sendSticker(id) {
+    const p = state.active;
+    if (!p) return;
+    state.picker = false;
+    render();
+    const d = await postJson('/api/chat/messages', { message: '[sticker:' + id + ']', roomId: 'user_' + p.id }).catch(() => null);
+    if (!d || !d.success) showToast(tServer(d && d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning');
   }
 
   async function sendMessage() {
@@ -268,7 +345,7 @@
         return;
       }
       if (!mine) {
-        showToast(`✉️ ${data.senderName || ''}: ${String(data.message || '').slice(0, 80)}`, 'info', 5000);
+        showToast(`✉️ ${data.senderName || ''}: ${String(previewText(data.message) || '').slice(0, 80)}`, 'info', 5000);
         if (isActiveView()) { await loadConversations(); render(); } else window.refreshMessagesBadge();
       }
     });

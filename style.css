@@ -7926,6 +7926,47 @@ button.ar-slot:hover {
   display: none !important;
 }
 
+/* ===== Taxta: tanlangan dona, yurish nuqtalari, oxirgi yurish (board.js) ===== */
+#chessBoard [data-square] {
+  position: relative;
+}
+#chessBoard .sq-last {
+  box-shadow: inset 0 0 0 200px rgba(255, 232, 80, 0.38);
+}
+#chessBoard .sq-selected {
+  box-shadow: inset 0 0 0 200px rgba(255, 220, 60, 0.55);
+}
+#chessBoard .sq-hint,
+#chessBoard .sq-hint-capture {
+  cursor: pointer;
+}
+#chessBoard .sq-hint::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30%;
+  height: 30%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 2;
+}
+#chessBoard .sq-hint-capture::after {
+  content: "";
+  position: absolute;
+  inset: 4%;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 6px solid rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+  z-index: 2;
+}
+#chessBoard .sq-hint:hover::after {
+  background: rgba(0, 0, 0, 0.32);
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

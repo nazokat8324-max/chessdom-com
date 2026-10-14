@@ -179,6 +179,8 @@ socket.on('opponent-move', (move) => {
     const result = game.move(move);
     if (!result) return;
     board.position(game.fen());
+    if (typeof window.clearMoveHints === 'function') window.clearMoveHints();
+    if (typeof window.markLastMove === 'function') window.markLastMove(result.from, result.to);
     if (typeof updateHistory === 'function') {
       updateHistory();
     }
@@ -205,6 +207,7 @@ socket.on('move-rejected', (data) => {
     game.undo();
     if (typeof board !== 'undefined') board.position(game.fen());
     if (typeof updateHistory === 'function') updateHistory();
+    if (typeof window.refreshLastMove === 'function') window.refreshLastMove();
   }
   lastSentMove = null;
 });

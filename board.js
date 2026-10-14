@@ -97,6 +97,8 @@ window.applyMyColor = function(color) {
     board.orientation(window.myColor === 'b' ? 'black' : 'white');
   }
   arrangePlayerBars();
+  clearMoveHints();
+  if (lastMove) window.markLastMove(lastMove.from, lastMove.to);
 };
 
 window.clearMyColor = function() {
@@ -412,6 +414,8 @@ function setGameTime(sec, btnElement, increment) {
   gameStarted = false;
   gameFinished = false;
   game.reset();
+  clearMoveHints();
+  window.markLastMove(null, null);
   window.currentGameTimeControl = getGameModeFromTime(sec, timeIncrement);
   updateTimersDisplay();
   updateHistory();
@@ -530,6 +534,99 @@ window.updatePlayerInfo = function(color, name, rating) {
   }
 };
 
+// --- Bosib yurish: tanlangan dona, yurish mumkin bo'lgan kataklar (nuqta / olish doirasi), oxirgi yurish ---
+let selectedSquare = null;
+let dragFromSelected = false;
+let lastMove = null;
+
+function boardSquare(sq) {
+  const el = document.getElementById('chessBoard');
+  return el ? el.querySelector('[data-square="' + sq + '"]') : null;
+}
+
+function clearMoveHints() {
+  const el = document.getElementById('chessBoard');
+  if (el) el.querySelectorAll('.sq-selected, .sq-hint, .sq-hint-capture').forEach(s => s.classList.remove('sq-selected', 'sq-hint', 'sq-hint-capture'));
+  selectedSquare = null;
+}
+window.clearMoveHints = clearMoveHints;
+
+function selectSquare(sq) {
+  clearMoveHints();
+  selectedSquare = sq;
+  const own = boardSquare(sq);
+  if (own) own.classList.add('sq-selected');
+  game.moves({ square: sq, verbose: true }).forEach(m => {
+    const target = boardSquare(m.to);
+    if (target) target.classList.add(m.captured ? 'sq-hint-capture' : 'sq-hint');
+  });
+}
+
+// Oxirgi yurish (o'zimizniki yoki raqibniki) — ikkala katak yengil sariq
+window.markLastMove = function(from, to) {
+  lastMove = from && to ? { from, to } : null;
+  const el = document.getElementById('chessBoard');
+  if (el) el.querySelectorAll('.sq-last').forEach(s => s.classList.remove('sq-last'));
+  if (!lastMove) return;
+  [from, to].forEach(sq => { const s = boardSquare(sq); if (s) s.classList.add('sq-last'); });
+};
+
+// Tarixdagi oxirgi yurish bo'yicha (masalan, yurish rad etilganda yoki o'yin tiklanganda)
+window.refreshLastMove = function() {
+  const h = game.history({ verbose: true });
+  const m = h[h.length - 1];
+  window.markLastMove(m ? m.from : null, m ? m.to : null);
+};
+
+// Yurishni bajarish (sudrab tashlash ham, bosib yurish ham shu yerdan o'tadi)
+function executeMove(source, target) {
+  const move = game.move({ from: source, to: target, promotion: 'q' });
+  if (move === null) return null;
+  clearMoveHints();
+  window.markLastMove(move.from, move.to);
+  try {
+    if (game.in_checkmate()) {
+      playSound('gameEnd');
+    } else if (game.in_check()) {
+      playSound('check');
+    } else if (move.captured) {
+      playSound('capture');
+    } else {
+      playSound('move');
+    }
+  } catch (e) {
+    console.log("Ovoz chiqarishda xatolik:", e);
+  }
+
+  updateHistory();
+
+  const moveData = { from: source, to: target, promotion: 'q' };
+  if (typeof socket !== 'undefined' && typeof window.currentRoomId !== 'undefined' && window.currentRoomId) {
+    sendMove(moveData);
+  }
+
+  window.checkGameOverAfterMove();
+  return move;
+}
+
+// Bo'sh katak yoki raqib donasini bosish: tanlangan dona shu yerga yuradi
+document.addEventListener('click', (e) => {
+  const boardEl = document.getElementById('chessBoard');
+  if (!boardEl || !boardEl.contains(e.target)) return;
+  const squareEl = e.target.closest('[data-square]');
+  if (!squareEl || !selectedSquare) return;
+  const sq = squareEl.dataset.square;
+  if (sq === selectedSquare) return;
+  const legal = game.moves({ square: selectedSquare, verbose: true }).some(m => m.to === sq);
+  if (!legal) {
+    // O'z donamiz bo'lsa onDragStart uni tanlab bo'lgan; boshqa katak — tanlov bekor
+    const p = game.get(sq);
+    if (!p || p.color !== game.turn()) clearMoveHints();
+    return;
+  }
+  if (executeMove(selectedSquare, sq) && board) board.position(game.fen());
+});
+
 function onDragStart(source, piece, position, orientation) {
   if (game.game_over() || gameFinished) return false;
 
@@ -547,40 +644,22 @@ function onDragStart(source, piece, position, orientation) {
       (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
     return false;
   }
+
+  // Dona olinganda (bosilganda yoki sudrala boshlanganda) — yurish mumkin bo'lgan kataklar ko'rinadi
+  dragFromSelected = selectedSquare === source;
+  selectSquare(source);
 }
 
 function onDrop(source, target) {
-  let move = game.move({
-    from: source,
-    to: target,
-    promotion: 'q'
-  });
-
-  if (move === null) return 'snapback';
-
-  try {
-    if (game.in_checkmate()) {
-      playSound('gameEnd');
-    } else if (game.in_check()) {
-      playSound('check');
-    } else if (move.captured) {
-      playSound('capture');
-    } else {
-      playSound('move');
-    }
-  } catch (e) {
-    console.log("Ovoz chiqarishda xatolik:", e);
+  // Joyida bosildi (sudralmadi): tanlov qoladi; ikkinchi marta bosilsa — bekor
+  if (source === target || target === 'offboard') {
+    if (dragFromSelected) clearMoveHints();
+    return 'snapback';
   }
-
-  updateHistory();
-
-  let moveData = { from: source, to: target, promotion: 'q' };
-
-  if (typeof socket !== 'undefined' && typeof window.currentRoomId !== 'undefined' && window.currentRoomId) {
-    sendMove(moveData);
+  if (!executeMove(source, target)) {
+    clearMoveHints();
+    return 'snapback';
   }
-
-  window.checkGameOverAfterMove();
 }
 
 function onSnapEnd() {
@@ -602,6 +681,8 @@ window.loadServerPosition = function(moves) {
   (moves || []).forEach(m => game.move({ from: m.from, to: m.to, promotion: m.promotion || 'q' }));
   if (board) board.position(game.fen(), false);
   updateHistory();
+  clearMoveHints();
+  window.refreshLastMove();
 };
 
 function updateHistory() {

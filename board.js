@@ -414,6 +414,7 @@ function setGameTime(sec, btnElement, increment) {
   gameStarted = false;
   gameFinished = false;
   game.reset();
+  closePromotionPicker();
   clearMoveHints();
   window.markLastMove(null, null);
   window.currentGameTimeControl = getGameModeFromTime(sec, timeIncrement);
@@ -578,9 +579,91 @@ window.refreshLastMove = function() {
   window.markLastMove(m ? m.from : null, m ? m.to : null);
 };
 
+// --- Piyoda oxirgi qatorga yetganda: farzin / rux / fil / otni tanlash ---
+let promotionPending = false;
+
+function isPromotionMove(source, target) {
+  return game.moves({ square: source, verbose: true }).some(m => m.to === target && m.flags.indexOf('p') !== -1);
+}
+
+function closePromotionPicker() {
+  const el = document.getElementById('promotionPicker');
+  if (el) el.remove();
+  promotionPending = false;
+}
+
+// Piyoda yetgan katakdan taxta markaziga qarab 4 ta dona ustuni (chess.com uslubida). Natija: 'q'|'r'|'b'|'n' yoki null
+function askPromotion(target) {
+  return new Promise(resolve => {
+    closePromotionPicker();
+    const squareEl = boardSquare(target);
+    if (!squareEl) { resolve('q'); return; }
+    promotionPending = true;
+    const color = game.turn();
+    const r = squareEl.getBoundingClientRect();
+    const boardRect = document.getElementById('chessBoard').getBoundingClientRect();
+    const downward = r.top - boardRect.top < boardRect.height / 2;
+    const picker = document.createElement('div');
+    picker.id = 'promotionPicker';
+    picker.className = 'promo-picker';
+    picker.style.left = r.left + 'px';
+    picker.style.width = r.width + 'px';
+    picker.style.top = (downward ? r.top : r.bottom - r.height * 4.5) + 'px';
+    picker.classList.toggle('up', !downward);
+    const pieces = ['q', 'n', 'r', 'b'];
+    const names = { q: tx('promoQueen', 'Farzin'), r: tx('promoRook', 'Rux'), b: tx('promoBishop', 'Fil'), n: tx('promoKnight', 'Ot') };
+    const order = downward ? pieces : pieces.slice().reverse();
+    const cancel = document.createElement('button');
+    cancel.type = 'button';
+    cancel.className = 'promo-cancel';
+    cancel.textContent = '✕';
+    cancel.title = tx('arCancel', 'Bekor qilish');
+    cancel.style.height = (r.height / 2) + 'px';
+    const items = order.map(p => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'promo-piece';
+      b.dataset.piece = p;
+      b.title = names[p];
+      b.style.height = r.height + 'px';
+      b.innerHTML = '<img src="img/chesspieces/wikipedia/' + color + p.toUpperCase() + '.png" alt="' + names[p] + '">';
+      return b;
+    });
+    (downward ? items.concat(cancel) : [cancel].concat(items)).forEach(el => picker.appendChild(el));
+    const finish = (choice) => {
+      document.removeEventListener('mousedown', outside, true);
+      document.removeEventListener('keydown', onKey);
+      closePromotionPicker();
+      resolve(choice);
+    };
+    const outside = (e) => { if (!picker.contains(e.target)) { e.stopPropagation(); finish(null); } };
+    const onKey = (e) => { if (e.key === 'Escape') finish(null); };
+    picker.addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      e.stopPropagation();
+      finish(btn.dataset.piece || null);
+    });
+    document.body.appendChild(picker);
+    setTimeout(() => {
+      document.addEventListener('mousedown', outside, true);
+      document.addEventListener('keydown', onKey);
+    }, 0);
+  });
+}
+
+// Piyoda yurishi bo'lsa — avval dona so'raladi, keyin yuriladi
+async function promoteAndMove(source, target) {
+  const choice = await askPromotion(target);
+  clearMoveHints();
+  if (!choice || gameFinished) return;
+  if (executeMove(source, target, choice) && board) board.position(game.fen());
+}
+
 // Yurishni bajarish (sudrab tashlash ham, bosib yurish ham shu yerdan o'tadi)
-function executeMove(source, target) {
-  const move = game.move({ from: source, to: target, promotion: 'q' });
+function executeMove(source, target, promotion) {
+  promotion = promotion || 'q';
+  const move = game.move({ from: source, to: target, promotion });
   if (move === null) return null;
   clearMoveHints();
   window.markLastMove(move.from, move.to);
@@ -600,7 +683,7 @@ function executeMove(source, target) {
 
   updateHistory();
 
-  const moveData = { from: source, to: target, promotion: 'q' };
+  const moveData = { from: source, to: target, promotion };
   if (typeof socket !== 'undefined' && typeof window.currentRoomId !== 'undefined' && window.currentRoomId) {
     sendMove(moveData);
   }
@@ -624,11 +707,12 @@ document.addEventListener('click', (e) => {
     if (!p || p.color !== game.turn()) clearMoveHints();
     return;
   }
+  if (isPromotionMove(selectedSquare, sq)) { promoteAndMove(selectedSquare, sq); return; }
   if (executeMove(selectedSquare, sq) && board) board.position(game.fen());
 });
 
 function onDragStart(source, piece, position, orientation) {
-  if (game.game_over() || gameFinished) return false;
+  if (game.game_over() || gameFinished || promotionPending) return false;
 
   // Onlayn o'yinda faqat o'z donalarimizni va faqat o'z navbatimizda yuramiz
   if (window.myColor && (piece.charAt(0) !== window.myColor || game.turn() !== window.myColor)) {
@@ -654,6 +738,11 @@ function onDrop(source, target) {
   // Joyida bosildi (sudralmadi): tanlov qoladi; ikkinchi marta bosilsa — bekor
   if (source === target || target === 'offboard') {
     if (dragFromSelected) clearMoveHints();
+    return 'snapback';
+  }
+  if (isPromotionMove(source, target)) {
+    // Tanlov oynasi ochiladi; dona tanlangach pozitsiya yangilanadi
+    promoteAndMove(source, target);
     return 'snapback';
   }
   if (!executeMove(source, target)) {

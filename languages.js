@@ -1945,6 +1945,10 @@ const translationsExtra = {
     srvAvatarBad: "Rasm formati noto'g'ri!",
     srvAvatarBig: "Rasm hajmi juda katta!",
     srvTooMany: "Juda ko'p urinish. Biroz kutib, qayta urinib ko'ring.",
+    promoQueen: "Farzin",
+    promoRook: "Rux",
+    promoBishop: "Fil",
+    promoKnight: "Ot",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2425,6 +2429,10 @@ const translationsExtra = {
     srvAvatarBad: "Invalid image format!",
     srvAvatarBig: "The image is too large!",
     srvTooMany: "Too many attempts. Please wait a bit and try again.",
+    promoQueen: "Queen",
+    promoRook: "Rook",
+    promoBishop: "Bishop",
+    promoKnight: "Knight",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2905,6 +2913,10 @@ const translationsExtra = {
     srvAvatarBad: "Неверный формат изображения!",
     srvAvatarBig: "Изображение слишком большое!",
     srvTooMany: "Слишком много попыток. Подождите немного и попробуйте снова.",
+    promoQueen: "Ферзь",
+    promoRook: "Ладья",
+    promoBishop: "Слон",
+    promoKnight: "Конь",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -3385,6 +3397,10 @@ const translationsExtra = {
     srvAvatarBad: "¡Formato de imagen no válido!",
     srvAvatarBig: "¡La imagen es demasiado grande!",
     srvTooMany: "Demasiados intentos. Espera un poco y vuelve a intentarlo.",
+    promoQueen: "Dama",
+    promoRook: "Torre",
+    promoBishop: "Alfil",
+    promoKnight: "Caballo",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -3865,6 +3881,10 @@ const translationsExtra = {
     srvAvatarBad: "Ungültiges Bildformat!",
     srvAvatarBig: "Das Bild ist zu groß!",
     srvTooMany: "Zu viele Versuche. Bitte warte kurz und versuche es erneut.",
+    promoQueen: "Dame",
+    promoRook: "Turm",
+    promoBishop: "Läufer",
+    promoKnight: "Springer",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -4345,6 +4365,10 @@ const translationsExtra = {
     srvAvatarBad: "Format d’image invalide !",
     srvAvatarBig: "L’image est trop grande !",
     srvTooMany: "Trop de tentatives. Patientez un peu et réessayez.",
+    promoQueen: "Dame",
+    promoRook: "Tour",
+    promoBishop: "Fou",
+    promoKnight: "Cavalier",
     searchNoResults: "Aucun résultat"
   }
 };

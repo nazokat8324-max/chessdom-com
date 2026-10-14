@@ -7967,6 +7967,57 @@ button.ar-slot:hover {
   background: rgba(0, 0, 0, 0.32);
 }
 
+/* ===== Piyoda o'zgarishi: dona tanlash ustuni (board.js) ===== */
+.promo-picker {
+  position: fixed;
+  z-index: 11000;
+  display: flex;
+  flex-direction: column;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.2);
+  animation: promoIn 0.14s ease;
+}
+@keyframes promoIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+.promo-piece {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.promo-piece img {
+  width: 88%;
+  height: 88%;
+  object-fit: contain;
+  transition: transform 0.12s;
+}
+.promo-piece:hover {
+  background: rgba(var(--accent-rgb), 0.25);
+}
+.promo-piece:hover img {
+  transform: scale(1.06);
+}
+.promo-cancel {
+  border: none;
+  background: #ececec;
+  color: #555;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.promo-cancel:hover {
+  background: #ddd;
+  color: #222;
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

@@ -34,6 +34,8 @@ const SERVER_MESSAGE_KEYS = {
   "Message must be 1-1000 characters": 'srvMessageLength',
   "Tournament name must be 3-255 characters": 'srvTournamentNameLength',
   "Turnir topilmadi!": 'srvTournamentNotFound',
+  "Turnirga qo'shilish yopilgan!": 'srvSwissClosed',
+  "Siz boshqa turnirda ishtirok etyapsiz!": 'srvSwissBusy',
   "Turnir to'la!": 'srvTournamentFull',
   "Siz allaqachon turnirdasiz!": 'srvAlreadyInTournament',
   "Turnir allaqachon boshlangan!": 'srvTournamentStarted',

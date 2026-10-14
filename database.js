@@ -290,12 +290,18 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
-  // Arena: ishtirokchining o'yinlar soni va natijalari (arena.js)
-  for (const col of ['games', 'wins', 'draws', 'losses']) {
+  // Swiss turnirlari (swiss.js): ishtirokchi natijalari, turnirdan chiqqanlik, o'yin natijasi, keyingi tur vaqti
+  for (const col of ['games', 'wins', 'draws', 'losses', 'withdrawn']) {
     try {
       await dbExec(`ALTER TABLE tournament_participants ADD COLUMN ${col} INTEGER DEFAULT 0`);
     } catch (e) {}
   }
+  try {
+    await dbExec(`ALTER TABLE tournament_matches ADD COLUMN result TEXT DEFAULT NULL`);
+  } catch (e) {}
+  try {
+    await dbExec(`ALTER TABLE tournaments ADD COLUMN next_round_at TEXT DEFAULT NULL`);
+  } catch (e) {}
 
   // Shaxsiy xabarlar: har foydalanuvchi har suhbatni qachongacha o'qigani (o'qilmaganlar soni uchun)
   await dbExec(`

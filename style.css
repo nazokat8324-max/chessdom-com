@@ -6219,7 +6219,7 @@ sidebar {
   .msg-bubble { max-width: 85%; }
 }
 
-/* ===== Turnirlar: 24/7 Arena (tournaments.js) ===== */
+/* ===== Turnirlar: Swiss (tournaments.js) ===== */
 .view-section.ar-view.active-view {
   display: block;
 }
@@ -6808,7 +6808,154 @@ button.ar-slot:hover {
   color: #6f7f78;
 }
 
-/* O'yin sahifasidagi "Keyingi arena o'yini" */
+/* Swiss: holatlar, jadval ustunlari, tur natijalari */
+.ar-live.reg {
+  color: #fff;
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+.ar-live.done {
+  color: #d9e4de;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.ar-ok {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: #fff;
+  background: var(--accent);
+}
+.ar-cta-note {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #9fb0a8;
+}
+.ar-winner {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 12px 18px;
+  border-radius: 16px;
+  font-size: 17px;
+  color: #fff;
+  background: rgba(246, 196, 69, 0.12);
+  border: 1px solid rgba(246, 196, 69, 0.4);
+}
+.ar-winner span {
+  color: #f6d77a;
+  font-weight: 700;
+}
+.ar-winner em {
+  font-style: normal;
+  font-size: 13px;
+  color: #b9c5bf;
+}
+.sw-tabs {
+  display: flex;
+  gap: 6px;
+}
+.sw-tab,
+.sw-round {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cd-border-strong);
+  background: transparent;
+  color: #b9c5bf;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.sw-tab.active,
+.sw-round.active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.sw-rounds {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.sw-round {
+  height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
+}
+.ar-table.sw .ar-tr {
+  grid-template-columns: 42px minmax(0, 1fr) minmax(90px, auto) 44px 56px;
+}
+.ar-table.sw .ar-tr > span:nth-child(3) {
+  text-align: left;
+}
+.ar-tr.out {
+  opacity: 0.55;
+}
+.sw-chips {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+.sw-chip {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 800;
+  color: #d9e4de;
+  background: rgba(255, 255, 255, 0.07);
+}
+.sw-chip.w { color: #fff; background: rgba(var(--accent-rgb), 0.55); }
+.sw-chip.d { color: #fff; background: rgba(160, 170, 175, 0.35); }
+.sw-chip.l { color: #fff; background: rgba(229, 72, 77, 0.45); }
+.sw-chip.p { color: var(--accent-light); background: rgba(var(--accent-rgb), 0.12); }
+.sw-bh {
+  font-size: 13px;
+  color: #9fb0a8;
+}
+.sw-legend {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #7f908a;
+}
+.ar-game .player-link {
+  display: inline;
+}
+.ar-game span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ar-game span:last-child {
+  justify-content: flex-end;
+}
+.ar-game.bye {
+  opacity: 0.75;
+}
+.ar-pill.reg {
+  color: #fff;
+  background: rgba(var(--accent-rgb), 0.35);
+}
+.ar-slot.selected {
+  border-color: var(--accent);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+.ar-slot.cancelled {
+  opacity: 0.55;
+}
+
+/* O'yin sahifasidagi "Turnir jadvaliga qaytish" */
 .start-game-btn.arena-next-btn {
   margin-bottom: 8px;
 }
@@ -6827,6 +6974,10 @@ button.ar-slot:hover {
   .ar-how { grid-template-columns: 1fr; }
   .ar-tr { grid-template-columns: 30px minmax(0, 1fr) 40px 72px 44px; padding: 9px 8px; font-size: 13px; }
   .ar-player small { display: none; }
+  .ar-table.sw .ar-tr { grid-template-columns: 28px minmax(0, 1fr) 36px 44px; }
+  .ar-table.sw .ar-tr > span:nth-child(3) { grid-column: 2 / -1; grid-row: 2; }
+  .sw-chip { width: 20px; height: 20px; font-size: 11px; }
+  .ar-table.sw .ar-th > span:nth-child(3) { display: none; }
   .ar-card { padding: 16px 12px; }
 }
 

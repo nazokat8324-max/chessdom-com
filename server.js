@@ -13,7 +13,7 @@ const { Chess } = require('chess.js');
 
 const db = require('./database');
 const league = require('./league');
-const arena = require('./arena');
+const swiss = require('./swiss');
 
 const app = express();
 const server = http.createServer(app);
@@ -165,16 +165,16 @@ async function endGame(roomId, room, winnerColor, reason) {
     catch (err) { console.error('Liga natijasini yozish xatoligi:', err); }
   }
 
-  // Arena o'yini bo'lsa — ochko arena jadvaliga yoziladi
-  if (room.arenaId) {
-    try { await arena.recordGameResult({ arenaId: room.arenaId, players }, winnerColor, reason); }
-    catch (err) { console.error('Arena natijasini yozish xatoligi:', err); }
+  // Swiss turnir o'yini bo'lsa — natija turnir jadvaliga yoziladi
+  if (room.swissMatch) {
+    try { await swiss.recordGameResult(room, winnerColor, reason); }
+    catch (err) { console.error('Swiss natijasini yozish xatoligi:', err); }
   }
 
   for (const p of players) {
     io.to(p.socketId).emit('game-ended', {
       roomId, winner: winnerColor, reason, result: scoreFor(p.color, winnerColor),
-      rated: room.rated && recorded, mode: room.mode, arena: room.arenaId ? { id: room.arenaId } : null, ...(updates[p.color] || {})
+      rated: room.rated && recorded, mode: room.mode, swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null, ...(updates[p.color] || {})
     });
   }
   emitClock(roomId, room);
@@ -357,7 +357,6 @@ async function start() {
       const clock = normalizeClock(req.body.initialTime, req.body.increment);
       const rated = req.body.rated !== false;
       pruneMatchmakingQueue();
-      arena.leaveUser(req.user.userId);
       if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
       const user = await db.getUserById(req.user.userId);
       // Klient yuborgan davlatni (Sozlamalardan) bazaga ham yozib qo'yamiz
@@ -426,24 +425,34 @@ async function start() {
     } catch (err) { console.error('Arenas xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  // 24/7 Arena (arena.js): joriy turnir, jonli jadval, bugungi jadval
-  app.get('/api/arena', async (req, res) => {
-    try {
-      let userId = null;
-      const auth = req.headers.authorization;
-      if (auth && auth.startsWith('Bearer ')) {
-        try { userId = jwt.verify(auth.slice(7), JWT_SECRET).userId; } catch (e) {}
-      }
-      res.json({ success: true, ...(await arena.overview(userId)) });
-    } catch (err) { console.error('Arena xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  // Swiss turnirlari (swiss.js)
+  const optionalUserId = (req) => {
+    const auth = req.headers.authorization;
+    if (!auth || !auth.startsWith('Bearer ')) return null;
+    try { return jwt.verify(auth.slice(7), JWT_SECRET).userId; } catch (e) { return null; }
+  };
+
+  app.get('/api/swiss', async (req, res) => {
+    try { res.json({ success: true, ...(await swiss.overview(optionalUserId(req))) }); }
+    catch (err) { console.error('Swiss xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  app.get('/api/arena/:id/results', async (req, res) => {
+  app.get('/api/swiss/:id', async (req, res) => {
     try {
-      const data = await arena.results(req.params.id);
+      const data = await swiss.detail(req.params.id, optionalUserId(req));
       if (!data) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
       res.json({ success: true, ...data });
-    } catch (err) { console.error('Arena natijalari xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+    } catch (err) { console.error('Swiss tafsiloti xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/swiss/:id/join', authMiddleware, async (req, res) => {
+    try { res.json(await swiss.join(req.params.id, req.user.userId)); }
+    catch (err) { console.error('Swiss join xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/swiss/:id/leave', authMiddleware, async (req, res) => {
+    try { res.json(await swiss.leave(req.params.id, req.user.userId)); }
+    catch (err) { console.error('Swiss leave xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.get('/api/tournaments', apiLimiter, async (req, res) => {
@@ -859,11 +868,8 @@ async function start() {
     // Liga: o'yinchi o'z doska o'yiniga tayyor (ikkalasi tayyor bo'lganda o'yin boshlanadi)
     socket.on('league-ready', (data) => { league.ready(socket, data && data.gameId).catch(err => console.error('Liga ready xatoligi:', err)); });
     socket.on('league-cancel', (data) => { league.cancel(socket, data && data.gameId); });
-    socket.on('arena-play', (data) => { arena.play(socket, data && data.arenaId).catch(err => console.error('Arena play xatoligi:', err)); });
-    socket.on('arena-leave', () => { arena.leave(socket); });
     socket.on('disconnect', () => {
       league.socketGone(socket.id);
-      arena.socketGone(socket.id);
       pruneMatchmakingQueue();
       for (const [roomId, room] of rooms.entries()) {
         if (!findPlayer(room, socket.id)) continue;
@@ -877,11 +883,9 @@ async function start() {
   setInterval(async () => { await db.closeStaleArenas(); }, 60 * 1000);
 
   league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId });
-  arena.init({
-    db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId,
-    leaveMatchmaking: (userId) => { const i = matchmakingQueue.findIndex(u => u.userId === userId); if (i !== -1) matchmakingQueue.splice(i, 1); }
-  });
-  setInterval(arena.pairPlayers, arena.CFG.pairMs);
+  swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId });
+  setInterval(swiss.tick, swiss.CFG.tickMs);
+  swiss.tick();
   setInterval(league.tick, league.CFG.tickMs);
   league.tick();
 

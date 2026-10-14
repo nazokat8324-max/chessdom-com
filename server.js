@@ -30,6 +30,9 @@ const APP_VERSION = process.env.RENDER_GIT_COMMIT || String(Date.now());
 
 const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 
+// Render (va boshqa hostinglar) so'rovlarni proksi orqali uzatadi: haqiqiy IP X-Forwarded-For da.
+// Busiz barcha foydalanuvchilar bitta IP bo'lib ko'rinadi va rate limit butun sayt uchun umumiy bo'lib qoladi.
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS) || 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
@@ -38,7 +41,11 @@ app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next();
 app.use(express.static(__dirname));
 
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { success: false, message: 'Too many requests, please try again later.' } });
-const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: { success: false, message: 'Too many authentication attempts, please try again later.' } });
+const tooMany = { success: false, message: "Juda ko'p urinish. Biroz kutib, qayta urinib ko'ring." };
+// Kirish: faqat muvaffaqiyatsiz urinishlar sanaladi
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, skipSuccessfulRequests: true, message: tooMany });
+const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: tooMany });
+const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: tooMany });
 
 // O'yin xonalari: roomId → { players, chess, clock, status, ... }. O'yin holati faqat serverda hisoblanadi.
 const rooms = new Map();
@@ -425,7 +432,7 @@ function validateMove(move) {
 async function start() {
   await db.initDatabase();
 
-  app.post('/api/auth/register', authLimiter, [
+  app.post('/api/auth/register', registerLimiter, [
     body('username').isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters')
       // Faqat harf, raqam, _ . - (HTML/JS ga xavfli belgilarsiz)
       .matches(/^[\p{L}\p{N}_.-]+$/u).withMessage("Foydalanuvchi nomida faqat harf, raqam, _ . - bo'lishi mumkin"),
@@ -445,7 +452,7 @@ async function start() {
     } catch (err) { console.error('Register xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  app.post('/api/auth/login', authLimiter, [
+  app.post('/api/auth/login', loginLimiter, [
     body('username').notEmpty().withMessage('Username is required'),
     body('password').notEmpty().withMessage('Password is required')
   ], async (req, res) => {
@@ -503,7 +510,7 @@ async function start() {
   const realEmail = (email) => !!email && !/@justchess\.local$/i.test(email);
   const appUrl = (req) => process.env.APP_URL || `${req.headers['x-forwarded-proto'] || req.protocol}://${req.get('host')}`;
 
-  app.post('/api/auth/forgot', authLimiter, async (req, res) => {
+  app.post('/api/auth/forgot', resetLimiter, async (req, res) => {
     try {
       const login = String((req.body && req.body.login) || '').trim();
       if (!login) return res.status(400).json({ success: false, message: 'Foydalanuvchi nomi yoki emailni kiriting!' });
@@ -531,7 +538,7 @@ async function start() {
     } catch (err) { console.error('Forgot xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  app.post('/api/auth/reset', authLimiter, async (req, res) => {
+  app.post('/api/auth/reset', resetLimiter, async (req, res) => {
     try {
       const token = String((req.body && req.body.token) || '');
       const password = String((req.body && req.body.password) || '');

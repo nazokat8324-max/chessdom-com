@@ -34,6 +34,7 @@ const SERVER_MESSAGE_KEYS = {
   "Message must be 1-1000 characters": 'srvMessageLength',
   "Tournament name must be 3-255 characters": 'srvTournamentNameLength',
   "Turnir topilmadi!": 'srvTournamentNotFound',
+  "Juda ko'p urinish. Biroz kutib, qayta urinib ko'ring.": 'srvTooMany',
   "Rasm formati noto'g'ri!": 'srvAvatarBad',
   "Rasm hajmi juda katta!": 'srvAvatarBig',
   "Foydalanuvchi nomi yoki emailni kiriting!": 'authForgotEmpty',
@@ -1074,8 +1075,9 @@ window.handleForgotPassword = async function() {
 };
 
 window.handleResetPassword = async function() {
-  const p1 = document.getElementById("resetPassword").value;
-  const p2 = document.getElementById("resetPassword2").value;
+  // Kirish va ro'yxatdan o'tishda parol trim qilinadi — bu yerda ham xuddi shunday
+  const p1 = document.getElementById("resetPassword").value.trim();
+  const p2 = document.getElementById("resetPassword2").value.trim();
   if (!p1 || p1.length < 6) { setAuthNote('resetResult', tx('authPasswordMinError', "Parol kamida 6 ta belgidan iborat bo'lishi kerak"), false); return; }
   if (p1 !== p2) { setAuthNote('resetResult', tx('authPasswordMismatch', 'Parollar bir xil emas'), false); return; }
   try {
@@ -1257,11 +1259,18 @@ window.handleLoginModal = async function() {
       window.updateAuthHeaderUI();
       window.switchView("home");
       if (typeof window.updateStatsDisplay === "function") window.updateStatsDisplay();
-    } else {
-      if (generalError) generalError.style.display = "block";
+    } else if (generalError) {
+      // 401 — ism/parol xato; boshqa holatlarda (juda ko'p urinish, server xatosi) serverning o'z xabari
+      generalError.textContent = response.status === 401
+        ? tx('wrongCredentials', 'Ism yoki parol xato!')
+        : (tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
+      generalError.style.display = "block";
     }
   } catch {
-    if (generalError) generalError.style.display = "block";
+    if (generalError) {
+      generalError.textContent = tx('errServerUnreachable', "Serverga ulanib bo'lmadi!");
+      generalError.style.display = "block";
+    }
   }
 };
 

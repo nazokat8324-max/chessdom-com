@@ -1944,6 +1944,7 @@ const translationsExtra = {
     avatarTooBig: "Rasm juda katta (15 MB dan oshmasin)",
     srvAvatarBad: "Rasm formati noto'g'ri!",
     srvAvatarBig: "Rasm hajmi juda katta!",
+    srvTooMany: "Juda ko'p urinish. Biroz kutib, qayta urinib ko'ring.",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2423,6 +2424,7 @@ const translationsExtra = {
     avatarTooBig: "Image is too large (max 15 MB)",
     srvAvatarBad: "Invalid image format!",
     srvAvatarBig: "The image is too large!",
+    srvTooMany: "Too many attempts. Please wait a bit and try again.",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2902,6 +2904,7 @@ const translationsExtra = {
     avatarTooBig: "Слишком большое изображение (до 15 МБ)",
     srvAvatarBad: "Неверный формат изображения!",
     srvAvatarBig: "Изображение слишком большое!",
+    srvTooMany: "Слишком много попыток. Подождите немного и попробуйте снова.",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -3381,6 +3384,7 @@ const translationsExtra = {
     avatarTooBig: "Imagen demasiado grande (máx. 15 MB)",
     srvAvatarBad: "¡Formato de imagen no válido!",
     srvAvatarBig: "¡La imagen es demasiado grande!",
+    srvTooMany: "Demasiados intentos. Espera un poco y vuelve a intentarlo.",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -3860,6 +3864,7 @@ const translationsExtra = {
     avatarTooBig: "Bild zu groß (max. 15 MB)",
     srvAvatarBad: "Ungültiges Bildformat!",
     srvAvatarBig: "Das Bild ist zu groß!",
+    srvTooMany: "Zu viele Versuche. Bitte warte kurz und versuche es erneut.",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -4339,6 +4344,7 @@ const translationsExtra = {
     avatarTooBig: "Image trop grande (15 Mo max.)",
     srvAvatarBad: "Format d’image invalide !",
     srvAvatarBig: "L’image est trop grande !",
+    srvTooMany: "Trop de tentatives. Patientez un peu et réessayez.",
     searchNoResults: "Aucun résultat"
   }
 };

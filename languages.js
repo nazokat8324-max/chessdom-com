@@ -1844,6 +1844,12 @@ const translationsExtra = {
     swBackToTable: "Turnir jadvaliga qaytish",
     srvSwissClosed: "Turnirga qo'shilish yopilgan!",
     srvSwissBusy: "Siz boshqa turnirda ishtirok etyapsiz!",
+    homeAboutTag: "Sayt bilan tanishing",
+    homeAboutText: "Onlayn shaxmat, davlat klublari, jamoaviy ligalar va Swiss turnirlari — barchasi bitta saytda.",
+    homeAboutGoal: "Maqsadimiz",
+    homeAboutPlans: "Kelajak rejalari",
+    homeAboutStructure: "Sayt tuzilishi",
+    homeAboutCta: "Batafsil o'qish",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2223,6 +2229,12 @@ const translationsExtra = {
     swBackToTable: "Back to tournament",
     srvSwissClosed: "Registration for this tournament is closed!",
     srvSwissBusy: "You are already playing in another tournament!",
+    homeAboutTag: "Get to know the site",
+    homeAboutText: "Online chess, country clubs, team leagues and Swiss tournaments — all in one place.",
+    homeAboutGoal: "Our goal",
+    homeAboutPlans: "Future plans",
+    homeAboutStructure: "Site structure",
+    homeAboutCta: "Read more",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2602,6 +2614,12 @@ const translationsExtra = {
     swBackToTable: "Вернуться к турниру",
     srvSwissClosed: "Регистрация на турнир закрыта!",
     srvSwissBusy: "Вы уже участвуете в другом турнире!",
+    homeAboutTag: "Знакомство с сайтом",
+    homeAboutText: "Онлайн-шахматы, клубы стран, командные лиги и швейцарские турниры — всё на одном сайте.",
+    homeAboutGoal: "Наша цель",
+    homeAboutPlans: "Планы",
+    homeAboutStructure: "Структура сайта",
+    homeAboutCta: "Подробнее",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -2981,6 +2999,12 @@ const translationsExtra = {
     swBackToTable: "Volver al torneo",
     srvSwissClosed: "¡La inscripción está cerrada!",
     srvSwissBusy: "¡Ya participas en otro torneo!",
+    homeAboutTag: "Conoce el sitio",
+    homeAboutText: "Ajedrez online, clubes de países, ligas por equipos y torneos suizos, todo en un sitio.",
+    homeAboutGoal: "Nuestro objetivo",
+    homeAboutPlans: "Planes futuros",
+    homeAboutStructure: "Estructura del sitio",
+    homeAboutCta: "Leer más",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -3360,6 +3384,12 @@ const translationsExtra = {
     swBackToTable: "Zurück zum Turnier",
     srvSwissClosed: "Anmeldung zum Turnier geschlossen!",
     srvSwissBusy: "Du spielst bereits in einem anderen Turnier!",
+    homeAboutTag: "Lerne die Seite kennen",
+    homeAboutText: "Online-Schach, Länderclubs, Teamligen und Schweizer Turniere — alles an einem Ort.",
+    homeAboutGoal: "Unser Ziel",
+    homeAboutPlans: "Zukunftspläne",
+    homeAboutStructure: "Seitenaufbau",
+    homeAboutCta: "Mehr erfahren",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -3739,6 +3769,12 @@ const translationsExtra = {
     swBackToTable: "Retour au tournoi",
     srvSwissClosed: "Les inscriptions sont fermées !",
     srvSwissBusy: "Vous participez déjà à un autre tournoi !",
+    homeAboutTag: "Découvrez le site",
+    homeAboutText: "Échecs en ligne, clubs nationaux, ligues par équipes et tournois suisses — tout au même endroit.",
+    homeAboutGoal: "Notre objectif",
+    homeAboutPlans: "Projets futurs",
+    homeAboutStructure: "Structure du site",
+    homeAboutCta: "En savoir plus",
     searchNoResults: "Aucun résultat"
   }
 };

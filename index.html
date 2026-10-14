@@ -392,42 +392,23 @@
             >
               ⚡ Play Online (Matchmaking)
             </button>
-            <button class="about-open-btn" id="dashAboutPageBtn" onclick="window.openAboutPage()">
-              <span class="about-open-icon">♞</span>
-              <span class="about-open-text">
-                <b data-i18n="aboutOpenBtn">ChessDom haqida</b>
-                <small data-i18n="aboutOpenSub">Tarix, maqsad, rejalar va sayt tuzilishi</small>
-              </span>
-              <span class="about-open-arrow">→</span>
-            </button>
           </div>
-          <!-- O'rtadagi mini taxta bloki -->
-          <div
-            class="dash-card"
-            style="
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              text-align: center;
-              gap: 15px;
-            "
-          >
-            <h3 style="color: var(--accent)" id="dashWelcomeTitle">
-              Xush kelibsiz, Shaxmat ixlosmandi!
-            </h3>
-            <p style="font-size: 13px; color: #aaa" id="dashDesc">
-              Professional darajada shaxmat o'ynang, statistikalaringizni
-              kuzating va o'z reytingingizni oshiring.
-            </p>
-            <button
-              class="play-big-btn"
-              style="width: auto; padding: 10px 20px"
-              onclick="handleStartGame()"
-              id="dashStartBtn"
-            >
-              O'yinni boshlash
-            </button>
+          <!-- O'rtada: sayt bilan tanishtiruv ("ChessDom haqida" sahifasini ochadi) -->
+          <div class="dash-card home-about" id="dashAboutPageBtn" role="button" tabindex="0"
+            onclick="window.openAboutPage()" onkeydown="if (event.key === 'Enter') window.openAboutPage()">
+            <div class="home-about-art" aria-hidden="true">
+              <span class="home-about-glow"></span>
+              <span class="home-about-piece">♞</span>
+            </div>
+            <span class="home-about-tag" data-i18n="homeAboutTag">Sayt bilan tanishing</span>
+            <h2 class="home-about-title" data-i18n="aboutOpenBtn">ChessDom haqida</h2>
+            <p class="home-about-text" data-i18n="homeAboutText">Onlayn shaxmat, davlat klublari, jamoaviy ligalar va Swiss turnirlari — barchasi bitta saytda.</p>
+            <ul class="home-about-points">
+              <li><span>🎯</span><b data-i18n="homeAboutGoal">Maqsadimiz</b></li>
+              <li><span>🗺️</span><b data-i18n="homeAboutPlans">Kelajak rejalari</b></li>
+              <li><span>🧩</span><b data-i18n="homeAboutStructure">Sayt tuzilishi</b></li>
+            </ul>
+            <span class="home-about-cta"><span data-i18n="homeAboutCta">Batafsil o'qish</span> →</span>
           </div>
           <!-- O'ng qo'shimcha blok: Top 5 G'oliblar -->
           <div class="dash-card">

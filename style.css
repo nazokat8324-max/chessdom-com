@@ -8445,6 +8445,27 @@ button.lb-row {
   .lb-avatar { width: 32px; height: 32px; }
 }
 
+/* ===== Profil: do'stlik tugmasi holatlari ===== */
+#profileModal .profile-friend-btn[data-state="friends"] {
+  color: #ffb4b4;
+  background: rgba(229, 72, 77, 0.1);
+  border: 1px solid rgba(229, 72, 77, 0.45);
+  box-shadow: none;
+}
+#profileModal .profile-friend-btn[data-state="friends"]:hover {
+  color: #fff;
+  background: #e5484d;
+}
+#profileModal .profile-friend-btn[data-state="outgoing"] {
+  color: #d9e4de;
+  background: var(--cd-surface-2);
+  border: 1px solid var(--cd-border-strong);
+  box-shadow: none;
+}
+#profileModal .profile-friend-btn[data-state="loading"] {
+  opacity: 0.6;
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

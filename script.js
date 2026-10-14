@@ -34,6 +34,7 @@ const SERVER_MESSAGE_KEYS = {
   "Message must be 1-1000 characters": 'srvMessageLength',
   "Tournament name must be 3-255 characters": 'srvTournamentNameLength',
   "Turnir topilmadi!": 'srvTournamentNotFound',
+  "Siz allaqachon do'stsiz!": 'srvAlreadyFriends',
   "Juda ko'p urinish. Biroz kutib, qayta urinib ko'ring.": 'srvTooMany',
   "Rasm formati noto'g'ri!": 'srvAvatarBad',
   "Rasm hajmi juda katta!": 'srvAvatarBig',
@@ -1620,7 +1621,7 @@ window.openPlayerProfile = async function(username) {
   const friendBtn = document.getElementById("profileFriendBtn");
   if (friendBtn) {
     friendBtn.style.display = window.currentUser ? 'flex' : 'none';
-    friendBtn.disabled = false;
+    if (window.currentUser) window.loadFriendButton(username);
   }
   const messageBtn = document.getElementById("profileMessageBtn");
   if (messageBtn) messageBtn.style.display = window.currentUser ? 'flex' : 'none';
@@ -1646,26 +1647,70 @@ window.openPlayerProfile = async function(username) {
   }
 };
 
+// --- Profildagi do'stlik tugmasi: holatga qarab (so'rash / so'rovni bekor qilish / qabul qilish / do'stlikni bekor qilish) ---
+window.profileFriendState = { username: null, status: 'none', requestId: null };
+
+window.renderFriendButton = function() {
+  const btn = document.getElementById("profileFriendBtn");
+  if (!btn) return;
+  const label = btn.querySelector('span');
+  const s = window.profileFriendState.status;
+  const texts = {
+    none: tx('btnSendFriendRequest', "Do'stlik so'rash"),
+    outgoing: tx('friendCancelRequest', "So'rovni bekor qilish"),
+    incoming: tx('friendAcceptRequest', "So'rovni qabul qilish"),
+    friends: tx('friendRemove', "Do'stlikni bekor qilish"),
+    loading: '…'
+  };
+  if (label) { label.removeAttribute('data-i18n'); label.textContent = texts[s] || texts.none; }
+  btn.dataset.state = s;
+  btn.disabled = s === 'loading';
+};
+
+window.loadFriendButton = async function(username) {
+  window.profileFriendState = { username, status: 'loading', requestId: null };
+  window.renderFriendButton();
+  try {
+    const d = await fetch('/api/friends/status/' + encodeURIComponent(username), { headers: { 'Authorization': `Bearer ${window.authToken}` } }).then(r => r.json());
+    if (window.viewedProfileUsername !== username) return;
+    window.profileFriendState = { username, status: d.success ? d.status : 'none', requestId: d.requestId || null };
+  } catch (e) {
+    window.profileFriendState = { username, status: 'none', requestId: null };
+  }
+  window.renderFriendButton();
+};
+
 window.sendFriendRequestTo = async function(username) {
   if (!username || !window.authToken) return;
-  const btn = document.getElementById("profileFriendBtn");
-  if (btn) btn.disabled = true;
+  const st = window.profileFriendState;
+  const status = st.username === username ? st.status : 'none';
+  if (status === 'friends' && !confirm(tx('friendRemoveConfirm', "{{name}} bilan do'stlikni bekor qilasizmi?", { name: username }))) return;
+  const action = { none: ['/api/friends/request', { username }], outgoing: ['/api/friends/cancel', { username }], incoming: ['/api/friends/accept', { requestId: st.requestId }], friends: ['/api/friends/remove', { username }] }[status];
+  if (!action) return;
+  window.profileFriendState = { ...st, status: 'loading' };
+  window.renderFriendButton();
   try {
-    const data = await fetch('/api/friends/request', {
+    const data = await fetch(action[0], {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.authToken}` },
-      body: JSON.stringify({ username })
+      body: JSON.stringify(action[1])
     }).then(res => res.json());
     if (data.success) {
-      showToast(tx('friendRequestSentTo', "{{name}} ga do'stlik so'rovi yuborildi", { name: username }), 'success');
+      const done = {
+        none: tx('friendRequestSentTo', "{{name}} ga do'stlik so'rovi yuborildi", { name: username }),
+        outgoing: tx('friendRequestCancelled', "So'rov bekor qilindi"),
+        incoming: tx('friendNowFriends', "Endi siz {{name}} bilan do'stsiz", { name: username }),
+        friends: tx('friendRemoved', "Do'stlik bekor qilindi")
+      }[status];
+      showToast(done, status === 'friends' || status === 'outgoing' ? 'info' : 'success');
+      if (typeof window.refreshMessagesBadge === 'function') window.refreshMessagesBadge();
     } else {
       showToast(tServer(data.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning');
-      if (btn) btn.disabled = false;
     }
   } catch (err) {
     showToast(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), 'error');
-    if (btn) btn.disabled = false;
   }
+  window.loadFriendButton(username);
 };
 
 // Username ustiga bosilganda — o'sha o'yinchining profili

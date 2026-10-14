@@ -1974,6 +1974,14 @@ const translationsExtra = {
     lbColPoints: "Ochko",
     lbColMembers: "A'zolar",
     lbColAvg: "O'rt. reyting",
+    friendCancelRequest: "So'rovni bekor qilish",
+    friendAcceptRequest: "So'rovni qabul qilish",
+    friendRemove: "Do'stlikni bekor qilish",
+    friendRemoveConfirm: "{{name}} bilan do'stlikni bekor qilasizmi?",
+    friendRequestCancelled: "So'rov bekor qilindi",
+    friendNowFriends: "Endi siz {{name}} bilan do'stsiz",
+    friendRemoved: "Do'stlik bekor qilindi",
+    srvAlreadyFriends: "Siz allaqachon do'stsiz!",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2483,6 +2491,14 @@ const translationsExtra = {
     lbColPoints: "Points",
     lbColMembers: "Members",
     lbColAvg: "Avg rating",
+    friendCancelRequest: "Cancel request",
+    friendAcceptRequest: "Accept request",
+    friendRemove: "Unfriend",
+    friendRemoveConfirm: "Remove {{name}} from your friends?",
+    friendRequestCancelled: "Request cancelled",
+    friendNowFriends: "You and {{name}} are now friends",
+    friendRemoved: "Friend removed",
+    srvAlreadyFriends: "You are already friends!",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -2992,6 +3008,14 @@ const translationsExtra = {
     lbColPoints: "Очки",
     lbColMembers: "Участники",
     lbColAvg: "Ср. рейтинг",
+    friendCancelRequest: "Отменить запрос",
+    friendAcceptRequest: "Принять запрос",
+    friendRemove: "Удалить из друзей",
+    friendRemoveConfirm: "Удалить {{name}} из друзей?",
+    friendRequestCancelled: "Запрос отменён",
+    friendNowFriends: "Теперь вы с {{name}} друзья",
+    friendRemoved: "Удалён из друзей",
+    srvAlreadyFriends: "Вы уже друзья!",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -3501,6 +3525,14 @@ const translationsExtra = {
     lbColPoints: "Puntos",
     lbColMembers: "Miembros",
     lbColAvg: "Rating medio",
+    friendCancelRequest: "Cancelar solicitud",
+    friendAcceptRequest: "Aceptar solicitud",
+    friendRemove: "Eliminar amigo",
+    friendRemoveConfirm: "¿Eliminar a {{name}} de tus amigos?",
+    friendRequestCancelled: "Solicitud cancelada",
+    friendNowFriends: "Ahora tú y {{name}} sois amigos",
+    friendRemoved: "Amigo eliminado",
+    srvAlreadyFriends: "¡Ya sois amigos!",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -4010,6 +4042,14 @@ const translationsExtra = {
     lbColPoints: "Punkte",
     lbColMembers: "Mitglieder",
     lbColAvg: "Ø Wertung",
+    friendCancelRequest: "Anfrage zurückziehen",
+    friendAcceptRequest: "Anfrage annehmen",
+    friendRemove: "Freundschaft beenden",
+    friendRemoveConfirm: "{{name}} aus deinen Freunden entfernen?",
+    friendRequestCancelled: "Anfrage zurückgezogen",
+    friendNowFriends: "Du und {{name}} seid jetzt befreundet",
+    friendRemoved: "Freund entfernt",
+    srvAlreadyFriends: "Ihr seid bereits befreundet!",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -4519,6 +4559,14 @@ const translationsExtra = {
     lbColPoints: "Points",
     lbColMembers: "Membres",
     lbColAvg: "Classement moy.",
+    friendCancelRequest: "Annuler la demande",
+    friendAcceptRequest: "Accepter la demande",
+    friendRemove: "Retirer des amis",
+    friendRemoveConfirm: "Retirer {{name}} de vos amis ?",
+    friendRequestCancelled: "Demande annulée",
+    friendNowFriends: "{{name}} et vous êtes maintenant amis",
+    friendRemoved: "Ami retiré",
+    srvAlreadyFriends: "Vous êtes déjà amis !",
     searchNoResults: "Aucun résultat"
   }
 };

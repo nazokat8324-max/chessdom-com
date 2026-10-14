@@ -875,6 +875,29 @@ async function start() {
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  // Profil tugmasi uchun: shu o'yinchi bilan do'stlik holati
+  const otherUser = async (req, res) => {
+    const other = await db.getUserByUsername(String(req.params.username || (req.body && req.body.username) || ''));
+    if (!other) { res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' }); return null; }
+    if (other.id === req.user.userId) { res.status(400).json({ success: false, message: 'Ruxsat yo\'q' }); return null; }
+    return other;
+  };
+
+  app.get('/api/friends/status/:username', authMiddleware, async (req, res) => {
+    try { const other = await otherUser(req, res); if (other) res.json({ success: true, ...(await db.getFriendshipStatus(req.user.userId, other.id)) }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/friends/remove', authMiddleware, async (req, res) => {
+    try { const other = await otherUser(req, res); if (other) res.json(await db.removeFriend(req.user.userId, other.id)); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/friends/cancel', authMiddleware, async (req, res) => {
+    try { const other = await otherUser(req, res); if (other) res.json(await db.cancelFriendRequest(req.user.userId, other.id)); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.post('/api/friends/decline', authMiddleware, async (req, res) => {
     try { const { requestId } = req.body; const result = await db.declineFriendRequest(requestId, req.user.userId); res.json(result); }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }

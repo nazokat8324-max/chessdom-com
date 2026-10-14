@@ -886,9 +886,18 @@ async function getTournamentStandings(tournamentId) {
 }
 
 async function sendFriendRequest(senderId, receiverId) {
+  const already = await dbGet('SELECT id FROM friends WHERE user_id = ? AND friend_id = ?', [senderId, receiverId]);
+  if (already) return { success: false, message: 'Siz allaqachon do\'stsiz!' };
+  // U ham bizga so'rov yuborgan bo'lsa — darhol do'st bo'lamiz
+  const reverse = await dbGet('SELECT id FROM friend_requests WHERE sender_id = ? AND receiver_id = ? AND status = ?', [receiverId, senderId, 'pending']);
+  if (reverse) return acceptFriendRequest(reverse.id, senderId);
   const existing = await dbGet('SELECT id FROM friend_requests WHERE sender_id = ? AND receiver_id = ? AND status = ?', [senderId, receiverId, 'pending']);
   if (existing) return { success: false, message: 'So\'rov allaqachon yuborilgan!' };
-  await dbRun('INSERT INTO friend_requests (id, sender_id, receiver_id, status, created_at) VALUES (?, ?, ?, ?, ?)', [uuidv4(), senderId, receiverId, 'pending', new Date().toISOString()]);
+  // Juftlik uchun bitta qator (UNIQUE): avval rad etilgan/bekor qilingan so'rov bo'lsa — qayta faollashtiramiz
+  const now = new Date().toISOString();
+  const old = await dbGet('SELECT id FROM friend_requests WHERE sender_id = ? AND receiver_id = ?', [senderId, receiverId]);
+  if (old) await dbRun("UPDATE friend_requests SET status = 'pending', created_at = ?, updated_at = ? WHERE id = ?", [now, now, old.id]);
+  else await dbRun('INSERT INTO friend_requests (id, sender_id, receiver_id, status, created_at) VALUES (?, ?, ?, ?, ?)', [uuidv4(), senderId, receiverId, 'pending', now]);
   return { success: true, message: 'Do\'stlik so\'rovi yuborildi!' };
 }
 
@@ -906,6 +915,26 @@ async function declineFriendRequest(requestId, receiverId) {
   if (!req) return { success: false, message: 'So\'rov topilmadi!' };
   await dbRun("UPDATE friend_requests SET status = 'declined', updated_at = ? WHERE id = ?", [new Date().toISOString(), requestId]);
   return { success: true, message: 'So\'rov rad etildi!' };
+}
+
+// Ikki o'yinchi orasidagi holat: friends | outgoing (men so'radim) | incoming (u so'radi) | none
+async function getFriendshipStatus(userId, otherId) {
+  if (await dbGet('SELECT id FROM friends WHERE user_id = ? AND friend_id = ?', [userId, otherId])) return { status: 'friends' };
+  const out = await dbGet('SELECT id FROM friend_requests WHERE sender_id = ? AND receiver_id = ? AND status = ?', [userId, otherId, 'pending']);
+  if (out) return { status: 'outgoing', requestId: out.id };
+  const inc = await dbGet('SELECT id FROM friend_requests WHERE sender_id = ? AND receiver_id = ? AND status = ?', [otherId, userId, 'pending']);
+  if (inc) return { status: 'incoming', requestId: inc.id };
+  return { status: 'none' };
+}
+
+async function removeFriend(userId, otherId) {
+  await dbRun('DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)', [userId, otherId, otherId, userId]);
+  return { success: true, message: 'Do\'stlik bekor qilindi' };
+}
+
+async function cancelFriendRequest(senderId, receiverId) {
+  await dbRun("UPDATE friend_requests SET status = 'cancelled', updated_at = ? WHERE sender_id = ? AND receiver_id = ? AND status = 'pending'", [new Date().toISOString(), senderId, receiverId]);
+  return { success: true, message: 'So\'rov bekor qilindi' };
 }
 
 async function getFriends(userId) {
@@ -1090,6 +1119,9 @@ module.exports = {
   userClub,
   getPublicProfile,
   markRoomRead,
+  getFriendshipStatus,
+  removeFriend,
+  cancelFriendRequest,
   setAvatar,
   deleteAvatar,
   getAvatarByUsername,

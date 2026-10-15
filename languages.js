@@ -2138,6 +2138,8 @@ const translationsExtra = {
     admCancelConfirm: "Turnirni bekor qilasizmi?",
     admCancelled: "Turnir bekor qilindi",
     admNoAccess: "Bu bo'lim faqat adminlar uchun",
+    sidebarOpen: "Menyuni ochish",
+    sidebarClose: "Menyuni yig'ish",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2811,6 +2813,8 @@ const translationsExtra = {
     admCancelConfirm: "Cancel this tournament?",
     admCancelled: "Tournament cancelled",
     admNoAccess: "Admins only",
+    sidebarOpen: "Expand menu",
+    sidebarClose: "Collapse menu",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -3484,6 +3488,8 @@ const translationsExtra = {
     admCancelConfirm: "Отменить турнир?",
     admCancelled: "Турнир отменён",
     admNoAccess: "Только для администраторов",
+    sidebarOpen: "Развернуть меню",
+    sidebarClose: "Свернуть меню",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -4157,6 +4163,8 @@ const translationsExtra = {
     admCancelConfirm: "¿Cancelar el torneo?",
     admCancelled: "Torneo cancelado",
     admNoAccess: "Solo para administradores",
+    sidebarOpen: "Abrir menú",
+    sidebarClose: "Contraer menú",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -4830,6 +4838,8 @@ const translationsExtra = {
     admCancelConfirm: "Turnier abbrechen?",
     admCancelled: "Turnier abgebrochen",
     admNoAccess: "Nur für Admins",
+    sidebarOpen: "Menü ausklappen",
+    sidebarClose: "Menü einklappen",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -5503,6 +5513,8 @@ const translationsExtra = {
     admCancelConfirm: "Annuler le tournoi ?",
     admCancelled: "Tournoi annulé",
     admNoAccess: "Réservé aux admins",
+    sidebarOpen: "Ouvrir le menu",
+    sidebarClose: "Réduire le menu",
     searchNoResults: "Aucun résultat"
   }
 };
@@ -5750,6 +5762,7 @@ function updateUI() {
   if (typeof window.refreshLeaderboardView === 'function') window.refreshLeaderboardView();
   if (typeof window.refreshSettingsView === 'function') window.refreshSettingsView();
   if (typeof window.refreshAdminView === 'function') window.refreshAdminView();
+  if (typeof window.refreshSidebarTitles === 'function') window.refreshSidebarTitles();
   if (typeof window.refreshPlayerInfoLabels === 'function') window.refreshPlayerInfoLabels();
   if (typeof window.updateOnlineStatus === 'function' && typeof isOnlineMode !== 'undefined') window.updateOnlineStatus(isOnlineMode);
 

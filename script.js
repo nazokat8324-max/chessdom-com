@@ -409,6 +409,29 @@ window.setupHistoryFilters = function() {
   });
 };
 
+// Kompyuterda: chap menyuni yig'ish/ochish (☰). Yig'ilganda faqat belgilar qoladi; tanlov eslab qolinadi
+window.toggleSidebar = function(force) {
+  const root = document.documentElement;
+  const collapsed = typeof force === 'boolean' ? force : !root.classList.contains('sidebar-collapsed');
+  root.classList.toggle('sidebar-collapsed', collapsed);
+  try { localStorage.setItem('justChessSidebar', collapsed ? 'collapsed' : 'open'); } catch (e) {}
+  const btn = document.getElementById('sidebarToggle');
+  if (btn) btn.title = collapsed ? tx('sidebarOpen', 'Menyuni ochish') : tx('sidebarClose', "Menyuni yig'ish");
+  // Taxta va grafiklar yangi kenglikka moslashsin
+  setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
+};
+
+// Yig'ilgan menyuda belgiga sichqoncha olib borilganda bo'lim nomi ko'rinsin
+window.refreshSidebarTitles = function() {
+  document.querySelectorAll('sidebar .menu-list .menu-item').forEach(item => {
+    const label = [...item.querySelectorAll('span')].find(s => !s.classList.contains('icon') && !s.classList.contains('lg-nav-badge'));
+    if (label) item.title = label.textContent.trim();
+  });
+  const btn = document.getElementById('sidebarToggle');
+  if (btn) btn.title = document.documentElement.classList.contains('sidebar-collapsed') ? tx('sidebarOpen', 'Menyuni ochish') : tx('sidebarClose', "Menyuni yig'ish");
+};
+document.addEventListener('DOMContentLoaded', () => setTimeout(window.refreshSidebarTitles, 500));
+
 // Telefonda: pastki paneldagi "Ko'proq" — qolgan bo'limlar ro'yxati
 window.toggleMobileMenu = function(open) {
   const next = typeof open === 'boolean' ? open : !document.body.classList.contains('mobile-menu-open');

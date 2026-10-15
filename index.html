@@ -23,12 +23,16 @@
         var cdSettings = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
         document.documentElement.setAttribute("data-theme", cdSettings.siteTheme || "emerald");
         if (cdSettings.showCoords === false) document.documentElement.classList.add("hide-coords");
+        if (localStorage.getItem("justChessSidebar") === "collapsed") document.documentElement.classList.add("sidebar-collapsed");
       } catch (e) {}
     </script>
   </head>
   <body class="theme-green">
     <!-- CHAP SIDEBAR MENYU -->
     <sidebar>
+      <button type="button" class="sidebar-toggle" id="sidebarToggle" onclick="window.toggleSidebar()" aria-label="Menyu">
+        <span></span><span></span><span></span>
+      </button>
       <div class="sidebar-top">
         <div class="logo-area" onclick="switchView('home')">
           <div class="cd-crown">

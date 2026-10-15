@@ -5781,6 +5781,7 @@ function updateUI() {
   if (typeof window.refreshSettingsView === 'function') window.refreshSettingsView();
   if (typeof window.refreshAdminView === 'function') window.refreshAdminView();
   if (typeof window.refreshSidebarTitles === 'function') window.refreshSidebarTitles();
+  if (typeof window.refreshPageTitle === 'function') window.refreshPageTitle();
   if (typeof window.refreshPlayerInfoLabels === 'function') window.refreshPlayerInfoLabels();
   if (typeof window.updateOnlineStatus === 'function' && typeof isOnlineMode !== 'undefined') window.updateOnlineStatus(isOnlineMode);
 

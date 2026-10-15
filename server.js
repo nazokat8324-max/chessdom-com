@@ -39,6 +39,16 @@ app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 app.use(express.static(__dirname));
+// Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
+// Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix']);
+app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
+  const slug = req.params[0].toLowerCase();
+  if (!PAGE_ROUTES.has(slug)) return next();
+  const canonical = '/' + slug;
+  if (req.path !== canonical) return res.redirect(301, canonical + (req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : ''));
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { success: false, message: 'Too many requests, please try again later.' } });
 const tooMany = { success: false, message: "Juda ko'p urinish. Biroz kutib, qayta urinib ko'ring." };

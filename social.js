@@ -1863,6 +1863,20 @@ window.loadClubChatMessages = function() {
     });
 };
 
+// Klub chatini faqat o'zi uchun tozalash
+window.clearClubChat = async function() {
+  if (!window.currentUser || !window.currentClubName) return;
+  if (!confirm(tx('chatClearConfirm', "Chatni tozalaysizmi? Xabarlar faqat sizning oynangizdan o'chadi, suhbatdoshingizda qoladi."))) return;
+  try {
+    const d = await fetch('/api/chat/clear', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${window.authToken}` }, body: JSON.stringify({ roomId: 'club_' + window.currentClubName }) }).then(r => r.json());
+    if (!d.success) { showToast(tServer(d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning'); return; }
+    loadClubChatMessages();
+    showToast(tx('chatCleared', 'Chat tozalandi'), 'success');
+  } catch (e) {
+    showToast(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"), 'warning');
+  }
+};
+
 window.sendClubChatMessage = function(stickerMessage) {
   if (!window.currentUser) {
     alert(tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!'));

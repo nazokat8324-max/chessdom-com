@@ -128,6 +128,7 @@
           ${p.country ? `<small>${flag(p.country)}</small>` : ''}
         </div>
         <button class="msg-challenge" data-challenge="${esc(p.username)}" title="${esc(tx('chProfileBtn', "O'yinga chaqirish"))}">⚔️ <span>${esc(tx('chPlayShort', "O'ynash"))}</span></button>
+        <button class="msg-clear" data-clear-chat="1" title="${esc(tx('chatClear', 'Chatni tozalash'))}">🧹</button>
       </div>
       <div class="msg-thread" id="msgThread">${bubbles || `<div class="msg-placeholder small"><p>${esc(tx('msgSayHi', "Salom deb yozing 👋"))}</p></div>`}</div>
       ${state.picker ? pickerHtml() : ''}
@@ -195,6 +196,8 @@
     }));
     root.querySelectorAll('[data-accept]').forEach(b => b.addEventListener('click', () => answerRequest('accept', b.dataset.accept)));
     root.querySelectorAll('[data-decline]').forEach(b => b.addEventListener('click', () => answerRequest('decline', b.dataset.decline)));
+    const clearBtn = root.querySelector('[data-clear-chat]');
+    if (clearBtn) clearBtn.addEventListener('click', clearChat);
     const challenge = root.querySelector('[data-challenge]');
     if (challenge) challenge.addEventListener('click', () => { if (typeof window.openChallengeDialog === 'function') window.openChallengeDialog(challenge.dataset.challenge); });
     const back = root.querySelector('[data-back]');
@@ -238,6 +241,17 @@
     await postJson('/api/messages/read', { roomId: 'user_' + partner.id }).catch(() => {});
     await loadConversations();
     render();
+  }
+
+  async function clearChat() {
+    const p = state.active;
+    if (!p || !confirm(tx('chatClearConfirm', "Chatni tozalaysizmi? Xabarlar faqat sizning oynangizdan o'chadi, suhbatdoshingizda qoladi."))) return;
+    const d = await postJson('/api/chat/clear', { roomId: 'user_' + p.id }).catch(() => null);
+    if (!d || !d.success) { showToast(tServer(d && d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning'); return; }
+    state.messages = [];
+    await loadConversations();
+    render();
+    showToast(tx('chatCleared', 'Chat tozalandi'), 'success');
   }
 
   async function sendSticker(id) {

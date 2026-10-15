@@ -2140,6 +2140,9 @@ const translationsExtra = {
     admNoAccess: "Bu bo'lim faqat adminlar uchun",
     sidebarOpen: "Menyuni ochish",
     sidebarClose: "Menyuni yig'ish",
+    chatClear: "Chatni tozalash",
+    chatClearConfirm: "Chatni tozalaysizmi? Xabarlar faqat sizning oynangizdan o'chadi, suhbatdoshingizda qoladi.",
+    chatCleared: "Chat tozalandi",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2815,6 +2818,9 @@ const translationsExtra = {
     admNoAccess: "Admins only",
     sidebarOpen: "Expand menu",
     sidebarClose: "Collapse menu",
+    chatClear: "Clear chat",
+    chatClearConfirm: "Clear this chat? Messages are removed only for you; the other side keeps them.",
+    chatCleared: "Chat cleared",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -3490,6 +3496,9 @@ const translationsExtra = {
     admNoAccess: "Только для администраторов",
     sidebarOpen: "Развернуть меню",
     sidebarClose: "Свернуть меню",
+    chatClear: "Очистить чат",
+    chatClearConfirm: "Очистить чат? Сообщения исчезнут только у вас, у собеседника останутся.",
+    chatCleared: "Чат очищен",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -4165,6 +4174,9 @@ const translationsExtra = {
     admNoAccess: "Solo para administradores",
     sidebarOpen: "Abrir menú",
     sidebarClose: "Contraer menú",
+    chatClear: "Vaciar chat",
+    chatClearConfirm: "¿Vaciar el chat? Los mensajes solo se borran para ti; la otra persona los conserva.",
+    chatCleared: "Chat vaciado",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -4840,6 +4852,9 @@ const translationsExtra = {
     admNoAccess: "Nur für Admins",
     sidebarOpen: "Menü ausklappen",
     sidebarClose: "Menü einklappen",
+    chatClear: "Chat leeren",
+    chatClearConfirm: "Chat leeren? Nachrichten verschwinden nur bei dir, die andere Seite behält sie.",
+    chatCleared: "Chat geleert",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -5515,6 +5530,9 @@ const translationsExtra = {
     admNoAccess: "Réservé aux admins",
     sidebarOpen: "Ouvrir le menu",
     sidebarClose: "Réduire le menu",
+    chatClear: "Vider la discussion",
+    chatClearConfirm: "Vider la discussion ? Les messages ne disparaissent que pour vous.",
+    chatCleared: "Discussion vidée",
     searchNoResults: "Aucun résultat"
   }
 };

@@ -9847,6 +9847,26 @@ html.hide-last-move #chessBoard .sq-last {
   }
 }
 
+/* ===== Chatni tozalash tugmasi ===== */
+.msg-clear {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--cd-border-strong);
+  background: transparent;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.msg-clear:hover {
+  background: rgba(229, 72, 77, 0.12);
+  border-color: rgba(229, 72, 77, 0.45);
+}
+.msg-chat-head .msg-clear {
+  margin-left: 6px;
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

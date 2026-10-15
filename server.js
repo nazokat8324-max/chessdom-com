@@ -1204,10 +1204,20 @@ async function start() {
     try {
       const roomId = req.query.roomId ? resolveChatRoom(String(req.query.roomId), req.user.userId) : null;
       if (req.query.roomId && !roomId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
-      const messages = await db.getChatMessages({ roomId });
+      const messages = await db.getChatMessages({ roomId, viewerId: req.user.userId });
       res.json({ success: true, messages });
     }
     catch (err) { console.error('Chat xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Chatni tozalash — faqat shu foydalanuvchi uchun (suhbatdoshda xabarlar qoladi)
+  app.post('/api/chat/clear', authMiddleware, async (req, res) => {
+    try {
+      const roomId = req.body && req.body.roomId ? resolveChatRoom(String(req.body.roomId), req.user.userId) : null;
+      if (!roomId || !(roomId.startsWith('dm_') || roomId.startsWith('club_'))) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
+      await db.clearChat(req.user.userId, roomId);
+      res.json({ success: true });
+    } catch (err) { console.error('Chat tozalash xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/chat/messages', authMiddleware, [

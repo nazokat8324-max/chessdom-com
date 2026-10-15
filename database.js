@@ -290,6 +290,17 @@ async function initDatabase() {
     await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
   } catch (e) {}
 
+  // "Chatni tozalash" (faqat o'zi uchun): shu vaqtdan oldingi xabarlar foydalanuvchiga ko'rsatilmaydi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS chat_clears (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      room_id TEXT NOT NULL,
+      cleared_at TEXT NOT NULL,
+      UNIQUE(user_id, room_id)
+    )
+  `);
+
   // Bloklash va shikoyatlar; admin roli va hisobni bloklash (ban)
   await dbExec(`
     CREATE TABLE IF NOT EXISTS user_blocks (
@@ -1127,10 +1138,14 @@ async function getFriendRequests(receiverId) {
   return rows;
 }
 
-async function getChatMessages({ userId, roomId }) {
+async function getChatMessages({ userId, roomId, viewerId }) {
   let sql = 'SELECT cm.*, u.username FROM chat_messages cm JOIN users u ON cm.sender_id = u.id';
   const params = [];
-  if (roomId) { sql += ' WHERE cm.room_id = ?'; params.push(roomId); }
+  if (roomId) {
+    sql += ' WHERE cm.room_id = ?'; params.push(roomId);
+    const cleared = await clearedAt(viewerId, roomId);
+    if (cleared) { sql += ' AND cm.created_at > ?'; params.push(cleared); }
+  }
   else if (userId) { sql += ' WHERE (cm.sender_id = ? AND cm.receiver_id = ?) OR (cm.sender_id = ? AND cm.receiver_id = ?)'; params.push(userId, userId, userId, userId); }
   else { sql += ' WHERE cm.receiver_id IS NULL AND cm.room_id IS NULL'; }
   sql += ' ORDER BY cm.created_at DESC LIMIT 100';
@@ -1146,10 +1161,24 @@ async function markRoomRead(userId, roomId) {
   else await dbRun('INSERT INTO chat_reads (id, user_id, room_id, last_read_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, roomId, now]);
 }
 
+async function clearedAt(userId, roomId) {
+  if (!userId || !roomId) return '';
+  const row = await dbGet('SELECT cleared_at FROM chat_clears WHERE user_id = ? AND room_id = ?', [userId, roomId]);
+  return row ? row.cleared_at : '';
+}
+
+async function clearChat(userId, roomId) {
+  const now = new Date().toISOString();
+  const existing = await dbGet('SELECT id FROM chat_clears WHERE user_id = ? AND room_id = ?', [userId, roomId]);
+  if (existing) await dbRun('UPDATE chat_clears SET cleared_at = ? WHERE id = ?', [now, existing.id]);
+  else await dbRun('INSERT INTO chat_clears (id, user_id, room_id, cleared_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, roomId, now]);
+}
+
 async function unreadInRoom(userId, roomId) {
   const read = await dbGet('SELECT last_read_at FROM chat_reads WHERE user_id = ? AND room_id = ?', [userId, roomId]);
+  const since = [read ? read.last_read_at : '', await clearedAt(userId, roomId)].sort().pop();
   const row = await dbGet('SELECT COUNT(*) as "n" FROM chat_messages WHERE room_id = ? AND sender_id <> ? AND created_at > ?',
-    [roomId, userId, read ? read.last_read_at : '']);
+    [roomId, userId, since]);
   return Number(row && row.n) || 0;
 }
 
@@ -1165,6 +1194,8 @@ async function getConversations(userId) {
     if (!partnerId) continue;
     const partner = await dbGet('SELECT id, username, country FROM users WHERE id = ?', [partnerId]);
     if (!partner) continue;
+    const cleared = await clearedAt(userId, r.room_id);
+    if (cleared && String(r.last_at) <= cleared) continue;
     const last = await dbGet('SELECT message, sender_id, created_at FROM chat_messages WHERE room_id = ? ORDER BY created_at DESC LIMIT 1', [r.room_id]);
     result.push({
       roomId: r.room_id,
@@ -1299,6 +1330,7 @@ module.exports = {
   userClub,
   getPublicProfile,
   markRoomRead,
+  clearChat,
   getGameReplay,
   blockUser,
   unblockUser,

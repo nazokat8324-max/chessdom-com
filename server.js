@@ -682,7 +682,7 @@ async function start() {
           <h2 style="margin:0 0 12px;color:#fff">♞ ChessDom</h2>
           <p>Salom, <b>${escapeHtml(user.username)}</b>!</p>
           <p>Parolingizni tiklash uchun quyidagi tugmani bosing. Havola 30 daqiqa amal qiladi.</p>
-          <p style="text-align:center;margin:28px 0"><a href="${link}" style="background:#81b64c;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold">Parolni tiklash</a></p>
+          <p style="text-align:center;margin:28px 0"><a href="${link}" style="background:#00b1b9;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold">Parolni tiklash</a></p>
           <p style="font-size:12px;color:#8fa29a">Agar siz so'ramagan bo'lsangiz, bu xatni e'tiborsiz qoldiring.</p></div>`
       });
       res.json(sent);

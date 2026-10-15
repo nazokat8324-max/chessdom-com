@@ -3,14 +3,14 @@
 // localStorage: justChessSettings; serverda: davlat (users.country) va maxfiylik (users.privacy).
 (function () {
   const DEFAULTS = {
-    country: 'uz', language: 'uz', soundEnabled: true, volume: 0.8,
-    siteTheme: 'emerald', showCoords: true, pieceSet: 'wikipedia',
+    country: 'uz', language: 'en', soundEnabled: true, volume: 0.8,
+    siteTheme: 'turquoise', showCoords: true, pieceSet: 'wikipedia',
     showHints: true, showLastMove: true, autoQueen: false, confirmResign: true,
     quickClock: [300, 0], quickRated: true
   };
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français']];
-  const THEMES = [['emerald', 'themeEmerald', 'Zumrad'], ['ocean', 'themeOcean', 'Okean'], ['amethyst', 'themeAmethyst', 'Ametist'], ['sunset', 'themeSunset', 'Shafaq']];
+  const THEMES = [['turquoise', 'themeTurquoise', 'Firuza'], ['ocean', 'themeOcean', 'Okean'], ['amethyst', 'themeAmethyst', 'Ametist'], ['sunset', 'themeSunset', 'Shafaq']];
   const PIECES = [['wikipedia', 'Klassik'], ['cburnett', 'Lichess'], ['merida', 'Merida'], ['alpha', 'Alpha'], ['california', 'California'], ['staunty', 'Staunty']];
   // Namuna pozitsiya (Italyan o'yini): oxirgi yurish Bc4, tanlangan ot g1 va uning yurishlari
   const PREVIEW_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR';
@@ -28,6 +28,8 @@
     try { s = JSON.parse(localStorage.getItem('justChessSettings') || '{}'); } catch (e) {}
     const merged = { ...DEFAULTS, ...s };
     if (!Array.isArray(merged.quickClock)) merged.quickClock = DEFAULTS.quickClock;
+    // Olib tashlangan mavzu (masalan, eski "emerald") — standart Firuza
+    if (!THEMES.some(t => t[0] === merged.siteTheme)) merged.siteTheme = DEFAULTS.siteTheme;
     return merged;
   };
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);

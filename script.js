@@ -1,5 +1,5 @@
 if (typeof window.currentLang === 'undefined') {
-  window.currentLang = localStorage.getItem("justChessLang") || "uz";
+  window.currentLang = localStorage.getItem("justChessLang") || "en";
 }
 
 // Tarjima yordamchisi: tx('kalit', "o'zbekcha matn", { name }) — i18next tayyor bo'lmasa o'zbekcha matn qaytadi.
@@ -1469,7 +1469,7 @@ window.renderLanguageCards = function(filter = '') {
 
   const languages = window.LANGUAGES;
 
-  const currentLang = (window.currentLang || localStorage.getItem("justChessLang") || 'uz').toUpperCase();
+  const currentLang = (window.currentLang || localStorage.getItem("justChessLang") || 'en').toUpperCase();
 
   grid.innerHTML = languages
     .filter(lang =>
@@ -1863,10 +1863,10 @@ window.populateSettingsCountries = function() {
 };
 
 // --- Sayt rangi va koordinatalar (Sozlamalar → Dizayn) ---
-window.SITE_THEMES = ['emerald', 'ocean', 'amethyst', 'sunset'];
+window.SITE_THEMES = ['turquoise', 'ocean', 'amethyst', 'sunset'];
 
 window.applySiteTheme = function(theme) {
-  const name = window.SITE_THEMES.includes(theme) ? theme : 'emerald';
+  const name = window.SITE_THEMES.includes(theme) ? theme : 'turquoise';
   document.documentElement.setAttribute('data-theme', name);
   document.querySelectorAll('[data-theme-option]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.themeOption === name);
@@ -1895,7 +1895,7 @@ window.selectSiteTheme = function(theme) {
 // Saqlangan qiymatlarni qayta qo'llash (saqlanmagan o'zgarishlarni bekor qilish)
 window.applySavedSettings = function() {
   const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
-  window.applySiteTheme(saved.siteTheme || "emerald");
+  window.applySiteTheme(saved.siteTheme || "turquoise");
   window.applyCoords(saved.showCoords !== false);
   if (typeof window.applySavedSound === "function") window.applySavedSound();
 };
@@ -1918,7 +1918,7 @@ window.updateSettingsView = function() {
     window.populateSettingsCountries();
     country.value = saved.country || country.value || "uz";
   }
-  if (lang) lang.value = saved.language || "uz";
+  if (lang) lang.value = saved.language || "en";
   if (sound) sound.checked = saved.soundEnabled !== false;
   if (volume) volume.value = Math.round((saved.volume || 0.8) * 100);
   if (coords) coords.checked = saved.showCoords !== false;
@@ -1938,7 +1938,7 @@ window.saveSettings = function() {
     language: (document.getElementById("settingsLanguage")?.value || "uz"),
     soundEnabled: document.getElementById("settingsSound")?.checked !== false,
     volume: (parseInt(document.getElementById("settingsVolume")?.value || "80") / 100),
-    siteTheme: document.documentElement.getAttribute("data-theme") || "emerald",
+    siteTheme: document.documentElement.getAttribute("data-theme") || "turquoise",
     showCoords: document.getElementById("settingsCoords")?.checked !== false
   };
   localStorage.setItem("justChessSettings", JSON.stringify(saved));
@@ -1979,7 +1979,7 @@ window.resetSettings = function() {
   if (volume) volume.value = 80;
   if (volVal) volVal.textContent = "80%";
   if (coords) coords.checked = true;
-  window.applySiteTheme("emerald");
+  window.applySiteTheme("turquoise");
   window.applyCoords(true);
   if (typeof window.applySoundToggle === "function") window.applySoundToggle(true);
   if (typeof window.setSoundVolume === "function") window.setSoundVolume(0.8);

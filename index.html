@@ -1,5 +1,5 @@
 ﻿<!doctype html>
-<html lang="uz">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -21,7 +21,9 @@
       // Saqlangan sayt rangi va koordinatalar sozlamasi — sahifa chizilishidan oldin
       try {
         var cdSettings = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
-        document.documentElement.setAttribute("data-theme", cdSettings.siteTheme || "emerald");
+        var cdTheme = cdSettings.siteTheme;
+        if (["turquoise", "ocean", "amethyst", "sunset"].indexOf(cdTheme) < 0) cdTheme = "turquoise";
+        document.documentElement.setAttribute("data-theme", cdTheme);
         if (cdSettings.showCoords === false) document.documentElement.classList.add("hide-coords");
         if (localStorage.getItem("justChessSidebar") === "collapsed") document.documentElement.classList.add("sidebar-collapsed");
       } catch (e) {}
@@ -100,7 +102,7 @@
                     cy="5"
                     r="14"
                     fill="none"
-                    stroke="#81b64c"
+                    style="stroke: var(--accent)"
                     stroke-width="1.2"
                     opacity="0.6"
                   />
@@ -109,7 +111,7 @@
                     y1="21"
                     x2="30"
                     y2="5"
-                    stroke="#81b64c"
+                    style="stroke: var(--accent)"
                     stroke-width="0.5"
                     opacity="0.3"
                   />
@@ -118,7 +120,7 @@
                     y1="30"
                     x2="44"
                     y2="30"
-                    stroke="#81b64c"
+                    style="stroke: var(--accent)"
                     stroke-width="0.5"
                     opacity="0.3"
                   />
@@ -133,7 +135,7 @@
                     cx="44"
                     cy="30"
                     r="3"
-                    fill="#81b64c"
+                    style="fill: var(--accent)"
                     class="ferris-car"
                   />
                   <circle
@@ -214,7 +216,7 @@
                   <path
                     d="M22 4C22 2 20 1 18 1C14 1 12 4 12 8C12 10 13 12 14 13L10 18L8 22L6 30L10 30L12 24L16 22L20 24L24 22L22 14C24 12 25 10 25 8C25 6 24 4 22 4Z"
                     fill="none"
-                    stroke="#81b64c"
+                    style="stroke: var(--accent)"
                     stroke-width="1.5"
                   />
                   <circle cx="20" cy="6" r="1.5" fill="#FFD700" />
@@ -223,7 +225,7 @@
                     y1="24"
                     x2="14"
                     y2="30"
-                    stroke="#81b64c"
+                    style="stroke: var(--accent)"
                     stroke-width="1.5"
                   />
                   <line
@@ -231,7 +233,7 @@
                     y1="24"
                     x2="18"
                     y2="30"
-                    stroke="#81b64c"
+                    style="stroke: var(--accent)"
                     stroke-width="1.5"
                   />
                 </svg>
@@ -288,7 +290,7 @@
                   <path
                     d="M10 14L8 30L20 30L18 14Z"
                     fill="none"
-                    stroke="#81b64c"
+                    style="stroke: var(--accent)"
                     stroke-width="1.5"
                   />
                   <line
@@ -296,7 +298,7 @@
                     y1="30"
                     x2="20"
                     y2="30"
-                    stroke="#81b64c"
+                    style="stroke: var(--accent)"
                     stroke-width="1.5"
                   />
                 </svg>

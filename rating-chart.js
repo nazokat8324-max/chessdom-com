@@ -16,8 +16,8 @@
     if (st.chart) { st.chart.destroy(); st.chart = null; }
     box.classList.toggle('empty', points.length < 2);
     if (points.length < 2) return;
-    const accent = css('--accent', '#81b64c');
-    const rgb = css('--accent-rgb', '129, 182, 76');
+    const accent = css('--accent', '#01ccd5');
+    const rgb = css('--accent-rgb', '1, 204, 213');
     const ctx = canvas.getContext('2d');
     const grad = ctx.createLinearGradient(0, 0, 0, box.clientHeight || 200);
     grad.addColorStop(0, `rgba(${rgb}, 0.35)`);

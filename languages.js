@@ -2158,6 +2158,7 @@ const translationsExtra = {
     gpOffline: "oflayn",
     gpNoMoves: "Yurishlar hali yo'q",
     gpBackToLive: "Joriy pozitsiya",
+    themeTurquoise: "Firuza",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2851,6 +2852,7 @@ const translationsExtra = {
     gpOffline: "offline",
     gpNoMoves: "No moves yet",
     gpBackToLive: "Back to game",
+    themeTurquoise: "Turquoise",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -3544,6 +3546,7 @@ const translationsExtra = {
     gpOffline: "не в сети",
     gpNoMoves: "Ходов пока нет",
     gpBackToLive: "К текущей позиции",
+    themeTurquoise: "Бирюза",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -4237,6 +4240,7 @@ const translationsExtra = {
     gpOffline: "desconectado",
     gpNoMoves: "Aún no hay jugadas",
     gpBackToLive: "Volver a la partida",
+    themeTurquoise: "Turquesa",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -4930,6 +4934,7 @@ const translationsExtra = {
     gpOffline: "offline",
     gpNoMoves: "Noch keine Züge",
     gpBackToLive: "Zur aktuellen Stellung",
+    themeTurquoise: "Türkis",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -5623,13 +5628,14 @@ const translationsExtra = {
     gpOffline: "hors ligne",
     gpNoMoves: "Aucun coup pour l'instant",
     gpBackToLive: "Position actuelle",
+    themeTurquoise: "Turquoise",
     searchNoResults: "Aucun résultat"
   }
 };
 Object.keys(translationsExtra).forEach(lang => Object.assign(translations[lang], translationsExtra[lang]));
 
 i18next.init({
-  lng: localStorage.getItem("justChessLang") || "uz",
+  lng: localStorage.getItem("justChessLang") || "en",
   fallbackLng: "uz",
   debug: false,
   resources: {

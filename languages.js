@@ -2143,6 +2143,21 @@ const translationsExtra = {
     chatClear: "Chatni tozalash",
     chatClearConfirm: "Chatni tozalaysizmi? Xabarlar faqat sizning oynangizdan o'chadi, suhbatdoshingizda qoladi.",
     chatCleared: "Chat tozalandi",
+    gpWaitingOpponent: "Raqib kutilmoqda…",
+    gpSearching: "Raqib qidirilmoqda…",
+    gpCancel: "Bekor qilish",
+    gpPlayTitle: "O'ynash",
+    gpChallengeFriend: "Do'stni chaqirish",
+    gpTournaments: "Turnirlar",
+    gpFlip: "Taxtani aylantirish",
+    gpSound: "Ovoz",
+    gpSoundOn: "Ovoz yoqildi",
+    gpSoundOff: "Ovoz o'chirildi",
+    gpWhoToChallenge: "Kimni chaqirasiz?",
+    gpNoFriends: "Hali do'stlaringiz yo'q. O'yinchi profilida \"Do'stlik so'rash\" tugmasini bosing.",
+    gpOffline: "oflayn",
+    gpNoMoves: "Yurishlar hali yo'q",
+    gpBackToLive: "Joriy pozitsiya",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2821,6 +2836,21 @@ const translationsExtra = {
     chatClear: "Clear chat",
     chatClearConfirm: "Clear this chat? Messages are removed only for you; the other side keeps them.",
     chatCleared: "Chat cleared",
+    gpWaitingOpponent: "Waiting for opponent…",
+    gpSearching: "Searching for opponent…",
+    gpCancel: "Cancel",
+    gpPlayTitle: "Play",
+    gpChallengeFriend: "Challenge a friend",
+    gpTournaments: "Tournaments",
+    gpFlip: "Flip board",
+    gpSound: "Sound",
+    gpSoundOn: "Sound on",
+    gpSoundOff: "Sound off",
+    gpWhoToChallenge: "Who do you want to challenge?",
+    gpNoFriends: "You have no friends yet. Use “Add friend” on a player's profile.",
+    gpOffline: "offline",
+    gpNoMoves: "No moves yet",
+    gpBackToLive: "Back to game",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -3499,6 +3529,21 @@ const translationsExtra = {
     chatClear: "Очистить чат",
     chatClearConfirm: "Очистить чат? Сообщения исчезнут только у вас, у собеседника останутся.",
     chatCleared: "Чат очищен",
+    gpWaitingOpponent: "Ожидание соперника…",
+    gpSearching: "Поиск соперника…",
+    gpCancel: "Отмена",
+    gpPlayTitle: "Играть",
+    gpChallengeFriend: "Вызвать друга",
+    gpTournaments: "Турниры",
+    gpFlip: "Перевернуть доску",
+    gpSound: "Звук",
+    gpSoundOn: "Звук включён",
+    gpSoundOff: "Звук выключен",
+    gpWhoToChallenge: "Кого вызвать?",
+    gpNoFriends: "У вас пока нет друзей. Нажмите «Добавить в друзья» в профиле игрока.",
+    gpOffline: "не в сети",
+    gpNoMoves: "Ходов пока нет",
+    gpBackToLive: "К текущей позиции",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -4177,6 +4222,21 @@ const translationsExtra = {
     chatClear: "Vaciar chat",
     chatClearConfirm: "¿Vaciar el chat? Los mensajes solo se borran para ti; la otra persona los conserva.",
     chatCleared: "Chat vaciado",
+    gpWaitingOpponent: "Esperando rival…",
+    gpSearching: "Buscando rival…",
+    gpCancel: "Cancelar",
+    gpPlayTitle: "Jugar",
+    gpChallengeFriend: "Retar a un amigo",
+    gpTournaments: "Torneos",
+    gpFlip: "Girar tablero",
+    gpSound: "Sonido",
+    gpSoundOn: "Sonido activado",
+    gpSoundOff: "Sonido desactivado",
+    gpWhoToChallenge: "¿A quién quieres retar?",
+    gpNoFriends: "Aún no tienes amigos. Usa «Añadir amigo» en el perfil de un jugador.",
+    gpOffline: "desconectado",
+    gpNoMoves: "Aún no hay jugadas",
+    gpBackToLive: "Volver a la partida",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -4855,6 +4915,21 @@ const translationsExtra = {
     chatClear: "Chat leeren",
     chatClearConfirm: "Chat leeren? Nachrichten verschwinden nur bei dir, die andere Seite behält sie.",
     chatCleared: "Chat geleert",
+    gpWaitingOpponent: "Warte auf Gegner…",
+    gpSearching: "Suche Gegner…",
+    gpCancel: "Abbrechen",
+    gpPlayTitle: "Spielen",
+    gpChallengeFriend: "Freund herausfordern",
+    gpTournaments: "Turniere",
+    gpFlip: "Brett drehen",
+    gpSound: "Ton",
+    gpSoundOn: "Ton an",
+    gpSoundOff: "Ton aus",
+    gpWhoToChallenge: "Wen möchtest du herausfordern?",
+    gpNoFriends: "Noch keine Freunde. Nutze „Freund hinzufügen“ im Spielerprofil.",
+    gpOffline: "offline",
+    gpNoMoves: "Noch keine Züge",
+    gpBackToLive: "Zur aktuellen Stellung",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -5533,6 +5608,21 @@ const translationsExtra = {
     chatClear: "Vider la discussion",
     chatClearConfirm: "Vider la discussion ? Les messages ne disparaissent que pour vous.",
     chatCleared: "Discussion vidée",
+    gpWaitingOpponent: "En attente d'un adversaire…",
+    gpSearching: "Recherche d'un adversaire…",
+    gpCancel: "Annuler",
+    gpPlayTitle: "Jouer",
+    gpChallengeFriend: "Défier un ami",
+    gpTournaments: "Tournois",
+    gpFlip: "Retourner l'échiquier",
+    gpSound: "Son",
+    gpSoundOn: "Son activé",
+    gpSoundOff: "Son coupé",
+    gpWhoToChallenge: "Qui voulez-vous défier ?",
+    gpNoFriends: "Pas encore d'amis. Utilisez « Ajouter en ami » sur le profil d'un joueur.",
+    gpOffline: "hors ligne",
+    gpNoMoves: "Aucun coup pour l'instant",
+    gpBackToLive: "Position actuelle",
     searchNoResults: "Aucun résultat"
   }
 };
@@ -5584,7 +5674,7 @@ function updateUI() {
   const labelDraws = document.getElementById("labelDraws"); if (labelDraws) labelDraws.textContent = t('labelDraws');
   const btnResetStats = document.getElementById("btnResetStats"); if (btnResetStats) btnResetStats.textContent = t('btnResetStats');
   const btnNewGame = document.getElementById("btnNewGame"); if (btnNewGame) btnNewGame.textContent = t('btnNewGame');
-  const btnResign = document.getElementById("btnResign"); if (btnResign) btnResign.textContent = t('btnResign');
+  const btnResign = document.getElementById("btnResign"); if (btnResign && !document.getElementById("btnResignText")) btnResign.textContent = t('btnResign');
   const panelHistoryHeader = document.getElementById("panelHistoryHeader"); if (panelHistoryHeader) panelHistoryHeader.textContent = t('panelHistoryHeader');
 
   const loginCardTitle = document.getElementById("loginCardTitle"); if (loginCardTitle) loginCardTitle.textContent = t('loginCardTitle');
@@ -5660,7 +5750,7 @@ function updateUI() {
   const ratedLabel = document.getElementById("ratedLabel"); if (ratedLabel) ratedLabel.textContent = t('ratedLabel');
   const ratedSublabel = document.getElementById("ratedSublabel"); if (ratedSublabel) ratedSublabel.textContent = t('ratedSublabel');
   const btnDrawText = document.getElementById("btnDrawText"); if (btnDrawText) btnDrawText.textContent = t('btnDrawText');
-  const btnResignText = document.getElementById("btnResignText"); if (btnResignText) btnResignText.textContent = t('btnResign');
+  const btnResignText = document.getElementById("btnResignText"); if (btnResignText) btnResignText.textContent = t('btnResign').replace(/\s*\u{1F3F3}️?/u, '');
   const btnPgnText = document.getElementById("btnPgnText"); if (btnPgnText) btnPgnText.textContent = t('btnPgnText');
   const btnStartGameText = document.getElementById("btnStartGameText"); if (btnStartGameText) btnStartGameText.textContent = t('btnStartGameText');
   const btnNewGameText = document.getElementById("btnNewGameText"); if (btnNewGameText) btnNewGameText.textContent = t('btnNewGameText');

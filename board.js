@@ -23,6 +23,17 @@ window.setGamePanelMode = function(mode) {
   const newGameBtn = document.getElementById('btnPlayAgain');
   if (pre) pre.hidden = mode !== 'pre';
   if (inGame) inGame.hidden = mode === 'pre';
+  const view = document.getElementById('gameView');
+  if (view) {
+    view.classList.remove('pg-mode-pre', 'pg-mode-in', 'pg-mode-over');
+    view.classList.add('pg-mode-' + mode);
+  }
+  const playTitle = document.getElementById('pgPlayTitle');
+  const movesTitle = document.getElementById('historyPanelHeader');
+  if (playTitle) playTitle.hidden = mode !== 'pre';
+  if (movesTitle) movesTitle.hidden = mode === 'pre';
+  const friends = document.getElementById('pgFriends');
+  if (friends && mode !== 'pre') friends.hidden = true;
   if (drawBtn) drawBtn.hidden = mode !== 'in';
   if (resignBtn) resignBtn.hidden = mode !== 'in';
   if (newGameBtn) newGameBtn.hidden = mode !== 'over';
@@ -68,47 +79,87 @@ window.setOpponentFound = function(found) {
 
 window.updateGameStatusText = function() {
   const statusEl = document.getElementById('gameStatusText');
-  if (!statusEl) return;
-  const searching = window.isSearchingOpponent === true;
-  if (!searching || opponentFound) {
-    statusEl.textContent = '';
+  if (statusEl) statusEl.textContent = '';
+  refreshSearchOverlay();
+};
+
+// Raqib qidirilayotganda taxta ustida: vaqt nazorati, o'tgan vaqt va "Bekor qilish"
+let searchTimer = null;
+let searchStartedAt = 0;
+function refreshSearchOverlay() {
+  const overlay = document.getElementById('pgSearchOverlay');
+  const searching = window.isSearchingOpponent === true && !opponentFound;
+  const view = document.getElementById('gameView');
+  if (view) view.classList.toggle('pg-searching', searching);
+  const startBtn = document.getElementById('btnStartGame');
+  if (startBtn) startBtn.disabled = searching;
+  if (overlay) overlay.hidden = !searching;
+  if (!searching) {
+    clearInterval(searchTimer);
+    searchTimer = null;
+    searchStartedAt = 0;
     return;
   }
-  statusEl.textContent = (typeof i18next !== 'undefined' && i18next.isInitialized)
-    ? i18next.t('opponentStatusSearching', { defaultValue: 'Qidirilmoqda...' })
-    : 'Qidirilmoqda...';
+  if (!searchStartedAt) searchStartedAt = Date.now();
+  const meta = document.getElementById('pgSearchMeta');
+  const rated = document.getElementById('ratedToggle');
+  if (meta) meta.textContent = `${Math.round(initialTime / 60)}+${timeIncrement} · ${(!rated || rated.checked) ? tx('ratedLabel', 'Reytingli') : tx('unratedLabel', 'Reytingsiz')}`;
+  const tick = () => {
+    const el = document.getElementById('pgSearchTime');
+    const s = Math.floor((Date.now() - searchStartedAt) / 1000);
+    if (el) el.textContent = Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  };
+  tick();
+  if (!searchTimer) searchTimer = setInterval(tick, 1000);
+}
+
+window.cancelSearch = function() {
+  if (typeof window.stopMatchmaking === 'function') window.stopMatchmaking();
 };
 
 window.myColor = null;
 
 // O'yinchining o'z paneli doim pastda, raqibniki tepada bo'lishi uchun
 // qora bilan o'ynaganda oq va qora panellar o'rni almashtiriladi
+// ⇅ tugmasi bilan taxta aylantirilsa, panellar ham taxta bilan birga almashadi
+window.boardFlipped = false;
+function currentOrientation() {
+  const base = window.myColor === 'b' ? 'black' : 'white';
+  return window.boardFlipped ? (base === 'white' ? 'black' : 'white') : base;
+}
+
 function arrangePlayerBars() {
   const whiteBar = document.querySelector('#gameView .white-player');
   const blackBar = document.querySelector('#gameView .black-player');
   const boardWrapper = document.querySelector('#gameView .board-wrapper');
   if (!whiteBar || !blackBar || !boardWrapper) return;
-  const [top, bottom] = window.myColor === 'b' ? [whiteBar, blackBar] : [blackBar, whiteBar];
+  const [top, bottom] = currentOrientation() === 'black' ? [whiteBar, blackBar] : [blackBar, whiteBar];
   boardWrapper.before(top);
   boardWrapper.after(bottom);
 }
 
-window.applyMyColor = function(color) {
-  window.myColor = (color === 'w' || color === 'b') ? color : null;
-  if (board && typeof board.orientation === 'function') {
-    board.orientation(window.myColor === 'b' ? 'black' : 'white');
-  }
+function applyOrientation() {
+  if (board && typeof board.orientation === 'function') board.orientation(currentOrientation());
   arrangePlayerBars();
   clearMoveHints();
-  if (lastMove) window.markLastMove(lastMove.from, lastMove.to);
+  showPly();
+}
+
+window.applyMyColor = function(color) {
+  window.myColor = (color === 'w' || color === 'b') ? color : null;
+  window.boardFlipped = false;
+  applyOrientation();
 };
 
 window.clearMyColor = function() {
   window.myColor = null;
-  if (board && typeof board.orientation === 'function') {
-    board.orientation('white');
-  }
-  arrangePlayerBars();
+  window.boardFlipped = false;
+  applyOrientation();
+};
+
+window.flipBoard = function() {
+  window.boardFlipped = !window.boardFlipped;
+  applyOrientation();
 };
 
 window.currentGameTimeControl = 'blitz';
@@ -159,6 +210,8 @@ window.finishGame = function(winnerColor, message, toastType) {
   const opponentName = window.myColor
     ? ((window.currentOpponent && window.currentOpponent.username) || tx('colOpponent', 'Raqib'))
     : tx('opponentLocal', 'Oq va Qora');
+  if (whiteTimerElement) whiteTimerElement.classList.remove('warning');
+  if (blackTimerElement) blackTimerElement.classList.remove('warning');
   saveGameHistory(result, opponentName, "Online o'yin");
   recordResult(result);
   updateTimersDisplay();
@@ -383,7 +436,7 @@ function startTimer() {
       if (whiteTimerElement) {
         whiteTimerElement.classList.add("active");
         whiteTimerElement.classList.remove("warning");
-        if (whiteTimeLeft < 30) {
+        if (whiteTimeLeft < 20) {
           whiteTimerElement.classList.add("warning");
         }
       }
@@ -396,7 +449,7 @@ function startTimer() {
       if (blackTimerElement) {
         blackTimerElement.classList.add("active");
         blackTimerElement.classList.remove("warning");
-        if (blackTimeLeft < 30) {
+        if (blackTimeLeft < 20) {
           blackTimerElement.classList.add("warning");
         }
       }
@@ -435,6 +488,7 @@ function setGameTime(sec, btnElement, increment) {
   
   if (whiteTimerElement) whiteTimerElement.classList.add("active");
   if (blackTimerElement) blackTimerElement.classList.remove("active");
+  [whiteTimerElement, blackTimerElement].forEach(el => { if (el) el.classList.remove('warning'); });
   if (board) board.position('start');
 }
 
@@ -511,16 +565,26 @@ window.toggleRated = function() {
 // Til almashganda panellardagi "Reyting:" yorlig'ini qayta yozish (raqamni saqlagan holda)
 window.refreshPlayerInfoLabels = function() {
   ['white', 'black'].forEach(color => {
-    const ratingEl = document.getElementById(`${color}PlayerRating`);
-    if (!ratingEl || !ratingEl.dataset.rating) return;
-    ratingEl.textContent = `${tx('profLabelRating', 'Reyting:')} ${ratingEl.dataset.rating}`;
+    const bar = document.querySelector(`#gameView .${color}-player`);
+    const nameEl = document.getElementById(`${color}PlayerName`);
+    if (bar && nameEl && bar.classList.contains('pg-waiting')) nameEl.textContent = tx('gpWaitingOpponent', 'Raqib kutilmoqda…');
   });
+  const flip = document.getElementById('pgFlipBtn');
+  if (flip) flip.title = tx('gpFlip', 'Taxtani aylantirish');
+  if (typeof window.refreshSoundButton === 'function') window.refreshSoundButton();
+  renderMoveList();
+  refreshSearchOverlay();
 };
 
 window.updatePlayerInfo = function(color, name, rating) {
   const avatarEl = document.getElementById(`${color}PlayerAvatar`);
   const nameEl = document.getElementById(`${color}PlayerName`);
   const ratingEl = document.getElementById(`${color}PlayerRating`);
+  // '⏳' — raqib hali topilmagan
+  const waiting = rating === '⏳';
+  const barEl = document.querySelector(`#gameView .${color}-player`);
+  if (barEl) barEl.classList.toggle('pg-waiting', waiting);
+  if (waiting) name = tx('gpWaitingOpponent', 'Raqib kutilmoqda…');
   
   if (avatarEl) {
     avatarEl.textContent = color === 'white' ? '♔' : '♚';
@@ -536,8 +600,8 @@ window.updatePlayerInfo = function(color, name, rating) {
     if (isPlayer) nameEl.dataset.username = name; else delete nameEl.dataset.username;
   }
   if (ratingEl) {
-    ratingEl.dataset.rating = rating || 1500;
-    ratingEl.textContent = `${tx('profLabelRating', 'Reyting:')} ${rating || 1500}`;
+    ratingEl.dataset.rating = waiting ? '' : (rating || 1500);
+    ratingEl.textContent = waiting ? '' : String(rating || 1500);
   }
 };
 
@@ -775,6 +839,7 @@ document.addEventListener('click', (e) => {
 });
 
 function onDragStart(source, piece, position, orientation) {
+  if (viewPly !== null) { window.reviewMove('end'); return false; }
   if (game.game_over() || gameFinished || promotionPending) return false;
 
   // Raqib navbatida o'z donamiz — premove (yurish oldindan belgilanadi)
@@ -876,7 +941,7 @@ window.applyPieceSet = function(set) {
   if (typeof board.destroy === 'function') board.destroy();
   board = Chessboard('chessBoard', { ...config, position: game.fen(), orientation });
   selectedSquare = null;
-  if (lastMove) window.markLastMove(lastMove.from, lastMove.to);
+  showPly();
 };
 
 // Qayta ulanganda: o'yinni serverdagi yurishlar bo'yicha tiklash
@@ -889,21 +954,214 @@ window.loadServerPosition = function(moves) {
   window.refreshLastMove();
 };
 
+// Har yurishdan keyin: jadval, olingan donalar; ko'rib chiqish rejimi tugaydi
 function updateHistory() {
-  if (!historyListElement) return;
-  historyListElement.innerHTML = "";
-  const history = game.history();
-  
-  for (let i = 0; i < history.length; i += 2) {
-    const row = document.createElement("div");
-    row.style.display = "flex";
-    row.style.justifyContent = "space-between";
-    row.style.marginBottom = "4px";
-    row.innerHTML = `<span>${Math.floor(i / 2) + 1}. ${history[i]}</span><span>${history[i + 1] || ""}</span>`;
-    historyListElement.appendChild(row);
-  }
-  historyListElement.scrollTop = historyListElement.scrollHeight;
+  viewPly = null;
+  renderMoveList();
+  renderMaterial(game.fen());
+  const liveBtn = document.getElementById('pgLiveBtn');
+  if (liveBtn) liveBtn.hidden = true;
 }
+
+// --- Yurishlar jadvali va ◀ ▶ ko'rib chiqish (viewPly: null — joriy pozitsiya, aks holda shu yurishgacha) ---
+let viewPly = null;
+
+function renderMoveList() {
+  if (!historyListElement) return;
+  const history = game.history();
+  if (!history.length) {
+    historyListElement.innerHTML = '';
+    const empty = document.createElement('div');
+    empty.className = 'pg-moves-empty';
+    empty.textContent = tx('gpNoMoves', "Yurishlar hali yo'q");
+    historyListElement.appendChild(empty);
+    return;
+  }
+  const current = viewPly === null ? history.length : viewPly;
+  const cell = (i) => i < history.length
+    ? `<span class="pg-mv${i === current - 1 ? ' current' : ''}" data-ply="${i + 1}">${history[i]}</span>`
+    : '<span></span>';
+  let rows = '';
+  for (let i = 0; i < history.length; i += 2) {
+    rows += `<div class="pg-move-row"><span class="pg-move-no">${i / 2 + 1}.</span>${cell(i)}${cell(i + 1)}</div>`;
+  }
+  historyListElement.innerHTML = rows;
+  if (viewPly === null) {
+    historyListElement.scrollTop = historyListElement.scrollHeight;
+  } else {
+    const cur = historyListElement.querySelector('.pg-mv.current');
+    if (cur) cur.scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// Ko'rsatilayotgan pozitsiyani taxtaga chizish (oxirgi yurish, premove belgilari bilan)
+function showPly() {
+  if (!board) return;
+  const liveBtn = document.getElementById('pgLiveBtn');
+  if (viewPly === null) {
+    board.position(game.fen(), false);
+    window.refreshLastMove();
+    renderPremove();
+    renderMaterial(game.fen());
+    if (liveBtn) liveBtn.hidden = true;
+  } else {
+    const h = game.history({ verbose: true });
+    const replay = new Chess();
+    for (let i = 0; i < viewPly; i++) replay.move({ from: h[i].from, to: h[i].to, promotion: h[i].promotion });
+    board.position(replay.fen(), false);
+    const m = h[viewPly - 1];
+    window.markLastMove(m ? m.from : null, m ? m.to : null);
+    renderMaterial(replay.fen());
+    if (liveBtn) liveBtn.hidden = false;
+  }
+  renderMoveList();
+}
+
+window.reviewMove = function(target) {
+  if (!board || promotionPending) return;
+  const total = game.history().length;
+  let cur = viewPly === null ? total : viewPly;
+  if (target === 'start') cur = 0;
+  else if (target === 'prev') cur -= 1;
+  else if (target === 'next') cur += 1;
+  else if (target === 'end') cur = total;
+  else cur = Number(target) || 0;
+  cur = Math.max(0, Math.min(total, cur));
+  const next = cur >= total ? null : cur;
+  if (next === viewPly) return;
+  viewPly = next;
+  clearMoveHints();
+  showPly();
+};
+
+if (historyListElement) {
+  historyListElement.addEventListener('click', (e) => {
+    const mv = e.target.closest('.pg-mv');
+    if (mv) window.reviewMove(Number(mv.dataset.ply));
+  });
+}
+
+// --- Olingan donalar va moddiy ustunlik (+N) ---
+const PIECE_VALUE = { q: 9, r: 5, b: 3, n: 3, p: 1 };
+const START_COUNT = { q: 1, r: 2, b: 2, n: 2, p: 8 };
+function renderMaterial(fen) {
+  const counts = { w: { q: 0, r: 0, b: 0, n: 0, p: 0 }, b: { q: 0, r: 0, b: 0, n: 0, p: 0 } };
+  new Chess(fen).board().forEach(row => row.forEach(sq => {
+    if (sq && sq.type !== 'k') counts[sq.color][sq.type]++;
+  }));
+  const material = (c) => Object.keys(PIECE_VALUE).reduce((sum, t) => sum + counts[c][t] * PIECE_VALUE[t], 0);
+  const diff = material('w') - material('b');
+  ['w', 'b'].forEach(color => {
+    const el = document.getElementById(color === 'w' ? 'whiteCaptured' : 'blackCaptured');
+    if (!el) return;
+    const opp = color === 'w' ? 'b' : 'w';
+    let html = '';
+    Object.keys(PIECE_VALUE).forEach(t => {
+      const n = Math.max(0, START_COUNT[t] - counts[opp][t]);
+      if (n) html += '<span class="pg-cap-group">' + `<img src="${window.pieceUrl(opp + t.toUpperCase())}" alt="">`.repeat(n) + '</span>';
+    });
+    const adv = color === 'w' ? diff : -diff;
+    if (adv > 0) html += `<span class="pg-adv">+${adv}</span>`;
+    el.innerHTML = html;
+  });
+}
+
+// --- Taxta o'lchami: kompyuterda ekran balandligiga, telefonda to'liq kenglikka moslashadi ---
+let fittedSize = 0;
+window.fitBoard = function() {
+  const view = document.getElementById('gameView');
+  const el = document.getElementById('chessBoard');
+  if (!view || !el || !board || !view.classList.contains('active-view')) return;
+  const layout = view.querySelector('.game-layout');
+  const section = view.querySelector('.board-section');
+  const panel = view.querySelector('.control-panel');
+  if (!layout || !section || !panel) return;
+  const ls = getComputedStyle(layout);
+  const stacked = ls.flexDirection === 'column';
+  const padX = parseFloat(ls.paddingLeft) + parseFloat(ls.paddingRight);
+  const gap = parseFloat(ls.columnGap) || 0;
+  const availW = layout.clientWidth - padX - (stacked ? 0 : panel.offsetWidth + gap);
+  let size = availW;
+  if (window.innerWidth > 768) {
+    const bars = [...section.querySelectorAll('.player-bar')].reduce((sum, b) => sum + b.offsetHeight, 0);
+    const rowGap = (parseFloat(getComputedStyle(section).rowGap) || 0) * 2;
+    const top = layout.getBoundingClientRect().top + window.scrollY + parseFloat(ls.paddingTop);
+    const availH = window.innerHeight - top - bars - rowGap - parseFloat(ls.paddingBottom) - 4;
+    size = Math.min(availW, Math.max(availH, stacked ? 360 : 300));
+  }
+  // Kataklar butun pikselda: taxta = 8 × katak (+ chessboard.js chegarasi 4px)
+  const square = Math.max(30, Math.min(100, Math.floor((size - 4) / 8)));
+  const boardPx = square * 8 + 4;
+  section.style.width = boardPx + 'px';
+  panel.style.maxWidth = stacked ? boardPx + 'px' : '';
+  if (boardPx !== fittedSize) {
+    fittedSize = boardPx;
+    el.style.setProperty('width', boardPx + 'px', 'important');
+    el.style.setProperty('height', boardPx + 'px', 'important');
+    board.resize();
+    clearMoveHints();
+    showPly();
+  }
+  panel.style.height = stacked ? '' : section.offsetHeight + 'px';
+};
+window.addEventListener('resize', debounce(() => window.fitBoard(), 80));
+const switchViewBeforeFit = window.switchView;
+if (typeof switchViewBeforeFit === 'function') {
+  window.switchView = function(viewName) {
+    const result = switchViewBeforeFit.apply(this, arguments);
+    if (viewName === 'game') requestAnimationFrame(() => window.fitBoard());
+    return result;
+  };
+}
+
+// --- Ovoz tugmasi (Sozlamalardagi "Ovoz" bilan bir xil sozlama) ---
+function readSettings() {
+  try { return JSON.parse(localStorage.getItem('justChessSettings') || '{}'); } catch (e) { return {}; }
+}
+window.refreshSoundButton = function() {
+  const btn = document.getElementById('pgSoundBtn');
+  if (!btn) return;
+  const on = readSettings().soundEnabled !== false;
+  btn.textContent = on ? '🔊' : '🔇';
+  btn.title = tx('gpSound', 'Ovoz') + ': ' + (on ? tx('gpSoundOn', 'Ovoz yoqildi') : tx('gpSoundOff', "Ovoz o'chirildi"));
+};
+window.toggleGameSound = function() {
+  const s = readSettings();
+  s.soundEnabled = s.soundEnabled === false;
+  try { localStorage.setItem('justChessSettings', JSON.stringify(s)); } catch (e) {}
+  if (typeof window.applySoundToggle === 'function') window.applySoundToggle(s.soundEnabled);
+  window.refreshSoundButton();
+  showToast(s.soundEnabled ? tx('gpSoundOn', 'Ovoz yoqildi') : tx('gpSoundOff', "Ovoz o'chirildi"), 'info', 1500);
+};
+
+// --- "Do'stni chaqirish": do'stlar ro'yxati (onlayn bo'lganlar tepada) ---
+window.toggleFriendChallenge = async function() {
+  const box = document.getElementById('pgFriends');
+  if (!box) return;
+  if (!box.hidden) { box.hidden = true; return; }
+  if (!window.currentUser) { if (typeof showAuthGate === 'function') showAuthGate('login'); return; }
+  const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const head = `<div class="pg-friends-head">${esc(tx('gpWhoToChallenge', 'Kimni chaqirasiz?'))}</div>`;
+  box.innerHTML = head + '<div class="pg-friends-empty">…</div>';
+  box.hidden = false;
+  let friends = [];
+  try {
+    const d = await fetch('/api/friends', { headers: { 'Authorization': `Bearer ${window.authToken}` } }).then(r => r.json());
+    friends = (d && d.success && d.friends) || [];
+  } catch (e) {}
+  friends.sort((a, b) => (b.online ? 1 : 0) - (a.online ? 1 : 0) || String(a.username).localeCompare(String(b.username)));
+  box.innerHTML = head + (friends.length ? friends.map(f => `
+    <div class="pg-friend${f.online ? '' : ' offline'}">
+      <span class="pg-fdot${f.online ? ' online' : ''}"></span>
+      <span class="pg-friend-name player-link" data-username="${esc(f.username)}">${esc(f.username)}</span>
+      <span class="pg-friend-rating">${esc(f.rating || 1500)}</span>
+      <button type="button" class="control-btn" data-challenge="${esc(f.username)}"${f.online ? '' : ` disabled title="${esc(tx('gpOffline', 'oflayn'))}"`}>⚔️</button>
+    </div>`).join('') : `<div class="pg-friends-empty">${esc(tx('gpNoFriends', "Hali do'stlaringiz yo'q. O'yinchi profilida \"Do'stlik so'rash\" tugmasini bosing."))}</div>`);
+  box.querySelectorAll('[data-challenge]').forEach(btn => btn.addEventListener('click', () => {
+    box.hidden = true;
+    if (typeof window.openChallengeDialog === 'function') window.openChallengeDialog(btn.dataset.challenge);
+  }));
+};
 
 document.addEventListener("DOMContentLoaded", () => {
   const lang = (typeof window.currentLang !== 'undefined') ? window.currentLang : 'uz';
@@ -914,6 +1172,10 @@ document.addEventListener("DOMContentLoaded", () => {
   
   if (document.getElementById("chessBoard")) {
     board = Chessboard('chessBoard', config);
+    renderMoveList();
+    renderMaterial(game.fen());
+    window.refreshSoundButton();
+    window.fitBoard();
   }
   
   sessionStorage.removeItem('chessGameState');
@@ -956,6 +1218,16 @@ function showToast(message, type = 'info', duration = 3000) {
 document.addEventListener('keydown', (e) => {
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
   
+  const gameViewEl = document.getElementById('gameView');
+  if (gameViewEl && gameViewEl.classList.contains('active-view') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+    const keys = { ArrowLeft: 'prev', ArrowRight: 'next', ArrowUp: 'start', ArrowDown: 'end' };
+    if (keys[e.key] && game.history().length) {
+      e.preventDefault();
+      window.reviewMove(keys[e.key]);
+      return;
+    }
+  }
+
   if (e.key === 'Escape') {
     const modals = document.querySelectorAll('[style*="display: flex"], [style*="display: block"]');
     modals.forEach(modal => {

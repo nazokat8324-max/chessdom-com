@@ -17,6 +17,8 @@ function playSound(type) {
 // Ovoz sozlamalari (Sozlamalar → Ovoz): o'chirish va balandlik barcha ovozlarga ta'sir qiladi
 window.applySoundToggle = function(enabled) {
   Howler.mute(enabled === false);
+  const btn = document.getElementById('pgSoundBtn');
+  if (btn) btn.textContent = enabled === false ? '🔇' : '🔊';
 };
 
 window.setSoundVolume = function(volume) {

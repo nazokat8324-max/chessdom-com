@@ -469,91 +469,96 @@
             <div class="player-bar black-player">
               <div class="player-avatar" id="blackPlayerAvatar">♚</div>
               <div class="player-info">
-                <span class="player-name" id="blackPlayerName">Qora</span>
-                <span class="player-rating" id="blackPlayerRating"
-                  ><span id="blackRatingLabel">Reyting:</span>
-                  <span id="blackRatingValue">1500</span></span
-                >
+                <div class="pg-name-row">
+                  <span class="player-name" id="blackPlayerName">Qora</span>
+                  <img
+                    class="player-flag"
+                    id="blackPlayerFlag"
+                    src="https://flagcdn.com/w40/un.png"
+                    alt=""
+                    loading="lazy"
+                    onerror="this.style.display = 'none'"
+                  />
+                  <span class="player-rating" id="blackPlayerRating">1500</span>
+                </div>
+                <div class="pg-captured" id="blackCaptured"></div>
                 <span class="player-status" id="gameStatusText"></span>
               </div>
-              <img
-                class="player-flag"
-                id="blackPlayerFlag"
-                src="https://flagcdn.com/w40/un.png"
-                alt=""
-                loading="lazy"
-                onerror="this.style.display = 'none'"
-              />
               <div class="player-timer" id="blackTimer">05:00</div>
             </div>
             <div class="board-wrapper">
               <div class="board theme-green" id="chessBoard"></div>
+              <!-- Raqib qidirilayotganda taxta ustida (board.js refreshSearchOverlay) -->
+              <div class="pg-search" id="pgSearchOverlay" hidden>
+                <div class="pg-search-card">
+                  <div class="pg-spinner"></div>
+                  <div class="pg-search-title" data-i18n="gpSearching">Raqib qidirilmoqda…</div>
+                  <div class="pg-search-meta" id="pgSearchMeta"></div>
+                  <div class="pg-search-time" id="pgSearchTime">0:00</div>
+                  <button type="button" class="control-btn pg-search-cancel" onclick="window.cancelSearch()" data-i18n="gpCancel">Bekor qilish</button>
+                </div>
+              </div>
+              <!-- Oldingi yurishlarni ko'rib chiqayotganda: joriy pozitsiyaga qaytish -->
+              <button type="button" class="pg-live-btn" id="pgLiveBtn" onclick="window.reviewMove('end')" hidden>⏭ <span data-i18n="gpBackToLive">Joriy pozitsiya</span></button>
             </div>
             <div class="player-bar white-player">
               <div class="player-avatar" id="whitePlayerAvatar">♔</div>
               <div class="player-info">
-                <span class="player-name" id="whitePlayerName">Oq</span>
-                <span class="player-rating" id="whitePlayerRating"
-                  ><span id="whiteRatingLabel">Reyting:</span>
-                  <span id="whiteRatingValue">1500</span></span
-                >
+                <div class="pg-name-row">
+                  <span class="player-name" id="whitePlayerName">Oq</span>
+                  <img
+                    class="player-flag"
+                    id="whitePlayerFlag"
+                    src="https://flagcdn.com/w40/uz.png"
+                    alt=""
+                    loading="lazy"
+                    onerror="this.style.display = 'none'"
+                  />
+                  <span class="player-rating" id="whitePlayerRating">1500</span>
+                </div>
+                <div class="pg-captured" id="whiteCaptured"></div>
               </div>
-              <img
-                class="player-flag"
-                id="whitePlayerFlag"
-                src="https://flagcdn.com/w40/uz.png"
-                alt=""
-                loading="lazy"
-                onerror="this.style.display = 'none'"
-              />
               <div class="player-timer active" id="whiteTimer">05:00</div>
             </div>
           </div>
 
           <div class="control-panel">
+            <div class="pg-panel-head">
+              <div class="pg-panel-title">
+                <span id="pgPlayTitle">♟ <span data-i18n="gpPlayTitle">O'ynash</span></span>
+                <span id="historyPanelHeader">Yurishlar tarixi</span>
+              </div>
+              <div class="pg-tools">
+                <button type="button" class="pg-tool" id="pgFlipBtn" onclick="window.flipBoard()" title="Taxtani aylantirish">⇅</button>
+                <button type="button" class="pg-tool" id="pgSoundBtn" onclick="window.toggleGameSound()" title="Ovoz">🔊</button>
+              </div>
+            </div>
+
             <!-- O'yin boshlanguncha: vaqt tanlash va boshlash tugmasi -->
             <div class="game-panel-section" id="preGameControls">
             <div class="time-controls">
-              <div class="time-group">
-                <div class="time-label" id="timerLabelJudaTez">Juda tez</div>
+              <div class="time-group" data-mode="bullet">
+                <div class="time-label"><span class="tl-ico">🔥</span><span id="timerLabelJudaTez">Juda tez</span></div>
                 <div class="time-grid">
-                  <button class="time-btn" onclick="setGameTime(60, this)">
-                    1 <span data-i18n="timeMin">Min</span>
-                  </button>
-                  <button class="time-btn" onclick="setGameTime(60, this, 1)">
-                    1+1
-                  </button>
-                  <button class="time-btn" onclick="setGameTime(120, this, 1)">
-                    2+1
-                  </button>
+                  <button class="time-btn" onclick="setGameTime(60, this)"><span class="tb-main">1</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
+                  <button class="time-btn" onclick="setGameTime(60, this, 1)"><span class="tb-main">1<i class="tb-sep">|</i>1</span><span class="tb-sub">+1 s</span></button>
+                  <button class="time-btn" onclick="setGameTime(120, this, 1)"><span class="tb-main">2<i class="tb-sep">|</i>1</span><span class="tb-sub">+1 s</span></button>
                 </div>
               </div>
-              <div class="time-group">
-                <div class="time-label" id="timerLabelBlits">Blits</div>
+              <div class="time-group" data-mode="blitz">
+                <div class="time-label"><span class="tl-ico">⚡</span><span id="timerLabelBlits">Blits</span></div>
                 <div class="time-grid">
-                  <button class="time-btn" onclick="setGameTime(180, this)">
-                    3 <span data-i18n="timeMin">Min</span>
-                  </button>
-                  <button class="time-btn" onclick="setGameTime(180, this, 2)">
-                    3+2
-                  </button>
-                  <button class="time-btn" onclick="setGameTime(300, this)">
-                    5 <span data-i18n="timeMin">Min</span>
-                  </button>
+                  <button class="time-btn" onclick="setGameTime(180, this)"><span class="tb-main">3</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
+                  <button class="time-btn" onclick="setGameTime(180, this, 2)"><span class="tb-main">3<i class="tb-sep">|</i>2</span><span class="tb-sub">+2 s</span></button>
+                  <button class="time-btn" onclick="setGameTime(300, this)"><span class="tb-main">5</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
                 </div>
               </div>
-              <div class="time-group">
-                <div class="time-label" id="timerLabelTezkor">Tezkor</div>
+              <div class="time-group" data-mode="rapid">
+                <div class="time-label"><span class="tl-ico">⏱️</span><span id="timerLabelTezkor">Tezkor</span></div>
                 <div class="time-grid">
-                  <button class="time-btn" onclick="setGameTime(600, this)">
-                    10 <span data-i18n="timeMin">Min</span>
-                  </button>
-                  <button class="time-btn" onclick="setGameTime(900, this, 10)">
-                    15+10
-                  </button>
-                  <button class="time-btn" onclick="setGameTime(1800, this)">
-                    30 <span data-i18n="timeMin">Min</span>
-                  </button>
+                  <button class="time-btn" onclick="setGameTime(600, this)"><span class="tb-main">10</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
+                  <button class="time-btn" onclick="setGameTime(900, this, 10)"><span class="tb-main">15<i class="tb-sep">|</i>10</span><span class="tb-sub">+10 s</span></button>
+                  <button class="time-btn" onclick="setGameTime(1800, this)"><span class="tb-main">30</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
                 </div>
               </div>
             </div>
@@ -583,57 +588,34 @@
             >
               <span id="btnStartGameText">O'yinni boshlash</span>
             </button>
+
+            <div class="pg-quick">
+              <button type="button" class="control-btn" onclick="window.toggleFriendChallenge()">⚔️ <span data-i18n="gpChallengeFriend">Do'stni chaqirish</span></button>
+              <button type="button" class="control-btn" onclick="switchView('tournaments')">🏁 <span data-i18n="gpTournaments">Turnirlar</span></button>
+            </div>
+            <div class="pg-friends" id="pgFriends" hidden></div>
             </div>
 
-            <!-- O'yin boshlangach: yurishlar tarixi va o'yin tugmalari -->
+            <!-- O'yin boshlangach: yurishlar jadvali (◀ ▶ ko'rib chiqish) va o'yin tugmalari -->
             <div class="game-panel-section" id="inGameControls" hidden>
-            <div class="panel move-history-panel">
-              <div class="panel-header" id="historyPanelHeader">
-                📊 Yurishlar tarixi
+            <div class="pg-moves-box">
+              <div class="pg-moves" id="historyList"></div>
+              <div class="pg-nav">
+                <button type="button" onclick="window.reviewMove('start')">⏮</button>
+                <button type="button" onclick="window.reviewMove('prev')">◀</button>
+                <button type="button" onclick="window.reviewMove('next')">▶</button>
+                <button type="button" onclick="window.reviewMove('end')">⏭</button>
               </div>
-              <div
-                class="panel-content"
-                id="historyList"
-                style="font-size: 12px"
-              ></div>
             </div>
 
-            <div
-              id="inGameButtons"
-              style="
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-                gap: 6px;
-              "
-            >
-              <button
-                class="control-btn"
-                onclick="offerDraw()"
-                id="btnDraw"
-                style="font-size: 11px; padding: 8px 4px"
-              >
+            <div class="pg-actions" id="inGameButtons">
+              <button class="control-btn" onclick="offerDraw()" id="btnDraw">
                 🤝 <span id="btnDrawText">Durrang</span>
               </button>
-              <button
-                class="control-btn"
-                onclick="resignGame()"
-                id="btnResign"
-                style="
-                  font-size: 11px;
-                  padding: 8px 4px;
-                  background: #3b1e1e;
-                  color: #ff9999;
-                  border-color: #522b2b;
-                "
-              >
+              <button class="control-btn pg-resign" onclick="resignGame()" id="btnResign">
                 🏳️ <span id="btnResignText">Taslim</span>
               </button>
-              <button
-                class="control-btn"
-                onclick="exportPGN()"
-                id="btnPgn"
-                style="font-size: 11px; padding: 8px 4px"
-              >
+              <button class="control-btn" onclick="exportPGN()" id="btnPgn">
                 📄 <span id="btnPgnText">PGN</span>
               </button>
             </div>
@@ -677,7 +659,6 @@
             </button>
             </div>
 
-            <div class="control-buttons"></div>
           </div>
         </div>
       </div>

@@ -10,6 +10,7 @@ const cors = require('cors');
 const { body, validationResult } = require('express-validator');
 const path = require('path');
 const { Chess } = require('chess.js');
+const Chess960 = require('./chess960');
 
 const db = require('./database');
 const league = require('./league');
@@ -38,6 +39,13 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
+// Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|server-helpers|continents)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules)(\/|$)/i;
+app.use((req, res, next) => {
+  let p = req.path;
+  try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
+  return PRIVATE_FILES.test(p) ? res.status(404).end() : next();
+});
 app.use(express.static(__dirname));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
@@ -81,6 +89,22 @@ function normalizeClock(initial, increment) {
   return { initial: 300, increment: 0 };
 }
 
+// Chaqiruvda o'yinchi o'zi belgilagan vaqt: 30 soniyadan 180 daqiqagacha, qo'shimcha 0–60 soniya
+function normalizeChallengeClock(initial, increment) {
+  const base = Math.round(Number(initial));
+  const inc = Math.round(Number(increment) || 0);
+  if (Number.isFinite(base) && base >= 30 && base <= 10800 && inc >= 0 && inc <= 60) return { initial: base, increment: inc };
+  return normalizeClock(initial, increment);
+}
+
+// Internet kechikishi: yurish serverga yetib kelguncha ketgan vaqtning bir qismi (RTT/2, ko'pi bilan) qaytariladi
+const LAG_COMP_MAX_MS = 400;
+function lagCompFor(player) {
+  const s = player && player.socketId ? io.sockets.sockets.get(player.socketId) : null;
+  const rtt = s && s.data.rtt;
+  return rtt ? Math.min(LAG_COMP_MAX_MS, Math.round(rtt / 2)) : 0;
+}
+
 // Lichess usuli: taxminiy davomiylik = boshlang'ich + 40 × qo'shimcha
 function clockMode(clock) {
   const estimate = clock.initial + 40 * clock.increment;
@@ -100,18 +124,29 @@ function findPlayer(room, socketId) { return room.players.find(p => p.socketId =
 
 function otherColor(color) { return color === 'w' ? 'b' : 'w'; }
 
-function createGameRoom(white, black, clock, rated) {
+// opts.variant: 'standard' | 'chess960' (Chess960 — doim reytingsiz), opts.startFen — 960 boshlang'ich pozitsiyasi
+function createGameRoom(white, black, clock, rated, opts) {
+  const variant = opts && opts.variant === 'chess960' ? 'chess960' : 'standard';
+  // CHESS960_TEST_FEN — faqat lokal sinov uchun (doim bir xil pozitsiya)
+  const startFen = variant === 'chess960' ? (opts.startFen || process.env.CHESS960_TEST_FEN || Chess960.randomStartFen()) : null;
   return {
     players: [{ ...white, color: 'w' }, { ...black, color: 'b' }],
-    chess: new Chess(),
+    chess: variant === 'chess960' ? new Chess960(startFen) : new Chess(),
+    variant,
+    startFen,
+    spectatorChat: [],
     clock: { w: clock.initial * 1000, b: clock.initial * 1000, increment: clock.increment, initial: clock.initial },
     mode: clockMode(clock),
-    rated: !!rated,
+    rated: !!rated && variant === 'standard',
     status: 'active',
     turnStartedAt: null,
     timer: null,
     drawOfferBy: null
   };
+}
+
+function variantInfo(room) {
+  return room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : { variant: 'standard' };
 }
 
 function clockPayload(room) {
@@ -132,6 +167,8 @@ function persistRoom(roomId, room) {
     moves: room.chess.history({ verbose: true }).map(m => ({ from: m.from, to: m.to, promotion: m.promotion })),
     clock: { w: room.clock.w, b: room.clock.b, initial: room.clock.initial, increment: room.clock.increment },
     rated: room.rated,
+    variant: room.variant,
+    startFen: room.startFen,
     leagueGameId: room.leagueGameId || null,
     swissMatch: room.swissMatch || null
   };
@@ -154,7 +191,7 @@ async function restoreActiveGames() {
       const white = data.players.find(p => p.color === 'w'), black = data.players.find(p => p.color === 'b');
       if (!white || !black) { await db.deleteActiveGame(roomId); continue; }
       const room = createGameRoom({ socketId: null, userId: white.userId, username: white.username }, { socketId: null, userId: black.userId, username: black.username },
-        { initial: data.clock.initial, increment: data.clock.increment }, data.rated);
+        { initial: data.clock.initial, increment: data.clock.increment }, data.rated, { variant: data.variant, startFen: data.startFen });
       for (const m of data.moves) room.chess.move({ from: m.from, to: m.to, promotion: m.promotion || 'q' });
       room.clock.w = data.clock.w;
       room.clock.b = data.clock.b;
@@ -195,10 +232,11 @@ function scheduleRoomTimer(roomId, room) {
     return;
   }
   const side = room.chess.turn();
+  const grace = lagCompFor(room.players.find(p => p.color === side));
   room.timer = setTimeout(() => {
     room.clock[side] = 0;
     endGame(roomId, room, otherColor(side), 'timeout');
-  }, room.clock[side]);
+  }, room.clock[side] + grace);
 }
 
 function scoreFor(color, winnerColor) {
@@ -231,7 +269,7 @@ async function endGame(roomId, room, winnerColor, reason) {
         const result = scoreFor(p.color, winnerColor);
         await db.saveGame(p.userId, { result, opponent: opp.username, mode: "Online o'yin", timeControl: room.mode, moves });
         const statsData = await db.updateUserStats(p.userId, result, opp.username, "Online o'yin", moves, room.mode,
-          { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment });
+          { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}) });
         let ratingData = null;
         if (room.rated && oppUser) {
           ratingData = await db.updateUserRatingByResult(p.userId, result, oppUser.rating || 1500, room.mode, oppUser.ratings_by_mode[room.mode]);
@@ -312,11 +350,12 @@ async function sendChallenge(socket, data) {
   if (inActiveGame(target.id)) return socket.emit('challenge-error', { reason: 'busy' });
   // Bir o'yinchiga bitta faol chaqiruv
   for (const c of challenges.values()) if (c.fromId === fromId) { dropChallenge(c.id); io.to(`user_${c.toId}`).emit('challenge-cancelled', { id: c.id }); }
-  const clock = normalizeClock(data.initial, data.increment);
+  const clock = normalizeChallengeClock(data.initial, data.increment);
   const me = await db.getUserById(fromId);
   const mode = clockMode(clock);
   const id = uuidv4();
-  const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, rated: data.rated !== false };
+  const variant = data.variant === 'chess960' ? 'chess960' : 'standard';
+  const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, variant, rated: data.rated !== false && variant === 'standard' };
   c.timer = setTimeout(() => {
     if (!dropChallenge(id)) return;
     io.to(`user_${fromId}`).emit('challenge-expired', { id, to: target.username });
@@ -324,10 +363,10 @@ async function sendChallenge(socket, data) {
   }, CHALLENGE_TTL_MS);
   challenges.set(id, c);
   io.to(`user_${target.id}`).emit('challenge-received', {
-    id, clock, rated: c.rated, mode, seconds: CHALLENGE_TTL_MS / 1000,
+    id, clock, rated: c.rated, variant, mode, seconds: CHALLENGE_TTL_MS / 1000,
     from: { username: c.fromName, rating: (me && me.ratings_by_mode && me.ratings_by_mode[mode]) || (me && me.rating) || 1500, country: me ? me.country || null : null }
   });
-  socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, seconds: CHALLENGE_TTL_MS / 1000 });
+  socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, variant, seconds: CHALLENGE_TTL_MS / 1000 });
 }
 
 async function acceptChallenge(socket, id) {
@@ -348,13 +387,13 @@ async function acceptChallenge(socket, id) {
   const room = createGameRoom(
     { socketId: white.socket.id, userId: white.user.id, username: white.user.username },
     { socketId: black.socket.id, userId: black.user.id, username: black.user.username },
-    c.clock, c.rated
+    c.clock, c.rated, { variant: c.variant }
   );
   rooms.set(roomId, room);
   const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null });
   for (const [side, color, opp] of [[white, 'w', black], [black, 'b', white]]) {
     side.socket.join(roomId);
-    side.socket.emit('match-found', { roomId, color, opponent: info(opp.user), clock: c.clock, rated: c.rated, mode: room.mode, challenge: true });
+    side.socket.emit('match-found', { roomId, color, opponent: info(opp.user), clock: c.clock, rated: room.rated, mode: room.mode, challenge: true, ...variantInfo(room) });
   }
   scheduleRoomTimer(roomId, room);
 }
@@ -372,16 +411,21 @@ async function startRematch(oldRoomId, old) {
   const room = createGameRoom(
     { socketId: prevBlack.socketId, userId: prevBlack.userId, username: prevBlack.username },
     { socketId: prevWhite.socketId, userId: prevWhite.userId, username: prevWhite.username },
-    clock, old.rated
+    clock, old.rated, { variant: old.variant, startFen: old.startFen }
   );
   rooms.set(roomId, room);
   const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null });
   for (const [p, color, opp] of [[prevBlack, 'w', blackUser], [prevWhite, 'b', whiteUser]]) {
     const s = io.sockets.sockets.get(p.socketId);
     if (s) { s.leave(oldRoomId); s.join(roomId); }
-    io.to(p.socketId).emit('match-found', { roomId, color, opponent: info(opp), clock, rated: old.rated, mode: room.mode, rematch: true });
+    io.to(p.socketId).emit('match-found', { roomId, color, opponent: info(opp), clock, rated: room.rated, mode: room.mode, rematch: true, ...variantInfo(room) });
   }
   scheduleRoomTimer(roomId, room);
+}
+
+function emitWatchCount(roomId) {
+  const count = (io.sockets.adapter.rooms.get('watch_' + roomId) || new Set()).size;
+  io.to('watch_' + roomId).emit('watch-count', { roomId, count });
 }
 
 // Jonli o'yin haqida ma'lumot (tomosha qilish ro'yxati va tomoshabin uchun)
@@ -404,7 +448,7 @@ async function liveGameInfo(roomId, room) {
     kind = 'league';
   }
   return {
-    roomId, kind, label, mode: room.mode, rated: room.rated,
+    roomId, kind, label, mode: room.mode, rated: room.rated, ...variantInfo(room),
     clock: { initial: room.clock.initial, increment: room.clock.increment },
     white: await side('w'), black: await side('b'),
     moves: room.chess.history().length,
@@ -442,6 +486,7 @@ async function resumeGames(socket) {
       clockState: clockPayload(room),
       rated: room.rated,
       mode: room.mode,
+      ...variantInfo(room),
       drawOffered: room.drawOfferBy === otherColor(player.color),
       opponentAway: !!(opponent && opponent.away),
       opponent: oppUser
@@ -894,7 +939,8 @@ async function start() {
       playerSocket.data.userId = req.user.userId;
       playerSocket.data.username = username;
       const clock = normalizeClock(req.body.initialTime, req.body.increment);
-      const rated = req.body.rated !== false;
+      const variant = req.body.variant === 'chess960' ? 'chess960' : 'standard';
+      const rated = req.body.rated !== false && variant === 'standard';
       pruneMatchmakingQueue();
       if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
       const user = await db.getUserById(req.user.userId);
@@ -904,9 +950,9 @@ async function start() {
         myCountry = country;
         await db.updateUserCountry(req.user.userId, country);
       }
-      const me = { userId: req.user.userId, username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId, clock, rated };
+      const me = { userId: req.user.userId, username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId, clock, rated, variant };
       // Faqat bir xil vaqt nazorati va reyting turini tanlagan o'yinchi bilan juftlanadi
-      const waitingIndex = matchmakingQueue.findIndex(u => u.clock.initial === clock.initial && u.clock.increment === clock.increment && u.rated === rated && !blockedPair(u.userId, req.user.userId));
+      const waitingIndex = matchmakingQueue.findIndex(u => u.clock.initial === clock.initial && u.clock.increment === clock.increment && u.rated === rated && (u.variant || 'standard') === variant && !blockedPair(u.userId, req.user.userId));
       if (waitingIndex === -1) {
         matchmakingQueue.push(me);
         return res.json({ success: true, matched: false, position: matchmakingQueue.length });
@@ -915,13 +961,13 @@ async function start() {
       // Navbatda kutgan o'yinchi oq, yangi kelgan o'yinchi qora bilan o'ynaydi.
       const roomId = generateRoomId();
       const playerInfo = (u) => ({ socketId: u.socketId, userId: u.userId, username: u.username });
-      const room = createGameRoom(playerInfo(waiting), playerInfo(me), clock, rated);
+      const room = createGameRoom(playerInfo(waiting), playerInfo(me), clock, rated, { variant });
       rooms.set(roomId, room);
       const opponentInfo = (u) => ({ username: u.username, rating: u.rating, ratingsByMode: u.ratingsByMode, country: u.country });
       for (const [player, opponent, color] of [[waiting, me, 'w'], [me, waiting, 'b']]) {
         const s = io.sockets.sockets.get(player.socketId);
         if (s) s.join(roomId);
-        io.to(player.socketId).emit('match-found', { roomId, color, opponent: opponentInfo(opponent), clock, rated, mode: room.mode });
+        io.to(player.socketId).emit('match-found', { roomId, color, opponent: opponentInfo(opponent), clock, rated, mode: room.mode, ...variantInfo(room) });
       }
       scheduleRoomTimer(roomId, room);
       res.json({ success: true, matched: true, roomId, color: 'b', opponent: opponentInfo(waiting) });
@@ -1394,7 +1440,8 @@ async function start() {
       // Soat: yurgan tomonning o'tgan vaqtini ayiramiz; vaqti tugagan bo'lsa yurish qabul qilinmaydi
       const now = Date.now();
       if (room.turnStartedAt !== null) {
-        room.clock[player.color] -= now - room.turnStartedAt;
+        const spent = now - room.turnStartedAt;
+        room.clock[player.color] -= Math.max(0, spent - Math.min(spent, lagCompFor(player)));
         if (room.clock[player.color] <= 0) {
           room.clock[player.color] = 0;
           socket.emit('move-rejected', { reason: 'game_over', error: 'Time is up' });
@@ -1531,15 +1578,39 @@ async function start() {
         const room = typeof roomId === 'string' ? rooms.get(roomId) : null;
         if (!room) return socket.emit('watch-state', { roomId, missing: true });
         socket.join('watch_' + roomId);
+        emitWatchCount(roomId);
         socket.emit('watch-state', {
           ...(await liveGameInfo(roomId, room)),
+          chat: room.spectatorChat || [],
           status: room.status,
           history: room.chess.history({ verbose: true }).map(m => ({ from: m.from, to: m.to, promotion: m.promotion })),
           clockState: clockPayload(room)
         });
       } catch (err) { console.error('Watch xatoligi:', err); }
     });
-    socket.on('unwatch-game', () => { for (const r of socket.rooms) if (r.startsWith('watch_')) socket.leave(r); });
+    socket.on('unwatch-game', () => {
+      for (const r of socket.rooms) if (r.startsWith('watch_')) { socket.leave(r); emitWatchCount(r.slice(6)); }
+    });
+    // Tomoshabinlar chati: faqat tomoshabinlar ko'radi (o'yinchilarga yuborilmaydi), sekundiga 1 ta, 200 belgi
+    socket.on('watch-chat', (data) => {
+      const roomId = data && typeof data.roomId === 'string' ? data.roomId : null;
+      const room = roomId && rooms.get(roomId);
+      if (!room || !socket.data.userId || !socket.rooms.has('watch_' + roomId)) return;
+      if (room.players.some(p => p.userId === socket.data.userId)) return;
+      const message = typeof data.message === 'string' ? data.message.trim().slice(0, 200) : '';
+      if (!message) return;
+      const now = Date.now();
+      if (socket.data.lastWatchChat && now - socket.data.lastWatchChat < 1000) return;
+      socket.data.lastWatchChat = now;
+      const entry = { username: socket.data.username, message, at: new Date(now).toISOString() };
+      room.spectatorChat = (room.spectatorChat || []).concat(entry).slice(-50);
+      io.to('watch_' + roomId).emit('watch-chat', { roomId, ...entry });
+    });
+    // Kechikishni o'lchash: server yuboradi, klient darhol javob beradi (lag-ping interval — pastda)
+    socket.on('rtt-probe', (ack) => { if (typeof ack === 'function') ack(); });
+    socket.on('disconnecting', () => {
+      for (const r of socket.rooms) if (r.startsWith('watch_')) setTimeout(() => emitWatchCount(r.slice(6)), 0);
+    });
     socket.on('join-chat-room', (roomId) => { if (isPublicSocketRoom(roomId)) socket.join(roomId); });
     socket.on('send-chat-message', (data) => {
       if (!socket.data.userId || !data) return;
@@ -1589,6 +1660,23 @@ async function start() {
   });
 
   setInterval(async () => { await db.closeStaleArenas(); }, 60 * 1000);
+
+  // Davom etayotgan o'yinlardagi o'yinchilarning internet kechikishi (RTT, silliqlangan) — soat kompensatsiyasi uchun
+  setInterval(() => {
+    for (const room of rooms.values()) {
+      if (room.status !== 'active') continue;
+      for (const p of room.players) {
+        const s = p.socketId && io.sockets.sockets.get(p.socketId);
+        if (!s) continue;
+        const sentAt = Date.now();
+        s.timeout(4000).emit('lag-ping', (err) => {
+          if (err) return;
+          const rtt = Date.now() - sentAt;
+          s.data.rtt = s.data.rtt ? Math.round(s.data.rtt * 0.7 + rtt * 0.3) : rtt;
+        });
+      }
+    }
+  }, 4000);
 
   league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId });
   swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId });

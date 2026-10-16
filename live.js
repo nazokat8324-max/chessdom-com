@@ -1,7 +1,7 @@
 // "Jonli o'yinlar": hozir davom etayotgan o'yinlar ro'yxati va tanlangan o'yinni tomosha qilish.
 // Server: GET /api/games/live, socket 'watch-game' → 'watch-state', 'watch-move', 'watch-ended'.
 (function () {
-  const st = { games: [], watching: null, chess: null, board: null, clock: null, clockAt: 0, ended: null };
+  const st = { games: [], watching: null, chess: null, board: null, clock: null, clockAt: 0, ended: null, variant: 'standard', chat: [] };
   let listTimer = null;
   let clockTimer = null;
 
@@ -41,7 +41,7 @@
     }
     el.innerHTML = st.games.map(g => `
       <button class="lv-item${st.watching === g.roomId ? ' active' : ''}" data-watch="${esc(g.roomId)}">
-        <div class="lv-item-top">${modeIcon(g.mode)} <b>${esc(g.clock.initial / 60)}+${esc(g.clock.increment)}</b>${kindTag(g)}<small>${g.watchers ? '👁 ' + g.watchers : ''}</small></div>
+        <div class="lv-item-top">${modeIcon(g.mode)} <b>${esc(g.clock.initial / 60)}+${esc(g.clock.increment)}</b>${g.variant === 'chess960' ? '<span class="lv-tag v960">🎲 960</span>' : ''}${kindTag(g)}<small>${g.watchers ? '👁 ' + g.watchers : ''}</small></div>
         <div class="lv-item-player"><i class="lv-dot w"></i>${flag(g.white.country)}<span>${esc(g.white.username)}</span><em>${g.white.rating}</em></div>
         <div class="lv-item-player"><i class="lv-dot b"></i>${flag(g.black.country)}<span>${esc(g.black.username)}</span><em>${g.black.rating}</em></div>
       </button>`).join('');
@@ -66,7 +66,16 @@
       <div class="lv-board-wrap"><div id="liveBoard"></div></div>
       ${bar('w', info.white)}
       <div class="lv-status" id="lvStatus"></div>
-      <div class="lv-moves" id="lvMoves"></div>`;
+      <div class="lv-opening" id="lvOpening" hidden></div>
+      <div class="lv-moves" id="lvMoves"></div>
+      <div class="lv-chat">
+        <div class="lv-chat-head">💬 ${esc(tx('lvChatTitle', 'Tomoshabinlar chati'))}<span id="lvWatchers"></span></div>
+        <div class="lv-chat-list" id="lvChatList"></div>
+        <form class="lv-chat-form" id="lvChatForm" autocomplete="off">
+          <input id="lvChatInput" class="form-input" maxlength="200" placeholder="${esc(tx('lvChatPlaceholder', 'Xabar yozing...'))}">
+          <button type="submit">➤</button>
+        </form>
+      </div>`;
   }
 
   function watch(roomId) {
@@ -90,7 +99,19 @@
     }
     stage.innerHTML = stageHtml(data);
     stage.querySelector('[data-back]').addEventListener('click', stopWatching);
-    st.chess = new Chess();
+    st.variant = data.variant === 'chess960' ? 'chess960' : 'standard';
+    st.chess = st.variant === 'chess960' && window.Chess960 && data.startFen ? new Chess960(data.startFen) : new Chess();
+    st.chat = Array.isArray(data.chat) ? data.chat.slice() : [];
+    setWatchers(data.watchers);
+    renderChat();
+    stage.querySelector('#lvChatForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = stage.querySelector('#lvChatInput');
+      const message = input.value.trim();
+      if (!message || typeof socket === 'undefined') return;
+      socket.emit('watch-chat', { roomId: st.watching, message });
+      input.value = '';
+    });
     (data.history || []).forEach(m => st.chess.move({ from: m.from, to: m.to, promotion: m.promotion || 'q' }));
     if (st.board && typeof st.board.destroy === 'function') st.board.destroy();
     st.board = Chessboard('liveBoard', { position: st.chess.fen(), draggable: false, pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png') });
@@ -116,11 +137,28 @@
     if (eb) { eb.textContent = fmtClock(b); eb.classList.toggle('running', !st.ended && c.turn === 'b'); }
   }
 
+  // Tomoshabinlar chati (o'yinchilar ko'rmaydi)
+  function renderChat() {
+    const list = document.getElementById('lvChatList');
+    if (!list) return;
+    if (!st.chat.length) {
+      list.innerHTML = `<div class="lv-chat-empty">${esc(tx('lvChatEmpty', "Hali xabar yo'q — birinchi bo'lib yozing!"))}</div>`;
+      return;
+    }
+    list.innerHTML = st.chat.map(m => `<div class="lv-chat-msg"><b class="player-link" data-username="${esc(m.username)}">${esc(m.username)}</b> ${esc(m.message)}</div>`).join('');
+    list.scrollTop = list.scrollHeight;
+  }
+  function setWatchers(n) {
+    const el = document.getElementById('lvWatchers');
+    if (el) el.textContent = n ? ' · 👁 ' + tx('lvWatchers', '{{n}} tomoshabin', { n }) : '';
+  }
+
   function renderMoves() {
     const movesEl = document.getElementById('lvMoves');
     const statusEl = document.getElementById('lvStatus');
     if (!st.chess) return;
     const h = st.chess.history();
+    if (typeof window.renderOpeningInto === 'function') window.renderOpeningInto(document.getElementById('lvOpening'), h, st.variant);
     if (movesEl) {
       let html = '';
       for (let i = 0; i < h.length; i += 2) html += `<span class="lv-move"><i>${i / 2 + 1}.</i> ${esc(h[i])} ${esc(h[i + 1] || '')}</span>`;
@@ -199,6 +237,13 @@
       setClock(data.clock);
       renderMoves();
     });
+    socket.on('watch-chat', (data) => {
+      if (!data || data.roomId !== st.watching) return;
+      st.chat.push(data);
+      st.chat = st.chat.slice(-50);
+      renderChat();
+    });
+    socket.on('watch-count', (data) => { if (data && data.roomId === st.watching) setWatchers(data.count); });
     socket.on('watch-ended', (data) => {
       if (!data || data.roomId !== st.watching) return;
       st.ended = { winner: data.winner, reason: data.reason };

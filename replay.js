@@ -44,7 +44,8 @@
     const head = [
       `[Event "ChessDom"]`, `[Site "chessdom-com.onrender.com"]`, `[Date "${d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
       `[White "${white || '?'}"]`, `[Black "${black || '?'}"]`, `[Result "${g.color ? result : '*'}"]`
-    ].concat(g.clock ? [`[TimeControl "${g.clock}"]`] : []);
+    ].concat(g.clock ? [`[TimeControl "${g.clock}"]`] : [])
+      .concat(g.variant === 'chess960' && g.startFen ? ['[Variant "Chess960"]', '[SetUp "1"]', `[FEN "${g.startFen}"]`] : []);
     let body = '';
     st.sans.forEach((s, i) => { body += (i % 2 === 0 ? (i / 2 + 1) + '. ' : '') + s + ' '; });
     return head.join('\n') + '\n\n' + body + (g.color ? result : '*');
@@ -58,7 +59,7 @@
     if (!d || !d.success) { showToast(tServer(d && d.message) || tx('errLoadFailed', 'Yuklashda xatolik yuz berdi'), 'warning'); return; }
     const g = d.game;
     // Yurishlar (SAN) bo'yicha har bir pozitsiya
-    const chess = new Chess();
+    const chess = g.variant === 'chess960' && window.Chess960 && g.startFen ? new Chess960(g.startFen) : new Chess();
     st.fens = [chess.fen()];
     st.sans = [];
     for (const san of g.moves) {
@@ -96,6 +97,7 @@
         <div class="rp-side">
           <h3>${esc(g.player)} <small>vs</small> ${esc(g.opponent || '—')}</h3>
           <p class="rp-meta"><span class="profile-game-result ${esc(g.result)}">${esc(resultText)}</span> ${esc(g.clock || g.timeControl || '')} · ${esc(d0 && !isNaN(d0) ? d0.toLocaleString() : '')}</p>
+          <p class="rp-opening" id="rpOpening" hidden></p>
           <div class="rp-moves">${moves || `<p class="rp-meta">${esc(tx('lvNoMoves', 'Hali yurish qilinmadi'))}</p>`}</div>
           <button class="rp-pgn" data-pgn="1">📄 ${esc(tx('rpDownloadPgn', 'PGN yuklab olish'))}</button>
         </div>
@@ -123,6 +125,7 @@
       pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png')
     });
     document.addEventListener('keydown', onKey);
+    if (typeof window.renderOpeningInto === 'function') window.renderOpeningInto(document.getElementById('rpOpening'), st.sans, g.variant);
     go(st.fens.length - 1);
   };
 })();

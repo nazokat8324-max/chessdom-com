@@ -10464,6 +10464,378 @@ body:has(#gameView.active-view) .top-bar {
   }
 }
 
+/* ===== O'yin: tahlil (analysis.js), debyut nomi, ping, Chess960, tomoshabinlar chati ===== */
+/* Baho chizig'i — taxtaning chap tomonida; oq ulushi pastdan (taxta aylantirilsa — tepadan) */
+.pg-evalbar {
+  display: none;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -22px;
+  width: 14px;
+  overflow: hidden;
+  border-radius: 4px;
+  background: #2b2f31;
+  border: 1px solid var(--cd-border-strong);
+}
+#gameView.pg-analysed.pg-mode-over .pg-evalbar {
+  display: block;
+}
+.pg-evalbar .an-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 50%;
+  background: #f2f5f3;
+  transition: height 0.35s ease;
+}
+.pg-evalbar.flipped .an-fill {
+  top: 0;
+  bottom: auto;
+}
+.pg-evalbar .an-label {
+  position: absolute;
+  left: 50%;
+  bottom: 4px;
+  transform: translateX(-50%) rotate(-90deg);
+  transform-origin: center;
+  font-size: 9px;
+  font-weight: 800;
+  color: #111;
+  white-space: nowrap;
+}
+.pg-evalbar .an-label.dark {
+  bottom: auto;
+  top: 4px;
+  color: #f2f5f3;
+}
+.pg-evalbar.flipped .an-label {
+  bottom: auto;
+  top: 4px;
+}
+.pg-evalbar.flipped .an-label.dark {
+  top: auto;
+  bottom: 4px;
+}
+#chessBoard .sq-best {
+  box-shadow: inset 0 0 0 3px rgba(var(--accent-rgb), 0.85);
+}
+
+/* Tahlil kartasi */
+.pg-analysis {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.pg-analysis[hidden] {
+  display: none !important;
+}
+.an-start {
+  padding: 12px !important;
+  font-size: 15px !important;
+}
+.an-muted {
+  font-size: 12px;
+  color: var(--cd-muted);
+}
+.an-hint {
+  text-align: center;
+}
+.an-progress-text {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e7ecea;
+}
+.an-progress {
+  height: 8px;
+  border-radius: 99px;
+  background: var(--cd-surface-3);
+  overflow: hidden;
+}
+.an-progress span {
+  display: block;
+  height: 100%;
+  border-radius: 99px;
+  background: var(--accent);
+  transition: width 0.3s ease;
+}
+.an-cancel {
+  align-self: flex-start;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.an-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.an-side {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--cd-surface-2);
+  border: 1px solid var(--cd-border-strong);
+}
+.an-side-head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 15px;
+  color: #fff;
+}
+.an-side-head b {
+  font-size: 20px;
+}
+.an-side-head small {
+  font-size: 11px;
+  color: var(--cd-muted);
+}
+.an-counts {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.an-legend {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.an-inaccuracy {
+  color: #f2c94c;
+}
+.an-mistake {
+  color: #f2994a;
+}
+.an-blunder {
+  color: #eb5757;
+}
+.an-ply {
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--cd-surface-2);
+  font-size: 13px;
+  color: #e7ecea;
+  line-height: 1.5;
+}
+.an-tag {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.07);
+}
+.an-tag.an-good {
+  color: #6fcf97;
+}
+.an-eval {
+  float: right;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+/* Yurishlar jadvalidagi belgi */
+.an-badge {
+  margin-left: 3px;
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 900;
+}
+.an-badge.an-inaccuracy { color: #f2c94c; }
+.an-badge.an-mistake { color: #f2994a; }
+.an-badge.an-blunder { color: #eb5757; }
+
+/* Debyut nomi (o'yin, jonli, qayta ko'rish) */
+.pg-opening,
+.lv-opening,
+.rp-opening {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent-light);
+}
+.pg-opening {
+  flex-shrink: 0;
+  margin-bottom: -6px;
+  padding: 0 2px;
+}
+.pg-opening[hidden],
+.lv-opening[hidden],
+.rp-opening[hidden] {
+  display: none;
+}
+.lv-opening {
+  max-width: 520px;
+  margin: 6px auto 0;
+}
+.rp-opening {
+  margin: 0 0 8px;
+}
+
+/* Ping ko'rsatkichi (o'yin paneli sarlavhasida) */
+.pg-ping {
+  align-self: center;
+  margin-right: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.pg-ping[hidden] {
+  display: none;
+}
+.pg-ping.good { color: #6fcf97; }
+.pg-ping.ok { color: #f2c94c; }
+.pg-ping.bad { color: #eb5757; }
+
+/* Chess960 tanlovi va o'chirilgan reyting tugmasi */
+#gameView .rated-toggle.disabled {
+  opacity: 0.55;
+}
+#gameView .rated-toggle.disabled .toggle-switch {
+  pointer-events: none;
+}
+
+/* Chaqiruv: o'zi belgilagan vaqt va variant */
+.ch-custom {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 10px 0 0;
+}
+.ch-custom[hidden] {
+  display: none;
+}
+.ch-custom label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-muted);
+  text-align: left;
+}
+.ch-custom input {
+  padding: 9px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cd-border-strong);
+  background: var(--cd-surface-2);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+}
+.ch-variants {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.ch-variant {
+  padding: 9px 8px;
+  border-radius: 10px;
+  border: 1px solid var(--cd-border-strong);
+  background: var(--cd-surface-2);
+  color: #dfe7e3;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ch-variant.active {
+  border-color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.16);
+  color: #fff;
+}
+.ch-rated.disabled {
+  opacity: 0.5;
+}
+
+/* Jonli o'yinlar: tomoshabinlar chati */
+.lv-tag.v960 {
+  background: rgba(var(--accent-rgb), 0.16);
+  color: var(--accent-light);
+}
+.lv-chat {
+  display: flex;
+  flex-direction: column;
+  max-width: 520px;
+  margin: 12px auto 0;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--cd-border-strong);
+  background: var(--cd-surface-2);
+}
+.lv-chat-head {
+  padding: 9px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #fff;
+  border-bottom: 1px solid var(--cd-border);
+}
+.lv-chat-head span {
+  font-weight: 600;
+  color: var(--cd-muted);
+}
+.lv-chat-list {
+  height: 160px;
+  overflow-y: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #dfe7e3;
+  word-break: break-word;
+}
+.lv-chat-msg + .lv-chat-msg {
+  margin-top: 4px;
+}
+.lv-chat-msg b {
+  color: var(--accent-light);
+  cursor: pointer;
+}
+.lv-chat-empty {
+  padding: 40px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--cd-muted);
+}
+.lv-chat-form {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  border-top: 1px solid var(--cd-border);
+}
+.lv-chat-form input {
+  flex: 1;
+  min-width: 0;
+}
+.lv-chat-form button {
+  flex-shrink: 0;
+  width: 40px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .pg-evalbar {
+    left: 0;
+    width: 8px;
+    border-radius: 0;
+    z-index: 5;
+    opacity: 0.9;
+  }
+  .pg-evalbar .an-label {
+    display: none;
+  }
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

@@ -831,7 +831,8 @@ async function getGameReplay(username, gameId) {
   return {
     id: g.id, player: user.username, opponent: g.opponent || null, result: g.result, color: g.color || null,
     reason: g.reason || null, timeControl: g.timeControl || null, clock: g.clock || null,
-    date: g.timestamp || g.date || null, moves: Array.isArray(g.moves) ? g.moves : []
+    date: g.timestamp || g.date || null, moves: Array.isArray(g.moves) ? g.moves : [],
+    variant: g.variant || 'standard', startFen: g.startFen || null
   };
 }
 
@@ -845,6 +846,7 @@ async function getPublicProfile(username) {
     result: g.result,
     opponent: g.opponent || null,
     timeControl: g.timeControl || null,
+    variant: g.variant || 'standard',
     date: g.timestamp || g.date || null
   }));
   // Reyting grafigi: har rejim bo'yicha oxirgi 100 nuqta (birinchisi — o'yindan oldingi reyting)

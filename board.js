@@ -1,4 +1,22 @@
 let game = new Chess();
+
+// O'yin varianti: 'standard' yoki 'chess960' (server match-found/game-resume da yuboradi; boshlang'ich FEN bilan)
+window.currentVariant = 'standard';
+window.currentStartFen = null;
+function newGameInstance() {
+  return window.currentVariant === 'chess960' && window.Chess960 && window.currentStartFen ? new Chess960(window.currentStartFen) : new Chess();
+}
+// chessboard.js uchun boshlang'ich joylashuv
+function startPlacement() {
+  return window.currentVariant === 'chess960' && window.currentStartFen ? window.currentStartFen.split(' ')[0] : 'start';
+}
+window.setGameVariant = function(variant, startFen) {
+  const is960 = variant === 'chess960' && !!startFen;
+  window.currentVariant = is960 ? 'chess960' : 'standard';
+  window.currentStartFen = is960 ? startFen : null;
+  game = newGameInstance();
+  if (board) board.position(startPlacement(), false);
+};
 let board = null;
 
 const whiteTimerElement = document.getElementById("whiteTimer");
@@ -42,10 +60,14 @@ window.setGamePanelMode = function(mode) {
   if (tournamentBtn) tournamentBtn.hidden = !(mode === 'over' && window.lastGameSwiss);
   if (typeof window.updateRematchBox === 'function') window.updateRematchBox(mode);
   if (typeof window.updateGameChatBox === 'function') window.updateGameChatBox(mode);
+  if (typeof window.updateAnalysisBox === 'function') window.updateAnalysisBox(mode);
+  const ping = document.getElementById('pgPing');
+  if (ping && mode !== 'in') ping.hidden = true;
 };
 
 window.resetToPreGame = function() {
   if (typeof leaveOnlineGame === 'function') leaveOnlineGame();
+  window.setGameVariant('standard');
   setGameTime(initialTime);
   window.setOpponentFound(false);
 };
@@ -70,7 +92,7 @@ window.setOpponentFound = function(found) {
     if (typeof window.setOpponentData === 'function') window.setOpponentData(null);
   }
   if (board) {
-    board.position('start');
+    board.position(startPlacement());
   }
   if (typeof window.updateGameStatusText === 'function') {
     window.updateGameStatusText();
@@ -103,7 +125,7 @@ function refreshSearchOverlay() {
   if (!searchStartedAt) searchStartedAt = Date.now();
   const meta = document.getElementById('pgSearchMeta');
   const rated = document.getElementById('ratedToggle');
-  if (meta) meta.textContent = `${Math.round(initialTime / 60)}+${timeIncrement} · ${(!rated || rated.checked) ? tx('ratedLabel', 'Reytingli') : tx('unratedLabel', 'Reytingsiz')}`;
+  if (meta) meta.textContent = `${Math.round(initialTime / 60)}+${timeIncrement} · ${(!rated || rated.checked) ? tx('ratedLabel', 'Reytingli') : tx('unratedLabel', 'Reytingsiz')}${(document.getElementById('variantToggle') || {}).checked ? ' · Chess960' : ''}`;
   const tick = () => {
     const el = document.getElementById('pgSearchTime');
     const s = Math.floor((Date.now() - searchStartedAt) / 1000);
@@ -242,8 +264,9 @@ window.applyServerGameResult = function(data) {
 // Serverdan kelgan soat holati (millisekund); taymer faqat server aytganda yuradi
 window.applyClockUpdate = function(data) {
   if (!data) return;
-  whiteTimeLeft = Math.max(0, data.w / 1000);
-  blackTimeLeft = Math.max(0, data.b / 1000);
+  const lagMs = data.running ? Math.min(400, (window.clientRtt || 0) / 2) : 0;
+  whiteTimeLeft = Math.max(0, (data.w - (data.turn === 'w' ? lagMs : 0)) / 1000);
+  blackTimeLeft = Math.max(0, (data.b - (data.turn === 'b' ? lagMs : 0)) / 1000);
   updateTimersDisplay();
   if (data.running && !gameFinished) {
     gameStarted = true;
@@ -352,6 +375,9 @@ window.exportPGN = function() {
   pgn += `[Date "${new Date().toISOString().split('T')[0].replace(/-/g, '.')}"]\n`;
   pgn += `[White "Player"]\n`;
   pgn += `[Black "Opponent"]\n`;
+  if (window.currentVariant === 'chess960' && window.currentStartFen) {
+    pgn += `[Variant "Chess960"]\n[SetUp "1"]\n[FEN "${window.currentStartFen}"]\n`;
+  }
   
   let pgnMoves = [];
   for (let i = 0; i < moves.length; i += 2) {
@@ -469,7 +495,8 @@ function setGameTime(sec, btnElement, increment) {
   if (btnElement || increment !== undefined) timeIncrement = increment || 0;
   gameStarted = false;
   gameFinished = false;
-  game.reset();
+  game = newGameInstance();
+  if (typeof window.clearAnalysis === 'function') window.clearAnalysis();
   closePromotionPicker();
   clearMoveHints();
   premove = null;
@@ -489,7 +516,7 @@ function setGameTime(sec, btnElement, increment) {
   if (whiteTimerElement) whiteTimerElement.classList.add("active");
   if (blackTimerElement) blackTimerElement.classList.remove("active");
   [whiteTimerElement, blackTimerElement].forEach(el => { if (el) el.classList.remove('warning'); });
-  if (board) board.position('start');
+  if (board) board.position(startPlacement());
 }
 
 window.startNewGame = function() {
@@ -501,7 +528,7 @@ window.startNewGame = function() {
   }
 
   if (board) {
-    board.position('start');
+    board.position(startPlacement());
   }
 
   if (typeof window.updateGameFlags === 'function') {
@@ -550,6 +577,24 @@ window.undoMove = function() {
   showToast(tx('lastMoveUndone', 'Oxirgi yurish qaytarildi'), 'info');
 };
 
+// Chess960 tanlansa — o'yin reytingsiz (server ham shunday qiladi)
+window.toggleVariant = function() {
+  const v = document.getElementById('variantToggle');
+  const r = document.getElementById('ratedToggle');
+  if (!v || !r) return;
+  if (v.checked) {
+    r.dataset.prev = r.checked ? '1' : '0';
+    r.checked = false;
+    r.disabled = true;
+  } else {
+    r.disabled = false;
+    if (r.dataset.prev) r.checked = r.dataset.prev === '1';
+  }
+  const row = r.closest('.rated-toggle');
+  if (row) row.classList.toggle('disabled', v.checked);
+  window.toggleRated();
+};
+
 window.toggleRated = function() {
   const toggle = document.getElementById('ratedToggle');
   const label = document.getElementById('ratedLabel');
@@ -563,6 +608,8 @@ window.toggleRated = function() {
 };
 
 // Til almashganda panellardagi "Reyting:" yorlig'ini qayta yozish (raqamni saqlagan holda)
+window.refreshMoveList = function() { renderMoveList(); };
+
 window.refreshPlayerInfoLabels = function() {
   ['white', 'black'].forEach(color => {
     const bar = document.querySelector(`#gameView .${color}-player`);
@@ -840,6 +887,14 @@ document.addEventListener('click', (e) => {
 
 function onDragStart(source, piece, position, orientation) {
   if (viewPly !== null) { window.reviewMove('end'); return false; }
+  if (selectedSquare && selectedSquare !== source && window.currentVariant === 'chess960' && !gameFinished) {
+    const kingSq = selectedSquare;
+    const castle = game.moves({ square: kingSq, verbose: true }).find(m => m.to === source && (m.flags === 'k' || m.flags === 'q'));
+    if (castle) {
+      setTimeout(() => { if (executeMove(kingSq, source) && board) board.position(game.fen()); }, 0);
+      return false;
+    }
+  }
   if (game.game_over() || gameFinished || promotionPending) return false;
 
   // Raqib navbatida o'z donamiz — premove (yurish oldindan belgilanadi)
@@ -946,7 +1001,7 @@ window.applyPieceSet = function(set) {
 
 // Qayta ulanganda: o'yinni serverdagi yurishlar bo'yicha tiklash
 window.loadServerPosition = function(moves) {
-  game.reset();
+  game = newGameInstance();
   (moves || []).forEach(m => game.move({ from: m.from, to: m.to, promotion: m.promotion || 'q' }));
   if (board) board.position(game.fen(), false);
   updateHistory();
@@ -965,10 +1020,15 @@ function updateHistory() {
 
 // --- Yurishlar jadvali va ◀ ▶ ko'rib chiqish (viewPly: null — joriy pozitsiya, aks holda shu yurishgacha) ---
 let viewPly = null;
+window.getViewPly = () => viewPly;
 
 function renderMoveList() {
   if (!historyListElement) return;
   const history = game.history();
+  // Debyut nomi (ko'rilayotgan pozitsiya bo'yicha); Chess960 da — variant belgisi
+  if (typeof window.renderOpeningInto === 'function') {
+    window.renderOpeningInto(document.getElementById('pgOpening'), viewPly === null ? history : history.slice(0, viewPly), window.currentVariant);
+  }
   if (!history.length) {
     historyListElement.innerHTML = '';
     const empty = document.createElement('div');
@@ -979,7 +1039,7 @@ function renderMoveList() {
   }
   const current = viewPly === null ? history.length : viewPly;
   const cell = (i) => i < history.length
-    ? `<span class="pg-mv${i === current - 1 ? ' current' : ''}" data-ply="${i + 1}">${history[i]}</span>`
+    ? `<span class="pg-mv${i === current - 1 ? ' current' : ''}" data-ply="${i + 1}">${history[i]}${typeof window.analysisBadge === 'function' ? window.analysisBadge(i) : ''}</span>`
     : '<span></span>';
   let rows = '';
   for (let i = 0; i < history.length; i += 2) {
@@ -1006,7 +1066,7 @@ function showPly() {
     if (liveBtn) liveBtn.hidden = true;
   } else {
     const h = game.history({ verbose: true });
-    const replay = new Chess();
+    const replay = newGameInstance();
     for (let i = 0; i < viewPly; i++) replay.move({ from: h[i].from, to: h[i].to, promotion: h[i].promotion });
     board.position(replay.fen(), false);
     const m = h[viewPly - 1];
@@ -1015,6 +1075,7 @@ function showPly() {
     if (liveBtn) liveBtn.hidden = false;
   }
   renderMoveList();
+  if (typeof window.onAnalysisPly === 'function') window.onAnalysisPly(viewPly === null ? game.history().length : viewPly);
 }
 
 window.reviewMove = function(target) {
@@ -1046,9 +1107,11 @@ const PIECE_VALUE = { q: 9, r: 5, b: 3, n: 3, p: 1 };
 const START_COUNT = { q: 1, r: 2, b: 2, n: 2, p: 8 };
 function renderMaterial(fen) {
   const counts = { w: { q: 0, r: 0, b: 0, n: 0, p: 0 }, b: { q: 0, r: 0, b: 0, n: 0, p: 0 } };
-  new Chess(fen).board().forEach(row => row.forEach(sq => {
-    if (sq && sq.type !== 'k') counts[sq.color][sq.type]++;
-  }));
+  // FEN joylashuvidan sanaymiz (Chess960 FEN ham bo'lishi mumkin)
+  for (const ch of String(fen).split(' ')[0]) {
+    const t = ch.toLowerCase();
+    if (t in PIECE_VALUE) counts[ch === t ? 'b' : 'w'][t]++;
+  }
   const material = (c) => Object.keys(PIECE_VALUE).reduce((sum, t) => sum + counts[c][t] * PIECE_VALUE[t], 0);
   const diff = material('w') - material('b');
   ['w', 'b'].forEach(color => {

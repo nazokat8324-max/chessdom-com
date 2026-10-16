@@ -490,6 +490,8 @@
             </div>
             <div class="board-wrapper">
               <div class="board theme-green" id="chessBoard"></div>
+              <!-- Tahlildan keyin: baho chizig'i (analysis.js) -->
+              <div class="pg-evalbar" id="pgEvalBar"><div class="an-fill"></div><span class="an-label"></span></div>
               <!-- Raqib qidirilayotganda taxta ustida (board.js refreshSearchOverlay) -->
               <div class="pg-search" id="pgSearchOverlay" hidden>
                 <div class="pg-search-card">
@@ -529,6 +531,7 @@
                 <span id="historyPanelHeader">Yurishlar tarixi</span>
               </div>
               <div class="pg-tools">
+                <span class="pg-ping" id="pgPing" hidden></span>
                 <button type="button" class="pg-tool" id="pgFlipBtn" onclick="window.flipBoard()" title="Taxtani aylantirish">⇅</button>
                 <button type="button" class="pg-tool" id="pgSoundBtn" onclick="window.toggleGameSound()" title="Ovoz">🔊</button>
               </div>
@@ -581,6 +584,17 @@
               </label>
             </div>
 
+            <div class="rated-toggle pg-variant">
+              <div>
+                <div class="rated-label">🎲 Chess960</div>
+                <div class="rated-sublabel" data-i18n="gpChess960Hint">Tasodifiy boshlang'ich pozitsiya · reytingsiz</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="variantToggle" onchange="window.toggleVariant()" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
             <button
               class="start-game-btn"
               onclick="handleStartGame()"
@@ -598,6 +612,7 @@
 
             <!-- O'yin boshlangach: yurishlar jadvali (◀ ▶ ko'rib chiqish) va o'yin tugmalari -->
             <div class="game-panel-section" id="inGameControls" hidden>
+            <div class="pg-opening" id="pgOpening" hidden></div>
             <div class="pg-moves-box">
               <div class="pg-moves" id="historyList"></div>
               <!-- Oldingi yurishlarni ko'rib chiqayotganda: joriy pozitsiyaga qaytish -->
@@ -609,6 +624,9 @@
                 <button type="button" onclick="window.reviewMove('end')">⏭</button>
               </div>
             </div>
+
+            <!-- O'yindan keyingi tahlil (analysis.js) -->
+            <div class="pg-analysis" id="pgAnalysisBox" hidden></div>
 
             <div class="pg-actions" id="inGameButtons">
               <button class="control-btn" onclick="offerDraw()" id="btnDraw">
@@ -1614,6 +1632,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="chess960.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1638,6 +1657,8 @@
     <script src="leaderboard.js"></script>
     <script src="settings.js"></script>
     <script src="gameextras.js"></script>
+    <script src="openings.js"></script>
+    <script src="analysis.js"></script>
     <script src="replay.js"></script>
     <script src="safety.js"></script>
     <script src="admin.js"></script>

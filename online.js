@@ -19,6 +19,26 @@ socket.on('auth-error', () => {
   if (typeof window.expireSession === 'function') window.expireSession();
 });
 
+// Server kechikishni o'lchaydi (soat kompensatsiyasi uchun) — darhol javob beramiz
+socket.on('lag-ping', (ack) => { if (typeof ack === 'function') ack(); });
+// O'z kechikishimiz: soat ko'rinishini to'g'rilash va ping ko'rsatkichi (faqat o'yin paytida)
+setInterval(() => {
+  if (!socket.connected || !window.currentRoomId) return;
+  const t = performance.now();
+  socket.timeout(4000).emit('rtt-probe', (err) => {
+    if (err) return;
+    const rtt = performance.now() - t;
+    window.clientRtt = window.clientRtt ? Math.round(window.clientRtt * 0.7 + rtt * 0.3) : Math.round(rtt);
+    const el = document.getElementById('pgPing');
+    const live = typeof window.isGameInProgress === 'function' && window.isGameInProgress();
+    if (el) {
+      el.hidden = !live;
+      el.textContent = '📶 ' + window.clientRtt + ' ms';
+      el.className = 'pg-ping ' + (window.clientRtt < 150 ? 'good' : (window.clientRtt < 400 ? 'ok' : 'bad'));
+    }
+  });
+}, 3000);
+
 socket.on('connect', () => {
   console.log('Serverga ulandi:', socket.id);
   window.authenticateSocket();
@@ -87,6 +107,8 @@ function beginOnlineGame(data, resume) {
   if (typeof window.applyMyColor === 'function') {
     window.applyMyColor(data.color);
   }
+  // Variant (standart / Chess960) va boshlang'ich pozitsiya — serverdan
+  if (typeof window.setGameVariant === 'function') window.setGameVariant(data.variant, data.startFen);
   // Vaqt nazoratini server belgilaydi (ikkala o'yinchida bir xil)
   if (data.clock && typeof setGameTime === 'function') {
     setGameTime(data.clock.initial, null, data.clock.increment);
@@ -353,7 +375,8 @@ window.startMatchmaking = async function() {
         socketId: socket.id,
         country: getMyCountry(),
         ...(typeof window.getSelectedClock === 'function' ? window.getSelectedClock() : {}),
-        rated: !document.getElementById('ratedToggle') || document.getElementById('ratedToggle').checked
+        rated: !document.getElementById('ratedToggle') || document.getElementById('ratedToggle').checked,
+        variant: document.getElementById('variantToggle') && document.getElementById('variantToggle').checked ? 'chess960' : 'standard'
       })
     });
     const data = await res.json();

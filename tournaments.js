@@ -41,6 +41,8 @@
       if (!ov.success) throw new Error(ov.message);
       st.offset = new Date(ov.serverNow).getTime() - Date.now();
       st.list = ov.tournaments;
+      const urlId = window.location.pathname === '/turnirlar' ? new URLSearchParams(window.location.search).get('t') : null;
+      if (urlId && !st.urlApplied) { st.urlApplied = true; st.selectedId = urlId; }
       if (!st.selectedId || !st.list.some(t => t.id === st.selectedId)) st.selectedId = ov.featuredId;
       st.detail = st.selectedId ? await fetchDetail(st.selectedId) : null;
       render();
@@ -62,6 +64,7 @@
   }
 
   async function select(id) {
+    if (typeof window.pushSubRoute === 'function') window.pushSubRoute('tournaments', { t: id });
     st.selectedId = id;
     st.round = null;
     st.detail = await fetchDetail(id);
@@ -320,6 +323,12 @@
     load();
   };
   window.loadArenas = window.loadTournaments;
+  // Orqaga/oldinga: manzildagi turnirni tanlash
+  window.selectTournament = function (id) {
+    if (!id || id === st.selectedId) return;
+    if (!st.list) { st.selectedId = id; st.urlApplied = true; return; }
+    select(id);
+  };
   window.refreshArenaPage = function () { if (isActiveView()) render(); };
 
   document.addEventListener('DOMContentLoaded', () => {

@@ -500,8 +500,6 @@
                   <button type="button" class="control-btn pg-search-cancel" onclick="window.cancelSearch()" data-i18n="gpCancel">Bekor qilish</button>
                 </div>
               </div>
-              <!-- Oldingi yurishlarni ko'rib chiqayotganda: joriy pozitsiyaga qaytish -->
-              <button type="button" class="pg-live-btn" id="pgLiveBtn" onclick="window.reviewMove('end')" hidden>⏭ <span data-i18n="gpBackToLive">Joriy pozitsiya</span></button>
             </div>
             <div class="player-bar white-player">
               <div class="player-avatar" id="whitePlayerAvatar">♔</div>
@@ -602,6 +600,8 @@
             <div class="game-panel-section" id="inGameControls" hidden>
             <div class="pg-moves-box">
               <div class="pg-moves" id="historyList"></div>
+              <!-- Oldingi yurishlarni ko'rib chiqayotganda: joriy pozitsiyaga qaytish -->
+              <button type="button" class="pg-live-btn" id="pgLiveBtn" onclick="window.reviewMove('end')" hidden>⏭ <span data-i18n="gpBackToLive">Joriy pozitsiya</span></button>
               <div class="pg-nav">
                 <button type="button" onclick="window.reviewMove('start')">⏮</button>
                 <button type="button" onclick="window.reviewMove('prev')">◀</button>

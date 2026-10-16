@@ -80,7 +80,26 @@ const SERVER_MESSAGE_KEYS = {
   "Siz allaqachon klubdasiz!": 'srvAlreadyInClub',
   "Siz allaqachon boshqa klubga a'zosiz!": 'srvAlreadyInOtherClub',
   "Klub chatiga faqat klub a'zolari yozishi mumkin!": 'srvClubChatMembersOnly',
-  "Noto'g'ri davlat kodi!": 'srvBadCountry'
+  "Noto'g'ri davlat kodi!": 'srvBadCountry',
+  "Muvaffaqiyatli ro'yxatdan o'tdingiz!": 'srvRegistered',
+  "Muvaffaqiyatli kirildi!": 'srvLoggedIn',
+  "Hisobdan chiqildi!": 'srvLoggedOut',
+  "Turnir yaratildi!": 'srvTournamentCreated',
+  "Faqat turnir yaratuvchisi o'yinlarni qo'sha oladi!": 'srvOnlyCreatorMatches',
+  "O'yinlar ro'yxati kerak!": 'srvMatchesRequired',
+  "Noto'g'ri natija turi!": 'srvBadResult',
+  "Natija saqlandi!": 'srvResultSaved',
+  "Liga topilmadi!": 'srvLeagueNotFound',
+  "Club name must be 3-255 characters": 'srvClubNameLength',
+  "Klub yaratildi!": 'srvClubCreated',
+  "Turnirga qo'shildingiz!": 'srvJoinedTournament',
+  "Turnir boshlandi!": 'srvTournamentStartedOk',
+  "Do'stlik so'rovi yuborildi!": 'srvFriendRequestSent',
+  "Do'stlik qabul qilindi!": 'srvFriendAccepted',
+  "So'rov rad etildi!": 'srvRequestDeclined',
+  "Do'stlik bekor qilindi": 'srvFriendRemoved',
+  "So'rov bekor qilindi": 'srvRequestCancelled',
+  "Klubga qo'shildingiz!": 'srvJoinedClub'
 };
 // --- Profil rasmlari ---
 // Rasm manzili; version bo'lsa brauzer uni uzoq keshlaydi (rasm o'zgarsa version ham o'zgaradi)

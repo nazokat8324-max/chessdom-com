@@ -15,6 +15,47 @@
     clubs: 'navClubs', leagues: 'navLeagues', champions: 'navChampions', settings: 'navSettings', admin: 'navAdmin' };
   let popping = false; // popstate paytida tarixga yangi yozuv qo'shilmaydi
 
+  // Bo'lim ichidagi sahifa (klub, turnir): /klublar?club=Uzbekistan&tab=chat, /turnirlar?t=<id>
+  function pushSub(view, params) {
+    if (popping) return;
+    const q = new URLSearchParams();
+    Object.entries(params).forEach(([k, v]) => { if (v) q.set(k, v); });
+    const url = ROUTES[view] + (q.toString() ? '?' + q.toString() : '');
+    if (window.location.pathname + window.location.search === url) return;
+    history.pushState({ view, ...params }, '', url);
+  }
+  window.pushSubRoute = pushSub;
+
+  // Klub sahifalari: tafsilot, chat, reyting, turnirlar, tarix
+  const CLUB_TABS = { showClubChat: 'chat', showClubLeaderboard: 'reyting', showClubTournaments: 'turnirlar', showClubHistory: 'tarix' };
+  ['openClubDetail', ...Object.keys(CLUB_TABS)].forEach(fn => {
+    const orig = window[fn];
+    if (typeof orig !== 'function') return;
+    window[fn] = function (countryName) {
+      const result = orig.apply(this, arguments);
+      if (countryName && !(fn === 'showClubChat' && !window.currentUser)) pushSub('clubs', { club: countryName, tab: CLUB_TABS[fn] });
+      if (countryName) document.title = (window.countryName ? window.countryName(countryName, window.currentClubCode) : countryName) + ' · ' + BASE_TITLE;
+      return result;
+    };
+  });
+  function clubCode(name) {
+    try { const c = (typeof allCountries !== 'undefined' ? allCountries : []).find(x => x.name === name); return c ? c.code : null; } catch (e) { return null; }
+  }
+  function openClubFromUrl(name, tab) {
+    const code = clubCode(name);
+    if (!code) { window.switchView('clubs'); return; }
+    window.currentClubName = name;
+    window.currentClubCode = code;
+    const fn = Object.keys(CLUB_TABS).find(k => CLUB_TABS[k] === tab) || 'openClubDetail';
+    window[fn](name, code);
+  }
+  // Tarixga yozmasdan (sahifa ochilganda / orqaga-oldinga)
+  function quietly(fn) {
+    const was = popping;
+    popping = true;
+    try { fn(); } finally { popping = was; }
+  }
+
   const viewFromPath = (path) => BY_PATH[String(path || '/').toLowerCase().replace(/\/+$/, '') || '/'] || 'home';
   const profileFromUrl = () => new URLSearchParams(window.location.search).get('profile');
   const activeView = () => {
@@ -23,13 +64,19 @@
   };
 
   function setTitle(view) {
+    // Klub sahifalari (tafsilot, chat, reyting...) — klub nomi
+    const activeEl = document.querySelector('.view-section.active-view');
+    if (!ROUTES[view] && activeEl && /^club[A-Z]/.test(activeEl.id) && window.currentClubName) {
+      document.title = (window.countryName ? window.countryName(window.currentClubName, window.currentClubCode) : window.currentClubName) + ' · ' + BASE_TITLE;
+      return;
+    }
     const nav = document.querySelector('.menu-item.active');
     const label = nav ? [...nav.querySelectorAll('span')].map(s => s.classList.contains('icon') || s.classList.contains('lg-nav-badge') ? '' : s.textContent.trim()).filter(Boolean)[0] : '';
     document.title = view === 'home' || !label ? BASE_TITLE + ' — Onlayn shaxmat' : label + ' · ' + BASE_TITLE;
   }
 
   // Til almashganda yoki tarjimalar yuklangach
-  window.refreshPageTitle = function () { setTitle(activeView() || 'home'); };
+  window.refreshPageTitle = function () { setTitle(activeView()); };
 
   // --- switchView: manzilni yangilash ---
   const origSwitch = window.switchView;
@@ -87,7 +134,10 @@
     popping = true;
     try {
       const view = viewFromPath(window.location.pathname);
-      if (view !== activeView()) window.switchView(view);
+      const sub = new URLSearchParams(window.location.search);
+      if (view === 'clubs' && sub.get('club') && window.currentUser) openClubFromUrl(sub.get('club'), sub.get('tab'));
+      else if (view !== activeView()) window.switchView(view);
+      if (view === 'tournaments' && sub.get('t') && typeof window.selectTournament === 'function') window.selectTournament(sub.get('t'));
       const name = profileFromUrl();
       if (name && window.currentUser) {
         if (name === window.currentUser.username) window.openProfileModal(); else window.openPlayerProfile(name);
@@ -118,7 +168,16 @@
     }
     setTimeout(window.refreshPageTitle, 1200);
     setTimeout(() => {
-      if (view !== 'home' || window.location.pathname !== '/') window.switchView(view, { replace: true });
+      const sub = new URLSearchParams(window.location.search);
+      if (view === 'clubs' && sub.get('club')) {
+        const keep = window.location.pathname + window.location.search;
+        quietly(() => { window.switchView('clubs'); openClubFromUrl(sub.get('club'), sub.get('tab')); });
+        history.replaceState({ view: 'clubs' }, '', keep);
+      } else if (view === 'tournaments' && sub.get('t')) {
+        const keep = window.location.pathname + window.location.search;
+        quietly(() => window.switchView('tournaments'));
+        history.replaceState({ view: 'tournaments' }, '', keep);
+      } else if (view !== 'home' || window.location.pathname !== '/') window.switchView(view, { replace: true });
       else { history.replaceState({ view: 'home' }, '', '/' + window.location.search); setTitle('home'); }
     }, 0);
   });

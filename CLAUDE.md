@@ -120,7 +120,7 @@ Hali qolganlar:
 - Uzilish uchun 60 s kutiladi; deploydan keyin o'yinlar `active_games` dan tiklanadi (soat uzilish vaqtini hisobga olmaydi).
 - `inviteFriendToClub` hech qayerda ishlatilmaydi. Eski `clubs`/`club_members` jadvallari (foydalanuvchi yaratgan klublar) UI'da ishlatilmaydi.
 - Team turnirlari (eski `tournaments` ichidagi) 501 qaytaradi — jamoaviy o'yinlar endi ligalar orqali (league.js).
-- `JWT_SECRET` Render'da o'rnatilmagan bo'lsa, koddagi default kalit ishlatiladi (server startda ogohlantiradi) — Render env'da o'rnatish kerak.
+- `JWT_SECRET` Render env'da o'rnatilgan (2026-10-16 tasdiqlandi). Lokal serverda yo'q — startdagi ogohlantirish faqat lokal uchun.
 ## Ish uslubi
 - Kod uslubiga moslash: global `window.*` funksiyalar, `typeof x === 'function'` tekshiruvlari, o'zbekcha toast/alert matnlari, i18n uchun `i18next.t(key, {defaultValue})`.
 - Commit xabarlari inglizcha, qisqa, buyruq shaklida (masalan "Assign colors server-side and validate turn on make-move").

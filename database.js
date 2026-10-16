@@ -511,7 +511,8 @@ async function closeStaleArenas() {
   }
 }
 
-const RATING_MODES = ['rapid', 'blitz', 'bullet'];
+// chess960 — alohida reyting (umumiy reytingga ta'sir qilmaydi)
+const RATING_MODES = ['rapid', 'blitz', 'bullet', 'chess960'];
 
 // Rejim bo'yicha reytinglar; har bir rejim 1500 dan boshlanadi
 function normalizeRatingsByMode(row) {
@@ -936,7 +937,8 @@ async function updateUserRatingByResult(userId, result, opponentRating, timeCont
   const user = await getUserById(userId);
   if (!user) return null;
   const playerRating = user.rating || 1500;
-  const ratingChange = eloChange(playerRating, Number(opponentRating) || 1500, result);
+  // Chess960 o'yini umumiy reytingni o'zgartirmaydi — faqat o'z reytingini
+  const ratingChange = timeControl === 'chess960' ? 0 : eloChange(playerRating, Number(opponentRating) || 1500, result);
   const newRating = Math.max(100, playerRating + ratingChange);
 
   const ratingsByMode = user.ratings_by_mode;

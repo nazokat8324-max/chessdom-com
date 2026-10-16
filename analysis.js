@@ -61,49 +61,71 @@
     return (v > 0 ? '+' : '') + v.toFixed(1);
   };
 
-  function newInstance() {
-    return window.currentVariant === 'chess960' && window.Chess960 ? new Chess960(window.currentStartFen) : new Chess();
+  function newInstance(variant, startFen) {
+    const v = variant === undefined ? window.currentVariant : variant;
+    const f = startFen === undefined ? window.currentStartFen : startFen;
+    return v === 'chess960' && window.Chess960 && f ? new Chess960(f) : new Chess();
   }
+
+  // Umumiy tahlil: yurishlar ({from,to,promotion,color,san}) → baholar va xulosa. Bir vaqtda bitta tahlil (dvigatel bitta)
+  let busy = false;
+  async function analyzeLine(moves, variant, startFen, onProgress, isCancelled) {
+    if (busy) throw new Error('busy');
+    busy = true;
+    try {
+      const chess960 = variant === 'chess960';
+      const pos = newInstance(variant, startFen);
+      const fens = [pos.fen()];
+      const terminal = [null];
+      for (const m of moves) {
+        pos.move({ from: m.from, to: m.to, promotion: m.promotion });
+        fens.push(pos.fen());
+        terminal.push(pos.in_checkmate() ? (pos.turn() === 'w' ? -10000 : 10000) : (pos.in_draw() ? 0 : null));
+      }
+      const evals = [];
+      for (let i = 0; i < fens.length; i++) {
+        if (isCancelled && isCancelled()) return null;
+        if (terminal[i] !== null && terminal[i] !== undefined) evals.push({ cp: terminal[i], mate: null, best: null, terminal: true });
+        else evals.push(await evaluate(fens[i], chess960));
+        if (onProgress) onProgress(i + 1, fens.length);
+      }
+      return summarize(moves, evals, variant, startFen);
+    } finally {
+      busy = false;
+    }
+  }
+  window.analyzeLine = analyzeLine;
+  window.analysisUtils = {
+    winPct: (e) => winPct(toCp(e)),
+    evalText: (e) => evalText(e),
+    resultText: (e) => (toCp(e) > 0 ? '1-0' : (toCp(e) < 0 ? '0-1' : '½')),
+    badge: (cls) => (cls ? `<i class="an-badge an-${cls}">${{ inaccuracy: '?!', mistake: '?', blunder: '??' }[cls]}</i>` : '')
+  };
 
   window.startGameAnalysis = async function () {
     if (st.running || typeof game === 'undefined') return;
     const moves = game.history({ verbose: true });
     if (moves.length < 2) return;
-    const chess960 = window.currentVariant === 'chess960';
     const token = ++st.token;
     st.running = true;
     st.done = 0;
     st.total = moves.length + 1;
     renderBox();
-    // Har bir pozitsiya (0 — boshlang'ich)
-    const pos = newInstance();
-    const fens = [pos.fen()];
-    const terminal = [null];
-    for (const m of moves) {
-      pos.move({ from: m.from, to: m.to, promotion: m.promotion });
-      fens.push(pos.fen());
-      terminal.push(pos.in_checkmate() ? (pos.turn() === 'w' ? -10000 : 10000) : (pos.in_draw() ? 0 : null));
-    }
-    const evals = [];
+    let result;
     try {
-      for (let i = 0; i < fens.length; i++) {
-        if (token !== st.token) return;
-        if (terminal[i] !== null && terminal[i] !== undefined) evals.push({ cp: terminal[i], mate: null, best: null, terminal: true });
-        else evals.push(await evaluate(fens[i], chess960));
-        st.done = i + 1;
-        renderBox();
-      }
+      result = await analyzeLine(moves, window.currentVariant, window.currentStartFen,
+        (done, total) => { if (token === st.token) { st.done = done; st.total = total; renderBox(); } },
+        () => token !== st.token);
     } catch (err) {
       if (token !== st.token) return;
       st.running = false;
-      if (st.worker) { st.worker.terminate(); st.worker = null; }
       renderBox();
-      showToast(tx('anFailed', "Tahlil dvigatelini yuklab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."), 'warning');
+      window.analysisFailed(err);
       return;
     }
-    if (token !== st.token) return;
+    if (token !== st.token || !result) return;
     st.running = false;
-    st.result = summarize(moves, evals, fens);
+    st.result = result;
     window.gameAnalysis = st.result;
     const view = document.getElementById('gameView');
     if (view) view.classList.add('pg-analysed');
@@ -112,7 +134,14 @@
     window.onAnalysisPly(typeof window.getViewPly === 'function' && window.getViewPly() !== null ? window.getViewPly() : moves.length);
   };
 
-  function summarize(moves, evals, fens) {
+  // Dvigatel yuklanmadi / boshqa tahlil ketmoqda
+  window.analysisFailed = function (err) {
+    if (err && err.message === 'busy') { showToast(tx('anBusy', 'Boshqa tahlil davom etmoqda — tugashini kuting.'), 'warning'); return; }
+    if (st.worker) { st.worker.terminate(); st.worker = null; }
+    showToast(tx('anFailed', "Tahlil dvigatelini yuklab bo'lmadi. Internetni tekshirib, qayta urinib ko'ring."), 'warning');
+  };
+
+  function summarize(moves, evals, variant, startFen) {
     const out = { evals, moves: [], accuracy: { w: 0, b: 0 }, counts: { w: { inaccuracy: 0, mistake: 0, blunder: 0 }, b: { inaccuracy: 0, mistake: 0, blunder: 0 } } };
     const acc = { w: [], b: [] };
     moves.forEach((m, i) => {
@@ -130,7 +159,7 @@
       let bestSan = null;
       if (best && !isBest) {
         try {
-          const p = newInstance();
+          const p = newInstance(variant, startFen);
           for (let j = 0; j < i; j++) p.move({ from: moves[j].from, to: moves[j].to, promotion: moves[j].promotion });
           const r = p.move({ from: best.slice(0, 2), to: best.slice(2, 4), promotion: best[4] });
           bestSan = r ? r.san : null;

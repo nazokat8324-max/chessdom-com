@@ -67,7 +67,7 @@
   // Profil ochilganda (o'zimniki yoki boshqa o'yinchiniki): eng ko'p o'ynalgan rejim tanlanadi
   window.renderRatingChart = function (profile) {
     st.history = (profile && profile.ratingHistory) || null;
-    const counts = ['rapid', 'blitz', 'bullet'].map(m => [m, (st.history && st.history[m] || []).length]);
+    const counts = ['rapid', 'blitz', 'bullet', 'chess960'].map(m => [m, (st.history && st.history[m] || []).length]);
     counts.sort((a, b) => b[1] - a[1]);
     st.mode = counts[0][1] ? counts[0][0] : 'blitz';
     draw();

@@ -1571,7 +1571,7 @@ window.renderProfileCommon = function(p) {
   const baseRating = p.rating || 1500;
   const byMode = p.statsByMode || {};
   const gamesOf = (s) => s ? (s.wins || 0) + (s.losses || 0) + (s.draws || 0) : 0;
-  ['rapid', 'blitz', 'bullet'].forEach(mode => {
+  ['rapid', 'blitz', 'bullet', 'chess960'].forEach(mode => {
     const cap = mode.charAt(0).toUpperCase() + mode.slice(1);
     const rating = ratingsByMode[mode] || baseRating;
     setText('stat' + cap, rating);
@@ -1626,7 +1626,7 @@ window.renderRecentGames = function(games) {
       <div class="profile-game-row${replayable ? ' replayable' : ''}"${replayable ? ` data-replay="${escapeHtmlSafe(g.id)}" title="${escapeHtmlSafe(tx('rpWatchGame', "O'yinni ko'rish"))}"` : ''}>
         <span class="profile-game-result ${result}">${escapeHtmlSafe(labels[result])}</span>
         <span class="profile-game-opponent"><small>vs</small>${opponentHtml}</span>
-        <span class="profile-game-mode">${escapeHtmlSafe(g.timeControl || '')}</span>
+        <span class="profile-game-mode">${g.timeControl === 'chess960' ? '🎲 Chess960' : escapeHtmlSafe(g.timeControl || '')}</span>
         <span class="profile-game-date">${escapeHtmlSafe(date)}${replayable ? ' <i class="rp-play">▶</i>' : ''}</span>
       </div>`;
   }).join('');

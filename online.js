@@ -101,6 +101,7 @@ function beginOnlineGame(data, resume) {
 
   window.opponentRating = (data.opponent && data.opponent.rating) || 1500;
   window.opponentRatingsByMode = (data.opponent && data.opponent.ratingsByMode) || null;
+  window.currentRatingMode = data.ratingMode || data.mode || null;
   if (typeof window.setOpponentData === 'function') {
     window.setOpponentData(data.opponent);
   }

@@ -63,7 +63,7 @@
           <button class="ch-variant${st.variant === 'standard' ? ' active' : ''}" data-variant="standard">♟ ${esc(tx('chStandard', 'Standart'))}</button>
           <button class="ch-variant${st.variant === 'chess960' ? ' active' : ''}" data-variant="chess960">🎲 Chess960</button>
         </div>
-        <label class="ch-rated${st.variant === 'chess960' ? ' disabled' : ''}"><input type="checkbox" id="chRated" ${st.rated && st.variant !== 'chess960' ? 'checked' : ''}${st.variant === 'chess960' ? ' disabled' : ''}> ${esc(tx('chRated', "Reytingli o'yin"))}</label>
+        <label class="ch-rated"><input type="checkbox" id="chRated" ${st.rated ? 'checked' : ''}> ${esc(tx('chRated', "Reytingli o'yin"))}</label>
         <button class="ch-primary" data-send="1">⚔️ ${esc(tx('chSend', 'Chaqirish'))}</button>
       </div>`;
     el.querySelector('[data-close]').onclick = close;
@@ -86,7 +86,7 @@
       keep();
       const initial = st.custom ? Math.round(st.customMin * 60) : st.pick[0];
       const increment = st.custom ? st.customInc : st.pick[1];
-      socket.emit('challenge-send', { username, initial, increment, rated: st.variant === 'chess960' ? false : st.rated, variant: st.variant });
+      socket.emit('challenge-send', { username, initial, increment, rated: st.rated, variant: st.variant });
     };
   }
 

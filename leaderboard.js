@@ -12,7 +12,7 @@
   const flag = (code, cls) => code ? `<img class="${cls || 'lb-flag'}" src="https://flagcdn.com/w40/${esc(String(code).toLowerCase())}.png" alt="" loading="lazy" onerror="this.remove()">` : '';
   const clubName = (c) => (typeof window.countryName === 'function' ? window.countryName(c.name, c.code) : c.name);
   const avatar = (p, cls) => `<span class="lb-avatar ${cls || ''}">${esc((p.username || '?').charAt(0).toUpperCase())}${window.avatarOverlay ? window.avatarOverlay(p.username, p.avatarVersion || null) : ''}</span>`;
-  const modes = [['all', '🏆', 'lbModeAll', 'Umumiy'], ['rapid', '⏱️', 'lbModeRapid', 'Rapid'], ['blitz', '⚡', 'lbModeBlitz', 'Blitz'], ['bullet', '🔥', 'lbModeBullet', 'Bullet']];
+  const modes = [['all', '🏆', 'lbModeAll', 'Umumiy'], ['rapid', '⏱️', 'lbModeRapid', 'Rapid'], ['blitz', '⚡', 'lbModeBlitz', 'Blitz'], ['bullet', '🔥', 'lbModeBullet', 'Bullet'], ['chess960', '🎲', 'lbModeChess960', 'Chess960']];
 
   // O'yinchining tanlangan rejimdagi reytingi va natijalari
   function view(p) {

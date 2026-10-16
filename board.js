@@ -537,8 +537,12 @@ window.startNewGame = function() {
 
   if (window.currentUser) {
     const opponent = window.currentOpponent || {};
-    const me = { name: window.currentUser.username, rating: window.currentUser.rating || 1500 };
-    const them = { name: opponent.username || tx('colOpponent', 'Raqib'), rating: opponent.rating || 1500 };
+    // Panelda shu o'yin yoziladigan rejim reytingi (rapid/blitz/bullet yoki chess960)
+    const rm = window.currentRatingMode;
+    const myByMode = window.currentUser.ratingsByMode || {};
+    const oppByMode = window.opponentRatingsByMode || {};
+    const me = { name: window.currentUser.username, rating: (rm && myByMode[rm]) || window.currentUser.rating || 1500 };
+    const them = { name: opponent.username || tx('colOpponent', 'Raqib'), rating: (rm && oppByMode[rm]) || opponent.rating || 1500 };
     const [white, black] = window.myColor === 'b' ? [them, me] : [me, them];
     updatePlayerInfo('white', white.name, white.rating);
     updatePlayerInfo('black', black.name, black.rating);
@@ -577,22 +581,9 @@ window.undoMove = function() {
   showToast(tx('lastMoveUndone', 'Oxirgi yurish qaytarildi'), 'info');
 };
 
-// Chess960 tanlansa — o'yin reytingsiz (server ham shunday qiladi)
+// Chess960 tanlovi (reytingli o'yinlar alohida Chess960 reytingiga yoziladi)
 window.toggleVariant = function() {
-  const v = document.getElementById('variantToggle');
-  const r = document.getElementById('ratedToggle');
-  if (!v || !r) return;
-  if (v.checked) {
-    r.dataset.prev = r.checked ? '1' : '0';
-    r.checked = false;
-    r.disabled = true;
-  } else {
-    r.disabled = false;
-    if (r.dataset.prev) r.checked = r.dataset.prev === '1';
-  }
-  const row = r.closest('.rated-toggle');
-  if (row) row.classList.toggle('disabled', v.checked);
-  window.toggleRated();
+  refreshSearchOverlay();
 };
 
 window.toggleRated = function() {

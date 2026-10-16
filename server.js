@@ -124,7 +124,7 @@ function findPlayer(room, socketId) { return room.players.find(p => p.socketId =
 
 function otherColor(color) { return color === 'w' ? 'b' : 'w'; }
 
-// opts.variant: 'standard' | 'chess960' (Chess960 — doim reytingsiz), opts.startFen — 960 boshlang'ich pozitsiyasi
+// opts.variant: 'standard' | 'chess960' (Chess960 — alohida 'chess960' reytingi), opts.startFen — 960 boshlang'ich pozitsiyasi
 function createGameRoom(white, black, clock, rated, opts) {
   const variant = opts && opts.variant === 'chess960' ? 'chess960' : 'standard';
   // CHESS960_TEST_FEN — faqat lokal sinov uchun (doim bir xil pozitsiya)
@@ -137,7 +137,7 @@ function createGameRoom(white, black, clock, rated, opts) {
     spectatorChat: [],
     clock: { w: clock.initial * 1000, b: clock.initial * 1000, increment: clock.increment, initial: clock.initial },
     mode: clockMode(clock),
-    rated: !!rated && variant === 'standard',
+    rated: !!rated,
     status: 'active',
     turnStartedAt: null,
     timer: null,
@@ -145,8 +145,11 @@ function createGameRoom(white, black, clock, rated, opts) {
   };
 }
 
+// Reyting qaysi rejimga yoziladi: Chess960 — o'z reytingi, aks holda vaqt nazorati bo'yicha
+function ratingModeOf(room) { return room.variant === 'chess960' ? 'chess960' : room.mode; }
+
 function variantInfo(room) {
-  return room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : { variant: 'standard' };
+  return room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen, ratingMode: 'chess960' } : { variant: 'standard', ratingMode: room.mode };
 }
 
 function clockPayload(room) {
@@ -267,12 +270,13 @@ async function endGame(roomId, room, winnerColor, reason) {
         const opp = players.find(o => o.color !== p.color);
         const oppUser = before[opp.color];
         const result = scoreFor(p.color, winnerColor);
-        await db.saveGame(p.userId, { result, opponent: opp.username, mode: "Online o'yin", timeControl: room.mode, moves });
-        const statsData = await db.updateUserStats(p.userId, result, opp.username, "Online o'yin", moves, room.mode,
+        const ratingMode = ratingModeOf(room);
+        await db.saveGame(p.userId, { result, opponent: opp.username, mode: "Online o'yin", timeControl: ratingMode, moves });
+        const statsData = await db.updateUserStats(p.userId, result, opp.username, "Online o'yin", moves, ratingMode,
           { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}) });
         let ratingData = null;
         if (room.rated && oppUser) {
-          ratingData = await db.updateUserRatingByResult(p.userId, result, oppUser.rating || 1500, room.mode, oppUser.ratings_by_mode[room.mode]);
+          ratingData = await db.updateUserRatingByResult(p.userId, result, oppUser.rating || 1500, ratingMode, oppUser.ratings_by_mode[ratingMode]);
         }
         updates[p.color] = {
           stats: statsData && statsData.stats,
@@ -302,7 +306,7 @@ async function endGame(roomId, room, winnerColor, reason) {
     clearTimeout(p.awayTimer);
     const payload = {
       roomId, winner: winnerColor, reason, result: scoreFor(p.color, winnerColor),
-      rated: room.rated && recorded, mode: room.mode, swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null, ...(updates[p.color] || {})
+      rated: room.rated && recorded, mode: ratingModeOf(room), swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null, ...(updates[p.color] || {})
     };
     room.endPayloads[p.color] = payload;
     // O'yin davomida qayta ulangan bo'lsa — yangi socketiga
@@ -355,7 +359,8 @@ async function sendChallenge(socket, data) {
   const mode = clockMode(clock);
   const id = uuidv4();
   const variant = data.variant === 'chess960' ? 'chess960' : 'standard';
-  const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, variant, rated: data.rated !== false && variant === 'standard' };
+  const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, variant, rated: data.rated !== false };
+  const fromMode = variant === 'chess960' ? 'chess960' : mode;
   c.timer = setTimeout(() => {
     if (!dropChallenge(id)) return;
     io.to(`user_${fromId}`).emit('challenge-expired', { id, to: target.username });
@@ -364,7 +369,7 @@ async function sendChallenge(socket, data) {
   challenges.set(id, c);
   io.to(`user_${target.id}`).emit('challenge-received', {
     id, clock, rated: c.rated, variant, mode, seconds: CHALLENGE_TTL_MS / 1000,
-    from: { username: c.fromName, rating: (me && me.ratings_by_mode && me.ratings_by_mode[mode]) || (me && me.rating) || 1500, country: me ? me.country || null : null }
+    from: { username: c.fromName, rating: (me && me.ratings_by_mode && me.ratings_by_mode[fromMode]) || (me && me.rating) || 1500, country: me ? me.country || null : null }
   });
   socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, variant, seconds: CHALLENGE_TTL_MS / 1000 });
 }
@@ -435,7 +440,7 @@ async function liveGameInfo(roomId, room) {
     const u = p && p.userId ? await db.getUserById(p.userId) : null;
     return {
       username: p ? p.username : '?',
-      rating: u ? (Number(u.ratings_by_mode && u.ratings_by_mode[room.mode]) || u.rating || 1500) : 1500,
+      rating: u ? (Number(u.ratings_by_mode && u.ratings_by_mode[ratingModeOf(room)]) || u.rating || 1500) : 1500,
       country: u ? u.country || null : null
     };
   };
@@ -940,7 +945,7 @@ async function start() {
       playerSocket.data.username = username;
       const clock = normalizeClock(req.body.initialTime, req.body.increment);
       const variant = req.body.variant === 'chess960' ? 'chess960' : 'standard';
-      const rated = req.body.rated !== false && variant === 'standard';
+      const rated = req.body.rated !== false;
       pruneMatchmakingQueue();
       if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
       const user = await db.getUserById(req.user.userId);

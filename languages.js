@@ -2178,7 +2178,7 @@ const translationsExtra = {
     srvFriendRemoved: "Do'stlik bekor qilindi",
     srvRequestCancelled: "So'rov bekor qilindi",
     srvJoinedClub: "Klubga qo'shildingiz!",
-    gpChess960Hint: "Tasodifiy boshlang'ich pozitsiya · reytingsiz",
+    gpChess960Hint: "Tasodifiy boshlang'ich pozitsiya · alohida reyting",
     anStart: "O'yinni tahlil qilish",
     anHint: "Stockfish brauzeringizda ishlaydi — taxminan 20–60 soniya",
     anRunning: "Tahlil qilinmoqda… {{done}}/{{total}}",
@@ -2198,6 +2198,9 @@ const translationsExtra = {
     lvChatPlaceholder: "Xabar yozing...",
     lvChatEmpty: "Hali xabar yo'q — birinchi bo'lib yozing!",
     lvWatchers: "{{n}} tomoshabin",
+    profChess960Rating: "CHESS960 REYTING",
+    lbModeChess960: "Chess960",
+    anBusy: "Boshqa tahlil davom etmoqda — tugashini kuting.",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -2911,7 +2914,7 @@ const translationsExtra = {
     srvFriendRemoved: "Friend removed",
     srvRequestCancelled: "Request cancelled",
     srvJoinedClub: "You joined the club!",
-    gpChess960Hint: "Random starting position · unrated",
+    gpChess960Hint: "Random starting position · separate rating",
     anStart: "Analyze the game",
     anHint: "Stockfish runs in your browser — about 20–60 seconds",
     anRunning: "Analyzing… {{done}}/{{total}}",
@@ -2931,6 +2934,9 @@ const translationsExtra = {
     lvChatPlaceholder: "Write a message...",
     lvChatEmpty: "No messages yet — be the first!",
     lvWatchers: "{{n}} watching",
+    profChess960Rating: "CHESS960 RATING",
+    lbModeChess960: "Chess960",
+    anBusy: "Another analysis is running — please wait.",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -3644,7 +3650,7 @@ const translationsExtra = {
     srvFriendRemoved: "Удалён из друзей",
     srvRequestCancelled: "Запрос отменён",
     srvJoinedClub: "Вы вступили в клуб!",
-    gpChess960Hint: "Случайная начальная позиция · без рейтинга",
+    gpChess960Hint: "Случайная начальная позиция · отдельный рейтинг",
     anStart: "Анализ партии",
     anHint: "Stockfish работает в вашем браузере — около 20–60 секунд",
     anRunning: "Анализ… {{done}}/{{total}}",
@@ -3664,6 +3670,9 @@ const translationsExtra = {
     lvChatPlaceholder: "Напишите сообщение...",
     lvChatEmpty: "Сообщений пока нет — напишите первым!",
     lvWatchers: "зрителей: {{n}}",
+    profChess960Rating: "РЕЙТИНГ CHESS960",
+    lbModeChess960: "Chess960",
+    anBusy: "Идёт другой анализ — подождите.",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -4377,7 +4386,7 @@ const translationsExtra = {
     srvFriendRemoved: "Amigo eliminado",
     srvRequestCancelled: "Solicitud cancelada",
     srvJoinedClub: "¡Te has unido al club!",
-    gpChess960Hint: "Posición inicial aleatoria · sin puntuar",
+    gpChess960Hint: "Posición inicial aleatoria · puntuación propia",
     anStart: "Analizar la partida",
     anHint: "Stockfish funciona en tu navegador — unos 20–60 segundos",
     anRunning: "Analizando… {{done}}/{{total}}",
@@ -4397,6 +4406,9 @@ const translationsExtra = {
     lvChatPlaceholder: "Escribe un mensaje...",
     lvChatEmpty: "Aún no hay mensajes — ¡sé el primero!",
     lvWatchers: "{{n}} viendo",
+    profChess960Rating: "PUNTUACIÓN CHESS960",
+    lbModeChess960: "Chess960",
+    anBusy: "Hay otro análisis en curso — espera.",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -5110,7 +5122,7 @@ const translationsExtra = {
     srvFriendRemoved: "Freund entfernt",
     srvRequestCancelled: "Anfrage zurückgezogen",
     srvJoinedClub: "Du bist dem Club beigetreten!",
-    gpChess960Hint: "Zufällige Startstellung · ungewertet",
+    gpChess960Hint: "Zufällige Startstellung · eigene Wertung",
     anStart: "Partie analysieren",
     anHint: "Stockfish läuft in deinem Browser — etwa 20–60 Sekunden",
     anRunning: "Analysiere… {{done}}/{{total}}",
@@ -5130,6 +5142,9 @@ const translationsExtra = {
     lvChatPlaceholder: "Nachricht schreiben...",
     lvChatEmpty: "Noch keine Nachrichten — schreib als Erster!",
     lvWatchers: "{{n}} schauen zu",
+    profChess960Rating: "CHESS960-WERTUNG",
+    lbModeChess960: "Chess960",
+    anBusy: "Eine andere Analyse läuft — bitte warten.",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -5843,7 +5858,7 @@ const translationsExtra = {
     srvFriendRemoved: "Ami retiré",
     srvRequestCancelled: "Demande annulée",
     srvJoinedClub: "Vous avez rejoint le club !",
-    gpChess960Hint: "Position de départ aléatoire · sans classement",
+    gpChess960Hint: "Position de départ aléatoire · classement séparé",
     anStart: "Analyser la partie",
     anHint: "Stockfish tourne dans votre navigateur — environ 20 à 60 secondes",
     anRunning: "Analyse… {{done}}/{{total}}",
@@ -5863,6 +5878,9 @@ const translationsExtra = {
     lvChatPlaceholder: "Écrire un message...",
     lvChatEmpty: "Pas encore de messages — soyez le premier !",
     lvWatchers: "{{n}} spectateurs",
+    profChess960Rating: "CLASSEMENT CHESS960",
+    lbModeChess960: "Chess960",
+    anBusy: "Une autre analyse est en cours — patientez.",
     searchNoResults: "Aucun résultat"
   }
 };

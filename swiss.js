@@ -314,6 +314,7 @@ async function tick() {
         if (reminded.has(key)) continue;
         reminded.add(key);
         deps.io.to(`user_${p.userId}`).emit('swiss-reminder', { id: t.id, name: t.name, startsAt: t.started_at });
+        if (deps.notify) deps.notify(p.userId, 'tournament_soon', { id: t.id, name: t.name, startsAt: t.started_at });
       }
     }
     for (const t of await q.all("SELECT * FROM tournaments WHERE tournament_type = 'swiss' AND status = 'registration' AND started_at <= ?", [now])) {

@@ -310,6 +310,7 @@ async function ready(socket, gameId) {
   socket.emit('league-waiting', { gameId: g.id });
   const opponentId = side === 'w' ? g.black_id : g.white_id;
   notifyUsers([opponentId], 'league-opponent-ready', { gameId: g.id, opponent: socket.data.username });
+  if (deps.notify) deps.notify(opponentId, 'league_ready', { gameId: g.id, opponent: socket.data.username }, 'lg:' + g.id);
 }
 
 function cancel(socket, gameId) {

@@ -16,23 +16,37 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
     <script>
       // Saqlangan sayt rangi va koordinatalar sozlamasi — sahifa chizilishidan oldin
       try {
-        var cdSettings = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
+        var cdSettings = JSON.parse(
+          localStorage.getItem("justChessSettings") || "{}",
+        );
         var cdTheme = cdSettings.siteTheme;
-        if (["turquoise", "ocean", "amethyst", "sunset"].indexOf(cdTheme) < 0) cdTheme = "turquoise";
+        if (["turquoise", "ocean", "amethyst", "sunset"].indexOf(cdTheme) < 0)
+          cdTheme = "turquoise";
         document.documentElement.setAttribute("data-theme", cdTheme);
-        if (cdSettings.showCoords === false) document.documentElement.classList.add("hide-coords");
-        if (localStorage.getItem("justChessSidebar") === "collapsed") document.documentElement.classList.add("sidebar-collapsed");
+        if (cdSettings.showCoords === false)
+          document.documentElement.classList.add("hide-coords");
+        if (localStorage.getItem("justChessSidebar") === "collapsed")
+          document.documentElement.classList.add("sidebar-collapsed");
       } catch (e) {}
     </script>
   </head>
   <body class="theme-green">
     <!-- CHAP SIDEBAR MENYU -->
     <sidebar>
-      <button type="button" class="sidebar-toggle" id="sidebarToggle" onclick="window.toggleSidebar()" aria-label="Menyu">
+      <button
+        type="button"
+        class="sidebar-toggle"
+        id="sidebarToggle"
+        onclick="window.toggleSidebar()"
+        aria-label="Menyu"
+      >
         <span></span><span></span><span></span>
       </button>
       <div class="sidebar-top">
@@ -308,10 +322,16 @@
           </div>
         </div>
         <div class="menu-list">
-          <a class="menu-item mobile-main active" id="navHome" onclick="switchView('home')"
+          <a
+            class="menu-item mobile-main active"
+            id="navHome"
+            onclick="switchView('home')"
             ><span class="icon">🏡</span> <span id="mHome">Bosh sahifa</span></a
           >
-          <a class="menu-item mobile-main" id="navPlay" onclick="switchView('game')"
+          <a
+            class="menu-item mobile-main"
+            id="navPlay"
+            onclick="switchView('game')"
             ><span class="icon">🎮</span> <span id="mPlay">O'yin</span></a
           >
           <a
@@ -322,7 +342,11 @@
             <span class="icon">🥇</span>
             <span id="mLeaderboard">Reyting</span>
           </a>
-          <a class="menu-item mobile-main" id="navTournaments" onclick="switchView('tournaments')">
+          <a
+            class="menu-item mobile-main"
+            id="navTournaments"
+            onclick="switchView('tournaments')"
+          >
             <span class="icon">🏁</span>
             <span id="mTournaments">Turnirlar</span>
           </a>
@@ -330,7 +354,11 @@
             <span class="icon">📺</span>
             <span data-i18n="mLive">Jonli o'yinlar</span>
           </a>
-          <a class="menu-item mobile-main" id="navMessages" onclick="switchView('messages')">
+          <a
+            class="menu-item mobile-main"
+            id="navMessages"
+            onclick="switchView('messages')"
+          >
             <span class="icon">💬</span>
             <span data-i18n="mMessages">Xabarlar</span>
           </a>
@@ -358,11 +386,20 @@
             <span class="icon">⚙️</span>
             <span id="mSettings">Sozlamalar</span>
           </a>
-          <a class="menu-item" id="navAdmin" style="display: none" onclick="switchView('admin')">
+          <a
+            class="menu-item"
+            id="navAdmin"
+            style="display: none"
+            onclick="switchView('admin')"
+          >
             <span class="icon">🛡️</span>
             <span data-i18n="mAdmin">Admin</span>
           </a>
-          <a class="menu-item mobile-main mobile-only" id="navMore" onclick="window.toggleMobileMenu()">
+          <a
+            class="menu-item mobile-main mobile-only"
+            id="navMore"
+            onclick="window.toggleMobileMenu()"
+          >
             <span class="icon">☰</span>
             <span data-i18n="mMore">Ko'proq</span>
           </a>
@@ -378,7 +415,10 @@
         </div>
       </div>
     </sidebar>
-    <div class="mobile-menu-backdrop" onclick="window.toggleMobileMenu(false)"></div>
+    <div
+      class="mobile-menu-backdrop"
+      onclick="window.toggleMobileMenu(false)"
+    ></div>
 
     <!-- ASOSIY QISM -->
     <div class="main-wrapper">
@@ -388,6 +428,18 @@
           style="font-size: 12px; color: #f39c12; display: none"
           >🔍 Qidirilmoqda...</span
         >
+        <!-- 🔔 Bildirishnomalar markazi (notifications.js) -->
+        <div class="nf-wrap">
+          <button
+            type="button"
+            class="nf-bell"
+            id="notifBell"
+            aria-label="Bildirishnomalar"
+          >
+            🔔<span class="nf-count" id="notifCount" hidden>0</span>
+          </button>
+          <div class="nf-panel" id="notifPanel" hidden></div>
+        </div>
       </div>
 
       <!-- 1. BOSH SAHIFA (DASHBOARD) -->
@@ -414,21 +466,44 @@
             <div class="home-widgets" id="homeWidgets"></div>
           </div>
           <!-- O'rtada: sayt bilan tanishtiruv ("ChessDom haqida" sahifasini ochadi) -->
-          <div class="dash-card home-about" id="dashAboutPageBtn" role="button" tabindex="0"
-            onclick="window.openAboutPage()" onkeydown="if (event.key === 'Enter') window.openAboutPage()">
+          <div
+            class="dash-card home-about"
+            id="dashAboutPageBtn"
+            role="button"
+            tabindex="0"
+            onclick="window.openAboutPage()"
+            onkeydown="if (event.key === 'Enter') window.openAboutPage();"
+          >
             <div class="home-about-art" aria-hidden="true">
               <span class="home-about-glow"></span>
               <span class="home-about-piece">♞</span>
             </div>
-            <span class="home-about-tag" data-i18n="homeAboutTag">Sayt bilan tanishing</span>
-            <h2 class="home-about-title" data-i18n="aboutOpenBtn">ChessDom haqida</h2>
-            <p class="home-about-text" data-i18n="homeAboutText">Onlayn shaxmat, davlat klublari, jamoaviy ligalar va Swiss turnirlari — barchasi bitta saytda.</p>
+            <span class="home-about-tag" data-i18n="homeAboutTag"
+              >Sayt bilan tanishing</span
+            >
+            <h2 class="home-about-title" data-i18n="aboutOpenBtn">
+              ChessDom haqida
+            </h2>
+            <p class="home-about-text" data-i18n="homeAboutText">
+              Onlayn shaxmat, davlat klublari, jamoaviy ligalar va Swiss
+              turnirlari — barchasi bitta saytda.
+            </p>
             <ul class="home-about-points">
-              <li><span>🎯</span><b data-i18n="homeAboutGoal">Maqsadimiz</b></li>
-              <li><span>🗺️</span><b data-i18n="homeAboutPlans">Kelajak rejalari</b></li>
-              <li><span>🧩</span><b data-i18n="homeAboutStructure">Sayt tuzilishi</b></li>
+              <li>
+                <span>🎯</span><b data-i18n="homeAboutGoal">Maqsadimiz</b>
+              </li>
+              <li>
+                <span>🗺️</span
+                ><b data-i18n="homeAboutPlans">Kelajak rejalari</b>
+              </li>
+              <li>
+                <span>🧩</span
+                ><b data-i18n="homeAboutStructure">Sayt tuzilishi</b>
+              </li>
             </ul>
-            <span class="home-about-cta"><span data-i18n="homeAboutCta">Batafsil o'qish</span> →</span>
+            <span class="home-about-cta"
+              ><span data-i18n="homeAboutCta">Batafsil o'qish</span> →</span
+            >
           </div>
           <!-- O'ng qo'shimcha blok: Top 5 G'oliblar -->
           <div class="dash-card">
@@ -440,7 +515,10 @@
                 margin-bottom: 8px;
               "
             >
-              <h4 style="margin: 0; color: var(--accent-light)" id="dashPlayerTitle">
+              <h4
+                style="margin: 0; color: var(--accent-light)"
+                id="dashPlayerTitle"
+              >
                 Top 5 G'oliblar
               </h4>
               <span style="font-size: 20px">👑</span>
@@ -482,6 +560,7 @@
                     onerror="this.style.display = 'none'"
                   />
                   <span class="player-rating" id="blackPlayerRating">1500</span>
+                  <span class="pg-rank" id="blackPlayerRank"></span>
                 </div>
                 <div class="pg-captured" id="blackCaptured"></div>
                 <span class="player-status" id="gameStatusText"></span>
@@ -491,15 +570,27 @@
             <div class="board-wrapper">
               <div class="board theme-green" id="chessBoard"></div>
               <!-- Tahlildan keyin: baho chizig'i (analysis.js) -->
-              <div class="pg-evalbar" id="pgEvalBar"><div class="an-fill"></div><span class="an-label"></span></div>
+              <div class="pg-evalbar" id="pgEvalBar">
+                <div class="an-fill"></div>
+                <span class="an-label"></span>
+              </div>
               <!-- Raqib qidirilayotganda taxta ustida (board.js refreshSearchOverlay) -->
               <div class="pg-search" id="pgSearchOverlay" hidden>
                 <div class="pg-search-card">
                   <div class="pg-spinner"></div>
-                  <div class="pg-search-title" data-i18n="gpSearching">Raqib qidirilmoqda…</div>
+                  <div class="pg-search-title" data-i18n="gpSearching">
+                    Raqib qidirilmoqda…
+                  </div>
                   <div class="pg-search-meta" id="pgSearchMeta"></div>
                   <div class="pg-search-time" id="pgSearchTime">0:00</div>
-                  <button type="button" class="control-btn pg-search-cancel" onclick="window.cancelSearch()" data-i18n="gpCancel">Bekor qilish</button>
+                  <button
+                    type="button"
+                    class="control-btn pg-search-cancel"
+                    onclick="window.cancelSearch()"
+                    data-i18n="gpCancel"
+                  >
+                    Bekor qilish
+                  </button>
                 </div>
               </div>
             </div>
@@ -517,6 +608,7 @@
                     onerror="this.style.display = 'none'"
                   />
                   <span class="player-rating" id="whitePlayerRating">1500</span>
+                  <span class="pg-rank" id="whitePlayerRank"></span>
                 </div>
                 <div class="pg-captured" id="whiteCaptured"></div>
               </div>
@@ -527,158 +619,300 @@
           <div class="control-panel">
             <div class="pg-panel-head">
               <div class="pg-panel-title">
-                <span id="pgPlayTitle">♟ <span data-i18n="gpPlayTitle">O'ynash</span></span>
+                <span id="pgPlayTitle"
+                  >♟ <span data-i18n="gpPlayTitle">O'ynash</span></span
+                >
                 <span id="historyPanelHeader">Yurishlar tarixi</span>
               </div>
               <div class="pg-tools">
                 <span class="pg-ping" id="pgPing" hidden></span>
-                <button type="button" class="pg-tool" id="pgFlipBtn" onclick="window.flipBoard()" title="Taxtani aylantirish">⇅</button>
-                <button type="button" class="pg-tool" id="pgSoundBtn" onclick="window.toggleGameSound()" title="Ovoz">🔊</button>
+                <button
+                  type="button"
+                  class="pg-tool"
+                  id="pgFlipBtn"
+                  onclick="window.flipBoard()"
+                  title="Taxtani aylantirish"
+                >
+                  ⇅
+                </button>
+                <button
+                  type="button"
+                  class="pg-tool"
+                  id="pgSoundBtn"
+                  onclick="window.toggleGameSound()"
+                  title="Ovoz"
+                >
+                  🔊
+                </button>
               </div>
             </div>
 
             <!-- O'yin boshlanguncha: vaqt tanlash va boshlash tugmasi -->
             <div class="game-panel-section" id="preGameControls">
-            <div class="time-controls">
-              <div class="time-group" data-mode="bullet">
-                <div class="time-label"><span class="tl-ico">🔥</span><span id="timerLabelJudaTez">Juda tez</span></div>
-                <div class="time-grid">
-                  <button class="time-btn" onclick="setGameTime(60, this)"><span class="tb-main">1</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
-                  <button class="time-btn" onclick="setGameTime(60, this, 1)"><span class="tb-main">1<i class="tb-sep">|</i>1</span><span class="tb-sub">+1 s</span></button>
-                  <button class="time-btn" onclick="setGameTime(120, this, 1)"><span class="tb-main">2<i class="tb-sep">|</i>1</span><span class="tb-sub">+1 s</span></button>
+              <div class="time-controls">
+                <div class="time-group" data-mode="bullet">
+                  <div class="time-label">
+                    <span class="tl-ico">🔥</span
+                    ><span id="timerLabelJudaTez">Juda tez</span>
+                  </div>
+                  <div class="time-grid">
+                    <button class="time-btn" onclick="setGameTime(60, this)">
+                      <span class="tb-main">1</span
+                      ><span class="tb-sub" data-i18n="timeMin">Min</span>
+                    </button>
+                    <button class="time-btn" onclick="setGameTime(60, this, 1)">
+                      <span class="tb-main">1<i class="tb-sep">|</i>1</span
+                      ><span class="tb-sub">+1 s</span>
+                    </button>
+                    <button
+                      class="time-btn"
+                      onclick="setGameTime(120, this, 1)"
+                    >
+                      <span class="tb-main">2<i class="tb-sep">|</i>1</span
+                      ><span class="tb-sub">+1 s</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="time-group" data-mode="blitz">
+                  <div class="time-label">
+                    <span class="tl-ico">⚡</span
+                    ><span id="timerLabelBlits">Blits</span>
+                  </div>
+                  <div class="time-grid">
+                    <button class="time-btn" onclick="setGameTime(180, this)">
+                      <span class="tb-main">3</span
+                      ><span class="tb-sub" data-i18n="timeMin">Min</span>
+                    </button>
+                    <button
+                      class="time-btn"
+                      onclick="setGameTime(180, this, 2)"
+                    >
+                      <span class="tb-main">3<i class="tb-sep">|</i>2</span
+                      ><span class="tb-sub">+2 s</span>
+                    </button>
+                    <button class="time-btn" onclick="setGameTime(300, this)">
+                      <span class="tb-main">5</span
+                      ><span class="tb-sub" data-i18n="timeMin">Min</span>
+                    </button>
+                  </div>
+                </div>
+                <div class="time-group" data-mode="rapid">
+                  <div class="time-label">
+                    <span class="tl-ico">⏱️</span
+                    ><span id="timerLabelTezkor">Tezkor</span>
+                  </div>
+                  <div class="time-grid">
+                    <button class="time-btn" onclick="setGameTime(600, this)">
+                      <span class="tb-main">10</span
+                      ><span class="tb-sub" data-i18n="timeMin">Min</span>
+                    </button>
+                    <button
+                      class="time-btn"
+                      onclick="setGameTime(900, this, 10)"
+                    >
+                      <span class="tb-main">15<i class="tb-sep">|</i>10</span
+                      ><span class="tb-sub">+10 s</span>
+                    </button>
+                    <button class="time-btn" onclick="setGameTime(1800, this)">
+                      <span class="tb-main">30</span
+                      ><span class="tb-sub" data-i18n="timeMin">Min</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div class="time-group" data-mode="blitz">
-                <div class="time-label"><span class="tl-ico">⚡</span><span id="timerLabelBlits">Blits</span></div>
-                <div class="time-grid">
-                  <button class="time-btn" onclick="setGameTime(180, this)"><span class="tb-main">3</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
-                  <button class="time-btn" onclick="setGameTime(180, this, 2)"><span class="tb-main">3<i class="tb-sep">|</i>2</span><span class="tb-sub">+2 s</span></button>
-                  <button class="time-btn" onclick="setGameTime(300, this)"><span class="tb-main">5</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
+
+              <div class="rated-toggle">
+                <div>
+                  <div class="rated-label" id="ratedLabel">Reytingli</div>
+                  <div class="rated-sublabel" id="ratedSublabel">
+                    O'yin rejimi
+                  </div>
                 </div>
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    id="ratedToggle"
+                    checked
+                    onchange="toggleRated()"
+                  />
+                  <span class="toggle-slider"></span>
+                </label>
               </div>
-              <div class="time-group" data-mode="rapid">
-                <div class="time-label"><span class="tl-ico">⏱️</span><span id="timerLabelTezkor">Tezkor</span></div>
-                <div class="time-grid">
-                  <button class="time-btn" onclick="setGameTime(600, this)"><span class="tb-main">10</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
-                  <button class="time-btn" onclick="setGameTime(900, this, 10)"><span class="tb-main">15<i class="tb-sep">|</i>10</span><span class="tb-sub">+10 s</span></button>
-                  <button class="time-btn" onclick="setGameTime(1800, this)"><span class="tb-main">30</span><span class="tb-sub" data-i18n="timeMin">Min</span></button>
+
+              <div class="rated-toggle pg-variant">
+                <div>
+                  <div class="rated-label">🎲 Chess960</div>
+                  <div class="rated-sublabel" data-i18n="gpChess960Hint">
+                    Tasodifiy boshlang'ich pozitsiya · alohida reyting
+                  </div>
                 </div>
+                <label class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    id="variantToggle"
+                    onchange="window.toggleVariant()"
+                  />
+                  <span class="toggle-slider"></span>
+                </label>
               </div>
-            </div>
 
-            <div class="rated-toggle">
-              <div>
-                <div class="rated-label" id="ratedLabel">Reytingli</div>
-                <div class="rated-sublabel" id="ratedSublabel">
-                  O'yin rejimi
-                </div>
+              <button
+                class="start-game-btn"
+                onclick="handleStartGame()"
+                id="btnStartGame"
+              >
+                <span id="btnStartGameText">O'yinni boshlash</span>
+              </button>
+
+              <div class="pg-quick">
+                <button
+                  type="button"
+                  class="control-btn"
+                  onclick="window.toggleFriendChallenge()"
+                >
+                  ⚔️
+                  <span data-i18n="gpChallengeFriend">Do'stni chaqirish</span>
+                </button>
+                <button
+                  type="button"
+                  class="control-btn"
+                  onclick="switchView('tournaments')"
+                >
+                  🏁 <span data-i18n="gpTournaments">Turnirlar</span>
+                </button>
               </div>
-              <label class="toggle-switch">
-                <input
-                  type="checkbox"
-                  id="ratedToggle"
-                  checked
-                  onchange="toggleRated()"
-                />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-
-            <div class="rated-toggle pg-variant">
-              <div>
-                <div class="rated-label">🎲 Chess960</div>
-                <div class="rated-sublabel" data-i18n="gpChess960Hint">Tasodifiy boshlang'ich pozitsiya · alohida reyting</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="variantToggle" onchange="window.toggleVariant()" />
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-
-            <button
-              class="start-game-btn"
-              onclick="handleStartGame()"
-              id="btnStartGame"
-            >
-              <span id="btnStartGameText">O'yinni boshlash</span>
-            </button>
-
-            <div class="pg-quick">
-              <button type="button" class="control-btn" onclick="window.toggleFriendChallenge()">⚔️ <span data-i18n="gpChallengeFriend">Do'stni chaqirish</span></button>
-              <button type="button" class="control-btn" onclick="switchView('tournaments')">🏁 <span data-i18n="gpTournaments">Turnirlar</span></button>
-            </div>
-            <div class="pg-friends" id="pgFriends" hidden></div>
+              <div class="pg-friends" id="pgFriends" hidden></div>
             </div>
 
             <!-- O'yin boshlangach: yurishlar jadvali (◀ ▶ ko'rib chiqish) va o'yin tugmalari -->
             <div class="game-panel-section" id="inGameControls" hidden>
-            <div class="pg-opening" id="pgOpening" hidden></div>
-            <div class="pg-moves-box">
-              <div class="pg-moves" id="historyList"></div>
-              <!-- Oldingi yurishlarni ko'rib chiqayotganda: joriy pozitsiyaga qaytish -->
-              <button type="button" class="pg-live-btn" id="pgLiveBtn" onclick="window.reviewMove('end')" hidden>⏭ <span data-i18n="gpBackToLive">Joriy pozitsiya</span></button>
-              <div class="pg-nav">
-                <button type="button" onclick="window.reviewMove('start')">⏮</button>
-                <button type="button" onclick="window.reviewMove('prev')">◀</button>
-                <button type="button" onclick="window.reviewMove('next')">▶</button>
-                <button type="button" onclick="window.reviewMove('end')">⏭</button>
+              <div class="pg-opening" id="pgOpening" hidden></div>
+              <div class="pg-moves-box">
+                <div class="pg-moves" id="historyList"></div>
+                <!-- Oldingi yurishlarni ko'rib chiqayotganda: joriy pozitsiyaga qaytish -->
+                <button
+                  type="button"
+                  class="pg-live-btn"
+                  id="pgLiveBtn"
+                  onclick="window.reviewMove('end')"
+                  hidden
+                >
+                  ⏭ <span data-i18n="gpBackToLive">Joriy pozitsiya</span>
+                </button>
+                <div class="pg-nav">
+                  <button type="button" onclick="window.reviewMove('start')">
+                    ⏮
+                  </button>
+                  <button type="button" onclick="window.reviewMove('prev')">
+                    ◀
+                  </button>
+                  <button type="button" onclick="window.reviewMove('next')">
+                    ▶
+                  </button>
+                  <button type="button" onclick="window.reviewMove('end')">
+                    ⏭
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <!-- O'yindan keyingi tahlil (analysis.js) -->
-            <div class="pg-analysis" id="pgAnalysisBox" hidden></div>
+              <!-- O'yindan keyingi tahlil (analysis.js) -->
+              <div class="pg-analysis" id="pgAnalysisBox" hidden></div>
 
-            <div class="pg-actions" id="inGameButtons">
-              <button class="control-btn" onclick="offerDraw()" id="btnDraw">
-                🤝 <span id="btnDrawText">Durrang</span>
-              </button>
-              <button class="control-btn pg-resign" onclick="resignGame()" id="btnResign">
-                🏳️ <span id="btnResignText">Taslim</span>
-              </button>
-              <button class="control-btn" onclick="exportPGN()" id="btnPgn">
-                📄 <span id="btnPgnText">PGN</span>
-              </button>
-            </div>
-
-            <!-- Revansh (gameextras.js): tugagan oddiy onlayn o'yindan keyin -->
-            <div class="rematch-box" id="rematchBox" hidden>
-              <p class="rm-msg" hidden></p>
-              <button class="start-game-btn rm-btn" id="btnRematch" type="button" onclick="window.offerRematch()">🔁 Revansh</button>
-              <div class="rm-actions" hidden>
-                <button type="button" class="control-btn" onclick="window.declineRematch()">✕ <span data-i18n="chDecline">Rad etish</span></button>
-                <button type="button" class="start-game-btn" onclick="window.acceptRematch()">✓ <span data-i18n="chAccept">Qabul qilish</span></button>
+              <div class="pg-actions" id="inGameButtons">
+                <button class="control-btn" onclick="offerDraw()" id="btnDraw">
+                  🤝 <span id="btnDrawText">Durrang</span>
+                </button>
+                <button
+                  class="control-btn pg-resign"
+                  onclick="resignGame()"
+                  id="btnResign"
+                >
+                  🏳️ <span id="btnResignText">Taslim</span>
+                </button>
+                <button class="control-btn" onclick="exportPGN()" id="btnPgn">
+                  📄 <span id="btnPgnText">PGN</span>
+                </button>
               </div>
-            </div>
 
-            <!-- O'yin ichidagi chat (gameextras.js) -->
-            <div class="gc-box" id="gameChatBox" hidden>
-              <div class="gc-head"><span>💬 <span data-i18n="gcTitle">O'yin chati</span></span><button type="button" id="gameChatMute" class="gc-mute">🔔</button></div>
-              <div class="gc-list" id="gameChatList"></div>
-              <form class="gc-composer" id="gameChatComposer" autocomplete="off">
-                <button type="button" class="msg-emoji-btn" id="gameChatEmoji">😊</button>
-                <input id="gameChatInput" class="form-input" maxlength="200" placeholder="Xabar..." data-i18n-placeholder="gcPlaceholder" />
-                <button type="submit" class="gc-send">➤</button>
-              </form>
-            </div>
+              <!-- Revansh (gameextras.js): tugagan oddiy onlayn o'yindan keyin -->
+              <div class="rematch-box" id="rematchBox" hidden>
+                <p class="rm-msg" hidden></p>
+                <button
+                  class="start-game-btn rm-btn"
+                  id="btnRematch"
+                  type="button"
+                  onclick="window.offerRematch()"
+                >
+                  🔁 Revansh
+                </button>
+                <div class="rm-actions" hidden>
+                  <button
+                    type="button"
+                    class="control-btn"
+                    onclick="window.declineRematch()"
+                  >
+                    ✕ <span data-i18n="chDecline">Rad etish</span>
+                  </button>
+                  <button
+                    type="button"
+                    class="start-game-btn"
+                    onclick="window.acceptRematch()"
+                  >
+                    ✓ <span data-i18n="chAccept">Qabul qilish</span>
+                  </button>
+                </div>
+              </div>
 
-            <button
-              class="start-game-btn arena-next-btn"
-              onclick="window.backToTournament()"
-              id="btnTournamentBack"
-              hidden
-            >
-              🏁 <span data-i18n="swBackToTable">Turnir jadvaliga qaytish</span>
-            </button>
-            <button
-              class="start-game-btn"
-              onclick="resetToPreGame()"
-              id="btnPlayAgain"
-              hidden
-            >
-              <span id="btnNewGameText">Yangi o'yin</span>
-            </button>
-            </div>
+              <!-- O'yin ichidagi chat (gameextras.js) -->
+              <div class="gc-box" id="gameChatBox" hidden>
+                <div class="gc-head">
+                  <span>💬 <span data-i18n="gcTitle">O'yin chati</span></span
+                  ><button type="button" id="gameChatMute" class="gc-mute">
+                    🔔
+                  </button>
+                </div>
+                <div class="gc-list" id="gameChatList"></div>
+                <form
+                  class="gc-composer"
+                  id="gameChatComposer"
+                  autocomplete="off"
+                >
+                  <button
+                    type="button"
+                    class="msg-emoji-btn"
+                    id="gameChatEmoji"
+                  >
+                    😊
+                  </button>
+                  <input
+                    id="gameChatInput"
+                    class="form-input"
+                    maxlength="200"
+                    placeholder="Xabar..."
+                    data-i18n-placeholder="gcPlaceholder"
+                  />
+                  <button type="submit" class="gc-send">➤</button>
+                </form>
+              </div>
 
+              <button
+                class="start-game-btn arena-next-btn"
+                onclick="window.backToTournament()"
+                id="btnTournamentBack"
+                hidden
+              >
+                🏁
+                <span data-i18n="swBackToTable">Turnir jadvaliga qaytish</span>
+              </button>
+              <button
+                class="start-game-btn"
+                onclick="resetToPreGame()"
+                id="btnPlayAgain"
+                hidden
+              >
+                <span id="btnNewGameText">Yangi o'yin</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -899,552 +1133,588 @@
           </button>
         </div>
       </div>
-    <!-- 6. REYTING JADVALI SAHifASI -->
-    <!-- REYTING: o'yinchilar va klublar (leaderboard.js) -->
-    <div id="leaderboardView" class="view-section lb-view">
-      <div class="lb-page" id="leaderboardRoot"></div>
-    </div>
+      <!-- 6. REYTING JADVALI SAHifASI -->
+      <!-- REYTING: o'yinchilar va klublar (leaderboard.js) -->
+      <div id="leaderboardView" class="view-section lb-view">
+        <div class="lb-page" id="leaderboardRoot"></div>
+      </div>
 
-    <!-- 7. O'YINLAR TARIXI SAHIFASI -->
-    <div
-      id="historyView"
-      class="view-section"
-      style="justify-content: center; align-items: center"
-    >
+      <!-- 7. O'YINLAR TARIXI SAHIFASI -->
       <div
-        class="card-box"
-        style="width: 800px; max-height: 85vh; overflow-y: auto"
+        id="historyView"
+        class="view-section"
+        style="justify-content: center; align-items: center"
       >
         <div
-          style="
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-          "
+          class="card-box"
+          style="width: 800px; max-height: 85vh; overflow-y: auto"
+        >
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              margin-bottom: 20px;
+            "
+          >
+            <div
+              class="card-title"
+              id="historyCardTitle"
+              style="margin-bottom: 0"
+            >
+              O'yinlar tarixi
+            </div>
+            <div class="leaderboard-mode-tabs">
+              <button
+                class="mode-tab active"
+                id="allHistoryTab"
+                data-filter="all"
+              >
+                <span id="historyAllText">Barchasi</span>
+              </button>
+              <button class="mode-tab" id="winsHistoryTab" data-filter="win">
+                <span id="historyWinsText">G'alabalar</span>
+              </button>
+              <button class="mode-tab" id="lossesHistoryTab" data-filter="loss">
+                <span id="historyLossesText">Mag'lubiyatlar</span>
+              </button>
+              <button class="mode-tab" id="drawsHistoryTab" data-filter="draw">
+                <span id="historyDrawsText">Duranglar</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="leaderboard-table-wrapper">
+            <table class="leaderboard-table" id="historyTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th id="colDate">Sana</th>
+                  <th id="colOpponent">Raqib</th>
+                  <th id="colMode">Rejim</th>
+                  <th id="colTime">Vaqt</th>
+                  <th id="colResult">Natija</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <!-- JavaScript orqali yuklanadi -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. TURNIRLAR -->
+      <!-- 8. TURNIRLAR: Swiss turnirlari (tournaments.js) -->
+      <div id="tournamentsView" class="view-section ar-view">
+        <div class="ar-page" id="arenaRoot"></div>
+      </div>
+
+      <!-- 8b. TURNIR TAFSILOTI -->
+      <div id="tournamentDetailView" class="view-section">
+        <div class="tournament-detail-card">
+          <div id="tournamentDetailContainer"></div>
+        </div>
+      </div>
+
+      <!-- 9. DO'STLAR -->
+      <div
+        id="friendsView"
+        class="view-section"
+        style="justify-content: center; align-items: center"
+      >
+        <div
+          class="card-box"
+          style="width: 600px; max-height: 80vh; overflow-y: auto"
         >
           <div
             class="card-title"
-            id="historyCardTitle"
-            style="margin-bottom: 0"
+            id="friendsCardTitle"
+            data-i18n="friendsCardTitle"
           >
-            O'yinlar tarixi
+            Do'stlar
           </div>
-          <div class="leaderboard-mode-tabs">
+          <div
+            style="font-size: 13px; color: #88a; margin-bottom: 15px"
+            id="friendsDesc"
+            data-i18n="friendsDesc"
+          >
+            Do'stlar ro'yxati va so'rovlar
+          </div>
+          <div style="margin-bottom: 15px; display: flex; gap: 10px">
+            <input
+              type="text"
+              id="friendUsernameInput"
+              class="form-input"
+              placeholder="Do'stingiz nomini kiriting"
+              data-i18n-placeholder="friendUsernamePlaceholder"
+              style="flex: 1"
+            />
             <button
-              class="mode-tab active"
-              id="allHistoryTab"
-              data-filter="all"
+              class="form-submit"
+              onclick="sendFriendRequest()"
+              id="btnSendFriendRequest"
+              data-i18n="btnSendFriendRequest"
             >
-              <span id="historyAllText">Barchasi</span>
-            </button>
-            <button class="mode-tab" id="winsHistoryTab" data-filter="win">
-              <span id="historyWinsText">G'alabalar</span>
-            </button>
-            <button class="mode-tab" id="lossesHistoryTab" data-filter="loss">
-              <span id="historyLossesText">Mag'lubiyatlar</span>
-            </button>
-            <button class="mode-tab" id="drawsHistoryTab" data-filter="draw">
-              <span id="historyDrawsText">Duranglar</span>
+              Do'stlik so'rash
             </button>
           </div>
-        </div>
-
-        <div class="leaderboard-table-wrapper">
-          <table class="leaderboard-table" id="historyTable">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th id="colDate">Sana</th>
-                <th id="colOpponent">Raqib</th>
-                <th id="colMode">Rejim</th>
-                <th id="colTime">Vaqt</th>
-                <th id="colResult">Natija</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody">
-              <!-- JavaScript orqali yuklanadi -->
-            </tbody>
-          </table>
+          <div style="margin-bottom: 15px">
+            <button
+              class="action-btn"
+              onclick="loadFriendRequests()"
+              id="btnViewRequests"
+              data-i18n="btnViewRequests"
+            >
+              So'rovlar
+            </button>
+          </div>
+          <div
+            id="friendsListContainer"
+            style="display: flex; flex-direction: column; gap: 8px"
+          >
+            <!-- JavaScript orqali do'stlar ro'yxati shu yerga tushadi -->
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 8. TURNIRLAR -->
-    <!-- 8. TURNIRLAR: Swiss turnirlari (tournaments.js) -->
-    <div id="tournamentsView" class="view-section ar-view">
-      <div class="ar-page" id="arenaRoot"></div>
-    </div>
-
-    <!-- 8b. TURNIR TAFSILOTI -->
-    <div id="tournamentDetailView" class="view-section">
-      <div class="tournament-detail-card">
-        <div id="tournamentDetailContainer"></div>
-      </div>
-    </div>
-
-    <!-- 9. DO'STLAR -->
-    <div
-      id="friendsView"
-      class="view-section"
-      style="justify-content: center; align-items: center"
-    >
+      <!-- 10. KLUBLAR (Davlat klublari) -->
       <div
-        class="card-box"
-        style="width: 600px; max-height: 80vh; overflow-y: auto"
+        id="clubsView"
+        class="view-section"
+        style="justify-content: center; align-items: center; padding-top: 20px"
       >
-        <div class="card-title" id="friendsCardTitle" data-i18n="friendsCardTitle">Do'stlar</div>
-        <div
-          style="font-size: 13px; color: #88a; margin-bottom: 15px"
-          id="friendsDesc"
-          data-i18n="friendsDesc"
-        >
-          Do'stlar ro'yxati va so'rovlar
-        </div>
-        <div style="margin-bottom: 15px; display: flex; gap: 10px">
-          <input
-            type="text"
-            id="friendUsernameInput"
-            class="form-input"
-            placeholder="Do'stingiz nomini kiriting"
-            data-i18n-placeholder="friendUsernamePlaceholder"
-            style="flex: 1"
-          />
-          <button
-            class="form-submit"
-            onclick="sendFriendRequest()"
-            id="btnSendFriendRequest"
-            data-i18n="btnSendFriendRequest"
+        <div style="width: 900px; max-width: 95%">
+          <div
+            class="card-title"
+            id="clubsCardTitle"
+            style="margin-bottom: 5px"
           >
-            Do'stlik so'rash
-          </button>
-        </div>
-        <div style="margin-bottom: 15px">
-          <button
-            class="action-btn"
-            onclick="loadFriendRequests()"
-            id="btnViewRequests"
-            data-i18n="btnViewRequests"
+            National Chess Clubs
+          </div>
+          <div
+            style="
+              font-size: 13px;
+              color: #88a;
+              margin-bottom: 20px;
+              text-align: center;
+            "
+            id="clubsDesc"
           >
-            So'rovlar
-          </button>
-        </div>
-        <div
-          id="friendsListContainer"
-          style="display: flex; flex-direction: column; gap: 8px"
-        >
-          <!-- JavaScript orqali do'stlar ro'yxati shu yerga tushadi -->
+            Official chess clubs from European and Asian countries
+          </div>
+
+          <!-- Qidiruv -->
+          <div
+            style="margin-bottom: 25px; display: flex; justify-content: center"
+          >
+            <input
+              type="text"
+              id="clubSearchInput"
+              class="form-input"
+              placeholder="Search for a country..."
+              style="max-width: 90%"
+              oninput="filterCountries()"
+            />
+          </div>
+
+          <!-- Kontinentlar bosqichuvi -->
+          <div
+            id="continentTabs"
+            style="
+              display: flex;
+              justify-content: center;
+              gap: 8px;
+              margin-bottom: 20px;
+              flex-wrap: wrap;
+            "
+          >
+            <button
+              class="continent-tab active"
+              data-continent="All"
+              id="continentTabAll"
+              onclick="setActiveContinent('All')"
+            >
+              Barchasi
+            </button>
+            <button
+              class="continent-tab"
+              data-continent="Asia"
+              id="continentTabAsia"
+              onclick="setActiveContinent('Asia')"
+            >
+              Osiyo
+            </button>
+            <button
+              class="continent-tab"
+              data-continent="Europe"
+              id="continentTabEurope"
+              onclick="setActiveContinent('Europe')"
+            >
+              Yevropa
+            </button>
+            <button
+              class="continent-tab"
+              data-continent="Africa"
+              id="continentTabAfrica"
+              onclick="setActiveContinent('Africa')"
+            >
+              Afrika
+            </button>
+            <button
+              class="continent-tab"
+              data-continent="South America"
+              id="continentTabSouthAmerica"
+              onclick="setActiveContinent('South America')"
+            >
+              Janubiy Amerika
+            </button>
+            <button
+              class="continent-tab"
+              data-continent="North America"
+              id="continentTabNorthAmerica"
+              onclick="setActiveContinent('North America')"
+            >
+              Shimoliy Amerika
+            </button>
+            <button
+              class="continent-tab"
+              data-continent="Oceania"
+              id="continentTabOceania"
+              onclick="setActiveContinent('Oceania')"
+            >
+              Okeaniya
+            </button>
+          </div>
+
+          <!-- Davlatlar grid -->
+          <div
+            id="clubsListContainer"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+              gap: 15px;
+              padding: 10px;
+              max-height: 65vh;
+              overflow-y: auto;
+            "
+          ></div>
         </div>
       </div>
-    </div>
 
-    <!-- 10. KLUBLAR (Davlat klublari) -->
-    <div
-      id="clubsView"
-      class="view-section"
-      style="
-        justify-content: center;
-        align-items: center;
-        padding-top: 20px;
-      "
-    >
-      <div style="width: 900px; max-width: 95%">
-        <div class="card-title" id="clubsCardTitle" style="margin-bottom: 5px">
-          National Chess Clubs
-        </div>
+      <!-- Jonli o'yinlar: tomosha qilish (live.js) -->
+      <div id="liveView" class="view-section lv-view">
+        <div id="liveRoot" class="lv-page"></div>
+      </div>
+
+      <!-- Xabarlar: shaxsiy suhbatlar, do'stlar va so'rovlar (messages.js) -->
+      <div id="messagesView" class="view-section msg-view">
+        <div id="messagesRoot"></div>
+      </div>
+
+      <!-- "ChessDom haqida" — to'liq ekranli sahifa (about.js) -->
+      <div id="aboutPage" style="display: none">
+        <div id="aboutPageContent"></div>
+      </div>
+
+      <!-- 11. LIGALAR (leagues.js) -->
+      <div id="leaguesView" class="view-section lg-view">
+        <div class="lg-page" id="leaguesRoot"></div>
+      </div>
+
+      <!-- 12. CHEMPIONLAR LIGASI (leagues.js) -->
+      <div id="championsView" class="view-section lg-view">
+        <div class="lg-page" id="championsRoot"></div>
+      </div>
+
+      <!-- 11a. LIGA TAFSILOTLARI (jadval va bahslar) -->
+      <div
+        id="leagueDetailModal"
+        class="lg-modal-overlay"
+        style="display: none"
+        onclick="if (event.target === this) window.closeLeagueDetail();"
+      >
+        <div class="lg-modal" id="leagueDetailContent"></div>
+      </div>
+
+      <!-- 10a. KLUB TAFSILOT SAHIFASI -->
+      <div
+        id="clubDetailView"
+        class="view-section"
+        style="padding: 0; overflow-y: auto"
+      ></div>
+
+      <!-- 10b. KLUB REYTING JADVALI -->
+      <div
+        id="clubLeaderboardView"
+        class="view-section"
+        style="justify-content: center; align-items: center"
+      >
         <div
-          style="
-            font-size: 13px;
-            color: #88a;
-            margin-bottom: 20px;
-            text-align: center;
-          "
-          id="clubsDesc"
+          class="card-box"
+          style="width: 550px; max-height: 80vh; overflow-y: auto"
         >
-          Official chess clubs from European and Asian countries
+          <div class="card-title" id="clubLeaderboardTitle">
+            Club Leaderboard
+          </div>
+          <div
+            style="font-size: 13px; color: #88a; margin-bottom: 15px"
+            id="clubLeaderboardDesc"
+          >
+            Club members rating table
+          </div>
+          <div style="margin-bottom: 15px">
+            <button
+              class="control-btn"
+              onclick="backToClubDetail()"
+              style="padding: 8px 16px; font-size: 12px"
+            >
+              ← <span data-i18n="clubDetailBack">Orqaga</span>
+            </button>
+          </div>
+          <div
+            id="clubLeaderboardContainer"
+            style="display: flex; flex-direction: column; gap: 8px"
+          ></div>
         </div>
+      </div>
 
-        <!-- Qidiruv -->
+      <!-- 10c. KLUB LIGA TAQVIMI -->
+      <div
+        id="clubTournamentsView"
+        class="view-section"
+        style="justify-content: center; align-items: center"
+      >
         <div
-          style="margin-bottom: 25px; display: flex; justify-content: center"
-        >
-          <input
-            type="text"
-            id="clubSearchInput"
-            class="form-input"
-            placeholder="Search for a country..."
-            style="max-width: 90%"
-            oninput="filterCountries()"
-          />
-        </div>
-
-        <!-- Kontinentlar bosqichuvi -->
-        <div
-          id="continentTabs"
+          class="card-box"
           style="
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-          "
-        >
-          <button
-            class="continent-tab active"
-            data-continent="All"
-            id="continentTabAll"
-            onclick="setActiveContinent('All')"
-          >
-            Barchasi
-          </button>
-          <button
-            class="continent-tab"
-            data-continent="Asia"
-            id="continentTabAsia"
-            onclick="setActiveContinent('Asia')"
-          >
-            Osiyo
-          </button>
-          <button
-            class="continent-tab"
-            data-continent="Europe"
-            id="continentTabEurope"
-            onclick="setActiveContinent('Europe')"
-          >
-            Yevropa
-          </button>
-          <button
-            class="continent-tab"
-            data-continent="Africa"
-            id="continentTabAfrica"
-            onclick="setActiveContinent('Africa')"
-          >
-            Afrika
-          </button>
-          <button
-            class="continent-tab"
-            data-continent="South America"
-            id="continentTabSouthAmerica"
-            onclick="setActiveContinent('South America')"
-          >
-            Janubiy Amerika
-          </button>
-          <button
-            class="continent-tab"
-            data-continent="North America"
-            id="continentTabNorthAmerica"
-            onclick="setActiveContinent('North America')"
-          >
-            Shimoliy Amerika
-          </button>
-          <button
-            class="continent-tab"
-            data-continent="Oceania"
-            id="continentTabOceania"
-            onclick="setActiveContinent('Oceania')"
-          >
-            Okeaniya
-          </button>
-        </div>
-
-        <!-- Davlatlar grid -->
-        <div
-          id="clubsListContainer"
-          style="
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 15px;
-            padding: 10px;
-            max-height: 65vh;
+            width: 900px;
+            max-width: 95%;
+            max-height: 82vh;
             overflow-y: auto;
           "
-        ></div>
-      </div>
-    </div>
-
-    <!-- Jonli o'yinlar: tomosha qilish (live.js) -->
-    <div id="liveView" class="view-section lv-view">
-      <div id="liveRoot" class="lv-page"></div>
-    </div>
-
-    <!-- Xabarlar: shaxsiy suhbatlar, do'stlar va so'rovlar (messages.js) -->
-    <div id="messagesView" class="view-section msg-view">
-      <div id="messagesRoot"></div>
-    </div>
-
-    <!-- "ChessDom haqida" — to'liq ekranli sahifa (about.js) -->
-    <div id="aboutPage" style="display: none">
-      <div id="aboutPageContent"></div>
-    </div>
-
-    <!-- 11. LIGALAR (leagues.js) -->
-    <div id="leaguesView" class="view-section lg-view">
-      <div class="lg-page" id="leaguesRoot"></div>
-    </div>
-
-    <!-- 12. CHEMPIONLAR LIGASI (leagues.js) -->
-    <div id="championsView" class="view-section lg-view">
-      <div class="lg-page" id="championsRoot"></div>
-    </div>
-
-    <!-- 11a. LIGA TAFSILOTLARI (jadval va bahslar) -->
-    <div id="leagueDetailModal" class="lg-modal-overlay" style="display: none" onclick="if (event.target === this) window.closeLeagueDetail()">
-      <div class="lg-modal" id="leagueDetailContent"></div>
-    </div>
-
-    <!-- 10a. KLUB TAFSILOT SAHIFASI -->
-    <div
-      id="clubDetailView"
-      class="view-section"
-      style="padding: 0; overflow-y: auto"
-    ></div>
-
-    <!-- 10b. KLUB REYTING JADVALI -->
-    <div
-      id="clubLeaderboardView"
-      class="view-section"
-      style="justify-content: center; align-items: center"
-    >
-      <div
-        class="card-box"
-        style="width: 550px; max-height: 80vh; overflow-y: auto"
-      >
-        <div class="card-title" id="clubLeaderboardTitle">Club Leaderboard</div>
-        <div
-          style="font-size: 13px; color: #88a; margin-bottom: 15px"
-          id="clubLeaderboardDesc"
         >
-          Club members rating table
-        </div>
-        <div style="margin-bottom: 15px">
-          <button
-            class="control-btn"
-            onclick="backToClubDetail()"
-            style="padding: 8px 16px; font-size: 12px"
+          <div class="card-title" id="clubTournamentsTitle">
+            Club League Calendar
+          </div>
+          <div
+            style="font-size: 13px; color: #88a; margin-bottom: 15px"
+            id="clubTournamentsDesc"
           >
-            ← <span data-i18n="clubDetailBack">Orqaga</span>
-          </button>
+            Ushbu klub ishtirok etadigan liga o'yinlari
+          </div>
+          <div style="margin-bottom: 15px">
+            <button
+              class="control-btn"
+              id="clubTournamentsBackBtn"
+              onclick="backToClubDetail()"
+              style="padding: 8px 16px; font-size: 12px"
+            >
+              ← <span data-i18n="clubDetailBack">Orqaga</span>
+            </button>
+          </div>
+          <div
+            id="clubTournamentsListContainer"
+            class="club-league-calendar"
+            style="display: flex; flex-direction: column; gap: 8px"
+          ></div>
         </div>
-        <div
-          id="clubLeaderboardContainer"
-          style="display: flex; flex-direction: column; gap: 8px"
-        ></div>
       </div>
-    </div>
 
-    <!-- 10c. KLUB LIGA TAQVIMI -->
-    <div
-      id="clubTournamentsView"
-      class="view-section"
-      style="justify-content: center; align-items: center"
-    >
+      <!-- 10d. KLUB TARIXI -->
       <div
-        class="card-box"
-        style="width: 900px; max-width: 95%; max-height: 82vh; overflow-y: auto"
+        id="clubHistoryView"
+        class="view-section"
+        style="justify-content: center; align-items: center"
       >
-        <div class="card-title" id="clubTournamentsTitle">
-          Club League Calendar
-        </div>
         <div
-          style="font-size: 13px; color: #88a; margin-bottom: 15px"
-          id="clubTournamentsDesc"
+          class="card-box"
+          style="width: 600px; max-height: 80vh; overflow-y: auto"
         >
-          Ushbu klub ishtirok etadigan liga o'yinlari
-        </div>
-        <div style="margin-bottom: 15px">
-          <button
-            class="control-btn"
-            id="clubTournamentsBackBtn"
-            onclick="backToClubDetail()"
-            style="padding: 8px 16px; font-size: 12px"
+          <div class="card-title" id="clubHistoryTitle">Club History</div>
+          <div
+            style="font-size: 13px; color: #88a; margin-bottom: 15px"
+            id="clubHistoryDesc"
           >
-            ← <span data-i18n="clubDetailBack">Orqaga</span>
-          </button>
+            Club members and their join dates
+          </div>
+          <div style="margin-bottom: 15px">
+            <button
+              class="control-btn"
+              id="clubHistoryBackBtn"
+              onclick="backToClubDetail()"
+              style="padding: 8px 16px; font-size: 12px"
+            >
+              ← <span data-i18n="clubDetailBack">Orqaga</span>
+            </button>
+          </div>
+          <div
+            id="clubHistoryContainer"
+            style="display: flex; flex-direction: column; gap: 8px"
+          ></div>
         </div>
-        <div
-          id="clubTournamentsListContainer"
-          class="club-league-calendar"
-          style="display: flex; flex-direction: column; gap: 8px"
-        ></div>
       </div>
-    </div>
 
-    <!-- 10d. KLUB TARIXI -->
-    <div
-      id="clubHistoryView"
-      class="view-section"
-      style="justify-content: center; align-items: center"
-    >
+      <!-- 10e. KLUB CHAT (Chess.com uslubi) -->
       <div
-        class="card-box"
-        style="width: 600px; max-height: 80vh; overflow-y: auto"
+        id="clubChatView"
+        class="view-section"
+        style="padding: 0; overflow-y: auto"
       >
-        <div class="card-title" id="clubHistoryTitle">Club History</div>
-        <div
-          style="font-size: 13px; color: #88a; margin-bottom: 15px"
-          id="clubHistoryDesc"
-        >
-          Club members and their join dates
-        </div>
-        <div style="margin-bottom: 15px">
-          <button
-            class="control-btn"
-            id="clubHistoryBackBtn"
-            onclick="backToClubDetail()"
-            style="padding: 8px 16px; font-size: 12px"
-          >
-            ← <span data-i18n="clubDetailBack">Orqaga</span>
-          </button>
-        </div>
-        <div
-          id="clubHistoryContainer"
-          style="display: flex; flex-direction: column; gap: 8px"
-        ></div>
-      </div>
-    </div>
-
-    <!-- 10e. KLUB CHAT (Chess.com uslubi) -->
-    <div
-      id="clubChatView"
-      class="view-section"
-      style="padding: 0; overflow-y: auto"
-    >
-      <div class="club-chat-container">
-        <div class="club-chat-header" id="clubChatHeader">
-          <button
-            class="control-btn"
-            onclick="backToClubDetail()"
+        <div class="club-chat-container">
+          <div class="club-chat-header" id="clubChatHeader">
+            <button
+              class="control-btn"
+              onclick="backToClubDetail()"
+              style="
+                padding: 6px 12px;
+                font-size: 12px;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid var(--cd-border-strong);
+                color: #ccc;
+                border-radius: 6px;
+              "
+            >
+              ← <span data-i18n="clubDetailBack">Orqaga</span>
+            </button>
+            <div id="clubChatTitle">Club Chat</div>
+            <button
+              type="button"
+              class="msg-clear"
+              id="clubChatClearBtn"
+              onclick="window.clearClubChat()"
+              title="Chatni tozalash"
+            >
+              🧹
+            </button>
+          </div>
+          <div
+            id="clubChatMessagesContainer"
             style="
-              padding: 6px 12px;
-              font-size: 12px;
-              background: rgba(0, 0, 0, 0.3);
-              border: 1px solid var(--cd-border-strong);
-              color: #ccc;
+              flex: 1;
+              overflow-y: auto;
+              padding: 15px;
+              display: flex;
+              flex-direction: column;
+              gap: 10px;
+              background: var(--cd-surface);
+            "
+          ></div>
+          <div
+            style="
+              padding: 12px 15px;
+              border-top: 1px solid var(--cd-border-strong);
+              background: var(--cd-surface-2);
+            "
+          >
+            <div
+              style="display: flex; gap: 10px; position: relative"
+              id="clubChatComposer"
+            >
+              <button
+                type="button"
+                class="msg-emoji-btn"
+                id="clubChatEmojiBtn"
+                title="Stikerlar va emoji"
+              >
+                😊
+              </button>
+              <input
+                type="text"
+                id="clubChatMessageInput"
+                class="form-input"
+                placeholder="Xabar yozing..."
+                data-i18n-placeholder="chatPlaceholder"
+                style="flex: 1"
+                onkeypress="if (event.key === 'Enter') sendClubChatMessage();"
+              />
+              <button
+                class="form-submit"
+                onclick="sendClubChatMessage()"
+                id="btnSendClubChat"
+                style="padding: 10px 20px; font-size: 13px"
+                data-i18n="btnSendChatMessage"
+              >
+                Yuborish
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN PANELI (admin.js) -->
+      <div id="adminView" class="view-section set-view">
+        <div class="set-page" id="adminRoot"></div>
+      </div>
+
+      <!-- 12. SOZLAMALAR (settings.js) -->
+      <div id="settingsView" class="view-section set-view">
+        <div class="set-page" id="settingsRoot"></div>
+      </div>
+
+      <!-- 11. CHAT -->
+      <div
+        id="chatView"
+        class="view-section"
+        style="justify-content: center; align-items: center"
+      >
+        <div
+          class="card-box"
+          style="width: 600px; max-height: 80vh; overflow-y: auto"
+        >
+          <div class="card-title" id="chatCardTitle">Chat</div>
+          <div
+            style="font-size: 13px; color: #88a; margin-bottom: 15px"
+            id="chatDesc"
+          >
+            Xabarlar va suhbatlar
+          </div>
+          <div style="margin-bottom: 15px; display: flex; gap: 10px">
+            <select
+              id="chatRoomSelect"
+              class="form-input"
+              style="flex: 1"
+              onchange="loadChatMessages()"
+            >
+              <option value="" data-i18n="chatSelectRoom">Xona tanlang</option>
+            </select>
+          </div>
+          <div
+            id="chatMessagesContainer"
+            style="
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+              max-height: 400px;
+              overflow-y: auto;
+              margin-bottom: 15px;
+              padding: 10px;
+              background: var(--cd-surface-2);
               border-radius: 6px;
             "
           >
-            ← <span data-i18n="clubDetailBack">Orqaga</span>
-          </button>
-          <div id="clubChatTitle">Club Chat</div>
-          <button type="button" class="msg-clear" id="clubChatClearBtn" onclick="window.clearClubChat()" title="Chatni tozalash">🧹</button>
-        </div>
-        <div
-          id="clubChatMessagesContainer"
-          style="
-            flex: 1;
-            overflow-y: auto;
-            padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            background: var(--cd-surface);
-          "
-        ></div>
-        <div
-          style="
-            padding: 12px 15px;
-            border-top: 1px solid var(--cd-border-strong);
-            background: var(--cd-surface-2);
-          "
-        >
-          <div style="display: flex; gap: 10px; position: relative" id="clubChatComposer">
-            <button type="button" class="msg-emoji-btn" id="clubChatEmojiBtn" title="Stikerlar va emoji">😊</button>
+            <!-- Xabarlar shu yerga tushadi -->
+          </div>
+          <div style="display: flex; gap: 10px">
             <input
               type="text"
-              id="clubChatMessageInput"
+              id="chatMessageInput"
               class="form-input"
               placeholder="Xabar yozing..."
               data-i18n-placeholder="chatPlaceholder"
               style="flex: 1"
-              onkeypress="if (event.key === 'Enter') sendClubChatMessage();"
+              onkeypress="if (event.key === 'Enter') sendChatMessage();"
             />
             <button
               class="form-submit"
-              onclick="sendClubChatMessage()"
-              id="btnSendClubChat"
-              style="padding: 10px 20px; font-size: 13px"
-              data-i18n="btnSendChatMessage"
+              onclick="sendChatMessage()"
+              id="btnSendChatMessage"
             >
               Yuborish
             </button>
           </div>
         </div>
       </div>
-    </div>
-
-    <!-- ADMIN PANELI (admin.js) -->
-    <div id="adminView" class="view-section set-view">
-      <div class="set-page" id="adminRoot"></div>
-    </div>
-
-    <!-- 12. SOZLAMALAR (settings.js) -->
-    <div id="settingsView" class="view-section set-view">
-      <div class="set-page" id="settingsRoot"></div>
-    </div>
-
-    <!-- 11. CHAT -->
-    <div
-      id="chatView"
-      class="view-section"
-      style="justify-content: center; align-items: center"
-    >
-      <div
-        class="card-box"
-        style="width: 600px; max-height: 80vh; overflow-y: auto"
-      >
-        <div class="card-title" id="chatCardTitle">Chat</div>
-        <div
-          style="font-size: 13px; color: #88a; margin-bottom: 15px"
-          id="chatDesc"
-        >
-          Xabarlar va suhbatlar
-        </div>
-        <div style="margin-bottom: 15px; display: flex; gap: 10px">
-          <select
-            id="chatRoomSelect"
-            class="form-input"
-            style="flex: 1"
-            onchange="loadChatMessages()"
-          >
-            <option value="" data-i18n="chatSelectRoom">Xona tanlang</option>
-          </select>
-        </div>
-        <div
-          id="chatMessagesContainer"
-          style="
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: var(--cd-surface-2);
-            border-radius: 6px;
-          "
-        >
-          <!-- Xabarlar shu yerga tushadi -->
-        </div>
-        <div style="display: flex; gap: 10px">
-          <input
-            type="text"
-            id="chatMessageInput"
-            class="form-input"
-            placeholder="Xabar yozing..."
-            data-i18n-placeholder="chatPlaceholder"
-            style="flex: 1"
-            onkeypress="if (event.key === 'Enter') sendChatMessage();"
-          />
-          <button
-            class="form-submit"
-            onclick="sendChatMessage()"
-            id="btnSendChatMessage"
-          >
-            Yuborish
-          </button>
-        </div>
-      </div>
-    </div>
     </div>
     <!-- /.main-wrapper -->
 
@@ -1477,21 +1747,319 @@
       <section class="auth-hero" aria-hidden="true">
         <div class="auth-hero-glow"></div>
         <div class="auth-logo">
-            <svg width="30" height="24" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M1 14L3 4L7 8L10 1L13 8L17 4L19 14H1Z" fill="url(#gateCrownGradHero)" stroke="#FFD700" stroke-width="0.8" stroke-linejoin="round" />
-              <circle cx="1" cy="4.5" r="1.5" fill="#FFD700" /><circle cx="10" cy="1.5" r="1.5" fill="#FFD700" /><circle cx="19" cy="4.5" r="1.5" fill="#FFD700" />
-              <defs><linearGradient id="gateCrownGradHero" x1="1" y1="1" x2="19" y2="14"><stop offset="0%" stop-color="#FFD700" /><stop offset="50%" stop-color="#CD7F32" /><stop offset="100%" stop-color="#8B4513" /></linearGradient></defs>
-            </svg>
-            <span>Chess<b>Dom</b></span>
-          </div>
+          <svg
+            width="30"
+            height="24"
+            viewBox="0 0 20 16"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M1 14L3 4L7 8L10 1L13 8L17 4L19 14H1Z"
+              fill="url(#gateCrownGradHero)"
+              stroke="#FFD700"
+              stroke-width="0.8"
+              stroke-linejoin="round"
+            />
+            <circle cx="1" cy="4.5" r="1.5" fill="#FFD700" />
+            <circle cx="10" cy="1.5" r="1.5" fill="#FFD700" />
+            <circle cx="19" cy="4.5" r="1.5" fill="#FFD700" />
+            <defs>
+              <linearGradient
+                id="gateCrownGradHero"
+                x1="1"
+                y1="1"
+                x2="19"
+                y2="14"
+              >
+                <stop offset="0%" stop-color="#FFD700" />
+                <stop offset="50%" stop-color="#CD7F32" />
+                <stop offset="100%" stop-color="#8B4513" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <span>Chess<b>Dom</b></span>
+        </div>
         <div class="auth-hero-body">
-          <h2 class="auth-hero-title" data-i18n="authHeroTitle">Shaxmat o'ynang. G'alaba qozoning.</h2>
-          <p class="auth-hero-text" data-i18n="authHeroText">Butun dunyodagi raqiblar bilan onlayn o'ynang, reytingingizni oshiring va davlatingiz klubini yuqoriga olib chiqing.</p>
-          <div class="auth-board"><div class="sq l"><img src="img/chesspieces/wikipedia/bR.png" alt="" draggable="false"></div><div class="sq d"></div><div class="sq l"><img src="img/chesspieces/wikipedia/bB.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/bQ.png" alt="" draggable="false"></div><div class="sq l"><img src="img/chesspieces/wikipedia/bK.png" alt="" draggable="false"></div><div class="sq d hl"></div><div class="sq l"><img src="img/chesspieces/wikipedia/bN.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/bR.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/bP.png" alt="" draggable="false"></div><div class="sq l"><img src="img/chesspieces/wikipedia/bP.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/bP.png" alt="" draggable="false"></div><div class="sq l"><img src="img/chesspieces/wikipedia/bP.png" alt="" draggable="false"></div><div class="sq d"></div><div class="sq l"><img src="img/chesspieces/wikipedia/bP.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/bP.png" alt="" draggable="false"></div><div class="sq l"><img src="img/chesspieces/wikipedia/bP.png" alt="" draggable="false"></div><div class="sq l"></div><div class="sq d"></div><div class="sq l"><img src="img/chesspieces/wikipedia/bN.png" alt="" draggable="false"></div><div class="sq d"></div><div class="sq l"></div><div class="sq d"></div><div class="sq l"></div><div class="sq d"></div><div class="sq d"></div><div class="sq l"></div><div class="sq d hl"><img src="img/chesspieces/wikipedia/bB.png" alt="" draggable="false"></div><div class="sq l"></div><div class="sq d"><img src="img/chesspieces/wikipedia/bP.png" alt="" draggable="false"></div><div class="sq l"></div><div class="sq d"></div><div class="sq l"></div><div class="sq l"></div><div class="sq d"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wB.png" alt="" draggable="false"></div><div class="sq d"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wP.png" alt="" draggable="false"></div><div class="sq d"></div><div class="sq l"></div><div class="sq d"></div><div class="sq d"></div><div class="sq l"></div><div class="sq d"></div><div class="sq l"></div><div class="sq d"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wN.png" alt="" draggable="false"></div><div class="sq d"></div><div class="sq l"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wP.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/wP.png" alt="" draggable="false"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wP.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/wP.png" alt="" draggable="false"></div><div class="sq l"></div><div class="sq d"><img src="img/chesspieces/wikipedia/wP.png" alt="" draggable="false"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wP.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/wP.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/wR.png" alt="" draggable="false"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wN.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/wB.png" alt="" draggable="false"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wQ.png" alt="" draggable="false"></div><div class="sq d"><img src="img/chesspieces/wikipedia/wK.png" alt="" draggable="false"></div><div class="sq l"></div><div class="sq d"></div><div class="sq l"><img src="img/chesspieces/wikipedia/wR.png" alt="" draggable="false"></div></div>
+          <h2 class="auth-hero-title" data-i18n="authHeroTitle">
+            Shaxmat o'ynang. G'alaba qozoning.
+          </h2>
+          <p class="auth-hero-text" data-i18n="authHeroText">
+            Butun dunyodagi raqiblar bilan onlayn o'ynang, reytingingizni
+            oshiring va davlatingiz klubini yuqoriga olib chiqing.
+          </p>
+          <div class="auth-board">
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bR.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bB.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/bQ.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bK.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d hl"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bN.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/bR.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/bP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/bP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/bP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/bN.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d"></div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq d"></div>
+            <div class="sq l"></div>
+            <div class="sq d hl">
+              <img
+                src="img/chesspieces/wikipedia/bB.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l"></div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/bP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq l"></div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wB.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d"></div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq d"></div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wN.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d"></div>
+            <div class="sq l"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/wP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/wP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l"></div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/wP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/wP.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/wR.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wN.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/wB.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wQ.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq d">
+              <img
+                src="img/chesspieces/wikipedia/wK.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+            <div class="sq l"></div>
+            <div class="sq d"></div>
+            <div class="sq l">
+              <img
+                src="img/chesspieces/wikipedia/wR.png"
+                alt=""
+                draggable="false"
+              />
+            </div>
+          </div>
           <ul class="auth-features">
-            <li><span class="auth-feature-icon">⚡</span><span data-i18n="authFeature1">Bullet, Blits va Tezkor</span></li>
-            <li><span class="auth-feature-icon">🏆</span><span data-i18n="authFeature2">Turnirlar va arenalar</span></li>
-            <li><span class="auth-feature-icon">🌍</span><span data-i18n="authFeature3">Davlat klublari</span></li>
+            <li>
+              <span class="auth-feature-icon">⚡</span
+              ><span data-i18n="authFeature1">Bullet, Blits va Tezkor</span>
+            </li>
+            <li>
+              <span class="auth-feature-icon">🏆</span
+              ><span data-i18n="authFeature2">Turnirlar va arenalar</span>
+            </li>
+            <li>
+              <span class="auth-feature-icon">🌍</span
+              ><span data-i18n="authFeature3">Davlat klublari</span>
+            </li>
           </ul>
         </div>
       </section>
@@ -1501,127 +2069,491 @@
 
       <!-- O'ng tomon: forma -->
       <section class="auth-panel">
-        <button type="button" class="auth-gate-lang" id="authGateLangBtn" onclick="window.openLanguageModal()">🌐 O'zbekcha</button>
+        <button
+          type="button"
+          class="auth-gate-lang"
+          id="authGateLangBtn"
+          onclick="window.openLanguageModal()"
+        >
+          🌐 O'zbekcha
+        </button>
         <div class="auth-panel-inner">
-          <div class="auth-panel-logo"><div class="auth-logo">
-            <svg width="30" height="24" viewBox="0 0 20 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M1 14L3 4L7 8L10 1L13 8L17 4L19 14H1Z" fill="url(#gateCrownGradPanel)" stroke="#FFD700" stroke-width="0.8" stroke-linejoin="round" />
-              <circle cx="1" cy="4.5" r="1.5" fill="#FFD700" /><circle cx="10" cy="1.5" r="1.5" fill="#FFD700" /><circle cx="19" cy="4.5" r="1.5" fill="#FFD700" />
-              <defs><linearGradient id="gateCrownGradPanel" x1="1" y1="1" x2="19" y2="14"><stop offset="0%" stop-color="#FFD700" /><stop offset="50%" stop-color="#CD7F32" /><stop offset="100%" stop-color="#8B4513" /></linearGradient></defs>
-            </svg>
-            <span>Chess<b>Dom</b></span>
-          </div></div>
+          <div class="auth-panel-logo">
+            <div class="auth-logo">
+              <svg
+                width="30"
+                height="24"
+                viewBox="0 0 20 16"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path
+                  d="M1 14L3 4L7 8L10 1L13 8L17 4L19 14H1Z"
+                  fill="url(#gateCrownGradPanel)"
+                  stroke="#FFD700"
+                  stroke-width="0.8"
+                  stroke-linejoin="round"
+                />
+                <circle cx="1" cy="4.5" r="1.5" fill="#FFD700" />
+                <circle cx="10" cy="1.5" r="1.5" fill="#FFD700" />
+                <circle cx="19" cy="4.5" r="1.5" fill="#FFD700" />
+                <defs>
+                  <linearGradient
+                    id="gateCrownGradPanel"
+                    x1="1"
+                    y1="1"
+                    x2="19"
+                    y2="14"
+                  >
+                    <stop offset="0%" stop-color="#FFD700" />
+                    <stop offset="50%" stop-color="#CD7F32" />
+                    <stop offset="100%" stop-color="#8B4513" />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <span>Chess<b>Dom</b></span>
+            </div>
+          </div>
 
           <!-- Ro'yxatdan o'tish -->
-          <form class="auth-signup-form-step" id="authSignupFormStep" onsubmit="event.preventDefault(); window.handleSignupModal();" novalidate>
-            <h1 class="auth-gate-title" data-i18n="authSignupTitle">Hisob yarating</h1>
-            <p class="auth-gate-sub" data-i18n="authSignupSub">Bir daqiqada ro'yxatdan o'ting va o'ynashni boshlang</p>
+          <form
+            class="auth-signup-form-step"
+            id="authSignupFormStep"
+            onsubmit="
+              event.preventDefault();
+              window.handleSignupModal();
+            "
+            novalidate
+          >
+            <h1 class="auth-gate-title" data-i18n="authSignupTitle">
+              Hisob yarating
+            </h1>
+            <p class="auth-gate-sub" data-i18n="authSignupSub">
+              Bir daqiqada ro'yxatdan o'ting va o'ynashni boshlang
+            </p>
             <div class="auth-form-group">
-              <label class="auth-form-label" for="signupUsername" data-i18n="labelRegUsername">Foydalanuvchi nomi</label>
+              <label
+                class="auth-form-label"
+                for="signupUsername"
+                data-i18n="labelRegUsername"
+                >Foydalanuvchi nomi</label
+              >
               <div class="auth-input-wrap">
-                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z" /></svg>
-                <input type="text" id="signupUsername" class="auth-form-input" autocomplete="username"
-                  placeholder="Foydalanuvchi nomini tanlang" data-i18n-placeholder="authChooseUsername" />
+                <svg
+                  class="auth-input-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  id="signupUsername"
+                  class="auth-form-input"
+                  autocomplete="username"
+                  placeholder="Foydalanuvchi nomini tanlang"
+                  data-i18n-placeholder="authChooseUsername"
+                />
               </div>
-              <div class="auth-error" id="signupUsernameError" data-i18n="authUsernameRequired">Foydalanuvchi nomini kiriting (3–30 belgi)</div>
-              <div class="auth-error" id="signupUsernameExistsError" data-i18n="userExists">Bu nomli foydalanuvchi mavjud!</div>
+              <div
+                class="auth-error"
+                id="signupUsernameError"
+                data-i18n="authUsernameRequired"
+              >
+                Foydalanuvchi nomini kiriting (3–30 belgi)
+              </div>
+              <div
+                class="auth-error"
+                id="signupUsernameExistsError"
+                data-i18n="userExists"
+              >
+                Bu nomli foydalanuvchi mavjud!
+              </div>
             </div>
             <div class="auth-form-group">
-              <label class="auth-form-label" for="signupEmail" data-i18n="authEmailOptional">Email (ixtiyoriy — parolni tiklash uchun)</label>
+              <label
+                class="auth-form-label"
+                for="signupEmail"
+                data-i18n="authEmailOptional"
+                >Email (ixtiyoriy — parolni tiklash uchun)</label
+              >
               <div class="auth-input-wrap">
-                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg>
-                <input type="email" id="signupEmail" class="auth-form-input" autocomplete="email" placeholder="email@example.com" />
+                <svg
+                  class="auth-input-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"
+                  />
+                </svg>
+                <input
+                  type="email"
+                  id="signupEmail"
+                  class="auth-form-input"
+                  autocomplete="email"
+                  placeholder="email@example.com"
+                />
               </div>
-              <div class="auth-error" id="signupEmailError" data-i18n="authEmailInvalid">Email manzili noto'g'ri</div>
+              <div
+                class="auth-error"
+                id="signupEmailError"
+                data-i18n="authEmailInvalid"
+              >
+                Email manzili noto'g'ri
+              </div>
             </div>
             <div class="auth-form-group">
-              <label class="auth-form-label" for="signupPassword" data-i18n="labelRegPassword">Parol</label>
+              <label
+                class="auth-form-label"
+                for="signupPassword"
+                data-i18n="labelRegPassword"
+                >Parol</label
+              >
               <div class="auth-input-wrap">
-                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
-                <input type="password" id="signupPassword" class="auth-form-input" autocomplete="new-password"
-                  placeholder="Kamida 6 ta belgi" data-i18n-placeholder="authPasswordMin" />
-                <button type="button" class="auth-eye-btn" onclick="window.togglePasswordVisibility('signupPassword', this)" aria-label="Parol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z" /></svg></button>
+                <svg
+                  class="auth-input-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z"
+                  />
+                </svg>
+                <input
+                  type="password"
+                  id="signupPassword"
+                  class="auth-form-input"
+                  autocomplete="new-password"
+                  placeholder="Kamida 6 ta belgi"
+                  data-i18n-placeholder="authPasswordMin"
+                />
+                <button
+                  type="button"
+                  class="auth-eye-btn"
+                  onclick="
+                    window.togglePasswordVisibility('signupPassword', this)
+                  "
+                  aria-label="Parol"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"
+                    />
+                  </svg>
+                </button>
               </div>
-              <div class="auth-error" id="signupPasswordError" data-i18n="authPasswordMinError">Parol kamida 6 ta belgidan iborat bo'lishi kerak</div>
+              <div
+                class="auth-error"
+                id="signupPasswordError"
+                data-i18n="authPasswordMinError"
+              >
+                Parol kamida 6 ta belgidan iborat bo'lishi kerak
+              </div>
             </div>
-            <button type="submit" class="auth-submit-btn" id="signupSubmitBtn" data-i18n="btnRegSubmit">Ro'yxatdan o'tish</button>
+            <button
+              type="submit"
+              class="auth-submit-btn"
+              id="signupSubmitBtn"
+              data-i18n="btnRegSubmit"
+            >
+              Ro'yxatdan o'tish
+            </button>
             <div class="auth-switch">
-              <span class="auth-switch-text" data-i18n="authHaveAccount">Akkauntingiz bormi?</span>
-              <a class="auth-switch-link" onclick="window.switchToLogin()" data-i18n="goToLoginLink">Kirish</a>
+              <span class="auth-switch-text" data-i18n="authHaveAccount"
+                >Akkauntingiz bormi?</span
+              >
+              <a
+                class="auth-switch-link"
+                onclick="window.switchToLogin()"
+                data-i18n="goToLoginLink"
+                >Kirish</a
+              >
             </div>
           </form>
 
           <!-- Kirish -->
-          <form class="auth-login-step" id="authLoginStep" onsubmit="event.preventDefault(); window.handleLoginModal();" novalidate style="display: none">
-            <h1 class="auth-gate-title" data-i18n="authLoginTitle">Xush kelibsiz</h1>
-            <p class="auth-gate-sub" data-i18n="authLoginSub">Davom etish uchun hisobingizga kiring</p>
+          <form
+            class="auth-login-step"
+            id="authLoginStep"
+            onsubmit="
+              event.preventDefault();
+              window.handleLoginModal();
+            "
+            novalidate
+            style="display: none"
+          >
+            <h1 class="auth-gate-title" data-i18n="authLoginTitle">
+              Xush kelibsiz
+            </h1>
+            <p class="auth-gate-sub" data-i18n="authLoginSub">
+              Davom etish uchun hisobingizga kiring
+            </p>
             <div class="auth-form-group">
-              <label class="auth-form-label" for="loginModalUsername" data-i18n="labelLoginUsername">Foydalanuvchi nomi</label>
+              <label
+                class="auth-form-label"
+                for="loginModalUsername"
+                data-i18n="labelLoginUsername"
+                >Foydalanuvchi nomi</label
+              >
               <div class="auth-input-wrap">
-                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z" /></svg>
-                <input type="text" id="loginModalUsername" class="auth-form-input" autocomplete="username"
-                  placeholder="Foydalanuvchi nomini kiriting" data-i18n-placeholder="authUsernamePlaceholder" />
+                <svg
+                  class="auth-input-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  id="loginModalUsername"
+                  class="auth-form-input"
+                  autocomplete="username"
+                  placeholder="Foydalanuvchi nomini kiriting"
+                  data-i18n-placeholder="authUsernamePlaceholder"
+                />
               </div>
-              <div class="auth-error" id="loginUsernameError" data-i18n="authUsernameRequired">Foydalanuvchi nomini kiriting (3–30 belgi)</div>
+              <div
+                class="auth-error"
+                id="loginUsernameError"
+                data-i18n="authUsernameRequired"
+              >
+                Foydalanuvchi nomini kiriting (3–30 belgi)
+              </div>
             </div>
             <div class="auth-form-group">
-              <label class="auth-form-label" for="loginModalPassword" data-i18n="labelLoginPassword">Parol</label>
+              <label
+                class="auth-form-label"
+                for="loginModalPassword"
+                data-i18n="labelLoginPassword"
+                >Parol</label
+              >
               <div class="auth-input-wrap">
-                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
-                <input type="password" id="loginModalPassword" class="auth-form-input" autocomplete="current-password" placeholder="••••••••" />
-                <button type="button" class="auth-eye-btn" onclick="window.togglePasswordVisibility('loginModalPassword', this)" aria-label="Parol"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z" /></svg></button>
+                <svg
+                  class="auth-input-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z"
+                  />
+                </svg>
+                <input
+                  type="password"
+                  id="loginModalPassword"
+                  class="auth-form-input"
+                  autocomplete="current-password"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  class="auth-eye-btn"
+                  onclick="
+                    window.togglePasswordVisibility('loginModalPassword', this)
+                  "
+                  aria-label="Parol"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M12 5C6.5 5 2.7 9.2 1.5 12c1.2 2.8 5 7 10.5 7s9.3-4.2 10.5-7C21.3 9.2 17.5 5 12 5zm0 11a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm0-2.2a1.8 1.8 0 1 0 0-3.6 1.8 1.8 0 0 0 0 3.6z"
+                    />
+                  </svg>
+                </button>
               </div>
-              <div class="auth-error" id="loginPasswordError" data-i18n="authPasswordRequired">Parolni kiriting</div>
-              <a class="auth-forgot-link" onclick="window.showAuthGate('forgot')" data-i18n="authForgotLink">Parolni unutdingizmi?</a>
+              <div
+                class="auth-error"
+                id="loginPasswordError"
+                data-i18n="authPasswordRequired"
+              >
+                Parolni kiriting
+              </div>
+              <a
+                class="auth-forgot-link"
+                onclick="window.showAuthGate('forgot')"
+                data-i18n="authForgotLink"
+                >Parolni unutdingizmi?</a
+              >
             </div>
-            <div class="auth-error auth-error-box" id="loginGeneralError" data-i18n="wrongCredentials">Ism yoki parol xato!</div>
-            <button type="submit" class="auth-submit-btn" id="loginSubmitBtn" data-i18n="btnLoginSubmit">Kirish</button>
+            <div
+              class="auth-error auth-error-box"
+              id="loginGeneralError"
+              data-i18n="wrongCredentials"
+            >
+              Ism yoki parol xato!
+            </div>
+            <button
+              type="submit"
+              class="auth-submit-btn"
+              id="loginSubmitBtn"
+              data-i18n="btnLoginSubmit"
+            >
+              Kirish
+            </button>
             <div class="auth-switch">
-              <span class="auth-switch-text" data-i18n="authNewToSite">Chessdom'da yangimisiz?</span>
-              <a class="auth-switch-link" onclick="window.switchToSignUp()" data-i18n="goToRegisterLink">Ro'yxatdan o'tish</a>
+              <span class="auth-switch-text" data-i18n="authNewToSite"
+                >Chessdom'da yangimisiz?</span
+              >
+              <a
+                class="auth-switch-link"
+                onclick="window.switchToSignUp()"
+                data-i18n="goToRegisterLink"
+                >Ro'yxatdan o'tish</a
+              >
             </div>
           </form>
 
           <!-- Parolni tiklash: havola so'rash -->
-          <form class="auth-login-step" id="authForgotStep" onsubmit="event.preventDefault(); window.handleForgotPassword();" novalidate style="display: none">
-            <h1 class="auth-gate-title" data-i18n="authForgotTitle">Parolni tiklash</h1>
-            <p class="auth-gate-sub" data-i18n="authForgotSub">Foydalanuvchi nomi yoki emailingizni kiriting — emailingizga tiklash havolasini yuboramiz</p>
+          <form
+            class="auth-login-step"
+            id="authForgotStep"
+            onsubmit="
+              event.preventDefault();
+              window.handleForgotPassword();
+            "
+            novalidate
+            style="display: none"
+          >
+            <h1 class="auth-gate-title" data-i18n="authForgotTitle">
+              Parolni tiklash
+            </h1>
+            <p class="auth-gate-sub" data-i18n="authForgotSub">
+              Foydalanuvchi nomi yoki emailingizni kiriting — emailingizga
+              tiklash havolasini yuboramiz
+            </p>
             <div class="auth-form-group">
-              <label class="auth-form-label" for="forgotLogin" data-i18n="authForgotLabel">Foydalanuvchi nomi yoki email</label>
+              <label
+                class="auth-form-label"
+                for="forgotLogin"
+                data-i18n="authForgotLabel"
+                >Foydalanuvchi nomi yoki email</label
+              >
               <div class="auth-input-wrap">
-                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z" /></svg>
-                <input type="text" id="forgotLogin" class="auth-form-input" autocomplete="username" />
+                <svg
+                  class="auth-input-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zm0 2c-4.4 0-9 2.2-9 5v3h18v-3c0-2.8-4.6-5-9-5z"
+                  />
+                </svg>
+                <input
+                  type="text"
+                  id="forgotLogin"
+                  class="auth-form-input"
+                  autocomplete="username"
+                />
               </div>
             </div>
             <div class="auth-note" id="forgotResult"></div>
-            <button type="submit" class="auth-submit-btn" id="forgotSubmitBtn" data-i18n="authForgotSubmit">Havola yuborish</button>
+            <button
+              type="submit"
+              class="auth-submit-btn"
+              id="forgotSubmitBtn"
+              data-i18n="authForgotSubmit"
+            >
+              Havola yuborish
+            </button>
             <div class="auth-switch">
-              <a class="auth-switch-link" onclick="window.switchToLogin()" data-i18n="authBackToLogin">← Kirishga qaytish</a>
+              <a
+                class="auth-switch-link"
+                onclick="window.switchToLogin()"
+                data-i18n="authBackToLogin"
+                >← Kirishga qaytish</a
+              >
             </div>
           </form>
 
           <!-- Parolni tiklash: yangi parol (emaildagi havola orqali) -->
-          <form class="auth-login-step" id="authResetStep" onsubmit="event.preventDefault(); window.handleResetPassword();" novalidate style="display: none">
-            <h1 class="auth-gate-title" data-i18n="authResetTitle">Yangi parol</h1>
-            <p class="auth-gate-sub" data-i18n="authResetSub">Akkauntingiz uchun yangi parol o'ylab toping</p>
+          <form
+            class="auth-login-step"
+            id="authResetStep"
+            onsubmit="
+              event.preventDefault();
+              window.handleResetPassword();
+            "
+            novalidate
+            style="display: none"
+          >
+            <h1 class="auth-gate-title" data-i18n="authResetTitle">
+              Yangi parol
+            </h1>
+            <p class="auth-gate-sub" data-i18n="authResetSub">
+              Akkauntingiz uchun yangi parol o'ylab toping
+            </p>
             <div class="auth-form-group">
-              <label class="auth-form-label" for="resetPassword" data-i18n="authNewPassword">Yangi parol</label>
+              <label
+                class="auth-form-label"
+                for="resetPassword"
+                data-i18n="authNewPassword"
+                >Yangi parol</label
+              >
               <div class="auth-input-wrap">
-                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
-                <input type="password" id="resetPassword" class="auth-form-input" autocomplete="new-password" placeholder="Kamida 6 ta belgi" data-i18n-placeholder="authPasswordMin" />
+                <svg
+                  class="auth-input-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z"
+                  />
+                </svg>
+                <input
+                  type="password"
+                  id="resetPassword"
+                  class="auth-form-input"
+                  autocomplete="new-password"
+                  placeholder="Kamida 6 ta belgi"
+                  data-i18n-placeholder="authPasswordMin"
+                />
               </div>
             </div>
             <div class="auth-form-group">
-              <label class="auth-form-label" for="resetPassword2" data-i18n="authRepeatPassword">Parolni takrorlang</label>
+              <label
+                class="auth-form-label"
+                for="resetPassword2"
+                data-i18n="authRepeatPassword"
+                >Parolni takrorlang</label
+              >
               <div class="auth-input-wrap">
-                <svg class="auth-input-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z" /></svg>
-                <input type="password" id="resetPassword2" class="auth-form-input" autocomplete="new-password" />
+                <svg
+                  class="auth-input-icon"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M17 9V7A5 5 0 0 0 7 7v2H5v13h14V9h-2zM9 7a3 3 0 0 1 6 0v2H9V7z"
+                  />
+                </svg>
+                <input
+                  type="password"
+                  id="resetPassword2"
+                  class="auth-form-input"
+                  autocomplete="new-password"
+                />
               </div>
             </div>
             <div class="auth-note" id="resetResult"></div>
-            <button type="submit" class="auth-submit-btn" id="resetSubmitBtn" data-i18n="authResetSubmit">Parolni saqlash</button>
+            <button
+              type="submit"
+              class="auth-submit-btn"
+              id="resetSubmitBtn"
+              data-i18n="authResetSubmit"
+            >
+              Parolni saqlash
+            </button>
             <div class="auth-switch">
-              <a class="auth-switch-link" onclick="window.switchToLogin()" data-i18n="authBackToLogin">← Kirishga qaytish</a>
+              <a
+                class="auth-switch-link"
+                onclick="window.switchToLogin()"
+                data-i18n="authBackToLogin"
+                >← Kirishga qaytish</a
+              >
             </div>
           </form>
         </div>
@@ -1638,6 +2570,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script src="script.js"></script>
+    <script src="ranks.js"></script>
     <script src="sound.js"></script>
     <script src="board.js"></script>
     <script src="social.js"></script>
@@ -1659,6 +2592,8 @@
     <script src="gameextras.js"></script>
     <script src="openings.js"></script>
     <script src="analysis.js"></script>
+    <script src="notifications.js"></script>
+    <script src="clubstaff.js"></script>
     <script src="replay.js"></script>
     <script src="safety.js"></script>
     <script src="admin.js"></script>
@@ -1687,25 +2622,67 @@
       <div class="profile-container">
         <!-- Chap ustun: o'yinchi kartasi -->
         <aside class="profile-sidebar-card">
-          <button class="profile-close-btn" id="closeProfileBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z"/></svg><span data-i18n="clubDetailBack">Orqaga</span></button>
+          <button class="profile-close-btn" id="closeProfileBtn" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M15.4 5.4 14 4l-8 8 8 8 1.4-1.4L8.8 12z" /></svg
+            ><span data-i18n="clubDetailBack">Orqaga</span>
+          </button>
           <div class="profile-hero">
             <div class="profile-avatar-wrapper">
               <div class="profile-avatar" id="profileAvatarLetter">♔</div>
-              <button type="button" class="avatar-edit-btn" id="avatarEditBtn" onclick="document.getElementById('avatarFileInput').click()" data-i18n-title="avatarChange" title="Rasm qo'yish">📷</button>
-              <input type="file" id="avatarFileInput" accept="image/png,image/jpeg,image/webp,image/*" hidden onchange="window.handleAvatarFile(this)" />
-              <button type="button" class="avatar-remove-btn" id="avatarRemoveBtn" style="display: none" onclick="window.removeAvatar()" title="Rasmni o'chirish" aria-label="Rasmni o'chirish">🗑</button>
+              <button
+                type="button"
+                class="avatar-edit-btn"
+                id="avatarEditBtn"
+                onclick="document.getElementById('avatarFileInput').click()"
+                data-i18n-title="avatarChange"
+                title="Rasm qo'yish"
+              >
+                📷
+              </button>
+              <input
+                type="file"
+                id="avatarFileInput"
+                accept="image/png,image/jpeg,image/webp,image/*"
+                hidden
+                onchange="window.handleAvatarFile(this)"
+              />
+              <button
+                type="button"
+                class="avatar-remove-btn"
+                id="avatarRemoveBtn"
+                style="display: none"
+                onclick="window.removeAvatar()"
+                title="Rasmni o'chirish"
+                aria-label="Rasmni o'chirish"
+              >
+                🗑
+              </button>
             </div>
             <h2 class="profile-name" id="profileModalUsername"></h2>
+            <div class="profile-rank-chip" id="profileRankChip"></div>
             <p class="profile-handle" id="profileModalHandle"></p>
             <p class="profile-presence" id="profilePresence" hidden></p>
-            <p class="profile-joined" id="profileJoined" style="display: none"></p>
-            <div id="profileModalCountry" class="profile-modal-country" style="display: none">
+            <p
+              class="profile-joined"
+              id="profileJoined"
+              style="display: none"
+            ></p>
+            <div
+              id="profileModalCountry"
+              class="profile-modal-country"
+              style="display: none"
+            >
               <img id="profileModalCountryFlag" src="" alt="" />
               <span id="profileModalCountryName"></span>
             </div>
             <div class="profile-chips">
               <span class="profile-badge">ChessDom</span>
-              <span class="profile-chip" id="profileClubChip" style="display: none">
+              <span
+                class="profile-chip"
+                id="profileClubChip"
+                style="display: none"
+              >
                 <img id="profileClubChipFlag" src="" alt="" />
                 <span id="profileClubChipName"></span>
               </span>
@@ -1717,35 +2694,117 @@
               <span id="profFideIdLabel">FIDE ID</span>
               <div class="meta-value">
                 <span class="editable-text" id="profileFideId"></span>
-                <input type="text" class="editable-input" id="inputFideId" value="" style="display: none" />
+                <input
+                  type="text"
+                  class="editable-input"
+                  id="inputFideId"
+                  value=""
+                  style="display: none"
+                />
               </div>
             </div>
             <div class="meta-row">
               <span id="profGoalLabel">Maqsad</span>
               <div class="meta-value">
                 <span class="editable-text" id="profileGoal"></span>
-                <input type="text" class="editable-input" id="inputGoal" value="" style="display: none" />
+                <input
+                  type="text"
+                  class="editable-input"
+                  id="inputGoal"
+                  value=""
+                  style="display: none"
+                />
               </div>
             </div>
             <div class="meta-row">
               <span data-i18n="profEmailLabel">Email</span>
               <div class="meta-value">
                 <span id="profileEmailText" class="profile-email-text"></span>
-                <button type="button" class="meta-edit-btn" onclick="window.editProfileEmail()" data-i18n="profEmailEdit">O'zgartirish</button>
+                <button
+                  type="button"
+                  class="meta-edit-btn"
+                  onclick="window.editProfileEmail()"
+                  data-i18n="profEmailEdit"
+                >
+                  O'zgartirish
+                </button>
               </div>
             </div>
           </div>
 
           <div class="profile-sidebar-actions">
-            <button class="profile-message-btn profile-challenge-btn" id="profileChallengeBtn" type="button" style="display: none" onclick="window.openChallengeDialog(window.viewedProfileUsername)">⚔️ <span data-i18n="chProfileBtn">O'yinga chaqirish</span></button>
-            <button class="profile-message-btn" id="profileMessageBtn" type="button" style="display: none" onclick="window.openMessagesWith(window.viewedProfileUsername)">✉️ <span data-i18n="profileMessageBtn">Xabar yozish</span></button>
-            <button class="profile-friend-btn" id="profileFriendBtn" type="button" style="display: none" onclick="window.sendFriendRequestTo(window.viewedProfileUsername)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2zm9 4c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"/></svg><span data-i18n="btnSendFriendRequest">Do'stlik so'rash</span></button>
-            <div class="profile-mod-actions" id="profileModActions" style="display: none">
-              <button type="button" id="profileBlockBtn" onclick="window.toggleBlockUser(window.viewedProfileUsername)">🚫 Bloklash</button>
-              <button type="button" id="profileReportBtn" onclick="window.openReportDialog(window.viewedProfileUsername)">⚠️ <span data-i18n="rpShort">Shikoyat</span></button>
+            <button
+              class="profile-message-btn profile-challenge-btn"
+              id="profileChallengeBtn"
+              type="button"
+              style="display: none"
+              onclick="window.openChallengeDialog(window.viewedProfileUsername)"
+            >
+              ⚔️ <span data-i18n="chProfileBtn">O'yinga chaqirish</span>
+            </button>
+            <button
+              class="profile-message-btn"
+              id="profileMessageBtn"
+              type="button"
+              style="display: none"
+              onclick="window.openMessagesWith(window.viewedProfileUsername)"
+            >
+              ✉️ <span data-i18n="profileMessageBtn">Xabar yozish</span>
+            </button>
+            <button
+              class="profile-friend-btn"
+              id="profileFriendBtn"
+              type="button"
+              style="display: none"
+              onclick="window.sendFriendRequestTo(window.viewedProfileUsername)"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M15 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4zm-9-2V7H4v3H1v2h3v3h2v-3h3v-2zm9 4c-2.7 0-8 1.3-8 4v2h16v-2c0-2.7-5.3-4-8-4z"
+                /></svg
+              ><span data-i18n="btnSendFriendRequest">Do'stlik so'rash</span>
+            </button>
+            <div
+              class="profile-mod-actions"
+              id="profileModActions"
+              style="display: none"
+            >
+              <button
+                type="button"
+                id="profileBlockBtn"
+                onclick="window.toggleBlockUser(window.viewedProfileUsername)"
+              >
+                🚫 Bloklash
+              </button>
+              <button
+                type="button"
+                id="profileReportBtn"
+                onclick="window.openReportDialog(window.viewedProfileUsername)"
+              >
+                ⚠️ <span data-i18n="rpShort">Shikoyat</span>
+              </button>
             </div>
-            <button class="copy-link-btn" id="copyProfileLinkBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0zm-3.2 6.2a4.5 4.5 0 0 1-3.2-7.7l2.8-2.8a1 1 0 1 1 1.4 1.4L5.6 13.3a2.5 2.5 0 0 0 3.5 3.5l2.8-2.8a1 1 0 1 1 1.4 1.4l-2.8 2.8a4.5 4.5 0 0 1-3.1 1.4zm9.2-5.3a1 1 0 0 1-.7-1.7l2.8-2.8a2.5 2.5 0 0 0-3.5-3.5L12.4 9.1A1 1 0 1 1 11 7.7l2.8-2.8a4.5 4.5 0 0 1 6.4 6.4l-2.8 2.8a1 1 0 0 1-.8.2z"/></svg><span data-i18n="profCopyLinkBtn">Profil havolasini nusxalash</span></button>
-            <button class="logout-btn" id="logoutProfileBtn" type="button" onclick="window.handleLogoutFromProfile()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17v-2h6V9h-6V7l-5 5 5 5zm9-14H12v2h7v14h-7v2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg><span data-i18n="btnLogout">Chiqish</span></button>
+            <button class="copy-link-btn" id="copyProfileLinkBtn" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M10.6 13.4a1 1 0 0 1 0-1.4l3.5-3.5a1 1 0 1 1 1.4 1.4L12 13.4a1 1 0 0 1-1.4 0zm-3.2 6.2a4.5 4.5 0 0 1-3.2-7.7l2.8-2.8a1 1 0 1 1 1.4 1.4L5.6 13.3a2.5 2.5 0 0 0 3.5 3.5l2.8-2.8a1 1 0 1 1 1.4 1.4l-2.8 2.8a4.5 4.5 0 0 1-3.1 1.4zm9.2-5.3a1 1 0 0 1-.7-1.7l2.8-2.8a2.5 2.5 0 0 0-3.5-3.5L12.4 9.1A1 1 0 1 1 11 7.7l2.8-2.8a4.5 4.5 0 0 1 6.4 6.4l-2.8 2.8a1 1 0 0 1-.8.2z"
+                /></svg
+              ><span data-i18n="profCopyLinkBtn"
+                >Profil havolasini nusxalash</span
+              >
+            </button>
+            <button
+              class="logout-btn"
+              id="logoutProfileBtn"
+              type="button"
+              onclick="window.handleLogoutFromProfile()"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M10 17v-2h6V9h-6V7l-5 5 5 5zm9-14H12v2h7v14h-7v2h7a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"
+                /></svg
+              ><span data-i18n="btnLogout">Chiqish</span>
+            </button>
           </div>
         </aside>
 
@@ -1756,59 +2815,148 @@
           <div class="profile-content-head">
             <div>
               <h1 class="profile-title" data-i18n="profTitle">Profil</h1>
-              <p class="profile-subtitle" data-i18n="profSubtitle">Reytinglar va o'yin statistikasi</p>
+              <p class="profile-subtitle" data-i18n="profSubtitle">
+                Reytinglar va o'yin statistikasi
+              </p>
             </div>
             <div class="profile-tabs">
-              <button class="tab-btn edit-tab-btn" id="editProfileBtn" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17.2V21h3.8L17.8 10l-3.8-3.8L3 17.2zM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8L20.7 7z"/></svg><span data-i18n="profEditBtn">Tahrirlash</span></button>
-              <button class="tab-btn save-tab-btn" id="saveProfileBtn" type="button" style="display: none"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg><span data-i18n="profSaveBtn">Saqlash</span></button>
-              <button class="tab-btn cancel-tab-btn" id="cancelProfileBtn" type="button" style="display: none"><span data-i18n="profCancel">Bekor</span></button>
+              <button
+                class="tab-btn edit-tab-btn"
+                id="editProfileBtn"
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    d="M3 17.2V21h3.8L17.8 10l-3.8-3.8L3 17.2zM20.7 7a1 1 0 0 0 0-1.4l-2.3-2.3a1 1 0 0 0-1.4 0l-1.8 1.8 3.8 3.8L20.7 7z"
+                  /></svg
+                ><span data-i18n="profEditBtn">Tahrirlash</span>
+              </button>
+              <button
+                class="tab-btn save-tab-btn"
+                id="saveProfileBtn"
+                type="button"
+                style="display: none"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z" /></svg
+                ><span data-i18n="profSaveBtn">Saqlash</span>
+              </button>
+              <button
+                class="tab-btn cancel-tab-btn"
+                id="cancelProfileBtn"
+                type="button"
+                style="display: none"
+              >
+                <span data-i18n="profCancel">Bekor</span>
+              </button>
             </div>
           </div>
 
           <section class="profile-section">
-            <h3 class="profile-section-title" id="profRatingsTab" data-i18n="profRatingsBtn">Reytinglar</h3>
+            <h3
+              class="profile-section-title"
+              id="profRatingsTab"
+              data-i18n="profRatingsBtn"
+            >
+              Reytinglar
+            </h3>
             <div class="stats-grid profile-ratings-grid">
-              <div class="stat-card editable-card rating-readonly profile-rating-card mode-rapid">
+              <div
+                class="stat-card editable-card rating-readonly profile-rating-card mode-rapid"
+              >
                 <div class="profile-rating-top">
                   <span class="profile-mode-icon">⏱️</span>
-                  <span class="stat-title" id="profStatRapidTitle">RAPID REYTING</span>
+                  <span class="stat-title" id="profStatRapidTitle"
+                    >RAPID REYTING</span
+                  >
                 </div>
-                <span class="stat-value editable-text" id="statRapid">1500</span>
-                <input type="number" class="editable-input" id="inputRapid" value="1500" style="display: none" disabled />
-                <span class="profile-mode-games" id="statRapidGames">0 o'yin</span>
+                <span class="stat-value editable-text" id="statRapid"
+                  >1500</span
+                >
+                <input
+                  type="number"
+                  class="editable-input"
+                  id="inputRapid"
+                  value="1500"
+                  style="display: none"
+                  disabled
+                />
+                <span class="profile-mode-games" id="statRapidGames"
+                  >0 o'yin</span
+                >
               </div>
-              <div class="stat-card editable-card rating-readonly profile-rating-card mode-blitz">
+              <div
+                class="stat-card editable-card rating-readonly profile-rating-card mode-blitz"
+              >
                 <div class="profile-rating-top">
                   <span class="profile-mode-icon">🔥</span>
-                  <span class="stat-title" id="profStatBlitzTitle">BLITZ REYTING</span>
+                  <span class="stat-title" id="profStatBlitzTitle"
+                    >BLITZ REYTING</span
+                  >
                 </div>
-                <span class="stat-value editable-text" id="statBlitz">1500</span>
-                <input type="number" class="editable-input" id="inputBlitz" value="1500" style="display: none" disabled />
-                <span class="profile-mode-games" id="statBlitzGames">0 o'yin</span>
+                <span class="stat-value editable-text" id="statBlitz"
+                  >1500</span
+                >
+                <input
+                  type="number"
+                  class="editable-input"
+                  id="inputBlitz"
+                  value="1500"
+                  style="display: none"
+                  disabled
+                />
+                <span class="profile-mode-games" id="statBlitzGames"
+                  >0 o'yin</span
+                >
               </div>
-              <div class="stat-card editable-card rating-readonly profile-rating-card mode-bullet">
+              <div
+                class="stat-card editable-card rating-readonly profile-rating-card mode-bullet"
+              >
                 <div class="profile-rating-top">
                   <span class="profile-mode-icon">⚡</span>
-                  <span class="stat-title" id="profStatBulletTitle">BULLET REYTING</span>
+                  <span class="stat-title" id="profStatBulletTitle"
+                    >BULLET REYTING</span
+                  >
                 </div>
-                <span class="stat-value editable-text" id="statBullet">1500</span>
-                <input type="number" class="editable-input" id="inputBullet" value="1500" style="display: none" disabled />
-                <span class="profile-mode-games" id="statBulletGames">0 o'yin</span>
+                <span class="stat-value editable-text" id="statBullet"
+                  >1500</span
+                >
+                <input
+                  type="number"
+                  class="editable-input"
+                  id="inputBullet"
+                  value="1500"
+                  style="display: none"
+                  disabled
+                />
+                <span class="profile-mode-games" id="statBulletGames"
+                  >0 o'yin</span
+                >
               </div>
-              <div class="stat-card editable-card rating-readonly profile-rating-card mode-chess960">
+              <div
+                class="stat-card editable-card rating-readonly profile-rating-card mode-chess960"
+              >
                 <div class="profile-rating-top">
                   <span class="profile-mode-icon">🎲</span>
-                  <span class="stat-title" data-i18n="profChess960Rating">CHESS960 REYTING</span>
+                  <span class="stat-title" data-i18n="profChess960Rating"
+                    >CHESS960 REYTING</span
+                  >
                 </div>
-                <span class="stat-value editable-text" id="statChess960">1500</span>
-                <span class="profile-mode-games" id="statChess960Games">0 o'yin</span>
+                <span class="stat-value editable-text" id="statChess960"
+                  >1500</span
+                >
+                <span class="profile-mode-games" id="statChess960Games"
+                  >0 o'yin</span
+                >
               </div>
             </div>
           </section>
 
           <section class="profile-section profile-chart-section">
             <div class="profile-chart-head">
-              <h3 class="profile-section-title" data-i18n="profChartTitle">Reyting o'zgarishi</h3>
+              <h3 class="profile-section-title" data-i18n="profChartTitle">
+                Reyting o'zgarishi
+              </h3>
               <div class="profile-chart-tabs" id="profileChartTabs">
                 <button type="button" data-mode="rapid">⏱️ Rapid</button>
                 <button type="button" data-mode="blitz">⚡ Blitz</button>
@@ -1818,47 +2966,93 @@
             </div>
             <div class="profile-chart-box">
               <canvas id="profileRatingChart"></canvas>
-              <div class="profile-chart-empty" id="profileChartEmpty" data-i18n="profChartEmpty">Grafik shu rejimdagi reytingli o'yinlardan keyin paydo bo'ladi</div>
+              <div
+                class="profile-chart-empty"
+                id="profileChartEmpty"
+                data-i18n="profChartEmpty"
+              >
+                Grafik shu rejimdagi reytingli o'yinlardan keyin paydo bo'ladi
+              </div>
             </div>
           </section>
 
           <section class="profile-section">
-            <h3 class="profile-section-title" data-i18n="profOverview">Umumiy natijalar</h3>
+            <h3 class="profile-section-title" data-i18n="profOverview">
+              Umumiy natijalar
+            </h3>
             <div class="profile-overview">
               <div class="profile-overview-numbers">
-                <div class="profile-num"><b id="profTotalGames">0</b><span data-i18n="profGamesLabel">O'yinlar</span></div>
-                <div class="profile-num win"><b id="profWinsCount">0</b><span data-i18n="profWinsLabel">G'alaba</span></div>
-                <div class="profile-num draw"><b id="profDrawsCount">0</b><span data-i18n="profDrawsLabel">Durrang</span></div>
-                <div class="profile-num loss"><b id="profLossesCount">0</b><span data-i18n="profLossesLabel">Mag'lubiyat</span></div>
-                <div class="profile-num rate"><b id="profWinRate">0%</b><span data-i18n="profWinRateLabel">G'alaba foizi</span></div>
+                <div class="profile-num">
+                  <b id="profTotalGames">0</b
+                  ><span data-i18n="profGamesLabel">O'yinlar</span>
+                </div>
+                <div class="profile-num win">
+                  <b id="profWinsCount">0</b
+                  ><span data-i18n="profWinsLabel">G'alaba</span>
+                </div>
+                <div class="profile-num draw">
+                  <b id="profDrawsCount">0</b
+                  ><span data-i18n="profDrawsLabel">Durrang</span>
+                </div>
+                <div class="profile-num loss">
+                  <b id="profLossesCount">0</b
+                  ><span data-i18n="profLossesLabel">Mag'lubiyat</span>
+                </div>
+                <div class="profile-num rate">
+                  <b id="profWinRate">0%</b
+                  ><span data-i18n="profWinRateLabel">G'alaba foizi</span>
+                </div>
               </div>
               <div class="profile-result-bar" aria-hidden="true">
-                <span class="seg win" id="profBarWin"></span><span class="seg draw" id="profBarDraw"></span><span class="seg loss" id="profBarLoss"></span>
+                <span class="seg win" id="profBarWin"></span
+                ><span class="seg draw" id="profBarDraw"></span
+                ><span class="seg loss" id="profBarLoss"></span>
               </div>
             </div>
           </section>
 
           <section class="profile-section">
-            <h3 class="profile-section-title" data-i18n="profRecentGames">Oxirgi o'yinlar</h3>
+            <h3 class="profile-section-title" data-i18n="profRecentGames">
+              Oxirgi o'yinlar
+            </h3>
             <div class="profile-games" id="profRecentGames"></div>
           </section>
 
           <section class="profile-section profile-details-section">
-            <h3 class="profile-section-title" data-i18n="profDetails">Ma'lumotlar</h3>
+            <h3 class="profile-section-title" data-i18n="profDetails">
+              Ma'lumotlar
+            </h3>
             <div class="stats-grid profile-details-grid">
               <div class="stat-card editable-card">
-                <span class="stat-title" id="profStatDebutTitle">ENG KUCHLI DEBYUT</span>
+                <span class="stat-title" id="profStatDebutTitle"
+                  >ENG KUCHLI DEBYUT</span
+                >
                 <span class="stat-value editable-text" id="statDebut"></span>
-                <input type="text" class="editable-input" id="inputDebut" value="" style="display: none" />
+                <input
+                  type="text"
+                  class="editable-input"
+                  id="inputDebut"
+                  value=""
+                  style="display: none"
+                />
               </div>
               <div class="stat-card editable-card rating-readonly">
                 <span class="stat-title" id="profStatClubTitle">KLUB</span>
                 <span class="stat-value editable-text" id="statClub"></span>
-                <input type="text" class="editable-input" id="inputClub" value="" style="display: none" disabled />
+                <input
+                  type="text"
+                  class="editable-input"
+                  id="inputClub"
+                  value=""
+                  style="display: none"
+                  disabled
+                />
               </div>
               <div class="stat-card">
                 <span class="stat-title" id="profStatStatusTitle">STATUS</span>
-                <span class="stat-value win" id="profStatusActive">Faol o'yinchi</span>
+                <span class="stat-value win" id="profStatusActive"
+                  >Faol o'yinchi</span
+                >
               </div>
             </div>
           </section>

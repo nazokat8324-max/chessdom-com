@@ -81,6 +81,12 @@ const SERVER_MESSAGE_KEYS = {
   "Siz allaqachon boshqa klubga a'zosiz!": 'srvAlreadyInOtherClub',
   "Klub chatiga faqat klub a'zolari yozishi mumkin!": 'srvClubChatMembersOnly',
   "Noto'g'ri davlat kodi!": 'srvBadCountry',
+  "Faqat kapitan rollarni boshqara oladi!": 'srvOnlyCaptain',
+  "O'yinchi bu klub a'zosi emas!": 'srvNotClubMember',
+  "Faqat kapitan va moderatorlar yangilik yoza oladi!": 'srvOnlyStaffNews',
+  "Sarlavha va matn kerak!": 'srvNewsRequired',
+  "Yangilik topilmadi!": 'srvNewsNotFound',
+  "Xabar topilmadi!": 'srvMessageNotFound',
   "Muvaffaqiyatli ro'yxatdan o'tdingiz!": 'srvRegistered',
   "Muvaffaqiyatli kirildi!": 'srvLoggedIn',
   "Hisobdan chiqildi!": 'srvLoggedOut',
@@ -1578,7 +1584,20 @@ window.renderProfileCommon = function(p) {
     const input = document.getElementById('input' + cap);
     if (input) input.value = rating;
     setText('stat' + cap + 'Games', tx('profModeGames', "{{count}} ta o'yin", { count: gamesOf(byMode[mode]) }));
+    // Daraja — faqat shu rejimda o'ynagan bo'lsa
+    const gamesEl = document.getElementById('stat' + cap + 'Games');
+    if (gamesEl && typeof window.rankBadge === 'function') {
+      let rankEl = document.getElementById('stat' + cap + 'Rank');
+      if (!rankEl) { rankEl = document.createElement('span'); rankEl.id = 'stat' + cap + 'Rank'; rankEl.className = 'profile-mode-rank'; gamesEl.after(rankEl); }
+      rankEl.innerHTML = gamesOf(byMode[mode]) ? window.rankBadge(rating, true) : '';
+    }
   });
+  // Ism ostida — eng yuqori darajasi (o'ynalgan rejimlar bo'yicha)
+  const rankChip = document.getElementById('profileRankChip');
+  if (rankChip && typeof window.rankBadge === 'function') {
+    const played = ['rapid', 'blitz', 'bullet', 'chess960'].filter(m => gamesOf(byMode[m])).map(m => ratingsByMode[m] || baseRating);
+    rankChip.innerHTML = played.length ? window.rankBadge(Math.max(...played), true) : '';
+  }
 
   // Umumiy natijalar
   const totals = p.stats || { wins: 0, losses: 0, draws: 0 };

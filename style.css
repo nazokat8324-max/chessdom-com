@@ -10865,6 +10865,457 @@ body:has(#gameView.active-view) .top-bar {
   margin-top: 0 !important;
 }
 
+/* ===== Reyting darajalari (ranks.js) ===== */
+.rk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 4px;
+  font-size: 0.95em;
+  line-height: 1;
+  vertical-align: middle;
+  cursor: default;
+}
+.rk-ico {
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1.15em;
+  line-height: 1;
+  color: var(--rk-color);
+  font-family: "Segoe UI Symbol", "DejaVu Sans", "Noto Sans Symbols 2", sans-serif;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.35);
+}
+.rk-badge.full {
+  margin: 0;
+  padding: 3px 9px 3px 7px;
+  border-radius: 99px;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--rk-color, var(--cd-border-strong));
+}
+.rk-badge.full b {
+  font-weight: 800;
+  color: var(--rk-color, #fff);
+}
+.rk-novice { --rk-color: #8bc48a; }
+.rk-bronze { --rk-color: #d08b52; }
+.rk-silver { --rk-color: #c3ccd1; }
+.rk-gold { --rk-color: #f2c94c; }
+.rk-platinum { --rk-color: #6ad7e5; }
+.rk-diamond { --rk-color: #8fb8ff; }
+.rk-master { --rk-color: #ffb547; }
+.rk-grandmaster { --rk-color: #ff7a7a; }
+#gameView .pg-rank:empty {
+  display: none;
+}
+#gameView .pg-rank .rk-badge {
+  margin: 0;
+  font-size: 14px;
+}
+.profile-rank-chip {
+  display: flex;
+  justify-content: center;
+  margin: 2px 0 6px;
+}
+.profile-rank-chip:empty {
+  display: none;
+}
+.profile-mode-rank {
+  display: block;
+  margin-top: 8px;
+}
+.profile-mode-rank:empty {
+  display: none;
+}
+.rk-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 10px 0 4px;
+  font-size: 12px;
+  color: var(--cd-muted);
+}
+.rk-legend-title {
+  font-weight: 800;
+}
+.rk-legend-item {
+  white-space: nowrap;
+  color: var(--rk-color);
+  font-weight: 700;
+}
+.rk-legend-item small {
+  color: var(--cd-muted);
+  font-weight: 600;
+}
+
+/* ===== 🔔 Bildirishnomalar markazi (notifications.js) ===== */
+.nf-wrap {
+  position: relative;
+}
+.nf-bell {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1px solid var(--cd-border-strong);
+  background: var(--cd-surface);
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.nf-bell:hover {
+  border-color: var(--accent);
+}
+.nf-bell.has-unread {
+  animation: nfRing 2.4s ease-in-out 1;
+}
+@keyframes nfRing {
+  0%, 100% { transform: rotate(0); }
+  10% { transform: rotate(14deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(8deg); }
+  40% { transform: rotate(0); }
+}
+.nf-count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 99px;
+  background: #e5484d;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 18px;
+  text-align: center;
+}
+.nf-count[hidden] {
+  display: none;
+}
+.nf-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 950;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  max-height: min(520px, calc(100vh - 90px));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border-strong);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+.nf-panel[hidden] {
+  display: none;
+}
+.nf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--cd-border);
+  color: #fff;
+  font-size: 15px;
+}
+.nf-clear {
+  border: none;
+  background: none;
+  color: var(--accent-light);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.nf-list {
+  overflow-y: auto;
+}
+.nf-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  border-bottom: 1px solid var(--cd-border);
+  background: transparent;
+  color: #dfe7e3;
+  text-align: left;
+  cursor: pointer;
+}
+.nf-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.nf-item.unread {
+  background: rgba(var(--accent-rgb), 0.08);
+}
+.nf-item.unread .nf-text::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  vertical-align: middle;
+}
+.nf-ico {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: var(--cd-surface-2);
+  font-size: 16px;
+}
+.nf-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.nf-text {
+  font-size: 13px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.nf-body small {
+  font-size: 11px;
+  color: var(--cd-muted);
+}
+.nf-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 36px 16px;
+  font-size: 13px;
+  color: var(--cd-muted);
+}
+.nf-empty span {
+  font-size: 28px;
+  opacity: 0.6;
+}
+
+/* ===== Klub rahbariyati va yangiliklari (clubstaff.js) ===== */
+.cs-root {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 16px;
+  max-width: 900px;
+  margin: 20px auto 0;
+}
+.cs-root:empty {
+  display: none;
+}
+.cs-card {
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--cd-border-strong);
+}
+.cs-card h4 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+.cs-hint {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cd-muted);
+}
+.cs-people {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cs-person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--cd-surface-2);
+  color: #fff;
+  font-size: 14px;
+}
+.cs-role {
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 800;
+}
+.cs-role.captain {
+  background: rgba(242, 201, 76, 0.15);
+  color: #f2c94c;
+}
+.cs-role.mod {
+  background: rgba(var(--accent-rgb), 0.15);
+  color: var(--accent-light);
+}
+.cs-x {
+  margin-left: auto;
+  border: none;
+  background: none;
+  color: var(--cd-muted);
+  cursor: pointer;
+}
+.cs-x:hover {
+  color: #eb5757;
+}
+.cs-manage {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+.cs-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.cs-compose textarea {
+  resize: vertical;
+  min-height: 70px;
+  font-family: inherit;
+}
+.cs-compose-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.cs-pin-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #dfe7e3;
+}
+.cs-publish {
+  width: auto !important;
+  padding: 9px 18px !important;
+  font-size: 14px !important;
+}
+.cs-news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cs-news {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--cd-surface-2);
+  border: 1px solid transparent;
+}
+.cs-news.pinned {
+  border-color: rgba(var(--accent-rgb), 0.45);
+}
+.cs-news-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.cs-news h5 {
+  margin: 0;
+  font-size: 15px;
+  color: #fff;
+}
+.cs-news p {
+  margin: 6px 0 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #cdd6d2;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.cs-news small {
+  font-size: 11px;
+  color: var(--cd-muted);
+}
+.cs-news-tools {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.cs-news-tools button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  opacity: 0.7;
+}
+.cs-news-tools button:hover {
+  opacity: 1;
+}
+.cs-empty {
+  padding: 14px 0;
+  font-size: 13px;
+  color: var(--cd-muted);
+}
+/* Toast xabarlar qo'ng'iroqcha (🔔) ni yopmasin — yuqori panel ostidan chiqadi */
+.toast-container {
+  top: 80px;
+}
+body:has(#gameView.active-view) .toast-container {
+  top: 20px;
+}
+.cs-news-tools button {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+.club-chat-del {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 12px;
+  opacity: 0.6;
+}
+.club-chat-del:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  /* Telefonda: qo'ng'iroqcha tepadagi sarlavhada (avatar yonida), alohida qator ochilmaydi */
+  .top-bar {
+    padding: 0;
+    border: none;
+    min-height: 0;
+  }
+  .nf-wrap {
+    position: fixed;
+    top: 9px;
+    right: 66px;
+    z-index: 900;
+  }
+  .nf-panel {
+    position: fixed;
+    top: 60px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+  }
+  body.auth-locked .nf-wrap {
+    display: none;
+  }
+  .cs-root {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

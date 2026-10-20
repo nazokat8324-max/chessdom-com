@@ -301,6 +301,41 @@ async function initDatabase() {
     )
   `);
 
+  // Davlat klublari: rollar (kapitan, moderator) va klub yangiliklari
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS club_roles (
+      id TEXT PRIMARY KEY,
+      club_country TEXT NOT NULL,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      role TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      UNIQUE(club_country, user_id)
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS club_news (
+      id TEXT PRIMARY KEY,
+      club_country TEXT NOT NULL,
+      author_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      pinned INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    )
+  `);
+  // Bildirishnomalar markazi (🔔): data — JSON matn, turiga qarab klient o'zi matn yasaydi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      type TEXT NOT NULL,
+      data TEXT,
+      is_read INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    )
+  `);
+  try { await dbExec('CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications (user_id, created_at)'); } catch (e) {}
+
   // Bloklash va shikoyatlar; admin roli va hisobni bloklash (ban)
   await dbExec(`
     CREATE TABLE IF NOT EXISTS user_blocks (
@@ -885,6 +920,115 @@ async function setUserCountryClub(userId, name, code) {
 
 async function clearUserCountryClub(userId) {
   await dbRun('UPDATE users SET club_country = NULL, club_code = NULL, club_joined_at = NULL WHERE id = ?', [userId]);
+  await dbRun('DELETE FROM club_roles WHERE user_id = ?', [userId]);
+}
+
+// --- Klub rollari: bitta kapitan + moderatorlar. Kapitan bo'lmasa — klubga eng birinchi qo'shilgan a'zo ---
+async function getClubStaff(club) {
+  const rows = await dbAll('SELECT r.user_id as "userId", r.role, u.username, u.club_country as "club" FROM club_roles r JOIN users u ON u.id = r.user_id WHERE r.club_country = ?', [club]);
+  const current = [];
+  for (const r of rows) {
+    if (r.club === club) current.push(r);
+    else await dbRun('DELETE FROM club_roles WHERE club_country = ? AND user_id = ?', [club, r.userId]);
+  }
+  let captain = current.find(r => r.role === 'captain') || null;
+  let autoCaptain = null;
+  if (!captain) {
+    const first = await dbGet('SELECT id, username FROM users WHERE club_country = ? ORDER BY (club_joined_at IS NULL), club_joined_at ASC, username ASC LIMIT 1', [club]);
+    if (first) {
+      await setClubRole(club, first.id, 'captain');
+      captain = { userId: first.id, username: first.username, role: 'captain' };
+      autoCaptain = captain;
+    }
+  }
+  const moderators = current.filter(r => r.role === 'moderator' && (!captain || r.userId !== captain.userId))
+    .map(r => ({ userId: r.userId, username: r.username }));
+  return { captain: captain ? { userId: captain.userId, username: captain.username } : null, moderators, autoCaptain };
+}
+
+// role: 'captain' | 'moderator' | 'member' (member — rol olib tashlanadi)
+async function setClubRole(club, userId, role) {
+  await dbRun('DELETE FROM club_roles WHERE club_country = ? AND user_id = ?', [club, userId]);
+  if (role === 'captain' || role === 'moderator') {
+    await dbRun('INSERT INTO club_roles (id, club_country, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', [uuidv4(), club, userId, role, new Date().toISOString()]);
+  }
+}
+
+async function listClubNews(club) {
+  const rows = await dbAll('SELECT n.id, n.title, n.body, n.pinned, n.created_at as "createdAt", n.author_id as "authorId", u.username as "author" FROM club_news n LEFT JOIN users u ON u.id = n.author_id WHERE n.club_country = ? ORDER BY n.created_at DESC LIMIT 30', [club]);
+  return rows.map(r => ({ ...r, pinned: !!Number(r.pinned) }))
+    .sort((a, b) => (Number(b.pinned) - Number(a.pinned)) || String(b.createdAt).localeCompare(String(a.createdAt)));
+}
+
+async function addClubNews(club, authorId, title, body, pinned) {
+  const id = uuidv4();
+  await dbRun('INSERT INTO club_news (id, club_country, author_id, title, body, pinned, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, club, authorId, title, body, pinned ? 1 : 0, new Date().toISOString()]);
+  return id;
+}
+
+async function getClubNews(id) {
+  return dbGet('SELECT id, club_country as "club", pinned FROM club_news WHERE id = ?', [id]);
+}
+
+async function deleteClubNews(id) {
+  await dbRun('DELETE FROM club_news WHERE id = ?', [id]);
+}
+
+async function setClubNewsPinned(id, pinned) {
+  await dbRun('UPDATE club_news SET pinned = ? WHERE id = ?', [pinned ? 1 : 0, id]);
+}
+
+async function getClubMemberIds(club) {
+  const rows = await dbAll('SELECT id FROM users WHERE club_country = ?', [club]);
+  return rows.map(r => r.id);
+}
+
+async function getChatMessageById(id) {
+  return dbGet('SELECT id, room_id as "roomId", sender_id as "senderId" FROM chat_messages WHERE id = ?', [id]);
+}
+
+async function deleteChatMessage(id) {
+  await dbRun('DELETE FROM chat_messages WHERE id = ?', [id]);
+}
+
+// --- Bildirishnomalar ---
+// collapseKey berilsa — shu kalitli o'qilmagan bildirishnoma yangilanadi (masalan, bir suhbatdoshdan bir nechta xabar)
+async function addNotification(userId, type, data, collapseKey) {
+  const now = new Date().toISOString();
+  if (collapseKey) {
+    const rows = await dbAll('SELECT id, data FROM notifications WHERE user_id = ? AND type = ? AND is_read = 0', [userId, type]);
+    const same = rows.find(r => (parseJson(r.data) || {}).key === collapseKey);
+    if (same) {
+      const prev = parseJson(same.data) || {};
+      const merged = { ...data, key: collapseKey, count: (prev.count || 1) + 1 };
+      await dbRun('UPDATE notifications SET data = ?, created_at = ? WHERE id = ?', [JSON.stringify(merged), now, same.id]);
+      return { id: same.id, type, data: merged, read: false, createdAt: now };
+    }
+  }
+  const id = uuidv4();
+  const payload = collapseKey ? { ...data, key: collapseKey, count: 1 } : data;
+  await dbRun('INSERT INTO notifications (id, user_id, type, data, is_read, created_at) VALUES (?, ?, ?, ?, 0, ?)', [id, userId, type, JSON.stringify(payload || {}), now]);
+  // Har foydalanuvchida oxirgi 100 tasi saqlanadi
+  const old = await dbAll('SELECT id FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 1000 OFFSET 100', [userId]);
+  for (const o of old) await dbRun('DELETE FROM notifications WHERE id = ?', [o.id]);
+  return { id, type, data: payload || {}, read: false, createdAt: now };
+}
+
+async function listNotifications(userId) {
+  const rows = await dbAll('SELECT id, type, data, is_read, created_at FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50', [userId]);
+  const unreadRow = await dbGet('SELECT COUNT(*) as "n" FROM notifications WHERE user_id = ? AND is_read = 0', [userId]);
+  return {
+    notifications: rows.map(r => ({ id: r.id, type: r.type, data: parseJson(r.data) || {}, read: !!Number(r.is_read), createdAt: r.created_at })),
+    unread: Number(unreadRow && unreadRow.n) || 0
+  };
+}
+
+async function markNotificationsRead(userId) {
+  await dbRun('UPDATE notifications SET is_read = 1 WHERE user_id = ? AND is_read = 0', [userId]);
+}
+
+async function clearNotifications(userId) {
+  await dbRun('DELETE FROM notifications WHERE user_id = ?', [userId]);
 }
 
 function statsTotals(stats) {
@@ -1102,7 +1246,7 @@ async function acceptFriendRequest(requestId, receiverId) {
   await dbRun("UPDATE friend_requests SET status = 'accepted', updated_at = ? WHERE id = ?", [new Date().toISOString(), requestId]);
   await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), req.sender_id, req.receiver_id, new Date().toISOString()]);
   await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), req.receiver_id, req.sender_id, new Date().toISOString()]);
-  return { success: true, message: 'Do\'stlik qabul qilindi!' };
+  return { success: true, message: 'Do\'stlik qabul qilindi!', senderId: req.sender_id };
 }
 
 async function declineFriendRequest(requestId, receiverId) {
@@ -1335,6 +1479,20 @@ module.exports = {
   getPublicProfile,
   markRoomRead,
   clearChat,
+  getClubStaff,
+  setClubRole,
+  listClubNews,
+  addClubNews,
+  getClubNews,
+  deleteClubNews,
+  setClubNewsPinned,
+  getClubMemberIds,
+  getChatMessageById,
+  deleteChatMessage,
+  addNotification,
+  listNotifications,
+  markNotificationsRead,
+  clearNotifications,
   getGameReplay,
   blockUser,
   unblockUser,

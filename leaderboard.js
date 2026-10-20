@@ -62,7 +62,8 @@
         ${myCountry ? `<button class="lb-chip${st.myCountry ? ' active' : ''}" data-mycountry="1">${flag(myCountry, 'lb-flag sm')} ${esc(tx('lbMyCountry', 'Mening davlatim'))}</button>` : ''}
         <label class="lb-search"><span>🔍</span><input id="lbSearch" type="search" placeholder="${esc(tx('lbSearch', "O'yinchini qidirish"))}" value="${esc(st.query)}" autocomplete="off"></label>
       </div>
-    </div>`;
+    </div>
+    ${window.rankLegendHtml ? `<div class="rk-legend"><span class="rk-legend-title">${esc(tx('rkLegend', 'Darajalar'))}:</span>${window.rankLegendHtml()}</div>` : ''}`;
   }
 
   function podiumHtml(top, kind) {
@@ -84,7 +85,7 @@
         <span class="lb-pod-medal">${['🥇', '🥈', '🥉'][place - 1]}</span>
         ${avatar(x, 'xl')}
         <b class="lb-pod-name player-link" data-username="${esc(x.username)}">${flag(x.country)}${esc(x.username)}</b>
-        <span class="lb-pod-rating">${x.rating}</span>
+        <span class="lb-pod-rating">${x.games && window.rankBadge ? window.rankBadge(x.rating) : ''}${x.rating}</span>
         <span class="lb-pod-meta"><i class="w">${x.w}</i> / <i class="d">${x.d}</i> / <i class="l">${x.l}</i></span>
       </div>`;
     }).join('')}</div>`;
@@ -100,7 +101,7 @@
     return `<div class="lb-row${isMe ? ' me' : ''}${p.rank <= 3 ? ' top' + p.rank : ''}" id="${isMe ? 'lbMeRow' : ''}">
       <span class="lb-rank">${p.rank}</span>
       <span class="lb-who">${avatar(p)}<span class="lb-name"><b class="player-link" data-username="${esc(p.username)}">${flag(p.country)}${esc(p.username)}</b>${club}</span></span>
-      <span class="lb-rating">${p.rating}</span>
+      <span class="lb-rating">${p.games && window.rankBadge ? window.rankBadge(p.rating) : ''}${p.rating}</span>
       <span class="lb-games">${p.games}</span>
       <span class="lb-wdl"><i class="w">${p.w}</i>/<i class="d">${p.d}</i>/<i class="l">${p.l}</i></span>
       ${pctBar(p.pct, p.games)}

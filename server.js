@@ -276,7 +276,12 @@ async function endGame(roomId, room, winnerColor, reason) {
           { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}) });
         let ratingData = null;
         if (room.rated && oppUser) {
+          const modeBefore = before[p.color] && before[p.color].ratings_by_mode ? before[p.color].ratings_by_mode[ratingMode] : null;
           ratingData = await db.updateUserRatingByResult(p.userId, result, oppUser.rating || 1500, ratingMode, oppUser.ratings_by_mode[ratingMode]);
+          const modeAfter = ratingData && ratingData.ratingsByMode ? ratingData.ratingsByMode[ratingMode] : null;
+          if (modeBefore && modeAfter && modeAfter > modeBefore && rankOf(modeAfter) !== rankOf(modeBefore)) {
+            notify(p.userId, 'rank_up', { mode: ratingMode, rank: rankOf(modeAfter), rating: modeAfter });
+          }
         }
         updates[p.color] = {
           stats: statsData && statsData.stats,
@@ -372,6 +377,7 @@ async function sendChallenge(socket, data) {
     from: { username: c.fromName, rating: (me && me.ratings_by_mode && me.ratings_by_mode[fromMode]) || (me && me.rating) || 1500, country: me ? me.country || null : null }
   });
   socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, variant, seconds: CHALLENGE_TTL_MS / 1000 });
+  notify(target.id, 'challenge', { from: c.fromName, clock: clock.initial / 60 + '+' + clock.increment, variant, rated: c.rated });
 }
 
 async function acceptChallenge(socket, id) {
@@ -426,6 +432,19 @@ async function startRematch(oldRoomId, old) {
     io.to(p.socketId).emit('match-found', { roomId, color, opponent: info(opp), clock, rated: room.rated, mode: room.mode, rematch: true, ...variantInfo(room) });
   }
   scheduleRoomTimer(roomId, room);
+}
+
+// Reyting darajalari — klientdagi ranks.js bilan bir xil chegaralar
+const RANK_STEPS = [[2400, 'grandmaster'], [2200, 'master'], [2000, 'diamond'], [1800, 'platinum'], [1600, 'gold'], [1400, 'silver'], [1200, 'bronze'], [0, 'novice']];
+function rankOf(rating) { const r = Number(rating) || 0; return (RANK_STEPS.find(([min]) => r >= min) || RANK_STEPS[RANK_STEPS.length - 1])[1]; }
+
+// Bildirishnoma: bazaga yoziladi va o'yinchiga darhol yuboriladi (🔔 markazi)
+async function notify(userId, type, data, collapseKey) {
+  if (!userId) return;
+  try {
+    const item = await db.addNotification(userId, type, data || {}, collapseKey);
+    io.to(`user_${userId}`).emit('notification', item);
+  } catch (err) { console.error('Bildirishnoma xatoligi:', err.message); }
 }
 
 function emitWatchCount(roomId) {
@@ -1190,13 +1209,24 @@ async function start() {
       if (receiver.id === req.user.userId) return res.status(400).json({ success: false, message: 'O\'zingizga do\'stlik so\'rovini yuborib bo\'lmaydi!' });
       if (blockedPair(req.user.userId, receiver.id)) return res.status(403).json({ success: false, message: "Bu o'yinchi bilan aloqa cheklangan" });
       const result = await db.sendFriendRequest(req.user.userId, receiver.id);
-      if (result.success) { io.to(`user_${receiver.id}`).emit('friend-request-received', { senderId: req.user.userId, senderName: req.user.username }); }
+      if (result.success && result.senderId) {
+        // Teskari so'rov bor edi — darhol do'st bo'ldik
+        notify(receiver.id, 'friend_accepted', { from: req.user.username });
+      } else if (result.success) {
+        io.to(`user_${receiver.id}`).emit('friend-request-received', { senderId: req.user.userId, senderName: req.user.username });
+        notify(receiver.id, 'friend_request', { from: req.user.username }, 'fr:' + req.user.userId);
+      }
       res.json(result);
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/friends/accept', authMiddleware, async (req, res) => {
-    try { const { requestId } = req.body; const result = await db.acceptFriendRequest(requestId, req.user.userId); res.json(result); }
+    try {
+      const { requestId } = req.body;
+      const result = await db.acceptFriendRequest(requestId, req.user.userId);
+      if (result.success && result.senderId) notify(result.senderId, 'friend_accepted', { from: req.user.username });
+      res.json(result);
+    }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -1307,7 +1337,11 @@ async function start() {
       }
       const { id } = await db.sendChatMessage(req.user.userId, partnerId, roomId, message);
       const payload = { messageId: id, senderId: req.user.userId, senderName: req.user.username, message, roomId, createdAt: new Date().toISOString() };
-      if (partnerId) io.to(`user_${partnerId}`).to(`user_${req.user.userId}`).emit('chat-message', payload);
+      if (partnerId) {
+        io.to(`user_${partnerId}`).to(`user_${req.user.userId}`).emit('chat-message', payload);
+        const preview = message.startsWith('[sticker:') ? '🎨' : message.slice(0, 80);
+        notify(partnerId, 'message', { from: req.user.username, preview }, 'dm:' + req.user.userId);
+      }
       else if (roomId) io.to(roomId).emit('chat-message', payload);
       else io.emit('chat-message', payload);
       res.json({ success: true, messageId: id });
@@ -1361,6 +1395,7 @@ async function start() {
       if (current && req.body.switch !== true) {
         return res.status(409).json({ success: false, reason: 'already_in_club', club: current, message: 'Siz allaqachon boshqa klubga a\'zosiz!' });
       }
+      if (current) await db.clearUserCountryClub(req.user.userId);
       const club = await db.setUserCountryClub(req.user.userId, country, code);
       res.json({ success: true, club, previous: current });
     } catch (err) { console.error('Country club join xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -1369,6 +1404,112 @@ async function start() {
   app.post('/api/country-clubs/leave', authMiddleware, async (req, res) => {
     try { await db.clearUserCountryClub(req.user.userId); res.json({ success: true, club: null }); }
     catch (err) { console.error('Country club leave xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // --- Klub rahbariyati (kapitan, moderatorlar) va klub yangiliklari ---
+  async function clubContext(club, userId) {
+    const staff = await db.getClubStaff(club);
+    if (staff.autoCaptain) {
+      const code = (await db.getUserById(staff.autoCaptain.userId) || {}).club_code || null;
+      notify(staff.autoCaptain.userId, 'club_role', { club, code, role: 'captain' });
+    }
+    const me = userId ? await db.getUserById(userId) : null;
+    const isAdmin = !!(me && me.role === 'admin');
+    const isCaptain = !!(staff.captain && staff.captain.userId === userId);
+    const isModerator = staff.moderators.some(m => m.userId === userId);
+    return { staff, me, isAdmin, isCaptain, isModerator, canModerate: isAdmin || isCaptain || isModerator };
+  }
+  const publicStaff = (s) => ({ captain: s.captain ? { username: s.captain.username } : null, moderators: s.moderators.map(m => ({ username: m.username })) });
+  app.get('/api/country-clubs/:name/staff', apiLimiter, async (req, res) => {
+    try {
+      const club = String(req.params.name);
+      if (!isValidClubName(club)) return res.status(404).json({ success: false, message: 'Klub topilmadi!' });
+      const ctx = await clubContext(club, optionalUserId(req));
+      const myRole = ctx.isCaptain ? 'captain' : (ctx.isModerator ? 'moderator' : null);
+      res.json({ success: true, ...publicStaff(ctx.staff), myRole, canModerate: ctx.canModerate, canManage: ctx.isCaptain || ctx.isAdmin, news: await db.listClubNews(club) });
+    } catch (err) { console.error('Klub rahbariyati xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Kapitan (yoki sayt admini): moderator tayinlash/olib tashlash, kapitanlikni topshirish
+  app.post('/api/country-clubs/:name/roles', authMiddleware, async (req, res) => {
+    try {
+      const club = String(req.params.name);
+      const role = String((req.body && req.body.role) || '');
+      if (!isValidClubName(club) || !['captain', 'moderator', 'member'].includes(role)) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
+      const ctx = await clubContext(club, req.user.userId);
+      if (!ctx.isCaptain && !ctx.isAdmin) return res.status(403).json({ success: false, message: 'Faqat kapitan rollarni boshqara oladi!' });
+      const target = await db.getUserByUsername(String((req.body && req.body.username) || ''));
+      if (!target || target.club_country !== club) return res.status(400).json({ success: false, message: "O'yinchi bu klub a'zosi emas!" });
+      if (role === 'captain') {
+        // Kapitanlik topshiriladi: eski kapitan moderator bo'lib qoladi
+        if (ctx.staff.captain && ctx.staff.captain.userId !== target.id) await db.setClubRole(club, ctx.staff.captain.userId, 'moderator');
+        await db.setClubRole(club, target.id, 'captain');
+      } else {
+        if (ctx.staff.captain && ctx.staff.captain.userId === target.id) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
+        await db.setClubRole(club, target.id, role);
+      }
+      if (target.id !== req.user.userId) notify(target.id, 'club_role', { club, code: target.club_code || null, role });
+      const staff = await db.getClubStaff(club);
+      res.json({ success: true, ...publicStaff(staff) });
+    } catch (err) { console.error('Klub roli xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/country-clubs/:name/news', authMiddleware, async (req, res) => {
+    try {
+      const club = String(req.params.name);
+      if (!isValidClubName(club)) return res.status(404).json({ success: false, message: 'Klub topilmadi!' });
+      const ctx = await clubContext(club, req.user.userId);
+      if (!ctx.canModerate) return res.status(403).json({ success: false, message: 'Faqat kapitan va moderatorlar yangilik yoza oladi!' });
+      const title = String((req.body && req.body.title) || '').trim().slice(0, 120);
+      const text = String((req.body && req.body.body) || '').trim().slice(0, 3000);
+      if (!title || !text) return res.status(400).json({ success: false, message: 'Sarlavha va matn kerak!' });
+      const id = await db.addClubNews(club, req.user.userId, title, text, !!(req.body && req.body.pinned));
+      const code = (ctx.me && ctx.me.club_code) || null;
+      for (const uid of await db.getClubMemberIds(club)) if (uid !== req.user.userId) notify(uid, 'club_news', { club, code, title, newsId: id, author: req.user.username });
+      res.json({ success: true, id, news: await db.listClubNews(club) });
+    } catch (err) { console.error('Klub yangiligi xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Yangilikni o'chirish yoki mahkamlash (📌)
+  const newsAction = (action) => async (req, res) => {
+    try {
+      const news = await db.getClubNews(String(req.params.id));
+      if (!news) return res.status(404).json({ success: false, message: 'Yangilik topilmadi!' });
+      const ctx = await clubContext(news.club, req.user.userId);
+      if (!ctx.canModerate) return res.status(403).json({ success: false, message: 'Faqat kapitan va moderatorlar yangilik yoza oladi!' });
+      if (action === 'delete') await db.deleteClubNews(news.id);
+      else await db.setClubNewsPinned(news.id, !Number(news.pinned));
+      res.json({ success: true, news: await db.listClubNews(news.club) });
+    } catch (err) { console.error('Klub yangiligi xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  };
+  app.delete('/api/country-clubs/news/:id', authMiddleware, newsAction('delete'));
+  app.post('/api/country-clubs/news/:id/pin', authMiddleware, newsAction('pin'));
+
+  // Klub chatidagi xabarni o'chirish — kapitan, moderator yoki sayt admini
+  app.delete('/api/chat/messages/:id', authMiddleware, async (req, res) => {
+    try {
+      const msg = await db.getChatMessageById(String(req.params.id));
+      if (!msg || !msg.roomId || !msg.roomId.startsWith('club_')) return res.status(404).json({ success: false, message: 'Xabar topilmadi!' });
+      const ctx = await clubContext(msg.roomId.slice(5), req.user.userId);
+      if (!ctx.canModerate) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
+      await db.deleteChatMessage(msg.id);
+      io.to(msg.roomId).emit('chat-message-deleted', { roomId: msg.roomId, messageId: msg.id });
+      res.json({ success: true });
+    } catch (err) { console.error('Chat xabarini o\'chirish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // --- Bildirishnomalar markazi ---
+  app.get('/api/notifications', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, ...(await db.listNotifications(req.user.userId)) }); }
+    catch (err) { console.error('Bildirishnomalar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/notifications/read', authMiddleware, async (req, res) => {
+    try { await db.markNotificationsRead(req.user.userId); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/notifications/clear', authMiddleware, async (req, res) => {
+    try { await db.clearNotifications(req.user.userId); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/clubs', authMiddleware, [
@@ -1683,8 +1824,8 @@ async function start() {
     }
   }, 4000);
 
-  league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId });
-  swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId });
+  league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId, notify });
+  swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId, notify });
   // Bloklar, banlar va adminlar (ADMIN_USERNAMES="ism1,ism2" — Render env)
   try {
     for (const b of await db.loadAllBlocks()) blocks.add(b.userId + '|' + b.blockedId);

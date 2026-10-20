@@ -642,11 +642,15 @@ window.openClubDetail = async function(countryName, countryCode) {
             ${topPlayersHTML}
           </div>
         </div>
+
+        <!-- Klub rahbariyati va yangiliklari (clubstaff.js) -->
+        <div id="clubStaffNews" class="cs-root"></div>
       </div>
     `;
 
   // Sahifani ko'rsatish
   switchViewToClubDetail();
+  if (typeof window.renderClubStaffNews === 'function') window.renderClubStaffNews(countryName);
 };
 
 // Club detail view'ga o'tish
@@ -1821,6 +1825,12 @@ window.loadClubChatMessages = function() {
 
   const roomId = 'club_' + window.currentClubName;
   const url = `/api/chat/messages?roomId=${encodeURIComponent(roomId)}`;
+  // Kapitan/moderator xabarlarni o'chira oladi — huquq bir marta so'raladi, keyin qayta chiziladi
+  if (typeof window.loadClubStaff === 'function' && window.clubModClub !== window.currentClubName) {
+    window.clubModClub = window.currentClubName;
+    window.clubCanModerate = false;
+    window.loadClubStaff(window.currentClubName).then(() => { if (window.clubCanModerate) window.loadClubChatMessages(); });
+  }
 
   container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
 
@@ -1849,7 +1859,7 @@ window.loadClubChatMessages = function() {
           <div class="club-chat-message ${isOwn ? 'own' : 'other'}${sticker ? ' sticker' : ''}">
             <span class="club-chat-message-author player-link" data-username="${escapeHtml(authorName)}">${escapeHtml(authorName)}</span>
             <div>${sticker ? window.ChatStickers.html(sticker) : escapeHtml(msg.message)}</div>
-            <div class="club-chat-message-time">${time}</div>
+            <div class="club-chat-message-time">${time}${window.clubCanModerate && msg.id ? ` <button type="button" class="club-chat-del" title="${escapeHtml(tx('csDelete', "O'chirish"))}" onclick="window.deleteClubChatMessage('${escapeHtml(msg.id)}')">🗑</button>` : ''}</div>
           </div>
         `;
       });

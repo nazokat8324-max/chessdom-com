@@ -641,6 +641,8 @@ window.updatePlayerInfo = function(color, name, rating) {
     ratingEl.dataset.rating = waiting ? '' : (rating || 1500);
     ratingEl.textContent = waiting ? '' : String(rating || 1500);
   }
+  const rankEl = document.getElementById(`${color}PlayerRank`);
+  if (rankEl) rankEl.innerHTML = waiting || typeof window.rankBadge !== 'function' ? '' : window.rankBadge(rating || 1500);
 };
 
 // --- Bosib yurish: tanlangan dona, yurish mumkin bo'lgan kataklar (nuqta / olish doirasi), oxirgi yurish ---

@@ -506,34 +506,20 @@
             >
           </div>
           <!-- O'ng qo'shimcha blok: Top 5 G'oliblar -->
-          <div class="dash-card">
-            <div
-              style="
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                margin-bottom: 8px;
-              "
-            >
-              <h4
-                style="margin: 0; color: var(--accent-light)"
-                id="dashPlayerTitle"
-              >
-                Top 5 G'oliblar
-              </h4>
-              <span style="font-size: 20px">👑</span>
+          <div class="dash-card tw-card">
+            <div class="tw-head">
+              <span class="tw-crown">👑</span>
+              <div class="tw-head-text">
+                <h4 id="dashPlayerTitle">Top 5 G'oliblar</h4>
+                <p id="twDesc"></p>
+              </div>
             </div>
-            <p
-              style="font-size: 13px; color: #8fa89f; margin-bottom: 12px"
-              id="dashPlayerDesc"
-            >
-              Eng ko'p g'alaba qozongan chempionlar.
-            </p>
-
-            <!-- 5 ta o'yinchi chiqadigan jadval konteyneri -->
-            <div id="topPlayersContainer" style="overflow-x: auto">
-              <!-- Bu yer JavaScript orqali dinamik ravishda to'ldiriladi -->
+            <!-- Davr: 24 soat / 7 kun (script.js renderTopPlayersList) -->
+            <div class="tw-seg" id="twSeg">
+              <button type="button" data-period="day" data-i18n="twDay">24 soat</button>
+              <button type="button" data-period="week" data-i18n="twWeek">7 kun</button>
             </div>
+            <div id="topPlayersContainer" class="tw-list"></div>
           </div>
         </div>
       </div>

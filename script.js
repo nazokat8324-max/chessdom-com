@@ -221,10 +221,9 @@ window.updateStreakUI = function() {
 
 window._topPlayersState = null;
 
-function topPlayersText(key, fallback) {
-  return (typeof i18next !== 'undefined' && i18next.isInitialized)
-    ? i18next.t(key, { defaultValue: fallback })
-    : fallback;
+function topPlayersText(key, fallback, vars) {
+  if (typeof window.tx === 'function') return window.tx(key, fallback, vars || {});
+  return String(fallback).replace(/\{\{(\w+)\}\}/g, (m, k) => (vars && k in vars ? vars[k] : m));
 }
 
 function topPlayersEsc(value) {
@@ -234,111 +233,102 @@ function topPlayersEsc(value) {
   return div.innerHTML;
 }
 
-function topPlayersTableHead() {
-  return `
-      <thead>
-        <tr>
-          <th>#</th>
-          <th id="colUsername">${topPlayersEsc(topPlayersText('colUsername', 'Username'))}</th>
-          <th id="colRating">${topPlayersEsc(topPlayersText('colRating', 'Rating'))}</th>
-          <th id="colWinPoints">${topPlayersEsc(topPlayersText('colWinPoints', 'Win Points'))}</th>
-        </tr>
-      </thead>`;
-}
+// --- Top 5 g'oliblar (bosh sahifa): 1-o'rin katta kartada, qolganlari — chiziqli ro'yxat ---
+window._topPeriod = (function () { try { return localStorage.getItem('justChessTopPeriod') === 'week' ? 'week' : 'day'; } catch (e) { return 'day'; } })();
 
-function topPlayersMessage(className, key, fallback, colspan) {
-  const message = topPlayersEsc(topPlayersText(key, fallback));
-  const cell = colspan
-    ? `<td class="${className}" colspan="${colspan}">${message}</td>`
-    : `<div class="${className}">${message}</div>`;
-  return `
-      <table class="top-winners-table">
-        ${topPlayersTableHead()}
-        <tbody>
-          <tr>${cell}</tr>
-        </tbody>
-      </table>
-    `;
+function topPlayersFlag(code) {
+  return code ? `<img class="tw-flag" src="https://flagcdn.com/w40/${topPlayersEsc(String(code).toLowerCase())}.png" alt="" onerror="this.remove()">` : '';
 }
 
 window.renderTopPlayersList = function() {
   const container = document.getElementById("topPlayersContainer");
   if (!container) return;
+  const period = window._topPeriod;
+  document.querySelectorAll('#twSeg [data-period]').forEach(b => b.classList.toggle('active', b.dataset.period === period));
+  const desc = document.getElementById('twDesc');
+  if (desc) desc.textContent = period === 'week'
+    ? topPlayersText('twDescWeek', "Oxirgi 7 kundagi eng ko'p g'alabalar")
+    : topPlayersText('twDescDay', "Oxirgi 24 soatdagi eng ko'p g'alabalar");
 
   const state = window._topPlayersState;
-
-  // Hali yuklanmagan
   if (!state) {
-    container.innerHTML = `<div class="top-winners-empty">${topPlayersEsc(topPlayersText('loadingText', 'Yuklanmoqda...'))}</div>`;
+    container.innerHTML = `<div class="tw-skeleton"><i></i><i></i><i></i></div>`;
     return;
   }
-
-  // Yuklash xatoligi
   if (state.status === 'error') {
-    container.innerHTML = topPlayersMessage('top-winners-empty', 'topPlayersError', 'Reytingni yuklab bo\'lmadi', 4);
+    container.innerHTML = `<div class="tw-empty"><span>⚠️</span><b>${topPlayersEsc(topPlayersText('topPlayersError', "Reytingni yuklab bo'lmadi"))}</b></div>`;
     return;
   }
-
   const winners = Array.isArray(state.winners) ? state.winners : [];
-
-  // Soxta ma'lumot yo'q - bo'sh holat
-  if (state.status === 'empty' || winners.length === 0) {
-    container.innerHTML = topPlayersMessage('top-winners-empty', 'topPlayersEmpty', 'Oxirgi 24 soatda hali g\'alaba yo\'q', 4);
+  if (!winners.length) {
+    container.innerHTML = `
+      <div class="tw-empty">
+        <span>🏆</span>
+        <b>${topPlayersEsc(topPlayersText('twEmptyTitle', "Hali g'olib yo'q"))}</b>
+        <small>${topPlayersEsc(topPlayersText('twEmptyHint', "Birinchi g'alabani siz qozoning — ismingiz shu yerda turadi!"))}</small>
+        <button type="button" class="tw-play" onclick="switchView('game')">⚡ ${topPlayersEsc(topPlayersText('twPlay', "O'ynash"))}</button>
+      </div>`;
     return;
   }
-
-  const tableRows = winners
-    .map((user, index) => {
-      const name = (user && user.username) ? String(user.username) : '';
-      const initial = name.charAt(0).toUpperCase() || 'U';
-      const rating = Number(user && user.rating);
-      const wins = Number(user && user.dailyWins);
-      return `
-          <tr class="top-winners-row">
-            <td class="top-winners-rank">${index + 1}</td>
-            <td class="top-winners-user">
-              <div class="top-winners-user-cell">
-                <div class="mini-avatar">${topPlayersEsc(initial)}${window.avatarOverlay(name, window.myAvatarVersion(name))}</div>
-                <span class="top-winners-name player-link" data-username="${topPlayersEsc(name)}">${topPlayersEsc(name)}</span>
-              </div>
-            </td>
-            <td class="top-winners-rating">${Number.isFinite(rating) ? rating : 1500}</td>
-            <td class="top-winners-wins">${Number.isFinite(wins) ? wins : 0}</td>
-          </tr>
-        `;
-    })
-    .join('');
-
+  const top = Math.max(1, ...winners.map(w => Number(w.dailyWins) || 0));
+  const avatar = (name, cls) => `<div class="mini-avatar ${cls}">${topPlayersEsc(name.charAt(0).toUpperCase() || 'U')}${window.avatarOverlay ? window.avatarOverlay(name, window.myAvatarVersion(name)) : ''}</div>`;
+  const winsText = (n) => topPlayersEsc(topPlayersText('twWins', "{{n}} g'alaba", { n }));
+  const meta = (w) => `${typeof window.rankBadge === 'function' ? window.rankBadge(w.rating) : ''}<span>${Number(w.rating) || 1500}</span>${w.games ? `<span class="tw-dot">·</span><span>${topPlayersEsc(topPlayersText('twWinRate', "{{n}}% g'alaba", { n: w.winRate }))}</span>` : ''}`;
+  const me = window.currentUser && window.currentUser.username;
+  const [first, ...rest] = winners;
+  const firstName = String(first.username || '');
   container.innerHTML = `
-      <table class="top-winners-table">
-        ${topPlayersTableHead()}
-        <tbody>${tableRows}</tbody>
-      </table>
-    `;
+    <div class="tw-champ${firstName === me ? ' me' : ''}">
+      <div class="tw-champ-av">${avatar(firstName, 'tw-av-lg')}<span class="tw-champ-crown">👑</span></div>
+      <div class="tw-champ-info">
+        <b class="player-link" data-username="${topPlayersEsc(firstName)}">${topPlayersFlag(first.country)}${topPlayersEsc(firstName)}</b>
+        <div class="tw-meta">${meta(first)}</div>
+      </div>
+      <div class="tw-champ-wins"><b>${Number(first.dailyWins) || 0}</b><small>${topPlayersEsc(topPlayersText('twWinsShort', "g'alaba"))}</small></div>
+    </div>
+    ${rest.map((w, i) => {
+      const name = String(w.username || '');
+      const wins = Number(w.dailyWins) || 0;
+      return `
+      <div class="tw-row${name === me ? ' me' : ''}">
+        <span class="tw-place p${i + 2}">${['🥈', '🥉'][i] || i + 2}</span>
+        ${avatar(name, '')}
+        <div class="tw-row-info">
+          <b class="player-link" data-username="${topPlayersEsc(name)}">${topPlayersFlag(w.country)}${topPlayersEsc(name)}</b>
+          <div class="tw-bar"><i style="width:${Math.round(wins / top * 100)}%"></i></div>
+        </div>
+        <span class="tw-wins" title="${winsText(wins)}">${wins}</span>
+      </div>`;
+    }).join('')}`;
 };
 
 window.loadTopPlayers = async function() {
   const container = document.getElementById("topPlayersContainer");
   if (!container) return;
-
+  const seg = document.getElementById('twSeg');
+  if (seg && !seg.dataset.bound) {
+    seg.dataset.bound = '1';
+    seg.addEventListener('click', (e) => {
+      const b = e.target.closest('[data-period]');
+      if (!b || b.dataset.period === window._topPeriod) return;
+      window._topPeriod = b.dataset.period;
+      try { localStorage.setItem('justChessTopPeriod', window._topPeriod); } catch (err) {}
+      window.loadTopPlayers();
+    });
+  }
   window._topPlayersState = null;
   window.renderTopPlayersList();
-
   try {
-    const res = await fetch('/api/daily-winners');
+    const res = await fetch('/api/daily-winners?period=' + window._topPeriod);
     if (!res.ok) throw new Error('Failed to fetch');
     const data = await res.json();
     if (!data || data.success !== true) throw new Error('Invalid response');
-
     const winners = (Array.isArray(data.winners) ? data.winners : []).slice(0, 5);
-    window._topPlayersState = winners.length > 0
-      ? { status: 'ok', winners }
-      : { status: 'empty', winners: [] };
+    window._topPlayersState = winners.length > 0 ? { status: 'ok', winners } : { status: 'empty', winners: [] };
   } catch (err) {
     console.error('Top players yuklash xatoligi:', err);
     window._topPlayersState = { status: 'error', winners: [] };
   }
-
   window.renderTopPlayersList();
 };
 

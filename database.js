@@ -908,21 +908,25 @@ async function getLeaderboard() {
   }));
 }
 
-async function getDailyWinners() {
-  const cutoff = Date.now() - 24 * 60 * 60 * 1000;
-  const users = await dbAll('SELECT username, stats, history, rating FROM users');
-  const dailyWins = users.map(u => {
-    const history = parseJson(u.history) || [];
-    const wins = history.filter(game => {
-      if (game.result !== 'win') return false;
-      const ts = game.timestamp || game.date;
-      if (!ts) return false;
-      const gameTime = new Date(ts).getTime();
-      return !isNaN(gameTime) && gameTime >= cutoff;
-    }).length;
-    return { username: u.username, dailyWins: wins, rating: u.rating || 1500 };
-  }).filter(u => u.dailyWins > 0).sort((a, b) => b.dailyWins - a.dailyWins).slice(0, 5);
-  return { success: true, winners: dailyWins };
+// Top 5 g'oliblar: shu davrda (24 soat yoki 7 kun) eng ko'p g'alaba; tenglikda — kam o'yin, keyin reyting
+async function getDailyWinners(period) {
+  const span = period === 'week' ? 7 : 1;
+  const cutoff = Date.now() - span * 24 * 60 * 60 * 1000;
+  const users = await dbAll('SELECT username, history, rating, country, avatar_version FROM users');
+  const winners = users.map(u => {
+    const recent = (parseJson(u.history) || []).filter(game => {
+      const t = new Date(game.timestamp || game.date || 0).getTime();
+      return !isNaN(t) && t >= cutoff;
+    });
+    const wins = recent.filter(g => g.result === 'win').length;
+    return {
+      username: u.username, dailyWins: wins, games: recent.length, winRate: recent.length ? Math.round(wins / recent.length * 100) : 0,
+      rating: u.rating || 1500, country: u.country || null, avatarVersion: u.avatar_version || null
+    };
+  }).filter(u => u.dailyWins > 0)
+    .sort((a, b) => b.dailyWins - a.dailyWins || a.games - b.games || b.rating - a.rating)
+    .slice(0, 5);
+  return { success: true, period: span === 7 ? 'week' : 'day', winners };
 }
 
 async function getStatsByUsername(username) {

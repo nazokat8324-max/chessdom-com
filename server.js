@@ -347,7 +347,7 @@ async function endGame(roomId, room, winnerColor, reason) {
     } catch (err) { console.error("O'yin natijasini saqlash xatoligi:", err); }
   }
   if (recorded) {
-    invalidateCache('leaderboard', 'daily');
+    invalidateCache('leaderboard', 'daily:day', 'daily:week');
     recordFairplay(room, winnerColor).catch(err => console.error('Fair-play xatoligi:', err.message));
     for (const p of players) checkAchievements(p.userId);
   }
@@ -858,7 +858,10 @@ async function start() {
   });
 
   app.get('/api/daily-winners', apiLimiter, async (req, res) => {
-    try { const data = await cached('daily', 60000, () => db.getDailyWinners()); res.json(data); }
+    try {
+      const period = req.query.period === 'week' ? 'week' : 'day';
+      res.json(await cached('daily:' + period, 60000, () => db.getDailyWinners(period)));
+    }
     catch (err) { console.error('Daily winners xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 

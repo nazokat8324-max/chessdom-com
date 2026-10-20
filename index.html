@@ -334,6 +334,10 @@
             onclick="switchView('game')"
             ><span class="icon">🎮</span> <span id="mPlay">O'yin</span></a
           >
+          <a class="menu-item" id="navTea" onclick="switchView('tea')">
+            <span class="icon">🍵</span>
+            <span data-i18n="teaTitle">Choyxona</span>
+          </a>
           <a
             class="menu-item"
             id="navLeaderboard"
@@ -467,6 +471,7 @@
             >
               ⚡ Play Online (Matchmaking)
             </button>
+            <button type="button" class="tea-home-btn" onclick="switchView('tea')">🍵 <span data-i18n="teaHomeBtn">Choyxonaga kirish</span></button>
             <div class="home-widgets" id="homeWidgets"></div>
           </div>
           <!-- O'rtada: sayt bilan tanishtiruv ("ChessDom haqida" sahifasini ochadi) -->
@@ -1573,6 +1578,11 @@
         </div>
       </div>
 
+      <!-- CHOYXONA — stollar lobbisi (teahouse.js) -->
+      <div id="teaView" class="view-section">
+        <div class="tea-page" id="teaRoot"></div>
+      </div>
+
       <!-- DAVLATLAR URUSHI (warmap.js) -->
       <div id="warView" class="view-section">
         <div class="war-page" id="warRoot"></div>
@@ -2538,6 +2548,7 @@
     <script src="rivals.js"></script>
     <script src="wrapped.js"></script>
     <script src="warmap.js"></script>
+    <script src="teahouse.js"></script>
     <script src="router.js"></script>
     <script src="rating-chart.js"></script>
 

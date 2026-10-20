@@ -457,6 +457,7 @@ window.toggleMobileMenu = function(open) {
 window.switchView = function(viewName) {
   document.body.classList.remove('mobile-menu-open');
   if (viewName !== 'live' && typeof window.stopWatching === 'function') window.stopWatching();
+  if (viewName !== 'tea' && typeof window.leaveTeahouse === 'function') window.leaveTeahouse();
   if (viewName !== "settings" && typeof window.discardSettingsChanges === "function") {
     const settingsEl = document.getElementById("settingsView");
     if (settingsEl && settingsEl.classList.contains("active-view")) window.discardSettingsChanges();
@@ -647,6 +648,12 @@ window.switchView = function(viewName) {
         window.loadChatMessages();
       }
     }
+  } else if (viewName === "tea") {
+    const teaEl = document.getElementById("teaView");
+    if (teaEl) teaEl.classList.add("active-view");
+    const navEl = document.getElementById("navTea");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.renderTeaView === "function") window.renderTeaView();
   } else if (viewName === "war") {
     const warEl = document.getElementById("warView");
     if (warEl) warEl.classList.add("active-view");

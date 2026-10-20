@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
-const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', urush: 'Country war' };
+const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', urush: 'Country war', choyxona: 'Teahouse' };
 const DEFAULT_DESC = 'ChessDom — free online chess: rated games, Chess960, hourly Swiss tournaments, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
@@ -90,7 +90,7 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', 'turnirlar', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'urush'];
+  const pages = ['', 'reyting', 'turnirlar', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'urush', 'choyxona'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
@@ -100,7 +100,7 @@ app.get('/sitemap.xml', async (req, res) => {
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix', 'urush']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix', 'urush', 'choyxona']);
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
   const slug = req.params[0].toLowerCase();
   if (!PAGE_ROUTES.has(slug)) return next();
@@ -177,6 +177,7 @@ function otherColor(color) { return color === 'w' ? 'b' : 'w'; }
 
 // opts.variant: 'standard' | 'chess960' (Chess960 — alohida 'chess960' reytingi), opts.startFen — 960 boshlang'ich pozitsiyasi
 function createGameRoom(white, black, clock, rated, opts) {
+  for (const p of [white, black]) if (p && p.userId && typeof teaStand === 'function') teaStand(p.userId);
   const variant = opts && opts.variant === 'chess960' ? 'chess960' : 'standard';
   // CHESS960_TEST_FEN — faqat lokal sinov uchun (doim bir xil pozitsiya)
   const startFen = variant === 'chess960' ? (opts.startFen || process.env.CHESS960_TEST_FEN || Chess960.randomStartFen()) : null;
@@ -453,22 +454,114 @@ async function acceptChallenge(socket, id) {
     if (i !== -1) matchmakingQueue.splice(i, 1);
   }
   const [fromUser, toUser] = await Promise.all([db.getUserById(c.fromId), db.getUserById(c.toId)]);
-  const challenger = { socket: fromSocket, user: fromUser }, accepter = { socket, user: toUser };
-  const [white, black] = Math.random() < 0.5 ? [challenger, accepter] : [accepter, challenger];
+  startDirectGame({ socket: fromSocket, user: fromUser }, { socket, user: toUser }, c.clock, c.rated, c.variant, { challenge: true });
+}
+
+// Ikki tayyor o'yinchi (socket + user) o'rtasida o'yin: ranglar tasodifiy, ikkalasiga match-found
+function startDirectGame(a, b, clock, rated, variant, flags) {
+  for (const uid of [a.user.id, b.user.id]) {
+    const i = matchmakingQueue.findIndex(u => u.userId === uid);
+    if (i !== -1) matchmakingQueue.splice(i, 1);
+  }
+  const [white, black] = Math.random() < 0.5 ? [a, b] : [b, a];
   const roomId = generateRoomId();
   const room = createGameRoom(
     { socketId: white.socket.id, userId: white.user.id, username: white.user.username },
     { socketId: black.socket.id, userId: black.user.id, username: black.user.username },
-    c.clock, c.rated, { variant: c.variant }
+    clock, rated, { variant }
   );
   rooms.set(roomId, room);
   const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null });
   for (const [side, color, opp] of [[white, 'w', black], [black, 'b', white]]) {
     side.socket.join(roomId);
-    side.socket.emit('match-found', { roomId, color, opponent: info(opp.user), clock: c.clock, rated: room.rated, mode: room.mode, challenge: true, ...variantInfo(room) });
+    side.socket.emit('match-found', { roomId, color, opponent: info(opp.user), clock, rated: room.rated, mode: room.mode, ...(flags || {}), ...variantInfo(room) });
   }
   scheduleRoomTimer(roomId, room);
+  return roomId;
 }
+
+// --- 🍵 Choyxona: o'yinchi stolga o'tiradi (vaqt nazorati bilan), boshqasi qarshisidagi bo'sh stulga o'tirsa — o'yin ---
+// O'tirganlar xotirada (teaSeats); lobbidagilar 'tea' socket xonasida, o'zgarishda 'tea-seats' yuboriladi.
+const TEA_TTL_MS = 30 * 60 * 1000;
+const TEA_MAX_SEATS = 120;
+const teaSeats = new Map(); // id -> { id, userId, username, socketId, clock, rated, variant, rating, country, avatarVersion, createdAt }
+function teaPublic(s) {
+  return { id: s.id, username: s.username, rating: s.rating, country: s.country, avatarVersion: s.avatarVersion, clock: s.clock, rated: s.rated, variant: s.variant, mode: clockMode(s.clock), createdAt: s.createdAt };
+}
+function teaList() { return [...teaSeats.values()].sort((a, b) => a.createdAt - b.createdAt).map(teaPublic); }
+function broadcastTea() { io.to('tea').emit('tea-seats', { seats: teaList(), online: onlineUsers.size }); }
+// O'yinchi stoldan turadi (o'zi, boshqa o'yin boshlandi yoki uzildi)
+function teaStand(userId, socketId) {
+  let changed = false;
+  for (const s of teaSeats.values()) {
+    if (userId ? s.userId === userId : s.socketId === socketId) { teaSeats.delete(s.id); changed = true; }
+  }
+  if (changed) broadcastTea();
+}
+async function teaSit(socket, data) {
+  const userId = socket.data.userId;
+  if (!userId) return socket.emit('tea-error', { reason: 'auth' });
+  if (inActiveGame(userId)) return socket.emit('tea-error', { reason: 'you_busy' });
+  if (teaSeats.size >= TEA_MAX_SEATS) return socket.emit('tea-error', { reason: 'full' });
+  const clock = normalizeChallengeClock(data && data.initial, data && data.increment);
+  const variant = data && data.variant === 'chess960' ? 'chess960' : 'standard';
+  const u = await db.getUserById(userId);
+  if (!u) return socket.emit('tea-error', { reason: 'auth' });
+  const mode = variant === 'chess960' ? 'chess960' : clockMode(clock);
+  for (const s of teaSeats.values()) if (s.userId === userId) teaSeats.delete(s.id);
+  const i = matchmakingQueue.findIndex(q => q.userId === userId);
+  if (i !== -1) matchmakingQueue.splice(i, 1);
+  const seat = {
+    id: uuidv4(), userId, username: u.username, socketId: socket.id, clock, variant, rated: !(data && data.rated === false),
+    rating: Number(u.ratings_by_mode && u.ratings_by_mode[mode]) || u.rating || 1500, country: u.country || null,
+    avatarVersion: u.avatar_version || null, createdAt: Date.now()
+  };
+  teaSeats.set(seat.id, seat);
+  socket.emit('tea-seated', teaPublic(seat));
+  broadcastTea();
+}
+async function teaJoin(socket, id) {
+  const userId = socket.data.userId;
+  if (!userId) return socket.emit('tea-error', { reason: 'auth' });
+  const seat = teaSeats.get(id);
+  if (!seat) return socket.emit('tea-error', { reason: 'gone' });
+  if (seat.userId === userId) return socket.emit('tea-error', { reason: 'self' });
+  if (blockedPair(userId, seat.userId)) return socket.emit('tea-error', { reason: 'blocked' });
+  if (inActiveGame(userId)) return socket.emit('tea-error', { reason: 'you_busy' });
+  const ownerSocket = io.sockets.sockets.get(seat.socketId) || userSocket(seat.userId);
+  if (!ownerSocket || !ownerSocket.connected || inActiveGame(seat.userId)) {
+    teaSeats.delete(seat.id);
+    broadcastTea();
+    return socket.emit('tea-error', { reason: 'gone' });
+  }
+  teaSeats.delete(seat.id);
+  const [owner, me] = await Promise.all([db.getUserById(seat.userId), db.getUserById(userId)]);
+  if (!owner || !me) return socket.emit('tea-error', { reason: 'gone' });
+  startDirectGame({ socket: ownerSocket, user: owner }, { socket, user: me }, seat.clock, seat.rated, seat.variant, { challenge: true, tea: true });
+}
+// Choyxonadagi band stollar: davom etayotgan o'yinlar (mini-doska uchun FEN va oxirgi yurish)
+function teaGames() {
+  return cached('tea:games', 3000, async () => {
+    const list = [];
+    for (const [roomId, room] of rooms.entries()) {
+      if (room.status !== 'active' || room.players.length !== 2) continue;
+      const last = room.chess.history({ verbose: true }).slice(-1)[0];
+      list.push({ ...(await liveGameInfo(roomId, room)), fen: room.chess.fen(), lastMove: last ? [last.from, last.to] : null });
+    }
+    return list.slice(0, 60);
+  });
+}
+// Lobbidagilarga stollardagi o'yinlar har 4 soniyada (so'rov limitini sarflamaslik uchun socket orqali)
+setInterval(async () => {
+  const r = io.sockets.adapter.rooms.get('tea');
+  if (!r || !r.size) return;
+  try { io.to('tea').emit('tea-games', { games: await teaGames(), online: onlineUsers.size }); } catch (e) {}
+}, 4000);
+setInterval(() => {
+  let changed = false;
+  for (const s of teaSeats.values()) if (Date.now() - s.createdAt > TEA_TTL_MS) { teaSeats.delete(s.id); changed = true; io.to(s.socketId).emit('tea-error', { reason: 'expired' }); }
+  if (changed) broadcastTea();
+}, 60 * 1000);
 
 async function startRematch(oldRoomId, old) {
   if (old.rematchStarted) return;
@@ -1334,6 +1427,12 @@ async function start() {
   });
 
   // Jonli o'yinlar: hozir davom etayotgan barcha o'yinlar (tomosha qilish uchun)
+  app.get('/api/tea', async (req, res) => {
+    try {
+      res.json({ success: true, seats: teaList(), games: await teaGames(), online: onlineUsers.size });
+    } catch (err) { console.error('Choyxona xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.get('/api/games/live', async (req, res) => {
     try {
       const games = [];
@@ -2217,6 +2316,15 @@ async function start() {
     });
 
     // O'yinga chaqirish
+    socket.on('tea-enter', () => {
+      socket.join('tea');
+      socket.emit('tea-seats', { seats: teaList(), online: onlineUsers.size });
+      teaGames().then(games => socket.emit('tea-games', { games, online: onlineUsers.size })).catch(() => {});
+    });
+    socket.on('tea-exit', () => { socket.leave('tea'); });
+    socket.on('tea-sit', (data) => { teaSit(socket, data || {}).catch(err => console.error('Choyxona xatoligi:', err)); });
+    socket.on('tea-stand', () => { if (socket.data.userId) teaStand(socket.data.userId); });
+    socket.on('tea-join', (data) => { teaJoin(socket, data && data.id).catch(err => console.error('Choyxona xatoligi:', err)); });
     socket.on('challenge-send', (data) => { sendChallenge(socket, data).catch(err => console.error('Challenge xatoligi:', err)); });
     socket.on('challenge-accept', (data) => { acceptChallenge(socket, data && data.id).catch(err => console.error('Challenge accept xatoligi:', err)); });
     socket.on('challenge-decline', (data) => {
@@ -2296,6 +2404,7 @@ async function start() {
         }
       }
       league.socketGone(socket.id);
+      teaStand(null, socket.id);
       pruneMatchmakingQueue();
       for (const [roomId, room] of rooms.entries()) {
         const player = findPlayer(room, socket.id);

@@ -5,13 +5,13 @@
   const ROUTES = {
     home: '/', game: '/oyin', leaderboard: '/reyting', tournaments: '/turnirlar', live: '/jonli',
     messages: '/xabarlar', clubs: '/klublar', leagues: '/ligalar', champions: '/chempionlar',
-    settings: '/sozlamalar', admin: '/admin', friends: '/dostlar', chat: '/chat', history: '/tarix', war: '/urush'
+    settings: '/sozlamalar', admin: '/admin', friends: '/dostlar', chat: '/chat', history: '/tarix', war: '/urush', tea: '/choyxona'
   };
   const BY_PATH = {};
   Object.entries(ROUTES).forEach(([view, p]) => { BY_PATH[p] = view; });
   const BASE_TITLE = 'ChessDom';
   // Har bo'limning yon menyudagi tugmasi (ba'zi bo'limlar o'zi belgilamaydi)
-  const NAV = { home: 'navHome', game: 'navPlay', leaderboard: 'navLeaderboard', tournaments: 'navTournaments', live: 'navLive', messages: 'navMessages',
+  const NAV = { home: 'navHome', game: 'navPlay', tea: 'navTea', leaderboard: 'navLeaderboard', tournaments: 'navTournaments', live: 'navLive', messages: 'navMessages',
     clubs: 'navClubs', leagues: 'navLeagues', war: 'navWar', champions: 'navChampions', settings: 'navSettings', admin: 'navAdmin' };
   let popping = false; // popstate paytida tarixga yangi yozuv qo'shilmaydi
 

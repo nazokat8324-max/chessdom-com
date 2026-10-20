@@ -24,7 +24,7 @@
   async function load() {
     if (!window.currentUser) return;
     const [ov, league, unread, live] = await Promise.all([
-      getJson('/api/swiss', true),
+      window.TOURNAMENTS_ENABLED ? getJson('/api/swiss', true) : null,
       getJson('/api/leagues/my-games', true),
       getJson('/api/messages/unread', true),
       getJson('/api/games/live', false)

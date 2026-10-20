@@ -82,6 +82,8 @@
   const origSwitch = window.switchView;
   window.switchView = function (viewName, opts) {
     opts = opts || {};
+    // Turnirlar to'xtatilgan — eski havola va bildirishnomalar bosh sahifaga
+    if (viewName === 'tournaments' && !window.TOURNAMENTS_ENABLED) viewName = 'home';
     // Kirishdan oldin ochilgan havola: kirgandan keyin o'sha bo'limga
     if (viewName === 'home' && window.pendingRoute && window.currentUser) { viewName = window.pendingRoute; window.pendingRoute = null; }
     const result = origSwitch.apply(this, [viewName]);

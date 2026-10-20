@@ -454,6 +454,9 @@ window.toggleMobileMenu = function(open) {
   document.body.classList.toggle('mobile-menu-open', next);
 };
 
+// Turnirlar bo'limi to'xtatilgan (swiss.js CFG.enabled / SWISS_ENABLED bilan birga yoqiladi)
+window.TOURNAMENTS_ENABLED = false;
+
 window.switchView = function(viewName) {
   document.body.classList.remove('mobile-menu-open');
   if (viewName !== 'live' && typeof window.stopWatching === 'function') window.stopWatching();

@@ -334,7 +334,7 @@
             onclick="switchView('game')"
             ><span class="icon">🎮</span> <span id="mPlay">O'yin</span></a
           >
-          <a class="menu-item" id="navTea" onclick="switchView('tea')">
+          <a class="menu-item mobile-main" id="navTea" onclick="switchView('tea')">
             <span class="icon">🍵</span>
             <span data-i18n="teaTitle">Choyxona</span>
           </a>
@@ -346,10 +346,12 @@
             <span class="icon">🥇</span>
             <span id="mLeaderboard">Reyting</span>
           </a>
+          <!-- Turnirlar to'xtatilgan (script.js TOURNAMENTS_ENABLED) — menyuda ko'rinmaydi -->
           <a
-            class="menu-item mobile-main"
+            class="menu-item"
             id="navTournaments"
             onclick="switchView('tournaments')"
+            style="display: none"
           >
             <span class="icon">🏁</span>
             <span id="mTournaments">Turnirlar</span>
@@ -771,9 +773,9 @@
                 <button
                   type="button"
                   class="control-btn"
-                  onclick="switchView('tournaments')"
+                  onclick="switchView('tea')"
                 >
-                  🏁 <span data-i18n="gpTournaments">Turnirlar</span>
+                  🍵 <span data-i18n="teaTitle">Choyxona</span>
                 </button>
               </div>
               <div class="pg-friends" id="pgFriends" hidden></div>

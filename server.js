@@ -90,7 +90,7 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', 'turnirlar', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'urush', 'choyxona'];
+  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'urush', 'choyxona'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));

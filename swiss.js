@@ -7,7 +7,10 @@
 // Tur boshlanganda saytda bo'lmagan o'yinchi texnik mag'lubiyat oladi va turnirdan chiqariladi (qaytib qo'shilishi mumkin).
 const { v4: uuidv4 } = require('uuid');
 
+// Turnirlar 2026-10-20 dan to'xtatilgan (o'yinchilar kam — hammasi bekor bo'layotgan edi). Qayta yoqish:
+// Render env SWISS_ENABLED=1 va script.js dagi window.TOURNAMENTS_ENABLED = true.
 const CFG = {
+  enabled: process.env.SWISS_ENABLED === '1',
   slotMs: Number(process.env.SWISS_SLOT_MS) || 60 * 60 * 1000,
   breakMs: Number(process.env.SWISS_BREAK_MS) || 20 * 1000,
   tickMs: Number(process.env.SWISS_TICK_MS) || 5 * 1000
@@ -307,7 +310,15 @@ async function tick() {
   if (ticking || !deps) return;
   ticking = true;
   try {
-    await ensureUpcoming();
+    if (CFG.enabled) await ensureUpcoming();
+    else {
+      // To'xtatilgan: ro'yxat ochiq turnirlar bekor qilinadi (davom etayotgani oxirigacha o'tkaziladi)
+      const open = await q.all("SELECT id FROM tournaments WHERE tournament_type = 'swiss' AND status = 'registration'");
+      if (open.length) {
+        await q.run("UPDATE tournaments SET status = 'cancelled', finished_at = ? WHERE tournament_type = 'swiss' AND status = 'registration'", [nowIso()]);
+        emitUpdate();
+      }
+    }
     const now = nowIso();
     // Boshlanishiga 1 daqiqa qolganda ro'yxatdagilarga eslatma
     const soon = new Date(Date.now() + REMIND_MS).toISOString();

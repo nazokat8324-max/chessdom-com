@@ -1,5 +1,6 @@
 // O'yinni qayta ko'rish: profildagi "Oxirgi o'yinlar" qatori bosilsa ochiladi.
 // Server: GET /api/users/:username/games/:gameId/replay (yurishlar SAN ko'rinishida, o'yinchining rangi, natija).
+// Ustoz izohlari (mentor.js) uchun: #rpNotes joyi, document hodisalari replay:open / replay:ply / replay:close, window.replayGo(ply).
 (function () {
   const st = { game: null, sans: [], moves: [], fens: [], ply: 0, board: null, analysis: null, anToken: 0 };
 
@@ -17,9 +18,11 @@
     if (st.board && typeof st.board.destroy === 'function') st.board.destroy();
     st.board = null;
     document.removeEventListener('keydown', onKey);
+    document.dispatchEvent(new CustomEvent('replay:close'));
   }
 
   function onKey(e) {
+    if (e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
     if (e.key === 'ArrowLeft') { go(st.ply - 1); e.preventDefault(); }
     else if (e.key === 'ArrowRight') { go(st.ply + 1); e.preventDefault(); }
     else if (e.key === 'Home') go(0);
@@ -36,7 +39,9 @@
     const active = document.querySelector('#replayModal [data-ply].active');
     if (active) active.scrollIntoView({ block: 'nearest' });
     if (st.analysis) showEval();
+    document.dispatchEvent(new CustomEvent('replay:ply', { detail: { ply: st.ply } }));
   }
+  window.replayGo = (ply) => go(ply);
 
   // --- Tahlil (analysis.js dagi umumiy dvigatel bilan) ---
   const anButton = () => `<button class="rp-pgn rp-an-btn" data-analyze="1">🔍 ${esc(tx('anStart', "O'yinni tahlil qilish"))}</button>`;
@@ -173,6 +178,7 @@
           <p class="rp-opening" id="rpOpening" hidden></p>
           ${st.moves.length >= 2 ? `<div class="rp-analysis" id="rpAnalysis">${anButton()}</div>` : ''}
           <div class="rp-moves">${moves || `<p class="rp-meta">${esc(tx('lvNoMoves', 'Hali yurish qilinmadi'))}</p>`}</div>
+          <div class="rp-notes" id="rpNotes" hidden></div>
           <button class="rp-pgn" data-pgn="1">📄 ${esc(tx('rpDownloadPgn', 'PGN yuklab olish'))}</button>
         </div>
       </div>`;
@@ -200,6 +206,7 @@
       pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png')
     });
     document.addEventListener('keydown', onKey);
+    document.dispatchEvent(new CustomEvent('replay:open', { detail: { game: g, sans: st.sans.slice() } }));
     if (typeof window.renderOpeningInto === 'function') window.renderOpeningInto(document.getElementById('rpOpening'), st.sans, g.startFen && g.variant !== 'chess960' ? 'custom' : g.variant);
     go(st.fens.length - 1);
   }

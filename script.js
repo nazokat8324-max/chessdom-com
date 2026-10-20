@@ -15,6 +15,10 @@ window.tx = function(key, fallback, opts) {
 // Server xato/xabar matnlari o'zbekcha keladi — tanish matnlar joriy tilga tarjima qilinadi
 const SERVER_MESSAGE_KEYS = {
   "Server xatoligi!": 'srvError',
+  "Ustoz-shogird so'rovini yuborib bo'lmaydi!": 'srvMentorRequestFail',
+  "Izoh bo'sh bo'lmasin!": 'srvNoteEmpty',
+  "Izohlar soni chegarasiga yetildi!": 'srvNoteLimit',
+  "Izoh topilmadi!": 'srvNoteNotFound',
   "Foydalanuvchi topilmadi!": 'srvUserNotFound',
   "Ism yoki parol xato!": 'srvBadCredentials',
   "Bu nomli foydalanuvchi mavjud!": 'srvUsernameTaken',

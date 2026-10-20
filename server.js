@@ -390,6 +390,10 @@ async function endGame(roomId, room, winnerColor, reason) {
   }
   resolvePredictions(roomId, room, winnerColor, reason);
   if (recorded && room.rated && warBefore) recordWarPoints(players, warBefore, winnerColor).catch(err => console.error('Urush ochkolari xatoligi:', err.message));
+  if (recorded) for (const p of players) {
+    const opp = players.find(o => o.color !== p.color);
+    mentorAfterGame(p.userId, scoreFor(p.color, winnerColor), opp && opp.username);
+  }
   if (recorded) {
     invalidateCache('leaderboard', 'daily:day', 'daily:week');
     recordFairplay(room, winnerColor).catch(err => console.error('Fair-play xatoligi:', err.message));
@@ -806,6 +810,45 @@ async function closePredictionMonths() {
     await awardAchievement(winner.userId, 'oracle');
     notify(winner.userId, 'oracle_month', { month: prev, points: winner.points });
   } catch (err) { console.error('Bashorat mukofoti xatoligi:', err.message); }
+}
+
+// --- 🎓 Ustoz va shogird: kuchli o'yinchi (1700+, 20+ o'yin) yangi boshlovchini (1600 dan past) o'z qanotiga oladi,
+// o'yinlariga izoh qoldiradi; shogird reytingi o'sgani sari ustoz ochko va nishon oladi.
+const MENTOR_MIN_RATING = 1700, MENTOR_MIN_GAMES = 20, STUDENT_MAX_RATING = 1600, MENTOR_GAP = 200, MAX_STUDENTS = 5, MENTOR_MILESTONE = 100;
+function bestRating(u) {
+  const vals = Object.values((u && u.ratings_by_mode) || {}).map(Number).filter(n => n > 0);
+  return Math.max(Number(u && u.rating) || 1500, ...vals, 0) || 1500;
+}
+function gamesCount(u) { const s = (u && u.stats) || {}; return (Number(s.wins) || 0) + (Number(s.losses) || 0) + (Number(s.draws) || 0); }
+function canMentor(u) { return bestRating(u) >= MENTOR_MIN_RATING && gamesCount(u) >= MENTOR_MIN_GAMES; }
+function canBeStudent(u) { return bestRating(u) < STUDENT_MAX_RATING; }
+// Juftlik mumkinmi (sabab bilan)
+async function mentorPairProblem(mentor, student, ignorePendingId) {
+  if (!mentor || !student || mentor.id === student.id) return 'self';
+  if (blockedPair(mentor.id, student.id)) return 'blocked';
+  if (!canMentor(mentor)) return 'mentor_weak';
+  if (!canBeStudent(student)) return 'student_strong';
+  if (bestRating(mentor) - bestRating(student) < MENTOR_GAP) return 'gap';
+  if (await db.activeMentorshipOf(student.id)) return 'has_mentor';
+  if (await db.countActiveStudents(mentor.id) >= MAX_STUDENTS) return 'full';
+  const pending = await db.pendingMentorshipBetween(mentor.id, student.id);
+  if (pending && pending.id !== ignorePendingId) return 'pending';
+  return null;
+}
+// Shogird o'yinidan keyin: ustozga xabar, reyting +100 bo'lsa — ustozga nishon
+async function mentorAfterGame(userId, result, opponent) {
+  try {
+    const m = await db.activeMentorshipOf(userId);
+    if (!m) return;
+    const u = await db.getUserById(userId);
+    const gain = bestRating(u) - (Number(m.startRating) || bestRating(u));
+    notify(m.mentorId, 'student_game', { student: m.studentName, result, opponent, gain }, 'stu:' + userId);
+    if (gain >= MENTOR_MILESTONE && !Number(m.milestone)) {
+      await db.markMentorshipMilestone(m.id);
+      await awardAchievement(m.mentorId, 'mentor');
+      notify(m.mentorId, 'mentor_milestone', { student: m.studentName, gain });
+    }
+  } catch (err) { console.error('Ustoz xatoligi:', err.message); }
 }
 
 // --- ⚔️ Raqib-do'st: eng ko'p va teng o'ynaladigan raqib (kamida 3 o'yin) ---
@@ -2077,6 +2120,153 @@ async function start() {
       if (viewer) { const i = list.findIndex(r => r.userId === viewer); me = i >= 0 ? { ...list[i], rank: i + 1 } : null; }
       res.json({ success: true, period, season: warSeasonKey(), leaders: list.slice(0, 20).map(({ userId, ...r }) => r), me: me ? (({ userId, ...r }) => r)(me) : null });
     } catch (err) { console.error('Bashorat reytingi xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // 🎓 Ustoz va shogird: profil uchun holat (ixtiyoriy token — ko'ruvchi bilan munosabat va tugmalar)
+  app.get('/api/mentor/:username', apiLimiter, async (req, res) => {
+    try {
+      const u = await db.getUserByUsername(String(req.params.username));
+      if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const all = await db.listMentorships(u.id);
+      const ratingOf = async (id) => bestRating(await db.getUserById(id));
+      const active = all.filter(m => m.status === 'active');
+      const mine = active.find(m => m.studentId === u.id) || null;
+      const students = [];
+      let gainSum = 0;
+      for (const m of all.filter(x => x.mentorId === u.id && (x.status === 'active' || x.status === 'ended'))) {
+        const rating = m.status === 'active' ? await ratingOf(m.studentId) : null;
+        const gain = m.status === 'active' ? rating - (Number(m.startRating) || rating) : Number(m.finalGain) || 0;
+        gainSum += Math.max(0, gain);
+        students.push({ id: m.id, username: m.studentName, status: m.status, startRating: Number(m.startRating) || null, rating, gain, since: m.acceptedAt, endedAt: m.endedAt });
+      }
+      let mentor = null;
+      if (mine) {
+        const rating = bestRating(u);
+        mentor = { id: mine.id, username: mine.mentorName, rating: await ratingOf(mine.mentorId), since: mine.acceptedAt, startRating: Number(mine.startRating) || null, gain: rating - (Number(mine.startRating) || rating) };
+      }
+      const viewerId = optionalUserId(req);
+      let viewer = null;
+      if (viewerId) {
+        const v = await db.getUserById(viewerId);
+        const own = viewerId === u.id;
+        const incoming = own ? all.filter(m => m.status === 'pending' && m.requestedBy !== u.id).map(m => ({ id: m.id, from: m.requestedBy === m.mentorId ? m.mentorName : m.studentName, as: m.requestedBy === m.mentorId ? 'mentor' : 'student' })) : [];
+        const outgoing = own ? all.filter(m => m.status === 'pending' && m.requestedBy === u.id).map(m => ({ id: m.id, to: m.mentorId === u.id ? m.studentName : m.mentorName })) : [];
+        const pending = !own && v ? await db.pendingMentorshipBetween(viewerId, u.id) : null;
+        viewer = {
+          own,
+          relation: active.find(m => m.mentorId === viewerId && m.studentId === u.id) ? 'mentor' : active.find(m => m.studentId === viewerId && m.mentorId === u.id) ? 'student' : null,
+          relationId: (active.find(m => (m.mentorId === viewerId && m.studentId === u.id) || (m.studentId === viewerId && m.mentorId === u.id)) || {}).id || null,
+          pending: pending ? { id: pending.id, outgoing: pending.requestedBy === viewerId } : null,
+          canAskMentor: !own && v ? !(await mentorPairProblem(u, v)) : false,
+          canOfferMentor: !own && v ? !(await mentorPairProblem(v, u)) : false,
+          incoming, outgoing
+        };
+      }
+      res.json({
+        success: true, username: u.username,
+        eligibility: { canMentor: canMentor(u), canBeStudent: canBeStudent(u), bestRating: bestRating(u), games: gamesCount(u), minRating: MENTOR_MIN_RATING, minGames: MENTOR_MIN_GAMES, studentMax: STUDENT_MAX_RATING, maxStudents: MAX_STUDENTS },
+        mentor, students, score: { students: students.filter(s => s.status === 'active').length, gain: gainSum }, viewer
+      });
+    } catch (err) { console.error('Ustoz xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // So'rov: as='student' — "ustozim bo'ling", as='mentor' — "shogird qilib olaman"
+  app.post('/api/mentor/request', authMiddleware, async (req, res) => {
+    try {
+      const target = await db.getUserByUsername(String(req.body.username || ''));
+      const me = await db.getUserById(req.user.userId);
+      if (!target || !me) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const asMentor = req.body.as === 'mentor';
+      const mentor = asMentor ? me : target, student = asMentor ? target : me;
+      const problem = await mentorPairProblem(mentor, student);
+      if (problem) return res.status(400).json({ success: false, reason: problem, message: "Ustoz-shogird so'rovini yuborib bo'lmaydi!" });
+      const id = await db.createMentorship({ mentorId: mentor.id, studentId: student.id, requestedBy: me.id });
+      notify(target.id, 'mentor_request', { from: me.username, as: asMentor ? 'mentor' : 'student' });
+      res.json({ success: true, id });
+    } catch (err) { console.error('Ustoz xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/mentor/respond', authMiddleware, async (req, res) => {
+    try {
+      const m = await db.getMentorship(String(req.body.id || ''));
+      const uid = req.user.userId;
+      if (!m || m.status !== 'pending' || m.requestedBy === uid || (m.mentorId !== uid && m.studentId !== uid)) return res.status(404).json({ success: false, message: "So'rov topilmadi!" });
+      const requester = m.requestedBy === m.mentorId ? m.mentorId : m.studentId;
+      if (!req.body.accept) {
+        await db.closeMentorship(m.id, 'declined', null);
+        return res.json({ success: true, status: 'declined' });
+      }
+      const [mentor, student] = await Promise.all([db.getUserById(m.mentorId), db.getUserById(m.studentId)]);
+      // So'rov yuborilgandan beri holat o'zgargan bo'lishi mumkin (boshqa ustoz topdi, reyting o'sdi...)
+      const problem = await mentorPairProblem(mentor, student, m.id);
+      if (problem) return res.status(400).json({ success: false, reason: problem, message: "Ustoz-shogird so'rovini yuborib bo'lmaydi!" });
+      await db.acceptMentorship(m.id, bestRating(student));
+      notify(requester, 'mentor_accepted', { from: requester === m.mentorId ? m.studentName : m.mentorName, as: requester === m.mentorId ? 'student' : 'mentor' });
+      res.json({ success: true, status: 'active' });
+    } catch (err) { console.error('Ustoz xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Bekor qilish (o'z so'rovi) yoki tugatish (faol — istalgan tomon)
+  app.post('/api/mentor/end', authMiddleware, async (req, res) => {
+    try {
+      const m = await db.getMentorship(String(req.body.id || ''));
+      const uid = req.user.userId;
+      if (!m || (m.mentorId !== uid && m.studentId !== uid)) return res.status(404).json({ success: false, message: "So'rov topilmadi!" });
+      if (m.status === 'pending') {
+        if (m.requestedBy !== uid) return res.status(404).json({ success: false, message: "So'rov topilmadi!" });
+        await db.closeMentorship(m.id, 'cancelled', null);
+        return res.json({ success: true, status: 'cancelled' });
+      }
+      if (m.status !== 'active') return res.status(404).json({ success: false, message: "So'rov topilmadi!" });
+      const student = await db.getUserById(m.studentId);
+      await db.closeMentorship(m.id, 'ended', bestRating(student) - (Number(m.startRating) || bestRating(student)));
+      notify(uid === m.mentorId ? m.studentId : m.mentorId, 'mentor_ended', { from: uid === m.mentorId ? m.mentorName : m.studentName });
+      res.json({ success: true, status: 'ended' });
+    } catch (err) { console.error('Ustoz xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // O'yin izohlari: o'qish — hammaga; yozish — o'yin egasi yoki uning faol ustozi
+  app.get('/api/notes/:owner/:gameId', apiLimiter, async (req, res) => {
+    try {
+      const owner = await db.getUserByUsername(String(req.params.owner));
+      if (!owner) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const notes = await db.listGameNotes(owner.id, String(req.params.gameId));
+      const viewerId = optionalUserId(req);
+      const m = await db.activeMentorshipOf(owner.id);
+      res.json({
+        success: true, notes: notes.map(({ authorId, ...n }) => ({ ...n, mine: !!viewerId && authorId === viewerId })),
+        canWrite: !!viewerId && (viewerId === owner.id || (m && m.mentorId === viewerId)), mentor: m ? m.mentorName : null
+      });
+    } catch (err) { console.error('Izoh xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/notes/:owner/:gameId', authMiddleware, async (req, res) => {
+    try {
+      const owner = await db.getUserByUsername(String(req.params.owner));
+      if (!owner) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const uid = req.user.userId;
+      const m = await db.activeMentorshipOf(owner.id);
+      const isMentor = !!(m && m.mentorId === uid);
+      if (uid !== owner.id && !isMentor) return res.status(403).json({ success: false, message: "Ruxsat yo'q" });
+      if (mutedUntil(uid)) return res.status(403).json({ success: false, message: 'Siz vaqtincha chatda yoza olmaysiz!' });
+      const gameId = String(req.params.gameId);
+      const game = await db.getGameReplay(owner.username, gameId);
+      if (!game) return res.status(404).json({ success: false, message: "O'yin topilmadi!" });
+      const text = cleanChat(String(req.body.text || '').trim().slice(0, 500));
+      const ply = Math.max(0, Math.min(game.moves.length, Number(req.body.ply) || 0));
+      if (!text) return res.status(400).json({ success: false, message: "Izoh bo'sh bo'lmasin!" });
+      if (await db.countGameNotes(owner.id, gameId) >= 100) return res.status(400).json({ success: false, message: "Izohlar soni chegarasiga yetildi!" });
+      const id = await db.addGameNote({ ownerId: owner.id, gameId, authorId: uid, ply, text });
+      // Ustoz yozsa — shogirdga, shogird yozsa — ustozga xabar
+      const to = isMentor ? owner.id : (m ? m.mentorId : null);
+      if (to) notify(to, 'mentor_note', { from: req.user.username, owner: owner.username, opponent: game.opponent, gameId, ply }, 'note:' + gameId);
+      res.json({ success: true, id });
+    } catch (err) { console.error('Izoh xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.delete('/api/notes/:id', authMiddleware, async (req, res) => {
+    try {
+      if (!(await db.deleteGameNote(String(req.params.id), req.user.userId))) return res.status(404).json({ success: false, message: 'Izoh topilmadi!' });
+      res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   // ⚔️ Ikki o'yinchi o'rtasidagi hisob (birinchisining nuqtai nazaridan)

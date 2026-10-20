@@ -689,6 +689,39 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_pred_resolved ON predictions (resolved, resolved_at)'
   ]) { try { await dbExec(sql); } catch (e) {} }
 
+  // 🎓 Ustoz va shogird: so'rov (pending) → faol (active) → tugagan (ended); o'yinlarga izohlar
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS mentorships (
+      id TEXT PRIMARY KEY,
+      mentor_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      student_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      status TEXT NOT NULL,
+      requested_by TEXT,
+      start_rating INTEGER,
+      final_gain INTEGER,
+      milestone INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL,
+      accepted_at TEXT,
+      ended_at TEXT
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS game_notes (
+      id TEXT PRIMARY KEY,
+      owner_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      game_id TEXT NOT NULL,
+      author_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      ply INTEGER NOT NULL,
+      text TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `);
+  for (const sql of [
+    'CREATE INDEX IF NOT EXISTS idx_mentor_mentor ON mentorships (mentor_id, status)',
+    'CREATE INDEX IF NOT EXISTS idx_mentor_student ON mentorships (student_id, status)',
+    'CREATE INDEX IF NOT EXISTS idx_game_notes ON game_notes (owner_id, game_id)'
+  ]) { try { await dbExec(sql); } catch (e) {} }
+
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
 
@@ -1355,6 +1388,63 @@ async function monthPredictionLeaders(fromIso, toIso) {
   return rows.map(r => ({ userId: r.userId, points: Number(r.points) || 0 })).sort((a, b) => b.points - a.points);
 }
 
+// --- 🎓 Ustoz va shogird ---
+const MENTORSHIP_COLS = `m.id, m.mentor_id as "mentorId", m.student_id as "studentId", m.status, m.requested_by as "requestedBy",
+  m.start_rating as "startRating", m.final_gain as "finalGain", m.milestone, m.created_at as "createdAt", m.accepted_at as "acceptedAt", m.ended_at as "endedAt",
+  mu.username as "mentorName", su.username as "studentName"`;
+const MENTORSHIP_FROM = 'FROM mentorships m JOIN users mu ON mu.id = m.mentor_id JOIN users su ON su.id = m.student_id';
+async function getMentorship(id) {
+  return dbGet(`SELECT ${MENTORSHIP_COLS} ${MENTORSHIP_FROM} WHERE m.id = ?`, [id]);
+}
+async function listMentorships(userId) {
+  return dbAll(`SELECT ${MENTORSHIP_COLS} ${MENTORSHIP_FROM} WHERE (m.mentor_id = ? OR m.student_id = ?) AND m.status IN ('pending', 'active', 'ended') ORDER BY m.created_at DESC`, [userId, userId]);
+}
+async function activeMentorshipOf(studentId) {
+  return dbGet(`SELECT ${MENTORSHIP_COLS} ${MENTORSHIP_FROM} WHERE m.student_id = ? AND m.status = 'active'`, [studentId]);
+}
+async function pendingMentorshipBetween(a, b) {
+  return dbGet(`SELECT ${MENTORSHIP_COLS} ${MENTORSHIP_FROM} WHERE m.status = 'pending' AND ((m.mentor_id = ? AND m.student_id = ?) OR (m.mentor_id = ? AND m.student_id = ?))`, [a, b, b, a]);
+}
+async function countActiveStudents(mentorId) {
+  const r = await dbGet("SELECT COUNT(*) as \"n\" FROM mentorships WHERE mentor_id = ? AND status = 'active'", [mentorId]);
+  return Number(r && r.n) || 0;
+}
+async function createMentorship({ mentorId, studentId, requestedBy }) {
+  const id = uuidv4();
+  await dbRun("INSERT INTO mentorships (id, mentor_id, student_id, status, requested_by, created_at) VALUES (?, ?, ?, 'pending', ?, ?)",
+    [id, mentorId, studentId, requestedBy, new Date().toISOString()]);
+  return id;
+}
+async function acceptMentorship(id, startRating) {
+  await dbRun("UPDATE mentorships SET status = 'active', start_rating = ?, accepted_at = ? WHERE id = ? AND status = 'pending'", [startRating, new Date().toISOString(), id]);
+}
+async function closeMentorship(id, status, finalGain) {
+  await dbRun('UPDATE mentorships SET status = ?, final_gain = ?, ended_at = ? WHERE id = ?', [status, finalGain == null ? null : finalGain, new Date().toISOString(), id]);
+}
+async function markMentorshipMilestone(id) {
+  await dbRun('UPDATE mentorships SET milestone = 1 WHERE id = ?', [id]);
+}
+async function listGameNotes(ownerId, gameId) {
+  return dbAll(`SELECT n.id, n.ply, n.text, n.created_at as "createdAt", n.author_id as "authorId", u.username as "author"
+    FROM game_notes n JOIN users u ON u.id = n.author_id WHERE n.owner_id = ? AND n.game_id = ? ORDER BY n.ply ASC, n.created_at ASC`, [ownerId, gameId]);
+}
+async function countGameNotes(ownerId, gameId) {
+  const r = await dbGet('SELECT COUNT(*) as "n" FROM game_notes WHERE owner_id = ? AND game_id = ?', [ownerId, gameId]);
+  return Number(r && r.n) || 0;
+}
+async function addGameNote({ ownerId, gameId, authorId, ply, text }) {
+  const id = uuidv4();
+  await dbRun('INSERT INTO game_notes (id, owner_id, game_id, author_id, ply, text, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, ownerId, gameId, authorId, ply, text, new Date().toISOString()]);
+  return id;
+}
+async function deleteGameNote(id, authorId) {
+  const row = await dbGet('SELECT id FROM game_notes WHERE id = ? AND author_id = ?', [id, authorId]);
+  if (!row) return false;
+  await dbRun('DELETE FROM game_notes WHERE id = ?', [id]);
+  return true;
+}
+
 // --- Chat moderatsiyasi ---
 async function adminIds() {
   return (await dbAll("SELECT id FROM users WHERE role = 'admin'")).map(r => r.id);
@@ -1957,6 +2047,19 @@ module.exports = {
   clearChat,
   addWarPoints,
   addSportRating,
+  getMentorship,
+  listMentorships,
+  activeMentorshipOf,
+  pendingMentorshipBetween,
+  countActiveStudents,
+  createMentorship,
+  acceptMentorship,
+  closeMentorship,
+  markMentorshipMilestone,
+  listGameNotes,
+  countGameNotes,
+  addGameNote,
+  deleteGameNote,
   addResultPrediction,
   roomResultPredictions,
   resolveResultPrediction,

@@ -647,6 +647,12 @@ window.switchView = function(viewName) {
         window.loadChatMessages();
       }
     }
+  } else if (viewName === "war") {
+    const warEl = document.getElementById("warView");
+    if (warEl) warEl.classList.add("active-view");
+    const navEl = document.getElementById("navWar");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.renderWarView === "function") window.renderWarView();
   } else if (viewName === "admin") {
     const adminEl = document.getElementById("adminView");
     if (adminEl) adminEl.classList.add("active-view");

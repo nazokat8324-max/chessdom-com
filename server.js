@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
-const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history' };
+const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', urush: 'Country war' };
 const DEFAULT_DESC = 'ChessDom — free online chess: rated games, Chess960, hourly Swiss tournaments, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
@@ -90,7 +90,7 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', 'turnirlar', 'jonli', 'klublar', 'ligalar', 'chempionlar'];
+  const pages = ['', 'reyting', 'turnirlar', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'urush'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
@@ -100,7 +100,7 @@ app.get('/sitemap.xml', async (req, res) => {
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix', 'urush']);
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
   const slug = req.params[0].toLowerCase();
   if (!PAGE_ROUTES.has(slug)) return next();
@@ -313,12 +313,14 @@ async function endGame(roomId, room, winnerColor, reason) {
   // O'yinchilar ro'yxati keyinroq o'zgarishi mumkin (chiqib ketish) — natija shu holat bo'yicha yoziladi
   const players = room.players.slice();
   const recorded = reason !== 'aborted' && players.every(p => p.userId);
+  let warBefore = null;
   const updates = {};
   if (recorded) {
     try {
       // Ikkala o'yinchining o'yindan oldingi reytinglari bilan hisoblaymiz
       const before = {};
       for (const p of players) before[p.color] = await db.getUserById(p.userId);
+      warBefore = before;
       for (const p of players) {
         const opp = players.find(o => o.color !== p.color);
         const oppUser = before[opp.color];
@@ -346,6 +348,7 @@ async function endGame(roomId, room, winnerColor, reason) {
       }
     } catch (err) { console.error("O'yin natijasini saqlash xatoligi:", err); }
   }
+  if (recorded && room.rated && warBefore) recordWarPoints(players, warBefore, winnerColor).catch(err => console.error('Urush ochkolari xatoligi:', err.message));
   if (recorded) {
     invalidateCache('leaderboard', 'daily:day', 'daily:week');
     recordFairplay(room, winnerColor).catch(err => console.error('Fair-play xatoligi:', err.message));
@@ -503,6 +506,102 @@ async function notify(userId, type, data, collapseKey) {
     const item = await db.addNotification(userId, type, data || {}, collapseKey);
     io.to(`user_${userId}`).emit('notification', item);
   } catch (err) { console.error('Bildirishnoma xatoligi:', err.message); }
+}
+
+// --- 🗺️ Davlatlar urushi: mavsum = kalendar oyi (Toshkent vaqti, UTC+5) ---
+// G'alaba 3, durrang 1; boshqa davlat klubiga qarshi g'alaba +1, qo'shni davlat klubiga qarshi yana +1.
+// Hudud hukmdori: o'z klubining ochkosi yoki qo'shni klub ochkosining yarmi — qaysi biri katta bo'lsa (bo'sh hududni qo'shni egallaydi).
+const GEO = JSON.parse(fs.readFileSync(path.join(__dirname, 'assets', 'geo-codes.json'), 'utf8'));
+const WAR_TZ_MS = 5 * 3600 * 1000;
+function warSeasonKey(t) { return new Date((t || Date.now()) + WAR_TZ_MS).toISOString().slice(0, 7); }
+function warSeasonEnd(season) { const [y, m] = season.split('-').map(Number); return new Date(Date.UTC(y, m, 1) - WAR_TZ_MS).toISOString(); }
+function warPrevSeason(season) { const [y, m] = season.split('-').map(Number); const d = new Date(Date.UTC(y, m - 2, 1)); return d.toISOString().slice(0, 7); }
+async function computeWar(season) {
+  const totals = await db.warTotals(season);
+  const byCode = new Map(totals.map(t => [t.code, t]));
+  const codes = new Set([...Object.keys(GEO.neighbors), ...totals.map(t => t.code)]);
+  const regions = {};
+  for (const code of codes) {
+    let best = null;
+    const own = byCode.get(code);
+    if (own && own.points > 0) best = { ruler: code, power: own.points };
+    for (const n of GEO.neighbors[code] || []) {
+      const c = byCode.get(n);
+      const power = c ? c.points / 2 : 0;
+      if (power > 0 && (!best || power > best.power)) best = { ruler: n, power };
+    }
+    if (best) regions[code] = { ruler: best.ruler, power: Math.round(best.power * 10) / 10, own: own ? own.points : 0 };
+  }
+  const territories = {};
+  for (const r of Object.values(regions)) territories[r.ruler] = (territories[r.ruler] || 0) + 1;
+  const clubs = totals.map(t => ({ ...t, territories: territories[t.code] || 0 }))
+    .sort((a, b) => b.territories - a.territories || b.points - a.points || a.country.localeCompare(b.country));
+  return { season, endsAt: warSeasonEnd(season), regions, clubs, ruler: clubs[0] && clubs[0].territories ? clubs[0] : null };
+}
+// O'tgan mavsum hukmdorini bir marta yozib, klub a'zolariga xabar beriladi
+async function closeWarSeasons() {
+  try {
+    const prev = warPrevSeason(warSeasonKey());
+    if (await db.getWarSeason(prev)) return;
+    const state = await computeWar(prev);
+    if (!(await db.saveWarSeason(prev, state.ruler))) return;
+    if (state.ruler) for (const uid of await db.getClubMemberIdsByCode(state.ruler.code)) notify(uid, 'war_ruler', { season: prev, club: state.ruler.country, code: state.ruler.code, territories: state.ruler.territories });
+  } catch (err) { console.error('Urush mavsumi xatoligi:', err.message); }
+}
+async function recordWarPoints(players, before, winnerColor) {
+  const season = warSeasonKey();
+  for (const p of players) {
+    const me = before[p.color], opp = before[otherColor(p.color)];
+    if (!me || !me.club_country || !me.club_code) continue;
+    const result = scoreFor(p.color, winnerColor);
+    let points = result === 'win' ? 3 : (result === 'draw' ? 1 : 0);
+    const oppCode = opp && opp.club_code ? opp.club_code : null;
+    if (result === 'win' && oppCode && oppCode !== me.club_code) {
+      points += 1;
+      if ((GEO.neighbors[me.club_code] || []).includes(oppCode)) points += 1;
+    }
+    if (points > 0) await db.addWarPoints({ season, club: me.club_country, code: me.club_code, userId: p.userId, opponentCode: oppCode, points });
+  }
+  invalidateCache('war:' + season);
+}
+
+// --- ⚔️ Raqib-do'st: eng ko'p va teng o'ynaladigan raqib (kamida 3 o'yin) ---
+function rivalsOf(user) {
+  const map = new Map();
+  for (const g of (Array.isArray(user.history) ? user.history : [])) {
+    if (!g.opponent) continue;
+    const r = map.get(g.opponent) || { name: g.opponent, games: 0, win: 0, draw: 0, loss: 0 };
+    r.games++; r[g.result] = (r[g.result] || 0) + 1;
+    map.set(g.opponent, r);
+  }
+  return [...map.values()].filter(r => r.games >= 3)
+    .map(r => ({ ...r, score: r.games - Math.abs(r.win - r.loss) * 0.6 }))
+    .sort((a, b) => b.score - a.score || b.games - a.games).slice(0, 3)
+    .map(({ score, ...r }) => r);
+}
+function headToHead(user, opponentName) {
+  const out = { games: 0, win: 0, draw: 0, loss: 0 };
+  for (const g of (Array.isArray(user.history) ? user.history : [])) {
+    if (g.opponent !== opponentName) continue;
+    out.games++; out[g.result] = (out[g.result] || 0) + 1;
+  }
+  return out;
+}
+// Raqib onlayn bo'ldi — ikkalasiga ham (6 soatda bir martadan ko'p emas)
+const rivalPings = new Map();
+async function notifyRivalOnline(userId) {
+  try {
+    const me = await db.getUserById(userId);
+    const top = me && rivalsOf(me)[0];
+    if (!top) return;
+    const rival = await db.getUserByUsername(top.name);
+    if (!rival || !isOnline(rival.id) || blockedPair(userId, rival.id)) return;
+    const key = [userId, rival.id].sort().join('|');
+    if (Date.now() - (rivalPings.get(key) || 0) < 6 * 3600 * 1000) return;
+    rivalPings.set(key, Date.now());
+    notify(rival.id, 'rival_online', { name: me.username, win: top.loss, draw: top.draw, loss: top.win }, 'rv:' + userId);
+    notify(userId, 'rival_online', { name: rival.username, win: top.win, draw: top.draw, loss: top.loss }, 'rv:' + rival.id);
+  } catch (e) {}
 }
 
 // --- Yutuqlar: shartlar o'yinchi ma'lumotidan hisoblanadi; yangilari bildirishnoma bilan ---
@@ -1688,9 +1787,95 @@ async function start() {
         ...(await db.followCounts(u.id)),
         isFollowing: viewer && viewer !== u.id ? await db.isFollowing(viewer, u.id) : false,
         cheater: u.fairplay_flag === 'cheater',
+        rivals: rivalsOf(u),
         extStats: await db.getExtendedStats(u)
       });
     } catch (err) { console.error('Profil qo\'shimchalari xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // 🗺️ Davlatlar urushi: xarita holati, klublar jadvali, o'tgan hukmdorlar, o'z klubim
+  app.get('/api/war', apiLimiter, async (req, res) => {
+    try {
+      await closeWarSeasons();
+      const current = warSeasonKey();
+      const season = /^\d{4}-\d{2}$/.test(String(req.query.season || '')) ? String(req.query.season) : current;
+      const state = await cached('war:' + season, 20000, () => computeWar(season));
+      const viewer = optionalUserId(req);
+      let me = null;
+      if (viewer) {
+        const u = await db.getUserById(viewer);
+        if (u && u.club_code) {
+          const mine = await db.warUserPoints(season, viewer);
+          const rank = state.clubs.findIndex(c => c.code === u.club_code);
+          const club = state.clubs[rank] || { code: u.club_code, country: u.club_country, points: 0, territories: 0, fighters: 0 };
+          me = { club, rank: rank >= 0 ? rank + 1 : null, myPoints: mine.points, myGames: mine.games, top: await db.warTopContributors(season, u.club_code) };
+        } else me = { club: null };
+      }
+      res.json({ success: true, current: season === current, ...state, clubs: state.clubs.slice(0, 60), previous: await db.listWarSeasons(6), me });
+    } catch (err) { console.error('Urush xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // ⚔️ Ikki o'yinchi o'rtasidagi hisob (birinchisining nuqtai nazaridan)
+  app.get('/api/h2h/:a/:b', apiLimiter, async (req, res) => {
+    try {
+      const a = await db.getUserByUsername(String(req.params.a));
+      if (!a) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const rival = rivalsOf(a)[0];
+      res.json({ success: true, ...headToHead(a, String(req.params.b)), isRival: !!(rival && rival.name === String(req.params.b)) });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // 📜 Mavsum (oy) yakuni: natijalar, reyting o'zgarishi, eng katta g'alaba, raqiblar, klub uchun hissa
+  app.get('/api/users/:username/wrapped', apiLimiter, async (req, res) => {
+    try {
+      const u = await db.getUserByUsername(String(req.params.username));
+      if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const season = /^\d{4}-\d{2}$/.test(String(req.query.season || '')) ? String(req.query.season) : warSeasonKey();
+      const history = Array.isArray(u.history) ? u.history : [];
+      const inSeason = (ts) => { const t = new Date(ts || 0).getTime(); return !isNaN(t) && warSeasonKey(t) === season; };
+      const games = history.filter(g => inSeason(g.timestamp || g.date));
+      const seasons = [...new Set(history.map(g => { const t = new Date(g.timestamp || g.date || 0).getTime(); return isNaN(t) || !t ? null : warSeasonKey(t); }).filter(Boolean))].sort().reverse().slice(0, 12);
+      const sum = { win: 0, draw: 0, loss: 0 };
+      let streak = 0, run = 0;
+      const byMode = {}, opp = new Map();
+      for (const g of games) {
+        sum[g.result] = (sum[g.result] || 0) + 1;
+        if (g.result === 'win') { run++; streak = Math.max(streak, run); } else run = 0;
+        const mode = g.timeControl || 'blitz';
+        byMode[mode] = (byMode[mode] || 0) + 1;
+        if (g.opponent) { const o = opp.get(g.opponent) || { name: g.opponent, games: 0, win: 0, draw: 0, loss: 0 }; o.games++; o[g.result]++; opp.set(g.opponent, o); }
+      }
+      const opps = [...opp.values()];
+      const nemesis = opps.filter(o => o.loss >= 2).sort((a, b) => b.loss - a.loss || a.win - b.win)[0] || null;
+      const victim = opps.filter(o => o.win >= 2).sort((a, b) => b.win - a.win || a.loss - b.loss)[0] || null;
+      const mostPlayed = opps.sort((a, b) => b.games - a.games)[0] || null;
+      // Reyting: har rejim bo'yicha mavsum boshidagi va oxiridagi qiymat, eng katta bir o'yinlik o'sish
+      const rh = await db.ratingHistorySeason(u.id);
+      const ratings = {};
+      let bestGain = null;
+      for (const r of rh.filter(x => inSeason(x.t))) {
+        if (!ratings[r.mode]) ratings[r.mode] = { from: Number(r.before), to: Number(r.rating) };
+        ratings[r.mode].to = Number(r.rating);
+        const gain = Number(r.rating) - Number(r.before);
+        if (gain > 0 && (!bestGain || gain > bestGain.gain)) bestGain = { gain, mode: r.mode, opponentId: r.opponentId, at: r.t };
+      }
+      if (bestGain && bestGain.opponentId) { const o = await db.getUserById(bestGain.opponentId); bestGain.opponent = o ? o.username : null; }
+      if (bestGain) delete bestGain.opponentId;
+      const war = await db.warUserPoints(season, u.id);
+      let club = null;
+      if (u.club_code) {
+        const state = await cached('war:' + season, 20000, () => computeWar(season));
+        const rank = state.clubs.findIndex(c => c.code === u.club_code);
+        club = { name: u.club_country, code: u.club_code, rank: rank >= 0 ? rank + 1 : null, territories: rank >= 0 ? state.clubs[rank].territories : 0 };
+      }
+      res.json({
+        success: true, season, seasons, username: u.username, avatarVersion: u.avatar_version || null, country: u.country || null,
+        games: games.length, ...sum, winRate: games.length ? Math.round(sum.win / games.length * 100) : 0, streak, byMode,
+        ratings, bestGain, nemesis, victim, mostPlayed, war: { ...war, club },
+        // Sevimli debyut klientda hisoblanadi (openings.js): standart o'yinlarning dastlabki yurishlari
+        openingLines: games.filter(g => g.variant !== 'chess960' && Array.isArray(g.moves) && g.moves.length).map(g => g.moves.slice(0, 16))
+      });
+    } catch (err) { console.error('Mavsum yakuni xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/follow', authMiddleware, async (req, res) => {
@@ -1884,7 +2069,10 @@ async function start() {
         const wasOnline = set.size > 0;
         set.add(socket.id);
         onlineUsers.set(decoded.userId, set);
-        if (!wasOnline) io.emit('presence', { userId: decoded.userId, online: true });
+        if (!wasOnline) {
+          io.emit('presence', { userId: decoded.userId, online: true });
+          notifyRivalOnline(decoded.userId);
+        }
         resumeGames(socket).catch(err => console.error("O'yinni tiklash xatoligi:", err));
       } catch (err) { socket.emit('auth-error', { message: 'Invalid or expired token' }); }
     });
@@ -2133,6 +2321,7 @@ async function start() {
 
   setInterval(async () => { await db.closeStaleArenas(); }, 60 * 1000);
 
+  setInterval(() => closeWarSeasons(), 60 * 60 * 1000);
   // Davom etayotgan o'yinlardagi o'yinchilarning internet kechikishi (RTT, silliqlangan) — soat kompensatsiyasi uchun
   setInterval(() => {
     for (const room of rooms.values()) {

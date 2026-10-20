@@ -370,6 +370,10 @@
             <span class="icon">🏆</span>
             <span id="mLeagues">Ligalar</span>
           </a>
+          <a class="menu-item" id="navWar" onclick="switchView('war')">
+            <span class="icon">🗺️</span>
+            <span data-i18n="warTitle">Davlatlar urushi</span>
+          </a>
           <a
             class="menu-item"
             id="navChampions"
@@ -772,6 +776,7 @@
 
             <!-- O'yin boshlangach: yurishlar jadvali (◀ ▶ ko'rib chiqish) va o'yin tugmalari -->
             <div class="game-panel-section" id="inGameControls" hidden>
+              <div class="pg-h2h" id="pgH2H" hidden></div>
               <div class="pg-opening" id="pgOpening" hidden></div>
               <div class="pg-moves-box">
                 <div class="pg-moves" id="historyList"></div>
@@ -1566,6 +1571,11 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- DAVLATLAR URUSHI (warmap.js) -->
+      <div id="warView" class="view-section">
+        <div class="war-page" id="warRoot"></div>
       </div>
 
       <!-- ADMIN PANELI (admin.js) -->
@@ -2525,6 +2535,9 @@
     <script src="replay.js"></script>
     <script src="safety.js"></script>
     <script src="admin.js"></script>
+    <script src="rivals.js"></script>
+    <script src="wrapped.js"></script>
+    <script src="warmap.js"></script>
     <script src="router.js"></script>
     <script src="rating-chart.js"></script>
 
@@ -2956,7 +2969,11 @@
               <!-- Bosilganda shu yerda (profil ichida) ochiladi / yopiladi — profile-extras.js toggleProfilePanel -->
               <button type="button" class="profile-games-btn profile-toggle" id="profAchBtn" onclick="window.toggleProfilePanel('ach')">🏅 <span data-i18n="achTitle">Yutuqlar</span> <small class="ach-count" id="profAchCount"></small><i class="pt-arrow">▾</i></button>
               <button type="button" class="profile-games-btn profile-toggle" id="profExtBtn" onclick="window.toggleProfilePanel('ext')">📊 <span data-i18n="exTitle">Batafsil statistika</span><i class="pt-arrow">▾</i></button>
+              <!-- wrapped.js — oy yakuni hikoyasi -->
+              <button type="button" class="profile-games-btn profile-wrapped-btn" onclick="window.openWrapped(window.currentProfileUser && window.currentProfileUser())">🎁 <span data-i18n="wrButton">Oy yakuni</span></button>
             </div>
+            <!-- rivals.js — eng ko'p va teng o'ynaladigan raqiblar -->
+            <div class="profile-rivals" id="profRivals" hidden></div>
             <div class="profile-panel" id="profAchPanel" hidden>
               <div class="ach-grid" id="profAchievements"></div>
             </div>

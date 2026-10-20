@@ -72,6 +72,7 @@
     renderAchievements();
     renderExtStats();
     renderFollow();
+    if (window.renderProfileRivals) window.renderProfileRivals(st.username, st.data && st.data.rivals);
     const banner = document.getElementById('profileCheater');
     if (banner) banner.hidden = !(st.data && st.data.cheater);
   }

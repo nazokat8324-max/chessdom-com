@@ -602,6 +602,35 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_chat_reads_user ON chat_reads (user_id, room_id)'
   ]) { try { await dbExec(sql); } catch (e) {} }
 
+  // 🗺️ Davlatlar urushi: har reytingli o'yindagi klub ochkolari (mavsum = oy, Toshkent vaqti) va mavsum hukmdorlari
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS war_points (
+      id TEXT PRIMARY KEY,
+      season TEXT NOT NULL,
+      club_country TEXT NOT NULL,
+      club_code TEXT NOT NULL,
+      user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      opponent_code TEXT,
+      points INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS war_seasons (
+      id TEXT PRIMARY KEY,
+      season TEXT NOT NULL UNIQUE,
+      ruler_country TEXT,
+      ruler_code TEXT,
+      territories INTEGER DEFAULT 0,
+      points INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    )
+  `);
+  for (const sql of [
+    'CREATE INDEX IF NOT EXISTS idx_war_points_season ON war_points (season, club_code)',
+    'CREATE INDEX IF NOT EXISTS idx_war_points_user ON war_points (season, user_id)'
+  ]) { try { await dbExec(sql); } catch (e) {} }
+
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
 
@@ -1141,6 +1170,43 @@ async function refundAgainst(cheaterId) {
     refunds.push({ userId: u.id, mode: r.mode, amount: lost });
   }
   return refunds;
+}
+
+// --- 🗺️ Davlatlar urushi ---
+async function ratingHistorySeason(userId) {
+  const rows = await dbAll('SELECT mode, rating_before as "before", rating, created_at as "t", opponent_id as "opponentId" FROM rating_history WHERE user_id = ? ORDER BY created_at ASC', [userId]);
+  return rows;
+}
+async function addWarPoints(row) {
+  await dbRun('INSERT INTO war_points (id, season, club_country, club_code, user_id, opponent_code, points, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+    [uuidv4(), row.season, row.club, row.code, row.userId || null, row.opponentCode || null, row.points, new Date().toISOString()]);
+}
+async function warTotals(season) {
+  const rows = await dbAll('SELECT club_code as "code", club_country as "country", SUM(points) as "points", COUNT(DISTINCT user_id) as "fighters" FROM war_points WHERE season = ? GROUP BY club_code, club_country', [season]);
+  return rows.map(r => ({ code: r.code, country: r.country, points: Number(r.points) || 0, fighters: Number(r.fighters) || 0 }));
+}
+async function warUserPoints(season, userId) {
+  const r = await dbGet('SELECT SUM(points) as "p", COUNT(*) as "n" FROM war_points WHERE season = ? AND user_id = ?', [season, userId]);
+  return { points: Number(r && r.p) || 0, games: Number(r && r.n) || 0 };
+}
+async function warTopContributors(season, code) {
+  const rows = await dbAll('SELECT w.user_id as "userId", u.username, SUM(w.points) as "points" FROM war_points w JOIN users u ON u.id = w.user_id WHERE w.season = ? AND w.club_code = ? GROUP BY w.user_id, u.username', [season, code]);
+  return rows.map(r => ({ username: r.username, points: Number(r.points) || 0 })).sort((a, b) => b.points - a.points).slice(0, 5);
+}
+async function getWarSeason(season) {
+  return dbGet('SELECT season, ruler_country as "country", ruler_code as "code", territories, points FROM war_seasons WHERE season = ?', [season]);
+}
+async function saveWarSeason(season, ruler) {
+  if (await getWarSeason(season)) return false;
+  await dbRun('INSERT INTO war_seasons (id, season, ruler_country, ruler_code, territories, points, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [uuidv4(), season, ruler ? ruler.country : null, ruler ? ruler.code : null, ruler ? ruler.territories : 0, ruler ? ruler.points : 0, new Date().toISOString()]);
+  return true;
+}
+async function listWarSeasons(limit) {
+  return dbAll(`SELECT season, ruler_country as "country", ruler_code as "code", territories, points FROM war_seasons WHERE ruler_code IS NOT NULL ORDER BY season DESC LIMIT ${Number(limit) || 6}`);
+}
+async function getClubMemberIdsByCode(code) {
+  return (await dbAll('SELECT id FROM users WHERE club_code = ?', [code])).map(r => r.id);
 }
 
 // --- Chat moderatsiyasi ---
@@ -1743,6 +1809,15 @@ module.exports = {
   getPublicProfile,
   markRoomRead,
   clearChat,
+  addWarPoints,
+  ratingHistorySeason,
+  warTotals,
+  warUserPoints,
+  warTopContributors,
+  getWarSeason,
+  saveWarSeason,
+  listWarSeasons,
+  getClubMemberIdsByCode,
   getAchievements,
   addAchievement,
   countFriends,

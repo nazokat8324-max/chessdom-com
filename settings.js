@@ -6,7 +6,7 @@
     country: 'uz', language: 'en', soundEnabled: true, volume: 0.8,
     siteTheme: 'turquoise', showCoords: true, pieceSet: 'wikipedia',
     showHints: true, showLastMove: true, autoQueen: false, confirmResign: true,
-    quickClock: [300, 0], quickRated: true
+    quickClock: [300, 0], quickRated: true, vibration: true
   };
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français']];
@@ -191,6 +191,7 @@
           <div class="set-range"><input type="range" id="setVolume" min="0" max="100" value="${Math.round(d.volume * 100)}"><output id="setVolumeVal">${Math.round(d.volume * 100)}%</output></div>
           <button class="set-mini" data-test-sound="1">▶ ${esc(tx('setTestSound', 'Sinash'))}</button>
         </div>
+        ${toggle('vibration', tx('setVibration', 'Tebranish'), tx('setVibrationHint', "Telefonda raqib yurganda, o'yin topilganda va vaqt kam qolganda titraydi (Android)"))}
       </div>
       <div class="set-card">
         <div class="set-row">

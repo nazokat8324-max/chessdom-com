@@ -241,6 +241,38 @@ function unpersistRoom(roomId, room) {
     .catch(err => console.error("O'yinni o'chirish xatoligi:", err.message));
 }
 
+// Tiklangan o'yinda navbatdagi o'yinchi qaytdi — soat yana yuradi
+function resumeClock(roomId, room) {
+  if (!room.paused || room.status !== 'active') return;
+  room.paused = false;
+  room.turnStartedAt = room.chess.history().length >= 2 ? Date.now() : null;
+  scheduleRoomTimer(roomId, room);
+  emitClock(roomId, room);
+}
+
+// Render deploy oldidan SIGTERM yuboradi: davom etayotgan o'yinlarning soati shu paytdagi qiymat bilan saqlanadi
+let shuttingDown = false;
+async function persistAllOnShutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  const jobs = [];
+  for (const [roomId, room] of rooms.entries()) {
+    if (room.status !== 'active') continue;
+    const c = clockPayload(room);
+    room.clock.w = c.w;
+    room.clock.b = c.b;
+    if (room.turnStartedAt !== null) room.turnStartedAt = Date.now();
+    clearTimeout(room.timer);
+    persistRoom(roomId, room);
+    jobs.push(room.persistChain);
+  }
+  await Promise.race([Promise.allSettled(jobs), new Promise(r => setTimeout(r, 8000))]);
+  console.log(`${signal}: ${jobs.length} ta o'yin soati saqlandi`);
+  process.exit(0);
+}
+process.once('SIGTERM', () => persistAllOnShutdown('SIGTERM'));
+process.once('SIGINT', () => persistAllOnShutdown('SIGINT'));
+
 // Server ishga tushganda: bazadagi o'yinlarni xotiraga qaytarish. O'yinchilar qaytguncha "away"
 async function restoreActiveGames() {
   const restored = [];
@@ -256,8 +288,10 @@ async function restoreActiveGames() {
       if (data.leagueGameId) room.leagueGameId = data.leagueGameId;
       if (data.swissMatch) room.swissMatch = data.swissMatch;
       room.announced = true;
-      // Uzilish vaqti soatdan ayirilmaydi: soat endi qaytadan yuradi
-      room.turnStartedAt = room.chess.history().length >= 2 ? Date.now() : null;
+      // Server o'chib turgan va o'yinchilar qaytayotgan vaqt soatdan ayirilmaydi: navbatdagi o'yinchi
+      // qaytguncha soat to'xtab turadi (resumeGames → resumeClock). Saqlangan qiymat — server to'xtagan paytdagi soat.
+      room.turnStartedAt = null;
+      room.paused = room.chess.history().length >= 2;
       rooms.set(roomId, room);
       for (const p of room.players) {
         p.away = true;
@@ -285,6 +319,7 @@ function scheduleRoomTimer(roomId, room) {
   if (room.status !== 'active') return;
   persistRoom(roomId, room);
   if (!room.announced) { room.announced = true; announceGame(roomId, room).catch(() => {}); }
+  if (room.paused) return;
   const moves = room.chess.history().length;
   if (moves < 2) {
     // Har ikki tomon birinchi yurishini qilmaguncha soat yurmaydi
@@ -661,6 +696,22 @@ async function recordWarPoints(players, before, winnerColor) {
   invalidateCache('war:' + season);
 }
 
+// --- 🤝 Odob reytingi: o'tgan oy (Toshkent vaqti) eng ko'p 👍 olgan o'yinchi (kamida 5 baho va 90%) ---
+async function closeSportMonths() {
+  try {
+    const prev = warPrevSeason(warSeasonKey());
+    if (await db.getSportAward(prev)) return;
+    const [y, m] = prev.split('-').map(Number);
+    const from = new Date(Date.UTC(y, m - 1, 1) - WAR_TZ_MS).toISOString(), to = warSeasonEnd(prev);
+    const winner = (await db.sportMonthLeaders(from, to))
+      .filter(r => r.total >= 5 && r.up / r.total >= 0.9)
+      .sort((a, b) => b.up - a.up || b.total - a.total)[0] || null;
+    if (!(await db.saveSportAward(prev, winner)) || !winner) return;
+    await awardAchievement(winner.userId, 'sportsman');
+    notify(winner.userId, 'sportsman_month', { month: prev, up: winner.up });
+  } catch (err) { console.error('Odob reytingi xatoligi:', err.message); }
+}
+
 // --- ⚔️ Raqib-do'st: eng ko'p va teng o'ynaladigan raqib (kamida 3 o'yin) ---
 function rivalsOf(user) {
   const map = new Map();
@@ -858,6 +909,7 @@ async function resumeGames(socket) {
     }
     clearTimeout(player.awayTimer);
     player.away = false;
+    if (room.paused && room.chess.turn() === player.color) resumeClock(roomId, room);
     const oldSocket = io.sockets.sockets.get(player.socketId);
     if (oldSocket) oldSocket.leave(roomId);
     player.socketId = socket.id;
@@ -1890,6 +1942,7 @@ async function start() {
         isFollowing: viewer && viewer !== u.id ? await db.isFollowing(viewer, u.id) : false,
         cheater: u.fairplay_flag === 'cheater',
         rivals: rivalsOf(u),
+        sportsmanship: await db.sportSummary(u.id),
         extStats: await db.getExtendedStats(u)
       });
     } catch (err) { console.error('Profil qo\'shimchalari xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -2319,6 +2372,19 @@ async function start() {
     });
 
     // O'yinga chaqirish
+    socket.on('rate-opponent', async (data, ack) => {
+      const reply = (r) => { if (typeof ack === 'function') ack(r); };
+      try {
+        const uid = socket.data.userId;
+        const room = data && rooms.get(data.roomId);
+        if (!uid || !room || room.status === 'active' || !room.endPayloads) return reply({ ok: false, reason: 'gone' });
+        const me = room.players.find(p => p.userId === uid), opp = room.players.find(p => p.userId && p.userId !== uid);
+        const ended = me && room.endPayloads[me.color];
+        if (!me || !opp || !ended || ended.reason === 'aborted') return reply({ ok: false, reason: 'gone' });
+        const ok = await db.addSportRating({ roomId: data.roomId, raterId: uid, ratedId: opp.userId, value: Number(data.value) > 0 ? 1 : -1 });
+        reply({ ok, reason: ok ? null : 'already' });
+      } catch (err) { console.error('Odob bahosi xatoligi:', err.message); reply({ ok: false, reason: 'error' }); }
+    });
     socket.on('tea-enter', () => {
       socket.join('tea');
       socket.emit('tea-seats', { seats: teaList(), online: onlineUsers.size });
@@ -2433,7 +2499,8 @@ async function start() {
 
   setInterval(async () => { await db.closeStaleArenas(); }, 60 * 1000);
 
-  setInterval(() => closeWarSeasons(), 60 * 60 * 1000);
+  setInterval(() => { closeWarSeasons(); closeSportMonths(); }, 60 * 60 * 1000);
+  setTimeout(closeSportMonths, 30 * 1000);
   // Davom etayotgan o'yinlardagi o'yinchilarning internet kechikishi (RTT, silliqlangan) — soat kompensatsiyasi uchun
   setInterval(() => {
     for (const room of rooms.values()) {

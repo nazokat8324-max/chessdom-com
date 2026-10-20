@@ -7,7 +7,7 @@
     games_10: '♟️', games_100: '🎯', games_500: '🏛️',
     streak_5: '🔥', streak_10: '☄️', mate_10: '⚔️',
     rank_gold: '♝', rank_platinum: '♜', rank_diamond: '♛', rank_master: '♚',
-    chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', tournament_win: '👑'
+    chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', tournament_win: '👑', sportsman: '🎖️'
   };
   const ACH_TEXT = {
     first_win: ["Birinchi g'alaba", "Birinchi g'alabangizni qozoning"],
@@ -29,7 +29,8 @@
     friends_5: ["Do'stona", "5 ta do'st orttiring"],
     club_member: ["Klub a'zosi", "Davlat klubiga qo'shiling"],
     league_player: ["Liga o'yinchisi", "Klubingiz uchun liga o'yinida qatnashing"],
-    tournament_win: ["Turnir g'olibi", 'Swiss turnirida birinchi o\'rinni egallang']
+    tournament_win: ["Turnir g'olibi", 'Swiss turnirida birinchi o\'rinni egallang'],
+    sportsman: ["Oyning odobli o'yinchisi", "Oy davomida eng ko'p 👍 odob bahosini oling"]
   };
   const keyName = (k) => k.replace(/(^|_)(\w)/g, (m, a, c) => c.toUpperCase());
   window.achievementInfo = function (key) {
@@ -73,6 +74,7 @@
     renderExtStats();
     renderFollow();
     if (window.renderProfileRivals) window.renderProfileRivals(st.username, st.data && st.data.rivals);
+    if (window.renderProfileSport) window.renderProfileSport(st.data && st.data.sportsmanship);
     const banner = document.getElementById('profileCheater');
     if (banner) banner.hidden = !(st.data && st.data.cheater);
   }

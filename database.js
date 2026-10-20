@@ -631,6 +631,32 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_war_points_user ON war_points (season, user_id)'
   ]) { try { await dbExec(sql); } catch (e) {} }
 
+  // 🤝 Odob reytingi: o'yindan keyin raqibga 👍 (1) / 👎 (-1), bir o'yinda bir marta; oyning eng odobli o'yinchisi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS sportsmanship (
+      id TEXT PRIMARY KEY,
+      room_id TEXT NOT NULL,
+      rater_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      rated_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      value INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS sportsmanship_awards (
+      id TEXT PRIMARY KEY,
+      month TEXT NOT NULL UNIQUE,
+      user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      up INTEGER DEFAULT 0,
+      total INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    )
+  `);
+  for (const sql of [
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_sport_unique ON sportsmanship (room_id, rater_id)',
+    'CREATE INDEX IF NOT EXISTS idx_sport_rated ON sportsmanship (rated_id, created_at)'
+  ]) { try { await dbExec(sql); } catch (e) {} }
+
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
 
@@ -1207,6 +1233,35 @@ async function listWarSeasons(limit) {
 }
 async function getClubMemberIdsByCode(code) {
   return (await dbAll('SELECT id FROM users WHERE club_code = ?', [code])).map(r => r.id);
+}
+
+// --- 🤝 Odob reytingi ---
+async function addSportRating({ roomId, raterId, ratedId, value }) {
+  if (await dbGet('SELECT id FROM sportsmanship WHERE room_id = ? AND rater_id = ?', [roomId, raterId])) return false;
+  await dbRun('INSERT INTO sportsmanship (id, room_id, rater_id, rated_id, value, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    [uuidv4(), roomId, raterId, ratedId, value > 0 ? 1 : -1, new Date().toISOString()]);
+  return true;
+}
+// Oxirgi 100 ta baho bo'yicha foiz + oylik mukofotlar
+async function sportSummary(userId) {
+  const rows = await dbAll('SELECT value FROM sportsmanship WHERE rated_id = ? ORDER BY created_at DESC LIMIT 100', [userId]);
+  const up = rows.filter(r => Number(r.value) > 0).length;
+  const awards = await dbAll('SELECT month FROM sportsmanship_awards WHERE user_id = ? ORDER BY month DESC', [userId]);
+  return { up, down: rows.length - up, total: rows.length, percent: rows.length ? Math.round(up / rows.length * 100) : null, awards: awards.map(a => a.month) };
+}
+async function sportMonthLeaders(fromIso, toIso) {
+  const rows = await dbAll(`SELECT rated_id as "userId", SUM(CASE WHEN value > 0 THEN 1 ELSE 0 END) as "up", COUNT(*) as "total"
+    FROM sportsmanship WHERE created_at >= ? AND created_at < ? GROUP BY rated_id`, [fromIso, toIso]);
+  return rows.map(r => ({ userId: r.userId, up: Number(r.up) || 0, total: Number(r.total) || 0 }));
+}
+async function getSportAward(month) {
+  return dbGet('SELECT month, user_id as "userId" FROM sportsmanship_awards WHERE month = ?', [month]);
+}
+async function saveSportAward(month, winner) {
+  if (await getSportAward(month)) return false;
+  await dbRun('INSERT INTO sportsmanship_awards (id, month, user_id, up, total, created_at) VALUES (?, ?, ?, ?, ?, ?)',
+    [uuidv4(), month, winner ? winner.userId : null, winner ? winner.up : 0, winner ? winner.total : 0, new Date().toISOString()]);
+  return true;
 }
 
 // --- Chat moderatsiyasi ---
@@ -1810,6 +1865,11 @@ module.exports = {
   markRoomRead,
   clearChat,
   addWarPoints,
+  addSportRating,
+  sportSummary,
+  sportMonthLeaders,
+  getSportAward,
+  saveSportAward,
   ratingHistorySeason,
   warTotals,
   warUserPoints,

@@ -12978,6 +12978,94 @@ button.tea-chair:not([disabled]):hover {
   .tea-av { width: 32px; height: 32px; }
 }
 
+/* ===== Odob reytingi (sportsmanship.js) ===== */
+.sport-box {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--cd-surface-2);
+  border: 1px solid var(--cd-border);
+}
+.sport-box[hidden] {
+  display: none;
+}
+.sp-q {
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+}
+.sp-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.sp-btn {
+  padding: 9px 6px;
+  border-radius: 12px;
+  border: 1px solid var(--cd-border);
+  background: var(--cd-surface);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, transform 0.15s;
+}
+.sp-btn:hover {
+  transform: translateY(-1px);
+}
+.sp-btn.up:hover {
+  border-color: rgba(74, 222, 128, 0.6);
+  background: rgba(74, 222, 128, 0.12);
+}
+.sp-btn.down:hover {
+  border-color: rgba(248, 113, 113, 0.6);
+  background: rgba(248, 113, 113, 0.12);
+}
+.sp-note {
+  display: block;
+  margin-top: 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--cd-muted);
+}
+.sp-done {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--cd-muted);
+}
+.profile-sport {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin: 6px 0 2px;
+}
+.profile-sport[hidden] {
+  display: none;
+}
+.ps-main,
+.ps-award {
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  color: var(--cd-muted);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--cd-border);
+}
+.ps-main b {
+  color: #fff;
+}
+.ps-main.good b { color: #4ade80; }
+.ps-main.ok b { color: #facc15; }
+.ps-main.bad b { color: #f87171; }
+.ps-award {
+  color: #f2c94c;
+  border-color: rgba(242, 201, 76, 0.4);
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

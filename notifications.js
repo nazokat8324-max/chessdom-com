@@ -66,6 +66,8 @@
         return { icon: '⚔️', text: tx('nfRivalOnline', "Raqib-do'stingiz {{name}} onlayn! Hisob {{w}}–{{d}}–{{l}} — jang qilasizmi?", { name: d.name, w: d.win, d: d.draw, l: d.loss }), go: () => window.openChallengeDialog ? window.openChallengeDialog(d.name) : (window.openPlayerProfile && window.openPlayerProfile(d.name)) };
       case 'war_ruler':
         return { icon: '👑', text: tx('nfWarRuler', '{{club}} klubi {{season}} mavsumida Bayroqlar bellashuvi chempioni bo\'ldi — {{n}} hudud!', { club: clubName({ club: d.club, code: d.code }), season: d.season, n: d.territories }), go: () => switchView('war') };
+      case 'sportsman_month':
+        return { icon: '🎖️', text: tx('nfSportsmanMonth', "Tabriklaymiz! Siz {{month}} oyining eng odobli o'yinchisi bo'ldingiz ({{n}} 👍)", { month: d.month, n: d.up }), go: () => window.openProfileModal && window.openProfileModal() };
       case 'muted':
         return { icon: '🔇', text: tx('nfMuted', '{{until}} gacha chatda yoza olmaysiz', { until: new Date(d.until).toLocaleString() }), go: null };
       default:

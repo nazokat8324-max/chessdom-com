@@ -59,6 +59,7 @@ window.setGamePanelMode = function(mode) {
   const tournamentBtn = document.getElementById('btnTournamentBack');
   if (tournamentBtn) tournamentBtn.hidden = !(mode === 'over' && window.lastGameSwiss);
   if (typeof window.updateRematchBox === 'function') window.updateRematchBox(mode);
+  if (typeof window.updateSportBox === 'function') window.updateSportBox(mode);
   if (typeof window.updateGameChatBox === 'function') window.updateGameChatBox(mode);
   if (typeof window.updateAnalysisBox === 'function') window.updateAnalysisBox(mode);
   const ping = document.getElementById('pgPing');

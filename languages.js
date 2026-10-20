@@ -2374,6 +2374,7 @@ const translationsExtra = {
     nfFairplayFlag: "Fair-play: {{name}} shubhali deb belgilandi",
     nfMuted: "{{until}} gacha chatda yoza olmaysiz",
     srvMuted: "Siz vaqtincha chatda yoza olmaysiz!",
+    profMoreTitle: "O'yinlar va yutuqlar",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -3283,6 +3284,7 @@ const translationsExtra = {
     nfFairplayFlag: "Fair play: {{name}} was flagged as suspicious",
     nfMuted: "You can't chat until {{until}}",
     srvMuted: "You are temporarily muted in chat!",
+    profMoreTitle: "Games & achievements",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -4192,6 +4194,7 @@ const translationsExtra = {
     nfFairplayFlag: "Честная игра: {{name}} помечен как подозрительный",
     nfMuted: "Вы не можете писать в чат до {{until}}",
     srvMuted: "Вам временно запрещено писать в чат!",
+    profMoreTitle: "Партии и достижения",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -5101,6 +5104,7 @@ const translationsExtra = {
     nfFairplayFlag: "Juego limpio: {{name}} marcado como sospechoso",
     nfMuted: "No puedes chatear hasta {{until}}",
     srvMuted: "¡Estás silenciado temporalmente!",
+    profMoreTitle: "Partidas y logros",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -6010,6 +6014,7 @@ const translationsExtra = {
     nfFairplayFlag: "Fair Play: {{name}} wurde als verdächtig markiert",
     nfMuted: "Du kannst bis {{until}} nicht chatten",
     srvMuted: "Du bist im Chat vorübergehend stummgeschaltet!",
+    profMoreTitle: "Partien & Erfolge",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -6919,6 +6924,7 @@ const translationsExtra = {
     nfFairplayFlag: "Fair-play : {{name}} signalé comme suspect",
     nfMuted: "Vous ne pouvez pas écrire avant {{until}}",
     srvMuted: "Vous êtes temporairement réduit au silence !",
+    profMoreTitle: "Parties et succès",
     searchNoResults: "Aucun résultat"
   }
 };

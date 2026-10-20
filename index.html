@@ -2972,21 +2972,20 @@
           </section>
 
           <section class="profile-section">
-            <h3 class="profile-section-title" data-i18n="ghTitle">O'yinlar tarixi</h3>
+            <h3 class="profile-section-title" data-i18n="profMoreTitle">O'yinlar va yutuqlar</h3>
             <div class="profile-games-actions">
               <button type="button" class="profile-games-btn" onclick="window.openGameHistory(window.currentProfileUser && window.currentProfileUser())">📜 <span data-i18n="ghAllGames">Barcha o'yinlar</span></button>
               <button type="button" class="profile-games-btn" onclick="window.openPgnImport()">📥 <span data-i18n="ghImport">PGN yuklash</span></button>
+              <!-- Bosilganda shu yerda (profil ichida) ochiladi / yopiladi — profile-extras.js toggleProfilePanel -->
+              <button type="button" class="profile-games-btn profile-toggle" id="profAchBtn" onclick="window.toggleProfilePanel('ach')">🏅 <span data-i18n="achTitle">Yutuqlar</span> <small class="ach-count" id="profAchCount"></small><i class="pt-arrow">▾</i></button>
+              <button type="button" class="profile-games-btn profile-toggle" id="profExtBtn" onclick="window.toggleProfilePanel('ext')">📊 <span data-i18n="exTitle">Batafsil statistika</span><i class="pt-arrow">▾</i></button>
             </div>
-          </section>
-
-          <section class="profile-section">
-            <h3 class="profile-section-title"><span data-i18n="achTitle">Yutuqlar</span> <small class="ach-count" id="profAchCount"></small></h3>
-            <div class="ach-grid" id="profAchievements"></div>
-          </section>
-
-          <section class="profile-section">
-            <h3 class="profile-section-title" data-i18n="exTitle">Batafsil statistika</h3>
-            <div class="ex-grid" id="profExtStats"></div>
+            <div class="profile-panel" id="profAchPanel" hidden>
+              <div class="ach-grid" id="profAchievements"></div>
+            </div>
+            <div class="profile-panel" id="profExtPanel" hidden>
+              <div class="ex-grid" id="profExtStats"></div>
+            </div>
           </section>
 
           <section class="profile-section profile-details-section">

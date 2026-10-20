@@ -42,7 +42,22 @@
   const st = { username: null, data: null };
   window.currentProfileUser = () => st.username;
 
+  // Yutuqlar / Batafsil statistika — tugma bosilganda profil ichida ochiladi (bir vaqtda bittasi)
+  window.toggleProfilePanel = function (name, force) {
+    const panels = { ach: ['profAchPanel', 'profAchBtn'], ext: ['profExtPanel', 'profExtBtn'] };
+    Object.entries(panels).forEach(([key, [panelId, btnId]]) => {
+      const panel = document.getElementById(panelId), btn = document.getElementById(btnId);
+      if (!panel) return;
+      const open = key === name ? (typeof force === 'boolean' ? force : panel.hidden) : false;
+      panel.hidden = !open;
+      if (btn) btn.classList.toggle('active', open);
+      if (open) setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 30);
+    });
+  };
+
   async function load(username) {
+    // Boshqa profil ochilganda bo'limlar yopiq holatda boshlanadi
+    if (username !== st.username) window.toggleProfilePanel(null);
     st.username = username;
     st.data = null;
     renderAll();

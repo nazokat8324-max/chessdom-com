@@ -7179,7 +7179,6 @@ function updateUI() {
   if (typeof window.refreshNotificationsView === 'function') window.refreshNotificationsView();
   if (typeof window.refreshProfileExtras === 'function') window.refreshProfileExtras();
   if (typeof window.refreshGameHistoryView === 'function') window.refreshGameHistoryView();
-  if (typeof window.refreshNewsView === 'function') window.refreshNewsView();
   if (typeof window.updateOnlineStatus === 'function' && typeof isOnlineMode !== 'undefined') window.updateOnlineStatus(isOnlineMode);
 
   if (typeof window.updateAuthHeaderUI === 'function') window.updateAuthHeaderUI();

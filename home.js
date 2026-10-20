@@ -23,14 +23,12 @@
 
   async function load() {
     if (!window.currentUser) return;
-    const [ov, league, unread, live, news] = await Promise.all([
+    const [ov, league, unread, live] = await Promise.all([
       getJson('/api/swiss', true),
       getJson('/api/leagues/my-games', true),
       getJson('/api/messages/unread', true),
-      getJson('/api/games/live', false),
-      getJson('/api/news?limit=1', false)
+      getJson('/api/games/live', false)
     ]);
-    st.news = news && news.success && news.news[0] ? news.news[0] : null;
     if (ov && ov.success) {
       st.offset = new Date(ov.serverNow).getTime() - Date.now();
       const list = ov.tournaments || [];
@@ -91,19 +89,11 @@
     </button>`;
   }
 
-  function newsCard() {
-    if (!st.news) return '';
-    return `<button class="hw-card hw-mini" data-go="news">
-      <span class="hw-icon">📰</span>
-      <span class="hw-text"><b>${esc(st.news.title)}</b><small>${esc(tx('hwLatestNews', "So'nggi yangilik"))} · ${esc(new Date(st.news.createdAt).toLocaleDateString())}</small></span>
-    </button>`;
-  }
-
   function render() {
     const el = document.getElementById('homeWidgets');
     if (!el) return;
     if (!window.currentUser) { el.innerHTML = ''; return; }
-    el.innerHTML = tournamentCard() + leagueCard() + messagesCard() + liveCard() + newsCard();
+    el.innerHTML = tournamentCard() + leagueCard() + messagesCard() + liveCard();
     el.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', (e) => {
       if (e.target.closest('[data-join]')) return;
       e.stopPropagation();

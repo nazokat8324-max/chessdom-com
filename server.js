@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
-const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', yangiliklar: 'News', tarix: 'Game history' };
+const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history' };
 const DEFAULT_DESC = 'ChessDom — free online chess: rated games, Chess960, hourly Swiss tournaments, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
@@ -90,7 +90,7 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', 'turnirlar', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'yangiliklar'];
+  const pages = ['', 'reyting', 'turnirlar', 'jonli', 'klublar', 'ligalar', 'chempionlar'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
@@ -100,7 +100,7 @@ app.get('/sitemap.xml', async (req, res) => {
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix', 'yangiliklar']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix']);
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
   const slug = req.params[0].toLowerCase();
   if (!PAGE_ROUTES.has(slug)) return next();
@@ -1712,25 +1712,6 @@ async function start() {
       list.sort((a, b) => (b.online - a.online) || (!!b.roomId - !!a.roomId) || a.username.localeCompare(b.username));
       res.json({ success: true, people: list });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  // Sayt yangiliklari: o'qish hammaga, yozish/o'chirish adminlarga
-  app.get('/api/news', apiLimiter, async (req, res) => {
-    try { res.json({ success: true, news: await db.listNewsPosts(req.query.limit) }); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-  app.post('/api/news', adminMiddleware, async (req, res) => {
-    try {
-      const title = String((req.body && req.body.title) || '').trim().slice(0, 150);
-      const text = String((req.body && req.body.body) || '').trim().slice(0, 8000);
-      if (!title || !text) return res.status(400).json({ success: false, message: 'Sarlavha va matn kerak!' });
-      await db.addNewsPost(req.user.userId, title, text);
-      res.json({ success: true, news: await db.listNewsPosts() });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-  app.delete('/api/news/:id', adminMiddleware, async (req, res) => {
-    try { await db.deleteNewsPost(String(req.params.id)); res.json({ success: true, news: await db.listNewsPosts() }); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   // O'yinlar tarixi: filtr (rejim, natija, rang, raqib) va sahifalash; PGN — filtrlangan barcha o'yinlar

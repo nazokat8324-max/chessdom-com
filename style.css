@@ -11791,65 +11791,6 @@ body:has(#gameView.active-view) .toast-container {
   .gh-actions { flex-wrap: wrap; }
 }
 
-/* ===== Sayt yangiliklari (news.js) ===== */
-.nw-compose {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 18px;
-  padding: 16px;
-  border-radius: 16px;
-  background: var(--cd-surface);
-  border: 1px solid var(--cd-border-strong);
-}
-.nw-compose .set-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 11px 14px;
-  font-size: 14px;
-}
-.nw-compose textarea {
-  resize: vertical;
-  font-family: inherit;
-}
-.nw-compose button {
-  align-self: flex-end;
-}
-.nw-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-.nw-post {
-  padding: 20px 22px;
-  border-radius: 18px;
-  background: var(--cd-surface);
-  border: 1px solid var(--cd-border);
-}
-.nw-post-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
-.nw-post h2 {
-  margin: 0 0 4px;
-  font-size: 20px;
-  color: #fff;
-}
-.nw-post small {
-  font-size: 12px;
-  color: var(--cd-muted);
-}
-.nw-post p {
-  margin: 12px 0 0;
-  font-size: 14px;
-  line-height: 1.65;
-  color: #d5ddd9;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
 /* ===== Bosh sahifa: do'stlar va kuzatilayotganlar ===== */
 .hw-circle {
   display: flex;

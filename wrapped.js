@@ -1,5 +1,5 @@
 // 📜 Oy yakuni (Mavsum yakuni): o'yinchining oy davomidagi o'yinlari hikoya (story) ko'rinishida —
-// natijalar, reyting o'zgarishi, sevimli debyut, eng katta g'alaba, raqiblar, klub uchun urushdagi hissa va ulashish kartasi.
+// natijalar, reyting o'zgarishi, sevimli debyut, eng katta g'alaba, raqiblar, Bayroqlar bellashuvidagi hissa va ulashish kartasi.
 // Server: GET /api/users/:username/wrapped?season=YYYY-MM. Kirish — profildagi "🎁 Oy yakuni" (window.openWrapped).
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -93,13 +93,13 @@
 
     const w = d.war || {};
     if (w.club) s.push({ key: 'war', cls: 'wr-s-war', html: `
-      <div class="wr-kicker">🗺️ ${esc(tx('warTitle', 'Davlatlar urushi'))}</div>
+      <div class="wr-kicker">🚩 ${esc(tx('warTitle', 'Bayroqlar bellashuvi'))}</div>
       ${flag(w.club.code)}
       <div class="wr-huge">${w.points || 0}</div>
-      <h2>${esc(tx('wrWarPoints', '{{club}} uchun urush ochkosi', { club: clubLabel(w.club) }))}</h2>
+      <h2>${esc(tx('wrWarPoints', '{{club}} uchun bayroq ochkosi', { club: clubLabel(w.club) }))}</h2>
       <p>${w.club.rank ? esc(tx('wrWarRank', "Klubingiz {{rank}}-o'rinda · {{t}} ta hudud", { rank: w.club.rank, t: w.club.territories })) : esc(tx('wrWarNoRank', "Klubingiz hali hudud egallamagan"))}</p>` });
     else s.push({ key: 'war', cls: 'wr-s-war', html: `
-      <div class="wr-kicker">🗺️ ${esc(tx('warTitle', 'Davlatlar urushi'))}</div>
+      <div class="wr-kicker">🚩 ${esc(tx('warTitle', 'Bayroqlar bellashuvi'))}</div>
       <div class="wr-big">🏳️</div>
       <h2>${esc(tx('wrNoClub', "Siz hali hech qaysi davlat klubida emassiz"))}</h2>
       <p>${esc(tx('wrNoClubSub', "Klubga qo'shiling — har g'alabangiz davlatingizga xaritada hudud olib beradi"))}</p>
@@ -146,7 +146,7 @@
     const r = Object.entries(d.ratings || {}).sort((a, b) => (b[1].to - b[1].from) - (a[1].to - a[1].from))[0];
     if (r) line('📈', `${(MODE_LABEL[r[0]] || r[0]).replace(/^\S+\s/, '')} ${r[1].to} (${r[1].to - r[1].from >= 0 ? '+' : ''}${r[1].to - r[1].from})`);
     if (op) line('📖', op.name);
-    if (d.war && d.war.club) line('🗺️', `${clubLabel(d.war.club)} · ${d.war.points || 0} ${tx('wrCardWarPts', 'urush ochkosi')}`);
+    if (d.war && d.war.club) line('🚩', `${clubLabel(d.war.club)} · ${d.war.points || 0} ${tx('wrCardWarPts', 'bayroq ochkosi')}`);
     x.fillStyle = 'rgba(255,255,255,0.45)'; x.font = font(600, 30);
     x.fillText(location.host || 'chessdom', 80, 1290);
   }

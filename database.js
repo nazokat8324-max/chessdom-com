@@ -602,7 +602,7 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_chat_reads_user ON chat_reads (user_id, room_id)'
   ]) { try { await dbExec(sql); } catch (e) {} }
 
-  // 🗺️ Davlatlar urushi: har reytingli o'yindagi klub ochkolari (mavsum = oy, Toshkent vaqti) va mavsum hukmdorlari
+  // 🚩 Bayroqlar bellashuvi (kodda "war"): har reytingli o'yindagi klub ochkolari (mavsum = oy, Toshkent vaqti) va mavsum chempionlari
   await dbExec(`
     CREATE TABLE IF NOT EXISTS war_points (
       id TEXT PRIMARY KEY,
@@ -1172,7 +1172,7 @@ async function refundAgainst(cheaterId) {
   return refunds;
 }
 
-// --- 🗺️ Davlatlar urushi ---
+// --- 🚩 Bayroqlar bellashuvi (war_*) ---
 async function ratingHistorySeason(userId) {
   const rows = await dbAll('SELECT mode, rating_before as "before", rating, created_at as "t", opponent_id as "opponentId" FROM rating_history WHERE user_id = ? ORDER BY created_at ASC', [userId]);
   return rows;

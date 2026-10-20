@@ -50,7 +50,7 @@ app.use((req, res, next) => {
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
-const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', urush: 'Country war', choyxona: 'Teahouse' };
+const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse' };
 const DEFAULT_DESC = 'ChessDom — free online chess: rated games, Chess960, hourly Swiss tournaments, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
@@ -90,7 +90,7 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'urush', 'choyxona'];
+  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
@@ -100,9 +100,12 @@ app.get('/sitemap.xml', async (req, res) => {
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix', 'urush', 'choyxona']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix', 'bayroqlar', 'choyxona']);
+// Nomi o'zgargan bo'limlar: eski manzil → yangisi (301)
+const ROUTE_ALIASES = { urush: 'bayroqlar' };
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
-  const slug = req.params[0].toLowerCase();
+  const raw = req.params[0].toLowerCase();
+  const slug = ROUTE_ALIASES[raw] || raw;
   if (!PAGE_ROUTES.has(slug)) return next();
   const canonical = '/' + slug;
   if (req.path !== canonical) return res.redirect(301, canonical + (req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : ''));
@@ -601,7 +604,7 @@ async function notify(userId, type, data, collapseKey) {
   } catch (err) { console.error('Bildirishnoma xatoligi:', err.message); }
 }
 
-// --- 🗺️ Davlatlar urushi: mavsum = kalendar oyi (Toshkent vaqti, UTC+5) ---
+// --- 🚩 Bayroqlar bellashuvi (kodda "war"): mavsum = kalendar oyi (Toshkent vaqti, UTC+5) ---
 // G'alaba 3, durrang 1; boshqa davlat klubiga qarshi g'alaba +1, qo'shni davlat klubiga qarshi yana +1.
 // Hudud hukmdori: o'z klubining ochkosi yoki qo'shni klub ochkosining yarmi — qaysi biri katta bo'lsa (bo'sh hududni qo'shni egallaydi).
 const GEO = JSON.parse(fs.readFileSync(path.join(__dirname, 'assets', 'geo-codes.json'), 'utf8'));
@@ -1892,7 +1895,7 @@ async function start() {
     } catch (err) { console.error('Profil qo\'shimchalari xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  // 🗺️ Davlatlar urushi: xarita holati, klublar jadvali, o'tgan hukmdorlar, o'z klubim
+  // 🚩 Bayroqlar bellashuvi: xarita holati, klublar jadvali, o'tgan hukmdorlar, o'z klubim
   app.get('/api/war', apiLimiter, async (req, res) => {
     try {
       await closeWarSeasons();

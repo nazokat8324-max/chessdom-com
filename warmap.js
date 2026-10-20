@@ -1,4 +1,4 @@
-// 🗺️ Davlatlar urushi (#warView → #warRoot, /urush, war-*): har oy davlat klublari reytingli o'yinlardagi
+// 🚩 Bayroqlar bellashuvi (#warView → #warRoot, /bayroqlar, war-*; 2026-10-20 gacha "Davlatlar urushi"): har oy davlat klublari reytingli o'yinlardagi
 // g'alabalari bilan dunyo xaritasida hudud uchun kurashadi. Qoidalar va hisob serverda (server.js computeWar).
 // Xarita: d3 + topojson-client (CDN, faqat shu sahifa ochilganda yuklanadi), assets/world-110m.json (Natural Earth),
 // assets/geo-codes.json (raqamli id → davlat kodi, qo'shnilar).
@@ -80,19 +80,19 @@
     root.innerHTML = `
       <section class="war-hero">
         <div class="war-hero-text">
-          <span class="war-kicker">🗺️ ${esc(tx('warKicker', 'Faqat ChessDom da'))}</span>
-          <h1>${esc(tx('warTitle', 'Davlatlar urushi'))}</h1>
-          <p>${esc(tx('warLead', "Har reytingli g'alabangiz davlatingiz klubiga ochko beradi. Ochko ko'p bo'lsa — klubingiz qo'shni davlatlarni ham egallaydi. Oy oxirida xaritaning eng katta qismi kimniki bo'lsa, o'sha klub mavsum hukmdori bo'ladi."))}</p>
+          <span class="war-kicker">🚩 ${esc(tx('warKicker', 'Faqat ChessDom da'))}</span>
+          <h1>${esc(tx('warTitle', 'Bayroqlar bellashuvi'))}</h1>
+          <p>${esc(tx('warLead', "Har reytingli g'alabangiz davlatingiz klubiga bayroq ochkosi beradi. Ochko ko'p bo'lsa — klubingiz bayrog'i qo'shni davlatlarda ham hilpiraydi. Oy oxirida xaritaning eng katta qismi kimning bayrog'i ostida bo'lsa, o'sha klub mavsum chempioni bo'ladi."))}</p>
         </div>
         <div class="war-hero-side">
           <div class="war-season">
             <select id="warSeasonSel" aria-label="season">${seasonOptions(d)}</select>
             ${d.current ? `<small>⏳ ${esc(tx('warEndsIn', 'Tugashiga'))}: <b id="warCountdown">${esc(countdown(d.endsAt))}</b></small>` : `<small>${esc(tx('warEnded', 'Mavsum yakunlandi'))}</small>`}
           </div>
-          <div class="war-ruler">${ruler ? `<span>👑 ${esc(d.current ? tx('warLeading', 'Hozir yetakchi') : tx('warRuler', 'Mavsum hukmdori'))}</span>
+          <div class="war-ruler">${ruler ? `<span>👑 ${esc(d.current ? tx('warLeading', 'Hozir yetakchi') : tx('warRuler', "Mavsum chempioni"))}</span>
             <b>${flag(ruler.code)} ${esc(clubName(ruler))}</b>
             <small>${esc(tx('warTerritoriesN', '{{n}} hudud', { n: ruler.territories }))} · ${esc(tx('warPointsN', '{{n}} ochko', { n: ruler.points }))}</small>`
-            : `<span>👑 ${esc(tx('warNoRuler', "Taxt hali bo'sh"))}</span><small>${esc(tx('warNoRulerSub', "Birinchi g'alaba bilan xaritaga chiqing"))}</small>`}</div>
+            : `<span>👑 ${esc(tx('warNoRuler', "Chempion hali yo'q"))}</span><small>${esc(tx('warNoRulerSub', "Birinchi g'alaba bilan bayrog'ingizni xaritaga tiking"))}</small>`}</div>
         </div>
       </section>
       <div class="war-grid">
@@ -101,7 +101,7 @@
           <div class="war-tip" id="warTip" hidden></div>
           <div class="war-legend">
             <span><i class="own"></i>${esc(tx('warLegendOwn', 'Klub o\'z hududi'))}</span>
-            <span><i class="captured"></i>${esc(tx('warLegendCaptured', 'Bosib olingan hudud'))}</span>
+            <span><i class="captured"></i>${esc(tx('warLegendCaptured', "Ta'sir doirasidagi hudud"))}</span>
             <span><i class="free"></i>${esc(tx('warLegendFree', 'Bo\'sh hudud'))}</span>
             ${myCode ? `<span><i class="mine"></i>${esc(tx('warLegendMine', 'Sizning klubingiz'))}</span>` : ''}
           </div>
@@ -126,12 +126,12 @@
               <li><b>+1</b> ${esc(tx('warRuleDraw', 'durrang'))}</li>
               <li><b>+1</b> ${esc(tx('warRuleForeign', "boshqa davlat klubi o'yinchisini yutish"))}</li>
               <li><b>+1</b> ${esc(tx('warRuleNeighbor', "qo'shni davlat o'yinchisini yutish — yana qo'shimcha"))}</li>
-              <li>🛡️ ${esc(tx('warRuleTerritory', "Hudud egasi: o'z klubi yoki ochkosining yarmi o'z klubidan ko'p bo'lgan qo'shni klub"))}</li>
-              <li>📅 ${esc(tx('warRuleSeason', "Mavsum — bir oy. Oy oxirida eng ko'p hududli klub hukmdor bo'ladi, keyin xarita yangidan boshlanadi"))}</li>
+              <li>🛡️ ${esc(tx('warRuleTerritory', "Hudud kimning bayrog'i ostida: o'z klubi yoki ochkosining yarmi o'z klubidan ko'p bo'lgan qo'shni klub"))}</li>
+              <li>📅 ${esc(tx('warRuleSeason', "Mavsum — bir oy. Oy oxirida eng ko'p hududli klub chempion bo'ladi, keyin xarita yangidan boshlanadi"))}</li>
             </ul>
           </section>
           ${d.previous && d.previous.length ? `<section class="war-card">
-            <h3>👑 ${esc(tx('warPrevRulers', 'Oldingi hukmdorlar'))}</h3>
+            <h3>👑 ${esc(tx('warPrevRulers', "Oldingi chempionlar"))}</h3>
             <div class="war-prev">${d.previous.map(p => `<div><span>${esc(monthName(p.season))}</span><b>${flag(p.code)}${esc(clubName(p))}</b><small>🗺️ ${p.territories}</small></div>`).join('')}</div>
           </section>` : ''}
         </aside>
@@ -202,7 +202,7 @@
         const c = codeOf(f), r = c && d.regions[c];
         const ruler = r && (clubs.get(r.ruler) || { country: r.ruler, code: r.ruler });
         tip.innerHTML = `<b>${flag(c)}${esc(labelOf(f))}</b>` + (r
-          ? `<small>${r.ruler === c ? '🛡️ ' + esc(tx('warHeldBy', "O'z klubi nazoratida")) : '⚔️ ' + esc(tx('warCapturedBy', '{{club}} bosib olgan', { club: clubName(ruler) }))}</small><small>${esc(tx('warPower', 'Kuch: {{p}} · o\'z ochkosi: {{o}}', { p: r.power, o: r.own }))}</small>`
+          ? `<small>${r.ruler === c ? '🛡️ ' + esc(tx('warHeldBy', "O'z klubi nazoratida")) : '🚩 ' + esc(tx('warCapturedBy', "{{club}} ta'sir doirasida", { club: clubName(ruler) }))}</small><small>${esc(tx('warPower', 'Kuch: {{p}} · o\'z ochkosi: {{o}}', { p: r.power, o: r.own }))}</small>`
           : `<small>${esc(tx('warFree', "Bo'sh — hech kim egallamagan"))}</small>`);
         const rect = box.getBoundingClientRect();
         tip.hidden = false;

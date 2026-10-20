@@ -11447,6 +11447,575 @@ body:has(#gameView.active-view) .toast-container {
   }
 }
 
+/* ===== Profil: yutuqlar, batafsil statistika, kuzatish (profile-extras.js) ===== */
+.ach-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-muted);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.ach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.ach-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cd-surface-2);
+  border: 1px solid var(--cd-border);
+  opacity: 0.42;
+  filter: grayscale(1);
+  transition: opacity 0.2s, filter 0.2s;
+}
+.ach-item.earned {
+  opacity: 1;
+  filter: none;
+  border-color: rgba(var(--accent-rgb), 0.4);
+  background: linear-gradient(160deg, rgba(var(--accent-rgb), 0.12), var(--cd-surface-2) 70%);
+}
+.ach-ico {
+  font-size: 24px;
+  line-height: 1;
+}
+.ach-item b {
+  font-size: 13px;
+  color: #fff;
+}
+.ach-item small {
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--cd-muted);
+}
+.ex-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.ex-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--cd-surface-2);
+  border: 1px solid var(--cd-border);
+}
+.ex-card.wide {
+  grid-column: span 2;
+}
+.ex-card > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--cd-muted);
+}
+.ex-card > b {
+  font-size: 24px;
+  color: #fff;
+}
+.ex-card small,
+.ex-line {
+  font-size: 12px;
+  color: #cfd8d4;
+}
+.ex-card i.w { color: #6fcf97; font-style: normal; }
+.ex-card i.d { color: #a7b1ad; font-style: normal; }
+.ex-card i.l { color: #eb5757; font-style: normal; }
+.ex-best {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+.ex-best em {
+  font-style: normal;
+  font-size: 12px;
+  color: #cfd8d4;
+}
+.ex-best b {
+  color: #fff;
+}
+.ex-opps {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ex-opps div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.ex-opps b {
+  color: #fff;
+  cursor: pointer;
+}
+.ex-opps small {
+  margin-left: auto;
+  color: var(--cd-muted);
+}
+.ex-empty {
+  color: var(--cd-muted);
+  font-size: 13px;
+}
+.profile-follow-btn.on {
+  border-color: rgba(242, 201, 76, 0.5) !important;
+  color: #f2c94c !important;
+}
+.profile-follow-btn small {
+  opacity: 0.7;
+}
+.profile-follow-counts {
+  font-size: 12px;
+  color: var(--cd-muted);
+  text-align: center;
+}
+.profile-follow-counts:empty {
+  display: none;
+}
+.profile-cheater {
+  margin: 6px auto 0;
+  padding: 5px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #ffb3b3;
+  background: rgba(229, 72, 77, 0.15);
+  border: 1px solid rgba(229, 72, 77, 0.45);
+  width: fit-content;
+}
+.profile-cheater[hidden] {
+  display: none;
+}
+.profile-games-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+.profile-games-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--cd-border-strong);
+  background: var(--cd-surface-2);
+  color: #dfe7e3;
+  font-weight: 700;
+  cursor: pointer;
+}
+.profile-games-btn:hover {
+  border-color: var(--accent);
+}
+@media (max-width: 900px) {
+  .ex-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ===== O'yinlar tarixi (games.js) ===== */
+.gh-head {
+  align-items: flex-end;
+}
+.gh-actions {
+  display: flex;
+  gap: 8px;
+}
+.gh-actions a {
+  text-decoration: none;
+}
+.gh-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 6px 0 12px;
+}
+.gh-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gh-search {
+  min-width: 200px;
+}
+.gh-summary {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--cd-muted);
+}
+.gh-summary .w b { color: #6fcf97; }
+.gh-summary .d b { color: #cfd8d4; }
+.gh-summary .l b { color: #eb5757; }
+.gh-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.gh-row {
+  display: grid;
+  grid-template-columns: 96px 108px minmax(0, 1.4fr) 110px minmax(0, 1fr) 80px 44px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+  font-size: 13px;
+  color: #dfe7e3;
+}
+.gh-date,
+.gh-reason,
+.gh-moves {
+  color: var(--cd-muted);
+  font-size: 12px;
+}
+.gh-res {
+  justify-self: start;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.gh-res.win { background: rgba(111, 207, 151, 0.15); color: #6fcf97; }
+.gh-res.draw { background: rgba(255, 255, 255, 0.08); color: #cfd8d4; }
+.gh-res.loss { background: rgba(235, 87, 87, 0.14); color: #ff8f8f; }
+.gh-opp {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.gh-opp b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+  cursor: pointer;
+}
+.gh-color {
+  flex-shrink: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.gh-color.w { background: #f2f5f3; }
+.gh-color.b { background: #202326; }
+.gh-act {
+  justify-self: end;
+}
+.gh-empty {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--cd-muted);
+}
+.gh-pager {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  color: var(--cd-muted);
+}
+.pgn-card {
+  width: min(560px, calc(100vw - 32px));
+}
+.pgn-card textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 10px 0;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+.pgn-file {
+  display: inline-block;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+@media (max-width: 768px) {
+  .gh-row {
+    grid-template-columns: 80px minmax(0, 1fr) 44px;
+    grid-template-areas: "res opp act" "date mode moves";
+    row-gap: 4px;
+  }
+  .gh-res { grid-area: res; }
+  .gh-opp { grid-area: opp; }
+  .gh-act { grid-area: act; }
+  .gh-date { grid-area: date; }
+  .gh-mode { grid-area: mode; font-size: 12px; color: var(--cd-muted); }
+  .gh-moves { grid-area: moves; text-align: right; }
+  .gh-reason { display: none; }
+  .gh-actions { flex-wrap: wrap; }
+}
+
+/* ===== Sayt yangiliklari (news.js) ===== */
+.nw-compose {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border-strong);
+}
+.nw-compose .set-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  font-size: 14px;
+}
+.nw-compose textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+.nw-compose button {
+  align-self: flex-end;
+}
+.nw-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.nw-post {
+  padding: 20px 22px;
+  border-radius: 18px;
+  background: var(--cd-surface);
+  border: 1px solid var(--cd-border);
+}
+.nw-post-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.nw-post h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  color: #fff;
+}
+.nw-post small {
+  font-size: 12px;
+  color: var(--cd-muted);
+}
+.nw-post p {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: #d5ddd9;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ===== Bosh sahifa: do'stlar va kuzatilayotganlar ===== */
+.hw-circle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: default;
+}
+.hw-circle .hw-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.hw-circle .hw-top small {
+  font-size: 11px;
+  color: #6fcf97;
+  font-weight: 700;
+}
+.hw-person {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.hw-person b {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #fff;
+  cursor: pointer;
+}
+.hw-person small {
+  font-size: 11px;
+  color: var(--cd-muted);
+}
+.hw-hint {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--cd-muted);
+}
+
+/* ===== Admin: fair-play va chat ===== */
+.adm-note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--cd-muted);
+}
+.fp-recent {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.fp-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+}
+.fp-dot.sus {
+  background: #eb5757;
+}
+.adm-box {
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--cd-surface-2);
+  border: 1px solid var(--cd-border);
+}
+.adm-words {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.adm-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 4px 3px 10px;
+  border-radius: 99px;
+  background: rgba(229, 72, 77, 0.14);
+  color: #ffb3b3;
+  font-size: 12px;
+  font-weight: 700;
+}
+.adm-word button {
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* ===== Telefon yon tomonga burilganda (html.landscape-phone: balandlik ≤ 500px) ===== */
+html.landscape-phone .top-bar {
+  padding: 6px 14px;
+}
+html.landscape-phone .view-section {
+  padding: 12px 16px;
+}
+html.landscape-phone #gameView .game-layout {
+  flex-direction: row !important;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 6px 10px;
+}
+html.landscape-phone #gameView .board-section {
+  gap: 2px;
+}
+html.landscape-phone #gameView .player-bar {
+  min-height: 34px;
+  padding: 1px 4px;
+  gap: 8px;
+}
+html.landscape-phone #gameView .player-avatar {
+  width: 28px;
+  height: 28px;
+  font-size: 15px;
+}
+html.landscape-phone #gameView .player-name {
+  font-size: 13px;
+}
+html.landscape-phone #gameView .pg-captured {
+  display: none;
+}
+html.landscape-phone #gameView .player-timer {
+  min-width: 76px;
+  padding: 3px 8px;
+  font-size: 17px;
+}
+html.landscape-phone #gameView .control-panel {
+  width: 300px !important;
+  max-width: none !important;
+  flex-shrink: 1;
+}
+html.landscape-phone #gameView .game-panel-section {
+  padding: 10px;
+  gap: 10px;
+}
+html.landscape-phone #gameView .time-btn {
+  min-height: 46px;
+  padding: 6px 4px;
+}
+/* Kichik telefonlar (≤768px kenglik) yon holatda: pastki panel o'rniga chapda belgilar ustuni */
+@media (max-width: 768px) {
+  html.landscape-phone body {
+    flex-direction: row;
+  }
+  html.landscape-phone sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 6px 4px;
+    border-right: 1px solid var(--cd-border-strong);
+    border-bottom: none;
+  }
+  html.landscape-phone sidebar .logo-area,
+  html.landscape-phone .sidebar-bottom {
+    display: none;
+  }
+  html.landscape-phone .menu-list {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+  }
+  html.landscape-phone .menu-list .menu-item.mobile-main span:not(.icon):not(.lg-nav-badge) {
+    display: none;
+  }
+  html.landscape-phone .menu-list .menu-item.mobile-main {
+    padding: 9px 0;
+  }
+  html.landscape-phone .main-wrapper {
+    margin-left: 60px;
+    padding-bottom: 0;
+  }
+  html.landscape-phone .nf-wrap {
+    top: auto;
+    bottom: 10px;
+    right: auto;
+    left: 10px;
+  }
+  html.landscape-phone .nf-panel {
+    top: 10px;
+    left: 70px;
+    right: 10px;
+    max-height: calc(100vh - 20px);
+  }
+  html.landscape-phone #gameView .control-panel {
+    width: auto !important;
+    flex: 1;
+  }
+}
+
 /* ===== Kirish / ro'yxatdan o'tish sahifasi (tizimga kirilmaguncha) ===== */
 body.auth-locked {
   overflow: hidden;

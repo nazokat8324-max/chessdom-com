@@ -87,6 +87,7 @@ const SERVER_MESSAGE_KEYS = {
   "Sarlavha va matn kerak!": 'srvNewsRequired',
   "Yangilik topilmadi!": 'srvNewsNotFound',
   "Xabar topilmadi!": 'srvMessageNotFound',
+  "Siz vaqtincha chatda yoza olmaysiz!": 'srvMuted',
   "Muvaffaqiyatli ro'yxatdan o'tdingiz!": 'srvRegistered',
   "Muvaffaqiyatli kirildi!": 'srvLoggedIn',
   "Hisobdan chiqildi!": 'srvLoggedOut',
@@ -656,6 +657,12 @@ window.switchView = function(viewName) {
         window.loadChatMessages();
       }
     }
+  } else if (viewName === "news") {
+    const newsEl = document.getElementById("newsView");
+    if (newsEl) newsEl.classList.add("active-view");
+    const navEl = document.getElementById("navNews");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.renderNewsView === "function") window.renderNewsView();
   } else if (viewName === "admin") {
     const adminEl = document.getElementById("adminView");
     if (adminEl) adminEl.classList.add("active-view");
@@ -2206,3 +2213,22 @@ document.addEventListener("click", (event) => {
     btn.classList.remove('animate__animated', 'animate__pulse');
   }, { once: true });
 });
+
+// Telefon yon tomonga burilganda (balandlik ≤ 500px): ixcham ko'rinish — chap menyu faqat belgilar, taxta ekran balandligiga
+(function () {
+  const mq = window.matchMedia('(orientation: landscape) and (max-height: 500px)');
+  function apply() {
+    const root = document.documentElement;
+    const on = mq.matches;
+    root.classList.toggle('landscape-phone', on);
+    if (on) root.classList.add('sidebar-collapsed');
+    else {
+      let saved = null;
+      try { saved = localStorage.getItem('justChessSidebar'); } catch (e) {}
+      root.classList.toggle('sidebar-collapsed', saved === 'collapsed');
+    }
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 150);
+  }
+  if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply);
+  apply();
+})();

@@ -528,6 +528,80 @@ async function initDatabase() {
   await dbExec(`CREATE INDEX IF NOT EXISTS idx_league_games_match ON league_games(match_id)`);
   await dbExec(`CREATE INDEX IF NOT EXISTS idx_league_clubs_division ON league_clubs(division_id)`);
 
+  // Yutuqlar, kuzatish, sayt yangiliklari, fair-play, chat filtri
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS user_achievements (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      key TEXT NOT NULL,
+      earned_at TEXT NOT NULL,
+      UNIQUE(user_id, key)
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS follows (
+      id TEXT PRIMARY KEY,
+      follower_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      followee_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      created_at TEXT NOT NULL,
+      UNIQUE(follower_id, followee_id)
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS news_posts (
+      id TEXT PRIMARY KEY,
+      author_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      title TEXT NOT NULL,
+      body TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS fairplay_games (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      opponent_id TEXT,
+      mode TEXT,
+      moves INTEGER DEFAULT 0,
+      blurs INTEGER DEFAULT 0,
+      avg_ms INTEGER DEFAULT 0,
+      cv REAL DEFAULT 0,
+      result TEXT,
+      suspicious INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS chat_filter (
+      id TEXT PRIMARY KEY,
+      word TEXT NOT NULL UNIQUE,
+      created_at TEXT NOT NULL
+    )
+  `);
+  for (const sql of [
+    'ALTER TABLE users ADD COLUMN muted_until TEXT DEFAULT NULL',
+    'ALTER TABLE users ADD COLUMN fairplay_flag TEXT DEFAULT NULL',
+    'ALTER TABLE rating_history ADD COLUMN opponent_id TEXT DEFAULT NULL',
+    'ALTER TABLE rating_history ADD COLUMN refunded INTEGER DEFAULT 0'
+  ]) { try { await dbExec(sql); } catch (e) {} }
+  // Tez-tez so'raladigan ustunlar uchun indekslar (ikkala bazada ham ishlaydi)
+  for (const sql of [
+    'CREATE INDEX IF NOT EXISTS idx_users_rating ON users (rating)',
+    'CREATE INDEX IF NOT EXISTS idx_users_club ON users (club_country)',
+    'CREATE INDEX IF NOT EXISTS idx_chat_room_time ON chat_messages (room_id, created_at)',
+    'CREATE INDEX IF NOT EXISTS idx_chat_receiver ON chat_messages (receiver_id)',
+    'CREATE INDEX IF NOT EXISTS idx_friends_user ON friends (user_id)',
+    'CREATE INDEX IF NOT EXISTS idx_friend_req_receiver ON friend_requests (receiver_id, status)',
+    'CREATE INDEX IF NOT EXISTS idx_rating_history_user ON rating_history (user_id, mode, created_at)',
+    'CREATE INDEX IF NOT EXISTS idx_rating_history_opp ON rating_history (opponent_id)',
+    'CREATE INDEX IF NOT EXISTS idx_tp_tournament ON tournament_participants (tournament_id)',
+    'CREATE INDEX IF NOT EXISTS idx_tm_tournament ON tournament_matches (tournament_id)',
+    'CREATE INDEX IF NOT EXISTS idx_follows_followee ON follows (followee_id)',
+    'CREATE INDEX IF NOT EXISTS idx_fairplay_user ON fairplay_games (user_id, created_at)',
+    'CREATE INDEX IF NOT EXISTS idx_club_news_club ON club_news (club_country)',
+    'CREATE INDEX IF NOT EXISTS idx_chat_reads_user ON chat_reads (user_id, room_id)'
+  ]) { try { await dbExec(sql); } catch (e) {} }
+
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
 
@@ -904,8 +978,194 @@ async function getPublicProfile(username) {
     stats: user.stats || { wins: 0, losses: 0, draws: 0 },
     statsByMode: user.stats_by_mode,
     createdAt: user.created_at || null,
+    cheater: user.fairplay_flag === 'cheater',
     recentGames
   };
+}
+
+// --- Yutuqlar (shartlar server.js da) ---
+async function getAchievements(userId) {
+  return dbAll('SELECT key, earned_at as "earnedAt" FROM user_achievements WHERE user_id = ? ORDER BY earned_at ASC', [userId]);
+}
+async function addAchievement(userId, key) {
+  const exists = await dbGet('SELECT id FROM user_achievements WHERE user_id = ? AND key = ?', [userId, key]);
+  if (exists) return false;
+  await dbRun('INSERT INTO user_achievements (id, user_id, key, earned_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, key, new Date().toISOString()]);
+  return true;
+}
+async function countFriends(userId) {
+  const r = await dbGet('SELECT COUNT(*) as "n" FROM friends WHERE user_id = ?', [userId]);
+  return Number(r && r.n) || 0;
+}
+
+// --- Kuzatish ---
+async function setFollow(followerId, followeeId, on) {
+  await dbRun('DELETE FROM follows WHERE follower_id = ? AND followee_id = ?', [followerId, followeeId]);
+  if (on) await dbRun('INSERT INTO follows (id, follower_id, followee_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), followerId, followeeId, new Date().toISOString()]);
+}
+async function followCounts(userId) {
+  const a = await dbGet('SELECT COUNT(*) as "n" FROM follows WHERE followee_id = ?', [userId]);
+  const b = await dbGet('SELECT COUNT(*) as "n" FROM follows WHERE follower_id = ?', [userId]);
+  return { followers: Number(a && a.n) || 0, following: Number(b && b.n) || 0 };
+}
+async function isFollowing(followerId, followeeId) {
+  return !!(await dbGet('SELECT id FROM follows WHERE follower_id = ? AND followee_id = ?', [followerId, followeeId]));
+}
+async function getFollowerIds(userId) {
+  return (await dbAll('SELECT follower_id as "id" FROM follows WHERE followee_id = ?', [userId])).map(r => r.id);
+}
+// Men kuzatayotganlar + do'stlarim (bosh sahifa uchun)
+async function getCircle(userId) {
+  const rows = await dbAll(`SELECT u.id, u.username, u.country, u.rating, u.avatar_version as "avatarVersion" FROM follows f JOIN users u ON u.id = f.followee_id WHERE f.follower_id = ?`, [userId]);
+  const friends = await dbAll(`SELECT u.id, u.username, u.country, u.rating, u.avatar_version as "avatarVersion" FROM friends f JOIN users u ON u.id = f.friend_id WHERE f.user_id = ?`, [userId]);
+  const map = new Map();
+  for (const r of rows) map.set(r.id, { ...r, follow: true, friend: false });
+  for (const r of friends) map.set(r.id, { ...(map.get(r.id) || r), friend: true, follow: !!(map.get(r.id) || {}).follow });
+  return [...map.values()];
+}
+
+// --- Sayt yangiliklari (adminlar yozadi) ---
+async function listNewsPosts(limit) {
+  return dbAll(`SELECT n.id, n.title, n.body, n.created_at as "createdAt", u.username as "author" FROM news_posts n LEFT JOIN users u ON u.id = n.author_id ORDER BY n.created_at DESC LIMIT ${Math.max(1, Math.min(50, Number(limit) || 30))}`);
+}
+async function addNewsPost(authorId, title, body) {
+  const id = uuidv4();
+  await dbRun('INSERT INTO news_posts (id, author_id, title, body, created_at) VALUES (?, ?, ?, ?, ?)', [id, authorId, title, body, new Date().toISOString()]);
+  return id;
+}
+async function deleteNewsPost(id) {
+  await dbRun('DELETE FROM news_posts WHERE id = ?', [id]);
+}
+
+// --- O'yinlar tarixi (filtr va sahifalash) ---
+function historyEntries(user) {
+  return (Array.isArray(user.history) ? user.history : []).slice().reverse();
+}
+function filterHistory(list, f) {
+  const q = String(f.q || '').trim().toLowerCase();
+  return list.filter(g => {
+    if (f.mode && f.mode !== 'all' && (g.timeControl || '') !== f.mode) return false;
+    if (f.result && f.result !== 'all' && g.result !== f.result) return false;
+    if (f.color && f.color !== 'all' && g.color !== f.color) return false;
+    if (q && !String(g.opponent || '').toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+
+// --- Kengaytirilgan statistika ---
+async function getExtendedStats(user) {
+  const history = Array.isArray(user.history) ? user.history : [];
+  let longest = 0, run = 0;
+  for (const g of history) { if (g.result === 'win') { run++; longest = Math.max(longest, run); } else run = 0; }
+  let current = 0;
+  for (let i = history.length - 1; i >= 0 && history[i].result === 'win'; i--) current++;
+  const blank = () => ({ win: 0, draw: 0, loss: 0 });
+  const byColor = { w: blank(), b: blank() };
+  const winsBy = {}, lossesBy = {};
+  const opp = new Map();
+  for (const g of history) {
+    if (g.color === 'w' || g.color === 'b') byColor[g.color][g.result] = (byColor[g.color][g.result] || 0) + 1;
+    if (g.reason && g.result === 'win') winsBy[g.reason] = (winsBy[g.reason] || 0) + 1;
+    if (g.reason && g.result === 'loss') lossesBy[g.reason] = (lossesBy[g.reason] || 0) + 1;
+    if (g.opponent) {
+      const o = opp.get(g.opponent) || { name: g.opponent, games: 0, win: 0, draw: 0, loss: 0 };
+      o.games++; o[g.result] = (o[g.result] || 0) + 1;
+      opp.set(g.opponent, o);
+    }
+  }
+  const best = {};
+  for (const mode of RATING_MODES) {
+    const r = await dbGet('SELECT MAX(rating) as "m" FROM rating_history WHERE user_id = ? AND mode = ?', [user.id, mode]);
+    const peak = Number(r && r.m) || 0;
+    best[mode] = Math.max(peak, (user.ratings_by_mode || {})[mode] || 0);
+  }
+  const lengths = history.map(g => (Array.isArray(g.moves) ? g.moves.length : 0)).filter(Boolean);
+  return {
+    games: history.length,
+    longestStreak: longest,
+    currentStreak: current,
+    byColor,
+    winsBy,
+    lossesBy,
+    best,
+    avgMoves: lengths.length ? Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length / 2) : 0,
+    topOpponents: [...opp.values()].sort((a, b) => b.games - a.games).slice(0, 5)
+  };
+}
+
+// --- Fair-play ---
+async function addFairplayGame(row) {
+  await dbRun('INSERT INTO fairplay_games (id, user_id, opponent_id, mode, moves, blurs, avg_ms, cv, result, suspicious, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [uuidv4(), row.userId, row.opponentId || null, row.mode || null, row.moves, row.blurs, row.avgMs, row.cv, row.result, row.suspicious ? 1 : 0, new Date().toISOString()]);
+}
+async function recentFairplay(userId, limit) {
+  return dbAll(`SELECT moves, blurs, avg_ms as "avgMs", cv, result, suspicious, created_at as "createdAt" FROM fairplay_games WHERE user_id = ? ORDER BY created_at DESC LIMIT ${Number(limit) || 20}`, [userId]);
+}
+async function setFairplayFlag(userId, flag) {
+  await dbRun('UPDATE users SET fairplay_flag = ? WHERE id = ?', [flag || null, userId]);
+}
+// Admin: shubhali o'yinlari bor yoki belgilangan o'yinchilar
+async function fairplayOverview() {
+  const rows = await dbAll(`SELECT user_id as "userId", COUNT(*) as "games", SUM(suspicious) as "sus", SUM(blurs) as "blurs", SUM(moves) as "moves",
+    SUM(CASE WHEN result = 'win' THEN 1 ELSE 0 END) as "wins" FROM fairplay_games GROUP BY user_id`);
+  const flagged = await dbAll("SELECT id FROM users WHERE fairplay_flag IS NOT NULL");
+  const ids = new Set(rows.filter(r => Number(r.sus) > 0).map(r => r.userId).concat(flagged.map(f => f.id)));
+  const out = [];
+  for (const id of ids) {
+    const u = await dbGet('SELECT id, username, rating, fairplay_flag as "flag", banned_until as "bannedUntil" FROM users WHERE id = ?', [id]);
+    if (!u) continue;
+    const r = rows.find(x => x.userId === id) || {};
+    out.push({ ...u, games: Number(r.games) || 0, suspicious: Number(r.sus) || 0, blurRate: Number(r.moves) ? Math.round(Number(r.blurs) / Number(r.moves) * 100) : 0,
+      winRate: Number(r.games) ? Math.round(Number(r.wins) / Number(r.games) * 100) : 0 });
+  }
+  return out.sort((a, b) => (b.flag === 'flagged') - (a.flag === 'flagged') || b.suspicious - a.suspicious);
+}
+// Qoidabuzarga yutqazganlarning reytingini qaytarish (faqat hali qaytarilmaganlar)
+async function refundAgainst(cheaterId) {
+  const rows = await dbAll('SELECT id, user_id as "userId", mode, rating_before as "before", rating FROM rating_history WHERE opponent_id = ? AND (refunded IS NULL OR refunded = 0)', [cheaterId]);
+  const refunds = [];
+  for (const r of rows) {
+    const lost = Number(r.before) - Number(r.rating);
+    await dbRun('UPDATE rating_history SET refunded = 1 WHERE id = ?', [r.id]);
+    if (lost <= 0) continue;
+    const u = await getUserById(r.userId);
+    if (!u) continue;
+    const byMode = u.ratings_by_mode;
+    byMode[r.mode] = (byMode[r.mode] || 1500) + lost;
+    const overall = r.mode === 'chess960' ? (u.rating || 1500) : (u.rating || 1500) + lost;
+    await dbRun('UPDATE users SET rating = ?, ratings_by_mode = ? WHERE id = ?', [overall, JSON.stringify(byMode), u.id]);
+    refunds.push({ userId: u.id, mode: r.mode, amount: lost });
+  }
+  return refunds;
+}
+
+// --- Chat moderatsiyasi ---
+async function adminIds() {
+  return (await dbAll("SELECT id FROM users WHERE role = 'admin'")).map(r => r.id);
+}
+async function setMute(userId, until) {
+  await dbRun('UPDATE users SET muted_until = ? WHERE id = ?', [until, userId]);
+}
+async function loadMutes() {
+  return dbAll("SELECT id, muted_until as \"until\" FROM users WHERE muted_until IS NOT NULL");
+}
+async function listChatFilter() {
+  return (await dbAll('SELECT word FROM chat_filter ORDER BY word')).map(r => r.word);
+}
+async function addChatFilterWord(word) {
+  const exists = await dbGet('SELECT id FROM chat_filter WHERE word = ?', [word]);
+  if (!exists) await dbRun('INSERT INTO chat_filter (id, word, created_at) VALUES (?, ?, ?)', [uuidv4(), word, new Date().toISOString()]);
+}
+async function removeChatFilterWord(word) {
+  await dbRun('DELETE FROM chat_filter WHERE word = ?', [word]);
+}
+async function recentClubMessages(filter) {
+  let sql = "SELECT cm.id, cm.room_id as \"roomId\", cm.message, cm.created_at as \"createdAt\", u.id as \"userId\", u.username, u.muted_until as \"mutedUntil\" FROM chat_messages cm JOIN users u ON u.id = cm.sender_id WHERE cm.room_id LIKE 'club%'";
+  const params = [];
+  if (filter.club) { sql += ' AND cm.room_id = ?'; params.push('club_' + filter.club); }
+  if (filter.user) { sql += ' AND LOWER(u.username) LIKE ?'; params.push('%' + String(filter.user).toLowerCase() + '%'); }
+  sql += ' ORDER BY cm.created_at DESC LIMIT 100';
+  return dbAll(sql, params);
 }
 
 function userClub(user) {
@@ -1077,7 +1337,7 @@ function eloChange(playerRating, opponentRating, result) {
 }
 
 // Umumiy reyting va (berilgan bo'lsa) o'yin rejimi reytingini yangilaydi
-async function updateUserRatingByResult(userId, result, opponentRating, timeControl, opponentModeRating) {
+async function updateUserRatingByResult(userId, result, opponentRating, timeControl, opponentModeRating, opponentId) {
   const user = await getUserById(userId);
   if (!user) return null;
   const playerRating = user.rating || 1500;
@@ -1091,8 +1351,8 @@ async function updateUserRatingByResult(userId, result, opponentRating, timeCont
     const modeRating = ratingsByMode[timeControl];
     modeChange = eloChange(modeRating, Number(opponentModeRating) || Number(opponentRating) || 1500, result);
     ratingsByMode[timeControl] = Math.max(100, modeRating + modeChange);
-    await dbRun('INSERT INTO rating_history (id, user_id, mode, rating_before, rating, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-      [uuidv4(), userId, timeControl, modeRating, ratingsByMode[timeControl], new Date().toISOString()]);
+    await dbRun('INSERT INTO rating_history (id, user_id, mode, rating_before, rating, created_at, opponent_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [uuidv4(), userId, timeControl, modeRating, ratingsByMode[timeControl], new Date().toISOString(), opponentId || null]);
   }
 
   await dbRun('UPDATE users SET rating = ?, ratings_by_mode = ? WHERE id = ?', [newRating, JSON.stringify(ratingsByMode), userId]);
@@ -1479,6 +1739,32 @@ module.exports = {
   getPublicProfile,
   markRoomRead,
   clearChat,
+  getAchievements,
+  addAchievement,
+  countFriends,
+  setFollow,
+  followCounts,
+  isFollowing,
+  getFollowerIds,
+  getCircle,
+  listNewsPosts,
+  addNewsPost,
+  deleteNewsPost,
+  historyEntries,
+  filterHistory,
+  getExtendedStats,
+  addFairplayGame,
+  recentFairplay,
+  setFairplayFlag,
+  fairplayOverview,
+  refundAgainst,
+  setMute,
+  adminIds,
+  loadMutes,
+  listChatFilter,
+  addChatFilterWord,
+  removeChatFilterWord,
+  recentClubMessages,
   getClubStaff,
   setClubRole,
   listClubNews,

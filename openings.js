@@ -40,7 +40,7 @@
       el.title = '';
       return;
     }
-    if (!moves || !moves.length) { el.hidden = true; return; }
+    if (!moves || !moves.length || (variant && variant !== 'standard')) { el.hidden = true; return; }
     if (!db) {
       el.hidden = true;
       window.loadOpenings().then(d => { if (d) window.renderOpeningInto(el, moves, variant); });

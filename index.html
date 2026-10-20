@@ -378,6 +378,10 @@
             <span class="icon">⭐</span>
             <span id="mChampions">Chempionlar</span>
           </a>
+          <a class="menu-item" id="navNews" onclick="switchView('news')">
+            <span class="icon">📰</span>
+            <span data-i18n="mNews">Yangiliklar</span>
+          </a>
           <a
             class="menu-item"
             id="navSettings"
@@ -1139,69 +1143,9 @@
         <div class="lb-page" id="leaderboardRoot"></div>
       </div>
 
-      <!-- 7. O'YINLAR TARIXI SAHIFASI -->
-      <div
-        id="historyView"
-        class="view-section"
-        style="justify-content: center; align-items: center"
-      >
-        <div
-          class="card-box"
-          style="width: 800px; max-height: 85vh; overflow-y: auto"
-        >
-          <div
-            style="
-              display: flex;
-              justify-content: space-between;
-              align-items: center;
-              margin-bottom: 20px;
-            "
-          >
-            <div
-              class="card-title"
-              id="historyCardTitle"
-              style="margin-bottom: 0"
-            >
-              O'yinlar tarixi
-            </div>
-            <div class="leaderboard-mode-tabs">
-              <button
-                class="mode-tab active"
-                id="allHistoryTab"
-                data-filter="all"
-              >
-                <span id="historyAllText">Barchasi</span>
-              </button>
-              <button class="mode-tab" id="winsHistoryTab" data-filter="win">
-                <span id="historyWinsText">G'alabalar</span>
-              </button>
-              <button class="mode-tab" id="lossesHistoryTab" data-filter="loss">
-                <span id="historyLossesText">Mag'lubiyatlar</span>
-              </button>
-              <button class="mode-tab" id="drawsHistoryTab" data-filter="draw">
-                <span id="historyDrawsText">Duranglar</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="leaderboard-table-wrapper">
-            <table class="leaderboard-table" id="historyTable">
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th id="colDate">Sana</th>
-                  <th id="colOpponent">Raqib</th>
-                  <th id="colMode">Rejim</th>
-                  <th id="colTime">Vaqt</th>
-                  <th id="colResult">Natija</th>
-                </tr>
-              </thead>
-              <tbody id="historyTableBody">
-                <!-- JavaScript orqali yuklanadi -->
-              </tbody>
-            </table>
-          </div>
-        </div>
+      <!-- 7. O'YINLAR TARIXI (games.js) -->
+      <div id="historyView" class="view-section set-view">
+        <div class="set-page gh-page" id="historyRoot"></div>
       </div>
 
       <!-- 8. TURNIRLAR -->
@@ -1643,6 +1587,10 @@
       </div>
 
       <!-- ADMIN PANELI (admin.js) -->
+      <div id="newsView" class="view-section set-view">
+        <div class="set-page" id="newsRoot"></div>
+      </div>
+
       <div id="adminView" class="view-section set-view">
         <div class="set-page" id="adminRoot"></div>
       </div>
@@ -2594,6 +2542,9 @@
     <script src="analysis.js"></script>
     <script src="notifications.js"></script>
     <script src="clubstaff.js"></script>
+    <script src="profile-extras.js"></script>
+    <script src="games.js"></script>
+    <script src="news.js"></script>
     <script src="replay.js"></script>
     <script src="safety.js"></script>
     <script src="admin.js"></script>
@@ -2661,6 +2612,8 @@
             </div>
             <h2 class="profile-name" id="profileModalUsername"></h2>
             <div class="profile-rank-chip" id="profileRankChip"></div>
+            <div class="profile-follow-counts" id="profileFollowCounts"></div>
+            <div class="profile-cheater" id="profileCheater" hidden>⚠️ <span data-i18n="fpCheaterBanner">Fair-play qoidalarini buzgan</span></div>
             <p class="profile-handle" id="profileModalHandle"></p>
             <p class="profile-presence" id="profilePresence" hidden></p>
             <p
@@ -2751,6 +2704,13 @@
             >
               ✉️ <span data-i18n="profileMessageBtn">Xabar yozish</span>
             </button>
+            <button
+              class="profile-message-btn profile-follow-btn"
+              id="profileFollowBtn"
+              type="button"
+              style="display: none"
+              onclick="window.toggleFollow()"
+            >☆ <span data-i18n="flFollow">Kuzatish</span></button>
             <button
               class="profile-friend-btn"
               id="profileFriendBtn"
@@ -2889,7 +2849,7 @@
                 class="stat-card editable-card rating-readonly profile-rating-card mode-blitz"
               >
                 <div class="profile-rating-top">
-                  <span class="profile-mode-icon">🔥</span>
+                  <span class="profile-mode-icon">⚡</span>
                   <span class="stat-title" id="profStatBlitzTitle"
                     >BLITZ REYTING</span
                   >
@@ -2913,7 +2873,7 @@
                 class="stat-card editable-card rating-readonly profile-rating-card mode-bullet"
               >
                 <div class="profile-rating-top">
-                  <span class="profile-mode-icon">⚡</span>
+                  <span class="profile-mode-icon">🔥</span>
                   <span class="stat-title" id="profStatBulletTitle"
                     >BULLET REYTING</span
                   >
@@ -3016,6 +2976,20 @@
               Oxirgi o'yinlar
             </h3>
             <div class="profile-games" id="profRecentGames"></div>
+            <div class="profile-games-actions">
+              <button type="button" class="profile-games-btn" onclick="window.openGameHistory(window.currentProfileUser && window.currentProfileUser())">📜 <span data-i18n="ghAllGames">Barcha o'yinlar</span></button>
+              <button type="button" class="profile-games-btn" onclick="window.openPgnImport()">📥 <span data-i18n="ghImport">PGN yuklash</span></button>
+            </div>
+          </section>
+
+          <section class="profile-section">
+            <h3 class="profile-section-title"><span data-i18n="achTitle">Yutuqlar</span> <small class="ach-count" id="profAchCount"></small></h3>
+            <div class="ach-grid" id="profAchievements"></div>
+          </section>
+
+          <section class="profile-section">
+            <h3 class="profile-section-title" data-i18n="exTitle">Batafsil statistika</h3>
+            <div class="ex-grid" id="profExtStats"></div>
           </section>
 
           <section class="profile-section profile-details-section">

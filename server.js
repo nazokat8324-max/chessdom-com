@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const { body, validationResult } = require('express-validator');
 const path = require('path');
+const fs = require('fs');
 const { Chess } = require('chess.js');
 const Chess960 = require('./chess960');
 
@@ -46,16 +47,66 @@ app.use((req, res, next) => {
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
   return PRIVATE_FILES.test(p) ? res.status(404).end() : next();
 });
-app.use(express.static(__dirname));
+// SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
+const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
+const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', yangiliklar: 'News', tarix: 'Game history' };
+const DEFAULT_DESC = 'ChessDom — free online chess: rated games, Chess960, hourly Swiss tournaments, country clubs and leagues, post-game analysis.';
+const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+async function sendIndex(req, res) {
+  let title = PAGE_TITLES[req.params && req.params[0] ? req.params[0].toLowerCase() : ''] || 'ChessDom';
+  if (title !== PAGE_TITLES['']) title += ' · ChessDom';
+  let desc = DEFAULT_DESC;
+  const name = typeof req.query.profile === 'string' ? req.query.profile.slice(0, 40) : '';
+  if (name) {
+    try {
+      const u = await db.getUserByUsername(name);
+      if (u) {
+        const r = u.ratings_by_mode || {};
+        const s = u.stats || {};
+        title = u.username + ' · ChessDom';
+        desc = `${u.username} on ChessDom — Rapid ${r.rapid || 1500} · Blitz ${r.blitz || 1500} · Bullet ${r.bullet || 1500} · ${(s.wins || 0) + (s.losses || 0) + (s.draws || 0)} games`;
+      }
+    } catch (e) {}
+  }
+  const url = SITE_URL + req.originalUrl;
+  const meta = `<title>${escAttr(title)}</title>
+    <meta name="description" content="${escAttr(desc)}" />
+    <link rel="canonical" href="${escAttr(SITE_URL + req.path)}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ChessDom" />
+    <meta property="og:title" content="${escAttr(title)}" />
+    <meta property="og:description" content="${escAttr(desc)}" />
+    <meta property="og:url" content="${escAttr(url)}" />
+    <meta property="og:image" content="${SITE_URL}/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#0a1214" />`;
+  res.set('Cache-Control', 'no-cache');
+  res.type('html').send(INDEX_HTML.replace(/<title>[^<]*<\/title>/, meta));
+}
+app.get('/', sendIndex);
+app.get('/index.html', sendIndex);
+app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
+app.get('/sitemap.xml', async (req, res) => {
+  const pages = ['', 'reyting', 'turnirlar', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'yangiliklar'];
+  let players = [];
+  try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
+  const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
+  res.type('application/xml').send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + urls.map(u => `  <url><loc>${u.replace(/&/g, '&amp;')}</loc></url>`).join('\n') + '\n</urlset>\n');
+});
+app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix', 'yangiliklar']);
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
   const slug = req.params[0].toLowerCase();
   if (!PAGE_ROUTES.has(slug)) return next();
   const canonical = '/' + slug;
   if (req.path !== canonical) return res.redirect(301, canonical + (req.originalUrl.includes('?') ? req.originalUrl.slice(req.originalUrl.indexOf('?')) : ''));
-  res.sendFile(path.join(__dirname, 'index.html'));
+  sendIndex(req, res);
 });
 
 const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { success: false, message: 'Too many requests, please try again later.' } });
@@ -200,6 +251,7 @@ async function restoreActiveGames() {
       room.clock.b = data.clock.b;
       if (data.leagueGameId) room.leagueGameId = data.leagueGameId;
       if (data.swissMatch) room.swissMatch = data.swissMatch;
+      room.announced = true;
       // Uzilish vaqti soatdan ayirilmaydi: soat endi qaytadan yuradi
       room.turnStartedAt = room.chess.history().length >= 2 ? Date.now() : null;
       rooms.set(roomId, room);
@@ -228,6 +280,7 @@ function scheduleRoomTimer(roomId, room) {
   clearTimeout(room.timer);
   if (room.status !== 'active') return;
   persistRoom(roomId, room);
+  if (!room.announced) { room.announced = true; announceGame(roomId, room).catch(() => {}); }
   const moves = room.chess.history().length;
   if (moves < 2) {
     // Har ikki tomon birinchi yurishini qilmaguncha soat yurmaydi
@@ -273,11 +326,11 @@ async function endGame(roomId, room, winnerColor, reason) {
         const ratingMode = ratingModeOf(room);
         await db.saveGame(p.userId, { result, opponent: opp.username, mode: "Online o'yin", timeControl: ratingMode, moves });
         const statsData = await db.updateUserStats(p.userId, result, opp.username, "Online o'yin", moves, ratingMode,
-          { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}) });
+          { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}), ...(room.leagueGameId ? { league: true } : {}) });
         let ratingData = null;
         if (room.rated && oppUser) {
           const modeBefore = before[p.color] && before[p.color].ratings_by_mode ? before[p.color].ratings_by_mode[ratingMode] : null;
-          ratingData = await db.updateUserRatingByResult(p.userId, result, oppUser.rating || 1500, ratingMode, oppUser.ratings_by_mode[ratingMode]);
+          ratingData = await db.updateUserRatingByResult(p.userId, result, oppUser.rating || 1500, ratingMode, oppUser.ratings_by_mode[ratingMode], opp.userId);
           const modeAfter = ratingData && ratingData.ratingsByMode ? ratingData.ratingsByMode[ratingMode] : null;
           if (modeBefore && modeAfter && modeAfter > modeBefore && rankOf(modeAfter) !== rankOf(modeBefore)) {
             notify(p.userId, 'rank_up', { mode: ratingMode, rank: rankOf(modeAfter), rating: modeAfter });
@@ -292,6 +345,11 @@ async function endGame(roomId, room, winnerColor, reason) {
         };
       }
     } catch (err) { console.error("O'yin natijasini saqlash xatoligi:", err); }
+  }
+  if (recorded) {
+    invalidateCache('leaderboard', 'daily');
+    recordFairplay(room, winnerColor).catch(err => console.error('Fair-play xatoligi:', err.message));
+    for (const p of players) checkAchievements(p.userId);
   }
   // Liga o'yini bo'lsa — natija bahs hisobiga yoziladi
   if (room.leagueGameId) {
@@ -445,6 +503,115 @@ async function notify(userId, type, data, collapseKey) {
     const item = await db.addNotification(userId, type, data || {}, collapseKey);
     io.to(`user_${userId}`).emit('notification', item);
   } catch (err) { console.error('Bildirishnoma xatoligi:', err.message); }
+}
+
+// --- Yutuqlar: shartlar o'yinchi ma'lumotidan hisoblanadi; yangilari bildirishnoma bilan ---
+const ACHIEVEMENT_RULES = [
+  ['first_win', (c) => c.wins >= 1], ['wins_10', (c) => c.wins >= 10], ['wins_50', (c) => c.wins >= 50], ['wins_100', (c) => c.wins >= 100],
+  ['games_10', (c) => c.games >= 10], ['games_100', (c) => c.games >= 100], ['games_500', (c) => c.games >= 500],
+  ['streak_5', (c) => c.streak >= 5], ['streak_10', (c) => c.streak >= 10], ['mate_10', (c) => c.mates >= 10],
+  ['rank_gold', (c) => c.peak >= 1600], ['rank_platinum', (c) => c.peak >= 1800], ['rank_diamond', (c) => c.peak >= 2000], ['rank_master', (c) => c.peak >= 2200],
+  ['chess960', (c) => c.played960], ['all_modes', (c) => c.allModes], ['friends_5', (c) => c.friends >= 5],
+  ['club_member', (c) => c.club], ['league_player', (c) => c.league]
+];
+async function checkAchievements(userId, opts) {
+  try {
+    const u = await db.getUserById(userId);
+    if (!u) return [];
+    const history = Array.isArray(u.history) ? u.history : [];
+    const s = u.stats || {};
+    let streak = 0, run = 0;
+    for (const g of history) { if (g.result === 'win') { run++; streak = Math.max(streak, run); } else run = 0; }
+    const byMode = u.stats_by_mode || {};
+    const played = (m) => { const x = byMode[m] || {}; return (x.wins || 0) + (x.losses || 0) + (x.draws || 0) > 0; };
+    const ratings = u.ratings_by_mode || {};
+    const ctx = {
+      wins: s.wins || 0, games: (s.wins || 0) + (s.losses || 0) + (s.draws || 0), streak,
+      mates: history.filter(g => g.result === 'win' && g.reason === 'checkmate').length,
+      peak: Math.max(0, ...['rapid', 'blitz', 'bullet', 'chess960'].filter(played).map(m => ratings[m] || 0)),
+      played960: history.some(g => g.variant === 'chess960'),
+      allModes: ['rapid', 'blitz', 'bullet'].every(played),
+      friends: await db.countFriends(userId), club: !!u.club_country, league: history.some(g => g.league)
+    };
+    const earned = [];
+    for (const [key, test] of ACHIEVEMENT_RULES) {
+      if (test(ctx) && await db.addAchievement(userId, key)) earned.push(key);
+    }
+    if (!(opts && opts.silent)) for (const key of earned) notify(userId, 'achievement', { key });
+    return earned;
+  } catch (err) { console.error('Yutuqlar xatoligi:', err.message); return []; }
+}
+async function awardAchievement(userId, key) {
+  try { if (await db.addAchievement(userId, key)) notify(userId, 'achievement', { key }); } catch (e) {}
+}
+
+// Kuzatuvchilarga: "X o'yin boshladi" (faqat onlayn kuzatuvchilarga, har o'yinchi bo'yicha bitta bildirishnoma)
+async function announceGame(roomId, room) {
+  for (const p of room.players) {
+    if (!p.userId) continue;
+    try {
+      for (const fid of await db.getFollowerIds(p.userId)) {
+        if (isOnline(fid) && !room.players.some(x => x.userId === fid)) notify(fid, 'follow_playing', { name: p.username, roomId }, 'fp:' + p.userId);
+      }
+    } catch (e) {}
+  }
+}
+
+// Chat: jim qilingan o'yinchilar (users.muted_until) va taqiqlangan so'zlar (chat_filter) — xotirada
+const mutes = new Map();
+let chatFilterWords = [];
+let chatFilterRe = null;
+function setChatFilter(words) {
+  chatFilterWords = words.slice();
+  const parts = words.filter(Boolean).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  chatFilterRe = parts.length ? new RegExp('(^|[^\\p{L}\\p{N}])(' + parts.join('|') + ')(?=$|[^\\p{L}\\p{N}])', 'giu') : null;
+}
+function cleanChat(text) {
+  if (!chatFilterRe || typeof text !== 'string') return text;
+  return text.replace(chatFilterRe, (m, pre, word) => pre + '*'.repeat([...word].length));
+}
+function mutedUntil(userId) {
+  const until = mutes.get(userId);
+  if (!until) return null;
+  if (new Date(until) <= new Date()) { mutes.delete(userId); return null; }
+  return until;
+}
+
+// Kesh: og'ir va tez-tez so'raladigan javoblar (reyting jadvali, kunlik g'oliblar, klublar, jonli o'yinlar)
+const apiCache = new Map();
+async function cached(key, ttlMs, fn) {
+  const hit = apiCache.get(key);
+  if (hit && Date.now() - hit.at < ttlMs) return hit.value;
+  const value = await fn();
+  apiCache.set(key, { at: Date.now(), value });
+  return value;
+}
+function invalidateCache(...keys) { for (const k of keys) apiCache.delete(k); }
+
+// --- Fair-play: o'yin oxirida har o'yinchi uchun signal (fokus yo'qotish, yurish vaqtlari bir xilligi) ---
+async function recordFairplay(room, winnerColor) {
+  for (const p of room.players) {
+    if (!p.userId) continue;
+    const times = (p.moveTimes || []).slice(5);
+    if (times.length < 8) continue;
+    const opp = room.players.find(x => x.color !== p.color);
+    const avg = times.reduce((a, b) => a + b, 0) / times.length;
+    const sd = Math.sqrt(times.reduce((a, b) => a + (b - avg) ** 2, 0) / times.length);
+    const cv = avg ? sd / avg : 0;
+    const moves = (p.moveTimes || []).length;
+    const blurs = p.blurs || 0;
+    const result = winnerColor === null ? 'draw' : (winnerColor === p.color ? 'win' : 'loss');
+    // Shubhali: g'alaba + har to'rtinchi yurishdan ko'p oynadan chiqish, yoki juda bir xil (mashinaga o'xshash) vaqtlar
+    const suspicious = result === 'win' && (blurs / moves >= 0.25 || (cv < 0.2 && avg > 1500 && times.length >= 15));
+    await db.addFairplayGame({ userId: p.userId, opponentId: opp && opp.userId, mode: ratingModeOf(room), moves, blurs, avgMs: Math.round(avg), cv: Math.round(cv * 100) / 100, result, suspicious });
+    if (!suspicious) continue;
+    const recent = await db.recentFairplay(p.userId, 20);
+    const u = await db.getUserById(p.userId);
+    if (u && !u.fairplay_flag && recent.filter(r => Number(r.suspicious)).length >= 3) {
+      await db.setFairplayFlag(p.userId, 'flagged');
+      for (const a of await db.adminIds()) notify(a, 'fairplay_flag', { name: p.username });
+    }
+  }
 }
 
 function emitWatchCount(roomId) {
@@ -686,12 +853,12 @@ async function start() {
   });
 
   app.get('/api/leaderboard', apiLimiter, async (req, res) => {
-    try { const leaderboard = await db.getLeaderboard(); res.json({ success: true, leaderboard }); }
+    try { const leaderboard = await cached('leaderboard', 30000, () => db.getLeaderboard()); res.json({ success: true, leaderboard }); }
     catch (err) { console.error('Leaderboard xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.get('/api/daily-winners', apiLimiter, async (req, res) => {
-    try { const data = await db.getDailyWinners(); res.json(data); }
+    try { const data = await cached('daily', 60000, () => db.getDailyWinners()); res.json(data); }
     catch (err) { console.error('Daily winners xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -1224,7 +1391,11 @@ async function start() {
     try {
       const { requestId } = req.body;
       const result = await db.acceptFriendRequest(requestId, req.user.userId);
-      if (result.success && result.senderId) notify(result.senderId, 'friend_accepted', { from: req.user.username });
+      if (result.success && result.senderId) {
+        notify(result.senderId, 'friend_accepted', { from: req.user.username });
+        checkAchievements(result.senderId);
+        checkAchievements(req.user.userId);
+      }
       res.json(result);
     }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -1318,7 +1489,8 @@ async function start() {
   ], async (req, res) => {
     try {
       const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
-      const { message } = req.body;
+      if (mutedUntil(req.user.userId)) return res.status(403).json({ success: false, message: 'Siz vaqtincha chatda yoza olmaysiz!' });
+      const message = cleanChat(String(req.body.message));
       // Shaxsiy xabar: "user_<id>" yoki receiverId → ikki tomon uchun umumiy dm_ xonasi
       const requested = req.body.roomId || (req.body.receiverId ? `user_${req.body.receiverId}` : null);
       const roomId = requested ? resolveChatRoom(String(requested), req.user.userId) : null;
@@ -1374,7 +1546,7 @@ async function start() {
 
   // Davlat klublari: har bir o'yinchi faqat bitta klubga a'zo bo'ladi
   app.get('/api/country-clubs', apiLimiter, async (req, res) => {
-    try { res.json({ success: true, clubs: await db.getCountryClubSummary() }); }
+    try { res.json({ success: true, clubs: await cached('clubs', 30000, () => db.getCountryClubSummary()) }); }
     catch (err) { console.error('Country clubs xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -1397,6 +1569,8 @@ async function start() {
       }
       if (current) await db.clearUserCountryClub(req.user.userId);
       const club = await db.setUserCountryClub(req.user.userId, country, code);
+      invalidateCache('clubs');
+      checkAchievements(req.user.userId);
       res.json({ success: true, club, previous: current });
     } catch (err) { console.error('Country club join xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -1498,6 +1672,164 @@ async function start() {
     } catch (err) { console.error('Chat xabarini o\'chirish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  // --- Profil qo'shimchalari: yutuqlar, kuzatuvchilar, kengaytirilgan statistika ---
+  app.get('/api/users/:username/extras', apiLimiter, async (req, res) => {
+    try {
+      const u = await db.getUserByUsername(String(req.params.username));
+      if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      await checkAchievements(u.id, { silent: true });
+      const viewer = optionalUserId(req);
+      res.json({
+        success: true,
+        achievements: await db.getAchievements(u.id),
+        ...(await db.followCounts(u.id)),
+        isFollowing: viewer && viewer !== u.id ? await db.isFollowing(viewer, u.id) : false,
+        cheater: u.fairplay_flag === 'cheater',
+        extStats: await db.getExtendedStats(u)
+      });
+    } catch (err) { console.error('Profil qo\'shimchalari xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  app.post('/api/follow', authMiddleware, async (req, res) => {
+    try {
+      const target = await db.getUserByUsername(String((req.body && req.body.username) || ''));
+      if (!target) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      if (target.id === req.user.userId) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
+      const on = !(req.body && req.body.follow === false);
+      if (on && blockedPair(req.user.userId, target.id)) return res.status(403).json({ success: false, message: "Bu o'yinchi bilan aloqa cheklangan" });
+      await db.setFollow(req.user.userId, target.id, on);
+      res.json({ success: true, isFollowing: on, ...(await db.followCounts(target.id)) });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Kuzatayotganlarim va do'stlarim: onlayn holati va hozir o'ynayotgan o'yini
+  app.get('/api/follows/online', authMiddleware, async (req, res) => {
+    try {
+      const playing = new Map();
+      for (const [roomId, room] of rooms.entries()) if (room.status === 'active') for (const p of room.players) if (p.userId) playing.set(p.userId, roomId);
+      const list = (await db.getCircle(req.user.userId)).map(u => ({ username: u.username, country: u.country || null, rating: u.rating || 1500, avatarVersion: u.avatarVersion || null,
+        friend: u.friend, follow: u.follow, online: isOnline(u.id), roomId: playing.get(u.id) || null }));
+      list.sort((a, b) => (b.online - a.online) || (!!b.roomId - !!a.roomId) || a.username.localeCompare(b.username));
+      res.json({ success: true, people: list });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Sayt yangiliklari: o'qish hammaga, yozish/o'chirish adminlarga
+  app.get('/api/news', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, news: await db.listNewsPosts(req.query.limit) }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/news', adminMiddleware, async (req, res) => {
+    try {
+      const title = String((req.body && req.body.title) || '').trim().slice(0, 150);
+      const text = String((req.body && req.body.body) || '').trim().slice(0, 8000);
+      if (!title || !text) return res.status(400).json({ success: false, message: 'Sarlavha va matn kerak!' });
+      await db.addNewsPost(req.user.userId, title, text);
+      res.json({ success: true, news: await db.listNewsPosts() });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.delete('/api/news/:id', adminMiddleware, async (req, res) => {
+    try { await db.deleteNewsPost(String(req.params.id)); res.json({ success: true, news: await db.listNewsPosts() }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // O'yinlar tarixi: filtr (rejim, natija, rang, raqib) va sahifalash; PGN — filtrlangan barcha o'yinlar
+  const historyFilter = (q) => ({ mode: q.mode, result: q.result, color: q.color, q: q.q });
+  app.get('/api/users/:username/history', apiLimiter, async (req, res) => {
+    try {
+      const u = await db.getUserByUsername(String(req.params.username));
+      if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const all = db.historyEntries(u);
+      const list = db.filterHistory(all, historyFilter(req.query));
+      const per = 20;
+      const pages = Math.max(1, Math.ceil(list.length / per));
+      const page = Math.min(pages, Math.max(1, Number(req.query.page) || 1));
+      const summary = { win: 0, draw: 0, loss: 0 };
+      for (const g of list) summary[g.result] = (summary[g.result] || 0) + 1;
+      res.json({
+        success: true, total: list.length, page, pages, summary,
+        games: list.slice((page - 1) * per, page * per).map(g => ({ id: g.id || null, result: g.result, opponent: g.opponent || null, timeControl: g.timeControl || null,
+          variant: g.variant || 'standard', color: g.color || null, reason: g.reason || null, clock: g.clock || null, date: g.timestamp || g.date || null,
+          moves: Array.isArray(g.moves) ? Math.ceil(g.moves.length / 2) : 0, hasMoves: Array.isArray(g.moves) && g.moves.length > 0 }))
+      });
+    } catch (err) { console.error('Tarix xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.get('/api/users/:username/pgn', apiLimiter, async (req, res) => {
+    try {
+      const u = await db.getUserByUsername(String(req.params.username));
+      if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const list = db.filterHistory(db.historyEntries(u), historyFilter(req.query)).filter(g => Array.isArray(g.moves) && g.moves.length).slice(0, 1000);
+      const pgn = list.map(g => {
+        const asWhite = g.color !== 'b';
+        const white = asWhite ? u.username : (g.opponent || '?'), black = asWhite ? (g.opponent || '?') : u.username;
+        const res1 = g.result === 'draw' ? '1/2-1/2' : ((g.result === 'win') === asWhite ? '1-0' : '0-1');
+        const d = new Date(g.timestamp || Date.now());
+        const head = [`[Event "ChessDom"]`, `[Site "${SITE_URL}"]`, `[Date "${isNaN(d) ? '????.??.??' : d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
+          `[White "${white}"]`, `[Black "${black}"]`, `[Result "${g.color ? res1 : '*'}"]`]
+          .concat(g.clock ? [`[TimeControl "${g.clock}"]`] : [])
+          .concat(g.variant === 'chess960' && g.startFen ? ['[Variant "Chess960"]', '[SetUp "1"]', `[FEN "${g.startFen}"]`] : []);
+        let body = '';
+        g.moves.forEach((s, i) => { body += (i % 2 === 0 ? (i / 2 + 1) + '. ' : '') + s + ' '; });
+        return head.join('\n') + '\n\n' + body + (g.color ? res1 : '*') + '\n';
+      }).join('\n');
+      res.set('Content-Disposition', `attachment; filename="chessdom-${u.username}.pgn"`);
+      res.type('application/x-chess-pgn').send(pgn);
+    } catch (err) { console.error('PGN xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Admin: fair-play
+  app.get('/api/admin/fairplay', adminMiddleware, async (req, res) => {
+    try {
+      const list = await db.fairplayOverview();
+      for (const u of list) u.recent = await db.recentFairplay(u.id, 10);
+      res.json({ success: true, users: list });
+    } catch (err) { console.error('Fair-play xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  // action: cheater (qoidabuzar + raqiblariga reyting qaytariladi), clear (shubha olib tashlanadi)
+  app.post('/api/admin/fairplay/:id', adminMiddleware, async (req, res) => {
+    try {
+      const target = await db.getUserById(req.params.id);
+      if (!target) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const action = req.body && req.body.action;
+      if (action === 'clear') { await db.setFairplayFlag(target.id, 'cleared'); return res.json({ success: true }); }
+      if (action !== 'cheater') return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
+      await db.setFairplayFlag(target.id, 'cheater');
+      const refunds = await db.refundAgainst(target.id);
+      const byUser = new Map();
+      for (const r of refunds) { const x = byUser.get(r.userId) || 0; byUser.set(r.userId, x + r.amount); }
+      for (const [uid, amount] of byUser) notify(uid, 'rating_refund', { name: target.username, amount });
+      invalidateCache('leaderboard');
+      res.json({ success: true, refunded: byUser.size, points: refunds.reduce((s, r) => s + r.amount, 0) });
+    } catch (err) { console.error('Fair-play xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Admin: chat moderatsiyasi — klub chatlari, jim qilish, taqiqlangan so'zlar
+  app.get('/api/admin/chat', adminMiddleware, async (req, res) => {
+    try { res.json({ success: true, messages: await db.recentClubMessages({ club: req.query.club ? String(req.query.club) : '', user: req.query.user ? String(req.query.user) : '' }), words: chatFilterWords }); }
+    catch (err) { console.error('Admin chat xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/admin/users/:id/mute', adminMiddleware, async (req, res) => {
+    try {
+      const target = await db.getUserById(req.params.id);
+      if (!target) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const hours = Number(req.body && req.body.hours) || 0;
+      const until = hours > 0 ? new Date(Date.now() + hours * 3600 * 1000).toISOString() : null;
+      await db.setMute(target.id, until);
+      if (until) mutes.set(target.id, until); else mutes.delete(target.id);
+      if (until) notify(target.id, 'muted', { until });
+      res.json({ success: true, until });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/admin/chat-filter', adminMiddleware, async (req, res) => {
+    try {
+      const word = String((req.body && req.body.word) || '').trim().toLowerCase().slice(0, 40);
+      if (!word) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
+      if (req.body.remove) await db.removeChatFilterWord(word); else await db.addChatFilterWord(word);
+      setChatFilter(await db.listChatFilter());
+      res.json({ success: true, words: chatFilterWords });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   // --- Bildirishnomalar markazi ---
   app.get('/api/notifications', authMiddleware, async (req, res) => {
     try { res.json({ success: true, ...(await db.listNotifications(req.user.userId)) }); }
@@ -1587,6 +1919,7 @@ async function start() {
       const now = Date.now();
       if (room.turnStartedAt !== null) {
         const spent = now - room.turnStartedAt;
+        (player.moveTimes = player.moveTimes || []).push(spent);
         room.clock[player.color] -= Math.max(0, spent - Math.min(spent, lagCompFor(player)));
         if (room.clock[player.color] <= 0) {
           room.clock[player.color] = 0;
@@ -1655,13 +1988,22 @@ async function start() {
       if (!wasActive) socket.to(roomId).emit('opponent-disconnected');
     });
     socket.on('join-tournament-room', (tournamentId) => { socket.join(`tournament_${tournamentId}`); });
+    socket.on('game-blur', (data) => {
+      const room = data && rooms.get(data.roomId);
+      const player = room && room.status === 'active' && findPlayer(room, socket.id);
+      if (!player) return;
+      const now = Date.now();
+      if (player.lastBlur && now - player.lastBlur < 2000) return;
+      player.lastBlur = now;
+      player.blurs = (player.blurs || 0) + 1;
+    });
     // O'yin ichidagi chat (xotirada, saqlanmaydi): faqat shu xonaning o'yinchilari, sekundiga ko'pi bilan 2 ta
     socket.on('game-chat', (data) => {
       const room = data && rooms.get(data.roomId);
       const player = room && findPlayer(room, socket.id);
       if (!player || !player.userId) return;
-      const message = typeof data.message === 'string' ? data.message.trim().slice(0, 200) : '';
-      if (!message) return;
+      const message = cleanChat(typeof data.message === 'string' ? data.message.trim().slice(0, 200) : '');
+      if (!message || mutedUntil(player.userId)) return;
       const now = Date.now();
       if (socket.data.lastGameChat && now - socket.data.lastGameChat < 500) return;
       socket.data.lastGameChat = now;
@@ -1743,8 +2085,8 @@ async function start() {
       const room = roomId && rooms.get(roomId);
       if (!room || !socket.data.userId || !socket.rooms.has('watch_' + roomId)) return;
       if (room.players.some(p => p.userId === socket.data.userId)) return;
-      const message = typeof data.message === 'string' ? data.message.trim().slice(0, 200) : '';
-      if (!message) return;
+      const message = cleanChat(typeof data.message === 'string' ? data.message.trim().slice(0, 200) : '');
+      if (!message || mutedUntil(socket.data.userId)) return;
       const now = Date.now();
       if (socket.data.lastWatchChat && now - socket.data.lastWatchChat < 1000) return;
       socket.data.lastWatchChat = now;
@@ -1825,11 +2167,13 @@ async function start() {
   }, 4000);
 
   league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId, notify });
-  swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId, notify });
+  swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId, notify, awardAchievement });
   // Bloklar, banlar va adminlar (ADMIN_USERNAMES="ism1,ism2" — Render env)
   try {
     for (const b of await db.loadAllBlocks()) blocks.add(b.userId + '|' + b.blockedId);
     for (const b of await db.loadBans()) bans.set(b.id, { until: b.until, reason: b.reason || '' });
+    for (const m of await db.loadMutes()) if (m.until) mutes.set(m.id, m.until);
+    setChatFilter(await db.listChatFilter());
     const admins = String(process.env.ADMIN_USERNAMES || '').split(',').map(s => s.trim()).filter(Boolean);
     if (admins.length) await db.setAdmins(admins);
   } catch (err) { console.error('Blok/ban yuklash xatoligi:', err); }

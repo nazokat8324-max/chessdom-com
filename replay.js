@@ -123,9 +123,13 @@
     try { d = await fetch('/api/users/' + encodeURIComponent(username) + '/games/' + encodeURIComponent(gameId) + '/replay').then(r => r.json()); }
     catch (e) { d = null; }
     if (!d || !d.success) { showToast(tServer(d && d.message) || tx('errLoadFailed', 'Yuklashda xatolik yuz berdi'), 'warning'); return; }
-    const g = d.game;
+    showReplay(d.game);
+  };
+
+  // O'yin obyekti: {player, opponent, color, result, moves (SAN), variant, startFen, clock, date}
+  function showReplay(g) {
     // Yurishlar (SAN) bo'yicha har bir pozitsiya
-    const chess = g.variant === 'chess960' && window.Chess960 && g.startFen ? new Chess960(g.startFen) : new Chess();
+    const chess = g.variant === 'chess960' && window.Chess960 && g.startFen ? new Chess960(g.startFen) : (g.startFen ? new Chess(g.startFen) : new Chess());
     st.fens = [chess.fen()];
     st.sans = [];
     st.moves = [];
@@ -196,7 +200,8 @@
       pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png')
     });
     document.addEventListener('keydown', onKey);
-    if (typeof window.renderOpeningInto === 'function') window.renderOpeningInto(document.getElementById('rpOpening'), st.sans, g.variant);
+    if (typeof window.renderOpeningInto === 'function') window.renderOpeningInto(document.getElementById('rpOpening'), st.sans, g.startFen && g.variant !== 'chess960' ? 'custom' : g.variant);
     go(st.fens.length - 1);
-  };
+  }
+  window.showReplayGame = showReplay;
 })();

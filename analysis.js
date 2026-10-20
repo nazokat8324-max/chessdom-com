@@ -64,7 +64,7 @@
   function newInstance(variant, startFen) {
     const v = variant === undefined ? window.currentVariant : variant;
     const f = startFen === undefined ? window.currentStartFen : startFen;
-    return v === 'chess960' && window.Chess960 && f ? new Chess960(f) : new Chess();
+    return v === 'chess960' && window.Chess960 && f ? new Chess960(f) : (f ? new Chess(f) : new Chess());
   }
 
   // Umumiy tahlil: yurishlar ({from,to,promotion,color,san}) → baholar va xulosa. Bir vaqtda bitta tahlil (dvigatel bitta)

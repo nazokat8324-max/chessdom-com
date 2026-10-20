@@ -19,6 +19,13 @@ socket.on('auth-error', () => {
   if (typeof window.expireSession === 'function') window.expireSession();
 });
 
+// Fair-play: o'yin paytida sahifadan chiqish (boshqa oyna/ilovaga o'tish) serverga xabar qilinadi
+function reportGameBlur() {
+  if (window.currentRoomId && typeof window.isGameInProgress === 'function' && window.isGameInProgress()) socket.emit('game-blur', { roomId: window.currentRoomId });
+}
+window.addEventListener('blur', reportGameBlur);
+document.addEventListener('visibilitychange', () => { if (document.hidden) reportGameBlur(); });
+
 // Server kechikishni o'lchaydi (soat kompensatsiyasi uchun) — darhol javob beramiz
 socket.on('lag-ping', (ack) => { if (typeof ack === 'function') ack(); });
 // O'z kechikishimiz: soat ko'rinishini to'g'rilash va ping ko'rsatkichi (faqat o'yin paytida)

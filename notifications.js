@@ -52,6 +52,18 @@
         const rank = window.rankByKey ? window.rankByKey(d.rank) : null;
         return { icon: rank ? rank.icon : '⭐', text: tx('nfRankUp', 'Yangi daraja! {{mode}}: {{rank}} ({{rating}})', { mode: modeName(d.mode), rank: rank ? rank.label : d.rank, rating: d.rating }), go: () => window.openProfileModal && window.openProfileModal() };
       }
+      case 'achievement': {
+        const a = window.achievementInfo ? window.achievementInfo(d.key) : { icon: '🏅', title: d.key };
+        return { icon: a.icon, text: tx('nfAchievement', 'Yangi yutuq: {{title}}', { title: a.title }), go: () => window.openProfileModal && window.openProfileModal() };
+      }
+      case 'follow_playing':
+        return { icon: '👁', text: tx('nfFollowPlaying', "{{name}} o'yin boshladi — tomosha qiling", { name: d.name }), go: () => window.watchGame && window.watchGame(d.roomId) };
+      case 'rating_refund':
+        return { icon: '↩️', text: tx('nfRatingRefund', "{{name}} qoidabuzar deb topildi — sizga {{amount}} reyting qaytarildi", { name: d.name, amount: d.amount }), go: () => window.openProfileModal && window.openProfileModal() };
+      case 'fairplay_flag':
+        return { icon: '🕵️', text: tx('nfFairplayFlag', "Fair-play: {{name}} shubhali deb belgilandi", { name: d.name }), go: () => switchView('admin') };
+      case 'muted':
+        return { icon: '🔇', text: tx('nfMuted', '{{until}} gacha chatda yoza olmaysiz', { until: new Date(d.until).toLocaleString() }), go: null };
       default:
         return { icon: '🔔', text: n.type, go: null };
     }

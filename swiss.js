@@ -198,6 +198,10 @@ async function startTournament(t) {
 
 async function finishTournament(t) {
   await q.run("UPDATE tournaments SET status = 'completed', finished_at = ?, next_round_at = NULL WHERE id = ?", [nowIso(), t.id]);
+  try {
+    const table = await standings(t, await matchesOf(t.id));
+    if (table[0] && deps.awardAchievement) deps.awardAchievement(table[0].userId, 'tournament_win');
+  } catch (e) {}
   emitUpdate();
 }
 

@@ -23,12 +23,16 @@
 
   async function load() {
     if (!window.currentUser) return;
-    const [ov, league, unread, live] = await Promise.all([
+    const [ov, league, unread, live, circle, news] = await Promise.all([
       getJson('/api/swiss', true),
       getJson('/api/leagues/my-games', true),
       getJson('/api/messages/unread', true),
-      getJson('/api/games/live', false)
+      getJson('/api/games/live', false),
+      getJson('/api/follows/online', true),
+      getJson('/api/news?limit=1', false)
     ]);
+    st.circle = circle && circle.success ? circle.people : [];
+    st.news = news && news.success && news.news[0] ? news.news[0] : null;
     if (ov && ov.success) {
       st.offset = new Date(ov.serverNow).getTime() - Date.now();
       const list = ov.tournaments || [];
@@ -89,11 +93,37 @@
     </button>`;
   }
 
+  // Do'stlar va kuzatayotganlarim: onlaynlar tepada, o'ynayotgan bo'lsa — 👁 tomosha
+  function circleCard() {
+    const list = st.circle || [];
+    const online = list.filter(p => p.online);
+    const shown = (online.length ? online : list).slice(0, 5);
+    const rows = shown.map(p => `
+      <div class="hw-person">
+        <i class="pres-dot${p.online ? ' on' : ''}"></i>
+        <b class="player-link" data-username="${esc(p.username)}">${esc(p.username)}</b>
+        ${p.roomId ? `<button class="hw-btn ghost" data-watch="${esc(p.roomId)}">👁 ${esc(tx('hwWatch', 'Tomosha'))}</button>` : `<small>${esc(p.online ? tx('hwOnline', 'Onlayn') : tx('hwOffline', 'Oflayn'))}</small>`}
+      </div>`).join('');
+    return `<div class="hw-card hw-circle">
+      <div class="hw-top"><span class="hw-label">👥 ${esc(tx('hwCircle', "Do'stlar va kuzatilayotganlar"))}</span><small>${online.length ? esc(tx('hwOnlineN', '{{n}} onlayn', { n: online.length })) : ''}</small></div>
+      ${rows || `<small class="hw-hint">${esc(tx('hwCircleEmpty', "O'yinchi profilida ⭐ Kuzatish yoki do'stlik so'rash tugmasini bosing"))}</small>`}
+    </div>`;
+  }
+
+  function newsCard() {
+    if (!st.news) return '';
+    return `<button class="hw-card hw-mini" data-go="news">
+      <span class="hw-icon">📰</span>
+      <span class="hw-text"><b>${esc(st.news.title)}</b><small>${esc(tx('hwLatestNews', "So'nggi yangilik"))} · ${esc(new Date(st.news.createdAt).toLocaleDateString())}</small></span>
+    </button>`;
+  }
+
   function render() {
     const el = document.getElementById('homeWidgets');
     if (!el) return;
     if (!window.currentUser) { el.innerHTML = ''; return; }
-    el.innerHTML = tournamentCard() + leagueCard() + messagesCard() + liveCard();
+    el.innerHTML = tournamentCard() + circleCard() + leagueCard() + messagesCard() + liveCard() + newsCard();
+    el.querySelectorAll('[data-watch]').forEach(b => b.addEventListener('click', (e) => { e.stopPropagation(); if (window.watchGame) window.watchGame(b.dataset.watch); }));
     el.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', (e) => {
       if (e.target.closest('[data-join]')) return;
       e.stopPropagation();

@@ -1138,12 +1138,13 @@ window.fitBoard = function() {
   const gap = parseFloat(ls.columnGap) || 0;
   const availW = layout.clientWidth - padX - (stacked ? 0 : panel.offsetWidth + gap);
   let size = availW;
-  if (window.innerWidth > 768) {
+  if (window.innerWidth > 768 || document.documentElement.classList.contains('landscape-phone')) {
     const bars = [...section.querySelectorAll('.player-bar')].reduce((sum, b) => sum + b.offsetHeight, 0);
     const rowGap = (parseFloat(getComputedStyle(section).rowGap) || 0) * 2;
     const top = layout.getBoundingClientRect().top + window.scrollY + parseFloat(ls.paddingTop);
     const availH = window.innerHeight - top - bars - rowGap - parseFloat(ls.paddingBottom) - 4;
-    size = Math.min(availW, Math.max(availH, stacked ? 360 : 300));
+    const minSize = document.documentElement.classList.contains('landscape-phone') ? 200 : (stacked ? 360 : 300);
+    size = Math.min(availW, Math.max(availH, minSize));
   }
   // Kataklar butun pikselda: taxta = 8 × katak (+ chessboard.js chegarasi 4px)
   const square = Math.max(30, Math.min(100, Math.floor((size - 4) / 8)));
@@ -1160,7 +1161,7 @@ window.fitBoard = function() {
   }
   panel.style.height = stacked ? '' : section.offsetHeight + 'px';
 };
-window.addEventListener('resize', debounce(() => window.fitBoard(), 80));
+window.addEventListener('resize', debounce(() => { window.fitBoard(); setTimeout(() => window.fitBoard(), 350); }, 80));
 const switchViewBeforeFit = window.switchView;
 if (typeof switchViewBeforeFit === 'function') {
   window.switchView = function(viewName) {

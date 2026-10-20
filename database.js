@@ -657,6 +657,38 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_sport_rated ON sportsmanship (rated_id, created_at)'
   ]) { try { await dbExec(sql); } catch (e) {} }
 
+  // 🔮 Bashorat o'yini: tomoshabinlar natijani (kind='result', ply=-1, pick w|d|b) va keyingi yurishni (kind='move', ply, pick SAN) taxmin qiladi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS predictions (
+      id TEXT PRIMARY KEY,
+      room_id TEXT NOT NULL,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      kind TEXT NOT NULL,
+      pick TEXT NOT NULL,
+      ply INTEGER NOT NULL DEFAULT -1,
+      club_code TEXT,
+      points INTEGER DEFAULT 0,
+      correct INTEGER,
+      resolved INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL,
+      resolved_at TEXT
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS prediction_awards (
+      id TEXT PRIMARY KEY,
+      month TEXT NOT NULL UNIQUE,
+      user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      points INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    )
+  `);
+  for (const sql of [
+    'CREATE UNIQUE INDEX IF NOT EXISTS idx_pred_unique ON predictions (room_id, user_id, kind, ply)',
+    'CREATE INDEX IF NOT EXISTS idx_pred_user ON predictions (user_id, resolved_at)',
+    'CREATE INDEX IF NOT EXISTS idx_pred_resolved ON predictions (resolved, resolved_at)'
+  ]) { try { await dbExec(sql); } catch (e) {} }
+
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
 
@@ -1264,6 +1296,65 @@ async function saveSportAward(month, winner) {
   return true;
 }
 
+// --- 🔮 Bashorat o'yini ---
+async function addResultPrediction({ roomId, userId, pick, clubCode }) {
+  if (await dbGet("SELECT id FROM predictions WHERE room_id = ? AND user_id = ? AND kind = 'result'", [roomId, userId])) return false;
+  await dbRun("INSERT INTO predictions (id, room_id, user_id, kind, pick, ply, club_code, created_at) VALUES (?, ?, ?, 'result', ?, -1, ?, ?)",
+    [uuidv4(), roomId, userId, pick, clubCode || null, new Date().toISOString()]);
+  return true;
+}
+async function roomResultPredictions(roomId) {
+  return dbAll(`SELECT p.user_id as "userId", p.pick, p.club_code as "clubCode", u.username FROM predictions p
+    LEFT JOIN users u ON u.id = p.user_id WHERE p.room_id = ? AND p.kind = 'result' AND p.resolved = 0`, [roomId]);
+}
+async function resolveResultPrediction(roomId, userId, correct, points) {
+  await dbRun("UPDATE predictions SET resolved = 1, correct = ?, points = ?, resolved_at = ? WHERE room_id = ? AND user_id = ? AND kind = 'result'",
+    [correct === null ? null : (correct ? 1 : 0), points, new Date().toISOString(), roomId, userId]);
+}
+// Yurish taxminlari tur tugagach darhol yoziladi (xotiradan)
+async function saveMoveGuesses(roomId, ply, rows) {
+  const now = new Date().toISOString();
+  for (const r of rows) {
+    try {
+      await dbRun("INSERT INTO predictions (id, room_id, user_id, kind, pick, ply, points, correct, resolved, created_at, resolved_at) VALUES (?, ?, ?, 'move', ?, ?, ?, ?, 1, ?, ?)",
+        [uuidv4(), roomId, r.userId, r.pick, ply, r.points, r.correct ? 1 : 0, now, now]);
+    } catch (e) {}
+  }
+}
+async function predictionLeaders(fromIso, limit) {
+  const where = fromIso ? 'AND p.resolved_at >= ?' : '';
+  const rows = await dbAll(`SELECT p.user_id as "userId", u.username, u.country, u.avatar_version as "avatarVersion",
+      SUM(p.points) as "points", SUM(CASE WHEN p.correct = 1 THEN 1 ELSE 0 END) as "correct", COUNT(*) as "total"
+    FROM predictions p JOIN users u ON u.id = p.user_id
+    WHERE p.resolved = 1 AND p.correct IS NOT NULL ${where}
+    GROUP BY p.user_id, u.username, u.country, u.avatar_version`, fromIso ? [fromIso] : []);
+  return rows.map(r => ({ userId: r.userId, username: r.username, country: r.country || null, avatarVersion: r.avatarVersion || null, points: Number(r.points) || 0, correct: Number(r.correct) || 0, total: Number(r.total) || 0 }))
+    .filter(r => r.points > 0 || r.total > 0)
+    .sort((a, b) => b.points - a.points || b.correct - a.correct || a.username.localeCompare(b.username))
+    .slice(0, limit || 1000);
+}
+async function predictionSummary(userId, monthFromIso) {
+  const all = await dbGet(`SELECT SUM(points) as "points", SUM(CASE WHEN correct = 1 THEN 1 ELSE 0 END) as "correct", COUNT(*) as "total"
+    FROM predictions WHERE user_id = ? AND resolved = 1 AND correct IS NOT NULL`, [userId]);
+  const month = await dbGet(`SELECT SUM(points) as "points" FROM predictions WHERE user_id = ? AND resolved = 1 AND resolved_at >= ?`, [userId, monthFromIso]);
+  const awards = await dbAll('SELECT month FROM prediction_awards WHERE user_id = ? ORDER BY month DESC', [userId]);
+  return { points: Number(all && all.points) || 0, correct: Number(all && all.correct) || 0, total: Number(all && all.total) || 0, monthPoints: Number(month && month.points) || 0, awards: awards.map(a => a.month) };
+}
+async function getPredictionAward(month) {
+  return dbGet('SELECT month, user_id as "userId" FROM prediction_awards WHERE month = ?', [month]);
+}
+async function savePredictionAward(month, winner) {
+  if (await getPredictionAward(month)) return false;
+  await dbRun('INSERT INTO prediction_awards (id, month, user_id, points, created_at) VALUES (?, ?, ?, ?, ?)',
+    [uuidv4(), month, winner ? winner.userId : null, winner ? winner.points : 0, new Date().toISOString()]);
+  return true;
+}
+async function monthPredictionLeaders(fromIso, toIso) {
+  const rows = await dbAll(`SELECT user_id as "userId", SUM(points) as "points" FROM predictions
+    WHERE resolved = 1 AND resolved_at >= ? AND resolved_at < ? GROUP BY user_id`, [fromIso, toIso]);
+  return rows.map(r => ({ userId: r.userId, points: Number(r.points) || 0 })).sort((a, b) => b.points - a.points);
+}
+
 // --- Chat moderatsiyasi ---
 async function adminIds() {
   return (await dbAll("SELECT id FROM users WHERE role = 'admin'")).map(r => r.id);
@@ -1866,6 +1957,15 @@ module.exports = {
   clearChat,
   addWarPoints,
   addSportRating,
+  addResultPrediction,
+  roomResultPredictions,
+  resolveResultPrediction,
+  saveMoveGuesses,
+  predictionLeaders,
+  predictionSummary,
+  getPredictionAward,
+  savePredictionAward,
+  monthPredictionLeaders,
   sportSummary,
   sportMonthLeaders,
   getSportAward,

@@ -304,6 +304,7 @@ async function restoreActiveGames() {
         }, RESTORE_GRACE_MS);
       }
       scheduleRoomTimer(roomId, room);
+      loadPredictions(roomId, room).catch(() => {});
       restored.push({ roomId, room });
     } catch (err) {
       console.error("O'yinni tiklash xatoligi:", roomId, err.message);
@@ -387,6 +388,7 @@ async function endGame(roomId, room, winnerColor, reason) {
       }
     } catch (err) { console.error("O'yin natijasini saqlash xatoligi:", err); }
   }
+  resolvePredictions(roomId, room, winnerColor, reason);
   if (recorded && room.rated && warBefore) recordWarPoints(players, warBefore, winnerColor).catch(err => console.error('Urush ochkolari xatoligi:', err.message));
   if (recorded) {
     invalidateCache('leaderboard', 'daily:day', 'daily:week');
@@ -710,6 +712,100 @@ async function closeSportMonths() {
     await awardAchievement(winner.userId, 'sportsman');
     notify(winner.userId, 'sportsman_month', { month: prev, up: winner.up });
   } catch (err) { console.error('Odob reytingi xatoligi:', err.message); }
+}
+
+// --- 🔮 Bashorat o'yini: tomoshabinlar "Kim yutadi?" (dastlabki 10 yurish ichida) va "Keyingi yurishni top" ---
+// Natija ochkosi ehtimolga teskari: kutilmagan natija qimmatroq (Elo kutilmasi, durrang ~20%), 10–100 oralig'ida.
+const PREDICT_OPEN_PLIES = 20;
+const GUESS_POINTS = 5;
+const PREDICT_PICKS = ['w', 'd', 'b'];
+function predState(room) { return room.pred || (room.pred = { result: new Map(), guesses: new Map(), odds: null, clubs: null }); }
+async function predictOdds(room) {
+  const ps = predState(room);
+  if (ps.odds) return ps.odds;
+  const mode = ratingModeOf(room);
+  const r = {}, clubs = {};
+  for (const p of room.players) {
+    const u = p.userId ? await db.getUserById(p.userId) : null;
+    r[p.color] = u ? (Number(u.ratings_by_mode && u.ratings_by_mode[mode]) || u.rating || 1500) : 1500;
+    clubs[p.color] = u && u.club_code ? { code: u.club_code, name: u.club_country } : null;
+  }
+  const ew = 1 / (1 + Math.pow(10, ((r.b || 1500) - (r.w || 1500)) / 400));
+  const prob = { w: 0.8 * ew, d: 0.2, b: 0.8 * (1 - ew) };
+  const pts = (p) => Math.max(10, Math.min(100, Math.round(10 / Math.max(p, 0.01))));
+  ps.odds = { w: pts(prob.w), d: pts(prob.d), b: pts(prob.b) };
+  ps.clubs = clubs;
+  return ps.odds;
+}
+function predictOpen(room) { return room.status === 'active' && room.chess.history().length < PREDICT_OPEN_PLIES; }
+async function predictStats(room) {
+  const ps = predState(room);
+  const odds = await predictOdds(room);
+  const counts = { w: 0, d: 0, b: 0 };
+  for (const v of ps.result.values()) counts[v.pick]++;
+  let support = null;
+  // Liga o'yini: har tomon klubining a'zolari o'z o'yinchisiga ishonadi
+  if (room.leagueGameId && ps.clubs) {
+    support = {};
+    for (const side of ['w', 'b']) {
+      const club = ps.clubs[side];
+      support[side] = club ? { code: club.code, name: club.name, count: [...ps.result.values()].filter(v => v.pick === side && v.club === club.code).length } : null;
+    }
+  }
+  return { counts, total: ps.result.size, odds, open: predictOpen(room), openUntil: PREDICT_OPEN_PLIES, support, guessPoints: GUESS_POINTS };
+}
+async function emitPredictStats(roomId, room) {
+  try { io.to('watch_' + roomId).emit('predict-stats', { roomId, ...(await predictStats(room)) }); } catch (e) {}
+}
+// Deploydan keyin: bazadagi ochiq natija bashoratlari xotiraga
+async function loadPredictions(roomId, room) {
+  const ps = predState(room);
+  for (const p of await db.roomResultPredictions(roomId)) ps.result.set(p.userId, { pick: p.pick, club: p.clubCode });
+}
+// Yurish qilindi: shu yurish uchun taxminlar baholanadi
+function resolveGuesses(roomId, room, ply, san) {
+  const ps = predState(room);
+  const map = ps.guesses.get(ply);
+  if (!map || !map.size) return;
+  ps.guesses.delete(ply);
+  const rows = [...map.entries()].map(([userId, pick]) => ({ userId, pick, correct: pick === san, points: pick === san ? GUESS_POINTS : 0 }));
+  db.saveMoveGuesses(roomId, ply, rows).catch(() => {});
+  io.to('watch_' + roomId).emit('guess-result', { roomId, ply, san, correct: rows.filter(r => r.correct).length, total: rows.length, points: GUESS_POINTS });
+}
+// O'yin tugadi: natija bashoratlari (bekor qilingan o'yinda — hisobga olinmaydi)
+async function resolvePredictions(roomId, room, winnerColor, reason) {
+  try {
+    const list = await db.roomResultPredictions(roomId);
+    if (!list.length) return;
+    const odds = await predictOdds(room);
+    const outcome = reason === 'aborted' ? null : (winnerColor || 'd');
+    const white = room.players.find(p => p.color === 'w'), black = room.players.find(p => p.color === 'b');
+    let winners = 0;
+    for (const p of list) {
+      const correct = outcome === null ? null : p.pick === outcome;
+      const points = correct ? odds[outcome] : 0;
+      await db.resolveResultPrediction(roomId, p.userId, correct, points);
+      if (correct) {
+        winners++;
+        notify(p.userId, 'prediction_won', { points, white: white && white.username, black: black && black.username, outcome }, 'pred');
+      }
+    }
+    invalidateCache('pred:month', 'pred:all');
+    io.to('watch_' + roomId).emit('predict-resolved', { roomId, outcome, points: outcome ? odds[outcome] : 0, winners, total: list.length });
+  } catch (err) { console.error('Bashorat xatoligi:', err.message); }
+}
+function monthStartIso(season) { const [y, m] = season.split('-').map(Number); return new Date(Date.UTC(y, m - 1, 1) - WAR_TZ_MS).toISOString(); }
+// O'tgan oyning eng ko'p ochko to'plagan bashoratchisi (kamida 50 ochko)
+async function closePredictionMonths() {
+  try {
+    const prev = warPrevSeason(warSeasonKey());
+    if (await db.getPredictionAward(prev)) return;
+    const top = (await db.monthPredictionLeaders(monthStartIso(prev), warSeasonEnd(prev)))[0];
+    const winner = top && top.points >= 50 ? top : null;
+    if (!(await db.savePredictionAward(prev, winner)) || !winner) return;
+    await awardAchievement(winner.userId, 'oracle');
+    notify(winner.userId, 'oracle_month', { month: prev, points: winner.points });
+  } catch (err) { console.error('Bashorat mukofoti xatoligi:', err.message); }
 }
 
 // --- ⚔️ Raqib-do'st: eng ko'p va teng o'ynaladigan raqib (kamida 3 o'yin) ---
@@ -1943,6 +2039,7 @@ async function start() {
         cheater: u.fairplay_flag === 'cheater',
         rivals: rivalsOf(u),
         sportsmanship: await db.sportSummary(u.id),
+        predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)
       });
     } catch (err) { console.error('Profil qo\'shimchalari xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -1968,6 +2065,18 @@ async function start() {
       }
       res.json({ success: true, current: season === current, ...state, clubs: state.clubs.slice(0, 60), previous: await db.listWarSeasons(6), me });
     } catch (err) { console.error('Urush xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // 🔮 Bashoratchilar reytingi: shu oy (Toshkent vaqti) yoki butun vaqt
+  app.get('/api/predictions/leaderboard', async (req, res) => {
+    try {
+      const period = req.query.period === 'all' ? 'all' : 'month';
+      const list = await cached('pred:' + period, 30000, () => db.predictionLeaders(period === 'all' ? null : monthStartIso(warSeasonKey())));
+      const viewer = optionalUserId(req);
+      let me = null;
+      if (viewer) { const i = list.findIndex(r => r.userId === viewer); me = i >= 0 ? { ...list[i], rank: i + 1 } : null; }
+      res.json({ success: true, period, season: warSeasonKey(), leaders: list.slice(0, 20).map(({ userId, ...r }) => r), me: me ? (({ userId, ...r }) => r)(me) : null });
+    } catch (err) { console.error('Bashorat reytingi xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   // ⚔️ Ikki o'yinchi o'rtasidagi hisob (birinchisining nuqtai nazaridan)
@@ -2262,7 +2371,10 @@ async function start() {
       room.drawOfferBy = null;
       room.turnStartedAt = room.chess.history().length >= 2 ? now : null;
       socket.to(roomId).emit('opponent-move', { from: result.from, to: result.to, promotion: result.promotion });
-      const watchMove = { roomId, move: { from: result.from, to: result.to, promotion: result.promotion } };
+      const watchMove = { roomId, move: { from: result.from, to: result.to, promotion: result.promotion }, san: result.san, ply: room.chess.history().length - 1 };
+      resolveGuesses(roomId, room, watchMove.ply, result.san);
+      // 10-yurishdan keyin "Kim yutadi?" yopiladi
+      if (room.chess.history().length === PREDICT_OPEN_PLIES && room.pred && room.pred.result.size) emitPredictStats(roomId, room);
       if (room.chess.game_over()) {
         const chess = room.chess;
         let reason = 'draw';
@@ -2372,6 +2484,44 @@ async function start() {
     });
 
     // O'yinga chaqirish
+    socket.on('predict-result', async (data, ack) => {
+      const reply = (r) => { if (typeof ack === 'function') ack(r); };
+      try {
+        const uid = socket.data.userId;
+        const roomId = data && typeof data.roomId === 'string' ? data.roomId : null;
+        const room = roomId && rooms.get(roomId);
+        const pick = data && PREDICT_PICKS.includes(data.pick) ? data.pick : null;
+        if (!uid) return reply({ ok: false, reason: 'auth' });
+        if (!room || !pick) return reply({ ok: false, reason: 'gone' });
+        if (room.players.some(p => p.userId === uid)) return reply({ ok: false, reason: 'player' });
+        if (!predictOpen(room)) return reply({ ok: false, reason: 'closed' });
+        const ps = predState(room);
+        if (ps.result.has(uid)) return reply({ ok: false, reason: 'already' });
+        const u = await db.getUserById(uid);
+        if (!(await db.addResultPrediction({ roomId, userId: uid, pick, clubCode: u && u.club_code }))) return reply({ ok: false, reason: 'already' });
+        ps.result.set(uid, { pick, club: u && u.club_code });
+        const odds = await predictOdds(room);
+        reply({ ok: true, pick, points: odds[pick] });
+        emitPredictStats(roomId, room);
+      } catch (err) { console.error('Bashorat xatoligi:', err.message); reply({ ok: false, reason: 'error' }); }
+    });
+    socket.on('predict-move', (data, ack) => {
+      const reply = (r) => { if (typeof ack === 'function') ack(r); };
+      const uid = socket.data.userId;
+      const roomId = data && typeof data.roomId === 'string' ? data.roomId : null;
+      const room = roomId && rooms.get(roomId);
+      if (!uid) return reply({ ok: false, reason: 'auth' });
+      if (!room || room.status !== 'active') return reply({ ok: false, reason: 'gone' });
+      if (room.players.some(p => p.userId === uid)) return reply({ ok: false, reason: 'player' });
+      const ply = room.chess.history().length;
+      if (Number(data.ply) !== ply) return reply({ ok: false, reason: 'late' });
+      const legal = room.chess.moves({ verbose: true }).find(m => m.from === data.from && m.to === data.to && (!m.promotion || m.promotion === (data.promotion || 'q')));
+      if (!legal) return reply({ ok: false, reason: 'illegal' });
+      const ps = predState(room);
+      if (!ps.guesses.has(ply)) ps.guesses.set(ply, new Map());
+      ps.guesses.get(ply).set(uid, legal.san);
+      reply({ ok: true, ply, san: legal.san });
+    });
     socket.on('rate-opponent', async (data, ack) => {
       const reply = (r) => { if (typeof ack === 'function') ack(r); };
       try {
@@ -2421,7 +2571,9 @@ async function start() {
           chat: room.spectatorChat || [],
           status: room.status,
           history: room.chess.history({ verbose: true }).map(m => ({ from: m.from, to: m.to, promotion: m.promotion })),
-          clockState: clockPayload(room)
+          clockState: clockPayload(room),
+          predict: { ...(await predictStats(room)), mine: socket.data.userId && room.pred && room.pred.result.get(socket.data.userId) ? room.pred.result.get(socket.data.userId).pick : null,
+            isPlayer: !!(socket.data.userId && room.players.some(p => p.userId === socket.data.userId)) }
         });
       } catch (err) { console.error('Watch xatoligi:', err); }
     });
@@ -2499,8 +2651,8 @@ async function start() {
 
   setInterval(async () => { await db.closeStaleArenas(); }, 60 * 1000);
 
-  setInterval(() => { closeWarSeasons(); closeSportMonths(); }, 60 * 60 * 1000);
-  setTimeout(closeSportMonths, 30 * 1000);
+  setInterval(() => { closeWarSeasons(); closeSportMonths(); closePredictionMonths(); }, 60 * 60 * 1000);
+  setTimeout(() => { closeSportMonths(); closePredictionMonths(); }, 30 * 1000);
   // Davom etayotgan o'yinlardagi o'yinchilarning internet kechikishi (RTT, silliqlangan) — soat kompensatsiyasi uchun
   setInterval(() => {
     for (const room of rooms.values()) {

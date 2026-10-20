@@ -66,6 +66,16 @@
         return { icon: '⚔️', text: tx('nfRivalOnline', "Raqib-do'stingiz {{name}} onlayn! Hisob {{w}}–{{d}}–{{l}} — jang qilasizmi?", { name: d.name, w: d.win, d: d.draw, l: d.loss }), go: () => window.openChallengeDialog ? window.openChallengeDialog(d.name) : (window.openPlayerProfile && window.openPlayerProfile(d.name)) };
       case 'war_ruler':
         return { icon: '👑', text: tx('nfWarRuler', '{{club}} klubi {{season}} mavsumida Bayroqlar bellashuvi chempioni bo\'ldi — {{n}} hudud!', { club: clubName({ club: d.club, code: d.code }), season: d.season, n: d.territories }), go: () => switchView('war') };
+      case 'prediction_won':
+        return {
+          icon: '🔮',
+          text: (d.count || 1) > 1
+            ? tx('nfPredictionsWon', "{{count}} ta bashoratingiz to'g'ri chiqdi 🎉", { count: d.count })
+            : tx('nfPredictionWon', "Bashoratingiz to'g'ri chiqdi: {{white}} — {{black}}, +{{points}} ochko", { white: d.white, black: d.black, points: d.points }),
+          go: () => window.openPredictionLeaderboard && window.openPredictionLeaderboard()
+        };
+      case 'oracle_month':
+        return { icon: '🔮', text: tx('nfOracleMonth', "Tabriklaymiz! Siz {{month}} oyining bashoratchisi bo'ldingiz ({{points}} ochko)", { month: d.month, points: d.points }), go: () => window.openProfileModal && window.openProfileModal() };
       case 'sportsman_month':
         return { icon: '🎖️', text: tx('nfSportsmanMonth', "Tabriklaymiz! Siz {{month}} oyining eng odobli o'yinchisi bo'ldingiz ({{n}} 👍)", { month: d.month, n: d.up }), go: () => window.openProfileModal && window.openProfileModal() };
       case 'muted':

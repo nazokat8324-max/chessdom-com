@@ -1,5 +1,7 @@
 // "Jonli o'yinlar": hozir davom etayotgan o'yinlar ro'yxati va tanlangan o'yinni tomosha qilish.
 // Server: GET /api/games/live, socket 'watch-game' → 'watch-state', 'watch-move', 'watch-ended'.
+// Bashorat paneli (predictions.js) uchun document'ga 'live:state' / 'live:move' / 'live:ended' / 'live:stop' hodisalari
+// yuboriladi; doskada surish faqat window.livePredict ruxsat bersa ishlaydi ("Keyingi yurishni top").
 (function () {
   const st = { games: [], watching: null, chess: null, board: null, clock: null, clockAt: 0, ended: null, variant: 'standard', chat: [] };
   let listTimer = null;
@@ -68,6 +70,7 @@
       <div class="lv-status" id="lvStatus"></div>
       <div class="lv-opening" id="lvOpening" hidden></div>
       <div class="lv-moves" id="lvMoves"></div>
+      <div class="lv-predict" id="lvPredict"></div>
       <div class="lv-chat">
         <div class="lv-chat-head">💬 ${esc(tx('lvChatTitle', 'Tomoshabinlar chati'))}<span id="lvWatchers"></span></div>
         <div class="lv-chat-list" id="lvChatList"></div>
@@ -114,10 +117,18 @@
     });
     (data.history || []).forEach(m => st.chess.move({ from: m.from, to: m.to, promotion: m.promotion || 'q' }));
     if (st.board && typeof st.board.destroy === 'function') st.board.destroy();
-    st.board = Chessboard('liveBoard', { position: st.chess.fen(), draggable: false, pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png') });
+    st.board = Chessboard('liveBoard', {
+      position: st.chess.fen(),
+      draggable: true,
+      // Faqat bashorat rejimida (predictions.js): surilgan yurish taxmin sifatida yuboriladi, doska o'zgarmaydi
+      onDragStart: (source, piece) => !!(window.livePredict && !st.ended && window.livePredict.canDrag(piece, st.chess)),
+      onDrop: (from, to) => { if (window.livePredict && from !== to) window.livePredict.drop(from, to, st.chess); return 'snapback'; },
+      pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png')
+    });
     setClock(data.clockState);
     if (data.status !== 'active') st.ended = { winner: null, reason: 'over' };
     renderMoves();
+    document.dispatchEvent(new CustomEvent('live:state', { detail: { data, chess: st.chess } }));
   }
 
   function setClock(clock) {
@@ -181,6 +192,7 @@
   }
 
   function stopWatching() {
+    document.dispatchEvent(new CustomEvent('live:stop'));
     if (st.watching && typeof socket !== 'undefined') socket.emit('unwatch-game');
     st.watching = null;
     st.ended = null;
@@ -236,6 +248,7 @@
       if (m && typeof playSound === 'function') playSound(m.captured ? 'capture' : 'move');
       setClock(data.clock);
       renderMoves();
+      if (m) document.dispatchEvent(new CustomEvent('live:move', { detail: { data, san: m.san, ply: st.chess.history().length - 1, chess: st.chess } }));
     });
     socket.on('watch-chat', (data) => {
       if (!data || data.roomId !== st.watching) return;
@@ -250,6 +263,7 @@
       setClock(data.clock);
       renderMoves();
       loadList();
+      document.dispatchEvent(new CustomEvent('live:ended', { detail: data }));
     });
     window.addEventListener('resize', () => { if (st.board && typeof st.board.resize === 'function') st.board.resize(); });
   });

@@ -95,7 +95,7 @@ async function sendIndex(req, res) {
     <meta property="og:title" content="${escAttr(title)}" />
     <meta property="og:description" content="${escAttr(desc)}" />
     <meta property="og:url" content="${escAttr(url)}" />
-    <meta property="og:image" content="${SITE_URL}/assets/og-image.png" />
+    <meta property="og:image" content="${SITE_URL}/assets/og-image.png?v=2" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />

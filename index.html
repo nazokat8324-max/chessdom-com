@@ -4,6 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ChessDom - Professional Chess Portal</title>
+    <!-- 📲 PWA (pwa.js, sw.js): o'rnatiladigan ilova va push-bildirishnomalar -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0b1114" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="64x64" href="/assets/icons/favicon-64.png" />
+    <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="ChessDom" />
     <link rel="stylesheet" href="style.css" />
     <link
       rel="stylesheet"
@@ -473,6 +483,7 @@
             >
               ⚡ Play Online (Matchmaking)
             </button>
+            <div id="pwaInstallSlot"></div>
             <button type="button" class="tea-home-btn" onclick="switchView('tea')">🍵 <span data-i18n="teaHomeBtn">Choyxonaga kirish</span></button>
             <div class="home-widgets" id="homeWidgets"></div>
           </div>
@@ -2564,6 +2575,7 @@
     <script src="haptics.js"></script>
     <script src="predictions.js"></script>
     <script src="mentor.js"></script>
+    <script src="pwa.js"></script>
     <script src="router.js"></script>
     <script src="rating-chart.js"></script>
 

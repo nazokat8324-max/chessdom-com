@@ -18,6 +18,8 @@ const league = require('./league');
 const swiss = require('./swiss');
 const mailer = require('./mailer');
 const crypto = require('crypto');
+const webpush = require('web-push');
+const { pushMessage } = require('./push-texts');
 const escapeHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const app = express();
@@ -41,7 +43,7 @@ app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|server-helpers|continents)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|server-helpers|continents|push-texts)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -96,6 +98,15 @@ app.get('/sitemap.xml', async (req, res) => {
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
   res.type('application/xml').send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + urls.map(u => `  <url><loc>${u.replace(/&/g, '&amp;')}</loc></url>`).join('\n') + '\n</urlset>\n');
+});
+// 📲 PWA: service worker ildizdan (butun sayt doirasi) va keshsiz beriladi
+app.get('/sw.js', (req, res) => {
+  res.set('Cache-Control', 'no-cache');
+  res.type('application/javascript').sendFile(path.join(__dirname, 'sw.js'));
+});
+app.get('/manifest.json', (req, res) => {
+  res.set('Cache-Control', 'no-cache');
+  res.type('application/manifest+json').sendFile(path.join(__dirname, 'manifest.json'));
 });
 // Maxfiylik siyosati va Foydalanish shartlari — alohida ommaviy sahifa (kirish talab qilinmaydi). CONTACT_EMAIL (env) — aloqa manzili
 const LEGAL_HTML = fs.readFileSync(path.join(__dirname, 'legal.html'), 'utf8').replace('__CONTACT__', escapeHtml(process.env.CONTACT_EMAIL || ''));
@@ -485,10 +496,12 @@ async function sendChallenge(socket, data) {
     io.to(`user_${target.id}`).emit('challenge-expired', { id });
   }, CHALLENGE_TTL_MS);
   challenges.set(id, c);
-  io.to(`user_${target.id}`).emit('challenge-received', {
+  c.payload = {
     id, clock, rated: c.rated, variant, mode, seconds: CHALLENGE_TTL_MS / 1000,
     from: { username: c.fromName, rating: (me && me.ratings_by_mode && me.ratings_by_mode[fromMode]) || (me && me.rating) || 1500, country: me ? me.country || null : null }
-  });
+  };
+  c.expiresAt = Date.now() + CHALLENGE_TTL_MS;
+  io.to(`user_${target.id}`).emit('challenge-received', c.payload);
   socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, variant, seconds: CHALLENGE_TTL_MS / 1000 });
   notify(target.id, 'challenge', { from: c.fromName, clock: clock.initial / 60 + '+' + clock.increment, variant, rated: c.rated });
 }
@@ -649,7 +662,67 @@ async function notify(userId, type, data, collapseKey) {
   try {
     const item = await db.addNotification(userId, type, data || {}, collapseKey);
     io.to(`user_${userId}`).emit('notification', item);
+    sendPush(userId, type, item && item.data ? item.data : (data || {}), collapseKey || type).catch(() => {});
   } catch (err) { console.error('Bildirishnoma xatoligi:', err.message); }
+}
+
+// --- 📲 Push-bildirishnomalar (sayt yopiq yoki fonda bo'lganda) ---
+// VAPID kalitlari: env (VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY) yoki birinchi startda yaratilib bazada saqlanadi.
+let pushReady = false, vapidPublicKey = null;
+async function initPush() {
+  try {
+    let pub = process.env.VAPID_PUBLIC_KEY, priv = process.env.VAPID_PRIVATE_KEY;
+    if (!pub || !priv) {
+      pub = await db.getAppSetting('vapid_public');
+      priv = await db.getAppSetting('vapid_private');
+      if (!pub || !priv) {
+        const keys = webpush.generateVAPIDKeys();
+        pub = keys.publicKey; priv = keys.privateKey;
+        await db.setAppSetting('vapid_public', pub);
+        await db.setAppSetting('vapid_private', priv);
+        console.log('📲 Push uchun yangi VAPID kalitlari yaratildi');
+      }
+    }
+    const contact = process.env.CONTACT_EMAIL ? 'mailto:' + process.env.CONTACT_EMAIL : SITE_URL;
+    webpush.setVapidDetails(contact, pub, priv);
+    vapidPublicKey = pub;
+    pushReady = true;
+  } catch (err) { console.error('Push sozlash xatoligi:', err.message); }
+}
+// Foydalanuvchi saytni hozir ko'ryaptimi (kamida bitta ochiq va ko'rinib turgan sahifa) — unda push shart emas
+function isActive(userId) {
+  const set = onlineUsers.get(userId);
+  if (!set) return false;
+  for (const id of set) { const s = io.sockets.sockets.get(id); if (s && s.connected && !s.data.hidden) return true; }
+  return false;
+}
+async function deliverPush(sub, payload) {
+  try {
+    await webpush.sendNotification({ endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } }, JSON.stringify(payload), { TTL: 3600 });
+    db.touchPushSubscription(sub.endpoint).catch(() => {});
+    return true;
+  } catch (err) {
+    // Qurilma obunani bekor qilgan — o'chiramiz
+    if (err.statusCode === 404 || err.statusCode === 410) await db.deletePushSubscription(sub.endpoint).catch(() => {});
+    else console.error('Push yuborish xatoligi:', err.statusCode || err.message);
+    return false;
+  }
+}
+async function sendPush(userId, type, data, tag, opts) {
+  if (!pushReady || !userId) return 0;
+  if (!(opts && opts.force) && isActive(userId)) return 0;
+  const subs = await db.listPushSubscriptions(userId);
+  if (!subs.length) return 0;
+  const prefs = await db.getPushPrefs(userId);
+  let ownName = null;
+  if (['mentor_request', 'achievement', 'rank_up'].includes(type)) { const u = await db.getUserById(userId); ownName = u && u.username; }
+  let sent = 0;
+  for (const sub of subs) {
+    const m = pushMessage(type, data, sub.lang, ownName);
+    if (!(opts && opts.force) && prefs[m.category] === false) continue;
+    if (await deliverPush(sub, { title: m.title, body: m.body, url: m.url, tag: String(tag || type).slice(0, 60) })) sent++;
+  }
+  return sent;
 }
 
 // --- 🚩 Bayroqlar bellashuvi (kodda "war"): mavsum = kalendar oyi (Toshkent vaqti, UTC+5) ---
@@ -1397,6 +1470,39 @@ async function start() {
       await db.updateUserPassword(user.id, await bcrypt.hash(next, 10));
       res.json({ success: true, message: "Parol o'zgartirildi!" });
     } catch (err) { console.error('Parol xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // 📲 Push: ochiq kalit, obuna, bekor qilish, turkumlar, sinov
+  app.get('/api/push/key', (req, res) => res.json({ success: pushReady, publicKey: vapidPublicKey }));
+  app.post('/api/push/subscribe', authMiddleware, async (req, res) => {
+    try {
+      const sub = req.body && req.body.subscription;
+      const ok = sub && typeof sub.endpoint === 'string' && /^https:\/\//.test(sub.endpoint) && sub.endpoint.length < 1000 && sub.keys && typeof sub.keys.p256dh === 'string' && typeof sub.keys.auth === 'string';
+      if (!ok) return res.status(400).json({ success: false, message: "Noto'g'ri ma'lumot!" });
+      const lang = ['uz', 'en', 'ru', 'es', 'de', 'fr'].includes(req.body.lang) ? req.body.lang : 'en';
+      await db.savePushSubscription(req.user.userId, sub, lang);
+      res.json({ success: true, prefs: await db.getPushPrefs(req.user.userId) });
+    } catch (err) { console.error('Push obuna xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/push/unsubscribe', authMiddleware, async (req, res) => {
+    try {
+      if (req.body && typeof req.body.endpoint === 'string') await db.deletePushSubscription(req.body.endpoint, req.user.userId);
+      res.json({ success: true });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.get('/api/users/me/push-prefs', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, prefs: await db.getPushPrefs(req.user.userId), devices: (await db.listPushSubscriptions(req.user.userId)).length }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/users/me/push-prefs', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, prefs: await db.setPushPrefs(req.user.userId, req.body || {}) }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/push/test', authMiddleware, apiLimiter, async (req, res) => {
+    try {
+      const sent = await sendPush(req.user.userId, 'test', {}, 'test', { force: true });
+      res.json({ success: sent > 0, sent });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   // Akkauntni butunlay o'chirish: parol + foydalanuvchi nomini qayta yozish bilan tasdiqlanadi
@@ -2557,6 +2663,12 @@ async function start() {
           notifyRivalOnline(decoded.userId);
         }
         resumeGames(socket).catch(err => console.error("O'yinni tiklash xatoligi:", err));
+        // Kutayotgan chaqiruvlar (masalan, push bosilib ilova endi ochilgan bo'lsa)
+        for (const c of challenges.values()) {
+          if (c.toId !== decoded.userId || !c.payload) continue;
+          const left = Math.round((c.expiresAt - Date.now()) / 1000);
+          if (left > 3) socket.emit('challenge-received', { ...c.payload, seconds: left });
+        }
       } catch (err) { socket.emit('auth-error', { message: 'Invalid or expired token' }); }
     });
     socket.on('join-club-room', (clubRoomId) => { if (isPublicSocketRoom(clubRoomId)) socket.join(clubRoomId); });
@@ -2741,6 +2853,7 @@ async function start() {
       ps.guesses.get(ply).set(uid, legal.san);
       reply({ ok: true, ply, san: legal.san });
     });
+    socket.on('page-visibility', (data) => { socket.data.hidden = !!(data && data.hidden); });
     socket.on('rate-opponent', async (data, ack) => {
       const reply = (r) => { if (typeof ack === 'function') ack(r); };
       try {
@@ -2896,6 +3009,7 @@ async function start() {
     for (const b of await db.loadAllBlocks()) blocks.add(b.userId + '|' + b.blockedId);
     for (const b of await db.loadBans()) bans.set(b.id, { until: b.until, reason: b.reason || '' });
     for (const id of await db.loadDeletedAccountIds()) deletedUsers.add(id);
+    await initPush();
     for (const m of await db.loadMutes()) if (m.until) mutes.set(m.id, m.until);
     setChatFilter(await db.listChatFilter());
     const admins = String(process.env.ADMIN_USERNAMES || '').split(',').map(s => s.trim()).filter(Boolean);

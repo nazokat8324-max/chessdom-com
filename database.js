@@ -756,6 +756,27 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_user_games_opp ON user_games (user_id, opponent)'
   ]) { try { await dbExec(sql); } catch (e) {} }
   await migrateHistoryToTable();
+  // 📲 Push-bildirishnomalar: qurilma obunalari (bitta foydalanuvchida bir nechta qurilma) va server sozlamalari (VAPID kalitlari)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS push_subscriptions (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      endpoint TEXT NOT NULL,
+      p256dh TEXT NOT NULL,
+      auth TEXT NOT NULL,
+      lang TEXT,
+      created_at TEXT NOT NULL,
+      last_used_at TEXT
+    )
+  `);
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS app_settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    )
+  `);
+  for (const sql of ['CREATE UNIQUE INDEX IF NOT EXISTS idx_push_endpoint ON push_subscriptions (endpoint)', 'CREATE INDEX IF NOT EXISTS idx_push_user ON push_subscriptions (user_id)']) { try { await dbExec(sql); } catch (e) {} }
+  try { await dbExec('ALTER TABLE users ADD COLUMN push_prefs TEXT DEFAULT NULL'); } catch (e) {}
   // O'chirilgan akkauntlar (FK siz): eski tokenlar bilan kirib bo'lmasligi uchun
   await dbExec(`
     CREATE TABLE IF NOT EXISTS deleted_accounts (
@@ -915,6 +936,43 @@ async function deleteUserAccount(userId) {
   await dbRun('INSERT INTO deleted_accounts (user_id, deleted_at) VALUES (?, ?)', [userId, new Date().toISOString()]);
   return { username: user.username, label, renamedGames: rows.length };
 }
+// --- 📲 Push ---
+async function getAppSetting(key) {
+  const r = await dbGet('SELECT value FROM app_settings WHERE key = ?', [key]);
+  return r ? r.value : null;
+}
+async function setAppSetting(key, value) {
+  await dbRun('DELETE FROM app_settings WHERE key = ?', [key]);
+  await dbRun('INSERT INTO app_settings (key, value) VALUES (?, ?)', [key, value]);
+}
+// Bir qurilma (endpoint) — bitta obuna; boshqa foydalanuvchi shu qurilmada kirsa, obuna unga o'tadi
+async function savePushSubscription(userId, sub, lang) {
+  await dbRun('DELETE FROM push_subscriptions WHERE endpoint = ?', [sub.endpoint]);
+  await dbRun('INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh, auth, lang, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [uuidv4(), userId, sub.endpoint, sub.keys.p256dh, sub.keys.auth, lang || null, new Date().toISOString()]);
+}
+async function deletePushSubscription(endpoint, userId) {
+  if (userId) await dbRun('DELETE FROM push_subscriptions WHERE endpoint = ? AND user_id = ?', [endpoint, userId]);
+  else await dbRun('DELETE FROM push_subscriptions WHERE endpoint = ?', [endpoint]);
+}
+async function listPushSubscriptions(userId) {
+  return dbAll('SELECT endpoint, p256dh, auth, lang FROM push_subscriptions WHERE user_id = ?', [userId]);
+}
+async function touchPushSubscription(endpoint) {
+  await dbRun('UPDATE push_subscriptions SET last_used_at = ? WHERE endpoint = ?', [new Date().toISOString(), endpoint]);
+}
+const PUSH_DEFAULTS = { challenge: true, message: true, social: true, events: true };
+async function getPushPrefs(userId) {
+  const r = await dbGet('SELECT push_prefs FROM users WHERE id = ?', [userId]);
+  return { ...PUSH_DEFAULTS, ...((r && parseJson(r.push_prefs)) || {}) };
+}
+async function setPushPrefs(userId, prefs) {
+  const clean = {};
+  for (const k of Object.keys(PUSH_DEFAULTS)) clean[k] = prefs[k] !== false;
+  await dbRun('UPDATE users SET push_prefs = ? WHERE id = ?', [JSON.stringify(clean), userId]);
+  return clean;
+}
+
 async function loadDeletedAccountIds() {
   return (await dbAll('SELECT user_id as "id" FROM deleted_accounts')).map(r => r.id);
 }
@@ -2230,6 +2288,14 @@ module.exports = {
   deleteNewsPost,
   historyEntries,
   deleteUserAccount,
+  getAppSetting,
+  setAppSetting,
+  savePushSubscription,
+  deletePushSubscription,
+  listPushSubscriptions,
+  touchPushSubscription,
+  getPushPrefs,
+  setPushPrefs,
   loadDeletedAccountIds,
   getUserHistory,
   getUserGameById,

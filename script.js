@@ -22,6 +22,7 @@ const SERVER_MESSAGE_KEYS = {
   "Foydalanuvchi nomi mos kelmadi!": 'srvNameMismatch',
   "Avval joriy o'yiningizni tugating!": 'srvFinishGameFirst',
   "Akkauntingiz o'chirildi": 'srvAccountDeleted',
+  "Noto'g'ri ma'lumot!": 'srvBadData',
   "Foydalanuvchi topilmadi!": 'srvUserNotFound',
   "Ism yoki parol xato!": 'srvBadCredentials',
   "Bu nomli foydalanuvchi mavjud!": 'srvUsernameTaken',

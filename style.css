@@ -13669,6 +13669,125 @@ button.tea-chair:not([disabled]):hover {
   color: #fecaca;
 }
 
+/* ===== 📲 PWA: o'rnatish tugmasi, iPhone ko'rsatmasi, push sozlamalari (pwa.js) ===== */
+.pwa-install {
+  position: relative;
+  margin-top: 10px;
+}
+.pwa-install-btn {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 11px 40px 11px 14px;
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.22), rgba(var(--accent-rgb), 0.06));
+  color: #fff;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+.pwa-install-btn .pwa-ico {
+  grid-row: 1 / span 2;
+  font-size: 24px;
+  font-style: normal;
+}
+.pwa-install-btn span,
+.pwa-install-btn small {
+  grid-column: 2;
+}
+.pwa-install-btn span {
+  font-size: 15px;
+  font-weight: 800;
+}
+.pwa-install-btn small {
+  font-size: 11px;
+  color: var(--cd-muted);
+}
+.pwa-install-x {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--cd-muted);
+  cursor: pointer;
+}
+.pwa-ios-back {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(3, 5, 8, 0.7);
+}
+.pwa-ios-back[hidden] {
+  display: none;
+}
+.pwa-ios {
+  width: min(420px, 100%);
+  padding: 20px;
+  border-radius: 20px;
+  text-align: center;
+  background: var(--cd-surface);
+  border: 1px solid rgba(var(--accent-rgb), 0.35);
+}
+.pwa-ios img {
+  width: 64px;
+  height: 64px;
+  border-radius: 15px;
+}
+.pwa-ios h3 {
+  margin: 10px 0;
+  font-size: 17px;
+  color: #fff;
+}
+.pwa-ios ol {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #d3dde0;
+}
+.pwa-ios p {
+  margin: 0 0 14px;
+  font-size: 12px;
+  color: var(--cd-muted);
+}
+.pwa-ios-ok {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+}
+.set-push h3 {
+  margin: 0 0 4px;
+}
+.set-push .set-hint {
+  margin: 0 0 8px;
+}
+.pwa-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

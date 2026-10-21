@@ -19,11 +19,16 @@ test('Bosh sahifa va bo\'limlar sarlavhasi bilan beriladi', async () => {
 });
 
 test('Kanonik manzillar va eski manzillar yo\'naltiriladi', async () => {
-  for (const [from, to] of [['/Reyting', '/reyting'], ['/reyting/', '/reyting'], ['/urush', '/bayroqlar'], ['/privacy', '/maxfiylik'], ['/terms', '/shartlar']]) {
+  for (const [from, to] of [['/Reyting', '/reyting'], ['/reyting/', '/reyting'], ['/urush', '/bayroqlar'], ['/privacy', '/maxfiylik'], ['/terms', '/shartlar'], ['/dostlar', '/xabarlar'], ['/chat', '/xabarlar']]) {
     const r = await get(from);
     assert.equal(r.status, 301, from);
     assert.equal(r.headers.get('location'), to, from);
   }
+});
+
+test("Olib tashlangan eski API'lar yo'q, ishlatiladiganlari joyida", async () => {
+  for (const p of ['/api/tournaments', '/api/tournaments/arenas', '/api/clubs', '/api/clubs/abc', '/server-helpers.js']) assert.equal((await get(p)).status, 404, p);
+  for (const p of ['/api/clubs/leaderboard', '/api/swiss', '/api/tea', '/api/games/live']) assert.equal((await get(p)).status, 200, p);
 });
 
 test('Server fayllari va baza tashqariga berilmaydi', async () => {

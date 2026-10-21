@@ -217,9 +217,4 @@
       });
   }
 
-  // O'yin tugagach ochiq bo'lsa yangilanadi
-  window.refreshWarView = function () {
-    const v = document.getElementById('warView');
-    if (v && v.classList.contains('active-view')) window.renderWarView();
-  };
 })();

@@ -1163,74 +1163,6 @@
         <div class="ar-page" id="arenaRoot"></div>
       </div>
 
-      <!-- 8b. TURNIR TAFSILOTI -->
-      <div id="tournamentDetailView" class="view-section">
-        <div class="tournament-detail-card">
-          <div id="tournamentDetailContainer"></div>
-        </div>
-      </div>
-
-      <!-- 9. DO'STLAR -->
-      <div
-        id="friendsView"
-        class="view-section"
-        style="justify-content: center; align-items: center"
-      >
-        <div
-          class="card-box"
-          style="width: 600px; max-height: 80vh; overflow-y: auto"
-        >
-          <div
-            class="card-title"
-            id="friendsCardTitle"
-            data-i18n="friendsCardTitle"
-          >
-            Do'stlar
-          </div>
-          <div
-            style="font-size: 13px; color: #88a; margin-bottom: 15px"
-            id="friendsDesc"
-            data-i18n="friendsDesc"
-          >
-            Do'stlar ro'yxati va so'rovlar
-          </div>
-          <div style="margin-bottom: 15px; display: flex; gap: 10px">
-            <input
-              type="text"
-              id="friendUsernameInput"
-              class="form-input"
-              placeholder="Do'stingiz nomini kiriting"
-              data-i18n-placeholder="friendUsernamePlaceholder"
-              style="flex: 1"
-            />
-            <button
-              class="form-submit"
-              onclick="sendFriendRequest()"
-              id="btnSendFriendRequest"
-              data-i18n="btnSendFriendRequest"
-            >
-              Do'stlik so'rash
-            </button>
-          </div>
-          <div style="margin-bottom: 15px">
-            <button
-              class="action-btn"
-              onclick="loadFriendRequests()"
-              id="btnViewRequests"
-              data-i18n="btnViewRequests"
-            >
-              So'rovlar
-            </button>
-          </div>
-          <div
-            id="friendsListContainer"
-            style="display: flex; flex-direction: column; gap: 8px"
-          >
-            <!-- JavaScript orqali do'stlar ro'yxati shu yerga tushadi -->
-          </div>
-        </div>
-      </div>
-
       <!-- 10. KLUBLAR (Davlat klublari) -->
       <div
         id="clubsView"
@@ -1615,69 +1547,6 @@
         <div class="set-page" id="settingsRoot"></div>
       </div>
 
-      <!-- 11. CHAT -->
-      <div
-        id="chatView"
-        class="view-section"
-        style="justify-content: center; align-items: center"
-      >
-        <div
-          class="card-box"
-          style="width: 600px; max-height: 80vh; overflow-y: auto"
-        >
-          <div class="card-title" id="chatCardTitle">Chat</div>
-          <div
-            style="font-size: 13px; color: #88a; margin-bottom: 15px"
-            id="chatDesc"
-          >
-            Xabarlar va suhbatlar
-          </div>
-          <div style="margin-bottom: 15px; display: flex; gap: 10px">
-            <select
-              id="chatRoomSelect"
-              class="form-input"
-              style="flex: 1"
-              onchange="loadChatMessages()"
-            >
-              <option value="" data-i18n="chatSelectRoom">Xona tanlang</option>
-            </select>
-          </div>
-          <div
-            id="chatMessagesContainer"
-            style="
-              display: flex;
-              flex-direction: column;
-              gap: 8px;
-              max-height: 400px;
-              overflow-y: auto;
-              margin-bottom: 15px;
-              padding: 10px;
-              background: var(--cd-surface-2);
-              border-radius: 6px;
-            "
-          >
-            <!-- Xabarlar shu yerga tushadi -->
-          </div>
-          <div style="display: flex; gap: 10px">
-            <input
-              type="text"
-              id="chatMessageInput"
-              class="form-input"
-              placeholder="Xabar yozing..."
-              data-i18n-placeholder="chatPlaceholder"
-              style="flex: 1"
-              onkeypress="if (event.key === 'Enter') sendChatMessage();"
-            />
-            <button
-              class="form-submit"
-              onclick="sendChatMessage()"
-              id="btnSendChatMessage"
-            >
-              Yuborish
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
     <!-- /.main-wrapper -->
 
@@ -2582,20 +2451,6 @@
 
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
-
-    <div
-      id="infoModal"
-      class="info-modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      style="display: none"
-    >
-      <div class="info-modal-container">
-        <button class="info-modal-close-btn" id="closeInfoModal">&larr;</button>
-        <h2 id="infoModalTitle"></h2>
-        <div class="info-modal-body" id="infoModalBody"></div>
-      </div>
-    </div>
 
     <!-- Profile Modal -->
     <div id="profileModal" class="profile-modal-overlay" style="display: none">

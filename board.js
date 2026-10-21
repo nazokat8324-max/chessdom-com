@@ -328,29 +328,6 @@ function recordResult(res) {
   }
 }
 
-window.resetStats = function() {
-  if (!confirm(tx('resetStatsConfirm', 'Haqiqatan ham statistikani tozalashni xohlaysizmi?'))) return;
-  window.stats = { wins: 0, losses: 0, draws: 0 };
-  window.statsByMode = {
-    rapid: { wins: 0, losses: 0, draws: 0 },
-    blitz: { wins: 0, losses: 0, draws: 0 },
-    bullet: { wins: 0, losses: 0, draws: 0 }
-  };
-  if (window.currentUser) {
-    window.currentUser.stats = window.stats;
-    window.currentUser.statsByMode = window.statsByMode;
-    localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
-    let users = JSON.parse(localStorage.getItem("justChessAllUsers")) || [];
-    users = users.map((u) => u.username === window.currentUser.username ? window.currentUser : u);
-    localStorage.setItem("justChessAllUsers", JSON.stringify(users));
-  } else {
-    localStorage.setItem("justChessGuestStats", JSON.stringify(window.stats));
-    localStorage.setItem("justChessStatsByMode", JSON.stringify(window.statsByMode));
-  }
-  updateStatsDisplay();
-  updateRatingDisplay();
-};
-
 window.offerDraw = function() {
   if (confirm(tx('drawOfferSendConfirm', 'Raqibga durrang taklifini yuborishni xohlaysizmi?'))) {
     if (typeof socket !== 'undefined' && window.currentRoomId) {

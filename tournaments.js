@@ -317,7 +317,6 @@
   };
 
   window.loadTournaments = function () {
-    if (typeof window.closeTournamentDetail === 'function') window.closeTournamentDetail();
     if (!st.list) render();
     if (!ticker) ticker = setInterval(() => { if (isActiveView()) tick(); }, 1000);
     load();

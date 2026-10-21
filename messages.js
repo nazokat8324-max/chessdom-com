@@ -290,12 +290,6 @@
     openConversation({ id: d.profile.id, username: d.profile.username, country: d.profile.country });
   };
 
-  // Eski "Chat" tugmalari ham yangi bo'limga olib boradi
-  window.startChatWith = function (userId, username) {
-    if (!isActiveView()) switchView('messages');
-    openConversation({ id: userId, username, country: null });
-  };
-
   window.renderMessagesView = async function () {
     if (!window.currentUser) return;
     render();

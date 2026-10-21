@@ -60,11 +60,6 @@
     if (rated) { rated.checked = s.quickRated !== false; rated.dispatchEvent(new Event('change')); }
   }
 
-  window.applySavedSettings = function () {
-    const s = readSaved();
-    applyAll(s);
-  };
-
   // --- Bo'limlar ---
   const sections = [
     ['general', '🌐', 'setNavGeneral', 'Umumiy'],

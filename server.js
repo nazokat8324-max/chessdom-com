@@ -45,7 +45,7 @@ app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|server-helpers|continents|push-texts|backup)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -55,7 +55,7 @@ app.use((req, res, next) => {
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
 const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse' };
-const DEFAULT_DESC = 'ChessDom — free online chess: rated games, Chess960, hourly Swiss tournaments, country clubs and leagues, post-game analysis.';
+const DEFAULT_DESC = 'ChessDom — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
   let title = PAGE_TITLES[req.params && req.params[0] ? req.params[0].toLowerCase() : ''] || 'ChessDom';
@@ -121,9 +121,9 @@ app.get(['/maxfiylik', '/shartlar', '/privacy', '/terms'], (req, res) => {
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'dostlar', 'chat', 'tarix', 'bayroqlar', 'choyxona']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona']);
 // Nomi o'zgargan bo'limlar: eski manzil → yangisi (301)
-const ROUTE_ALIASES = { urush: 'bayroqlar' };
+const ROUTE_ALIASES = { urush: 'bayroqlar', dostlar: 'xabarlar', chat: 'xabarlar' };
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
   const raw = req.params[0].toLowerCase();
   const slug = ROUTE_ALIASES[raw] || raw;
@@ -1293,12 +1293,6 @@ function isValidFlagCode(code) {
   return typeof code === 'string' && /^[a-z]{2}(-[a-z]{2,3})?$/.test(code);
 }
 
-// Yaratuvchisi bor turnirni faqat yaratuvchi, yaratuvchisiz (avtomatik arena) turnirni ishtirokchilar boshqaradi
-function canManageTournament(tournament, participants, userId) {
-  if (tournament.creator_id) return tournament.creator_id === userId;
-  return participants.some(p => p.userId === userId);
-}
-
 // Chat xonasi: "user_<sherik id>" → "dm_<id1>_<id2>" (tartiblangan); dm_ xonasini faqat ikki ishtirokchi o'qiydi.
 // Ruxsat yo'q bo'lsa null qaytaradi.
 function resolveChatRoom(roomId, userId) {
@@ -1402,8 +1396,7 @@ async function start() {
   });
 
   app.post('/api/auth/logout', authMiddleware, async (req, res) => {
-    try { await db.deleteUserSessions(req.user.userId); res.json({ success: true, message: 'Hisobdan chiqildi!' }); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+    res.json({ success: true, message: 'Hisobdan chiqildi!' });
   });
 
   app.get('/api/leaderboard', apiLimiter, async (req, res) => {
@@ -1813,37 +1806,6 @@ async function start() {
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  app.post('/api/tournaments', authMiddleware, [
-    body('name').isLength({ min: 3, max: 255 }).withMessage('Tournament name must be 3-255 characters'),
-    body('tournamentType').optional().isIn(['arena', 'individual', 'team']),
-    body('timeControl').optional().isLength({ max: 20 }),
-    body('maxPlayers').optional().isInt({ min: 2, max: 64 }),
-    body('rounds').optional().isInt({ min: 1, max: 20 }),
-    body('clubId').optional().isLength({ max: 100 }),
-    body('clubIdA').optional().isLength({ max: 100 }),
-    body('clubIdB').optional().isLength({ max: 100 })
-  ], async (req, res) => {
-    try {
-      const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
-      const { name, description, maxPlayers, clubId, tournamentType, timeControl, rounds, clubIdA, clubIdB } = req.body;
-      const tc = timeControl || '5+3';
-      const rnds = rounds || (tournamentType === 'team' ? 1 : 7);
-      const created = await db.createTournament({ name, description, maxPlayers, creatorId: req.user.userId, clubId, tournamentType, timeControl: tc, rounds: rnds, clubIdA, clubIdB });
-      res.json({ success: true, tournamentId: created.id, message: 'Turnir yaratildi!' });
-    } catch (err) { console.error('Create tournament xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/tournaments/arenas', apiLimiter, async (req, res) => {
-    try {
-      const { getArenaSchedule, getCurrentArenaSlot } = require('./server-helpers');
-      const now = new Date();
-      const slot = getCurrentArenaSlot(now);
-      const currentArena = await db.ensureCurrentArena(slot);
-      const timeUntilNext = Math.max(0, new Date(slot.slotEnd).getTime() - now.getTime());
-      res.json({ success: true, currentArena, timeControl: slot, timeUntilNext, schedule: getArenaSchedule(now) });
-    } catch (err) { console.error('Arenas xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
   // Swiss turnirlari (swiss.js)
   const optionalUserId = (req) => {
     const auth = req.headers.authorization;
@@ -1891,130 +1853,6 @@ async function start() {
       games.sort((a, b) => weight[a.kind] - weight[b.kind] || (b.white.rating + b.black.rating) - (a.white.rating + a.black.rating));
       res.json({ success: true, games: games.slice(0, 60) });
     } catch (err) { console.error('Jonli o\'yinlar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/tournaments', apiLimiter, async (req, res) => {
-    try { const clubId = req.query.clubId; const type = req.query.type; const tournaments = await db.getTournaments({ type }); res.json({ success: true, tournaments }); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/tournaments/:id', async (req, res) => {
-    try { const tournament = await db.getTournamentById(req.params.id); if (!tournament) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' }); res.json({ success: true, tournament }); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/tournaments/:id/join', authMiddleware, async (req, res) => {
-    try {
-      const result = await db.tournamentJoin(req.params.id, req.user.userId, req.body.club);
-      if (result.success) { io.to(`tournament_${req.params.id}`).emit('tournament-joined', { tournamentId: req.params.id, userId: req.user.userId }); }
-      res.json(result);
-    } catch (err) { console.error('Join tournament xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/tournaments/:id/start', authMiddleware, async (req, res) => {
-    try { const result = await db.tournamentStart(req.params.id, req.user.userId); if (result.success) { io.to(`tournament_${req.params.id}`).emit('tournament-started', { tournamentId: req.params.id }); } res.json(result); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/tournaments/:id/standings', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const tournament = await db.getTournamentById(id);
-      if (!tournament) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
-      const standings = await db.getTournamentStandings(id);
-      res.json({ success: true, standings });
-    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/tournaments/:id/matches', async (req, res) => {
-    try { const matches = await db.getTournamentMatches(req.params.id, req.query.round ? parseInt(req.query.round) : undefined); res.json({ success: true, matches }); }
-    catch (err) { console.error('Tournament matches xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/tournaments/:id/participants', async (req, res) => {
-    try { const participants = await db.getTournamentParticipants(req.params.id); res.json({ success: true, participants }); }
-    catch (err) { console.error('Tournament participants xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/tournaments/:id/matches', authMiddleware, async (req, res) => {
-    try {
-      const { id } = req.params; const { matches } = req.body;
-      const tournament = await db.getTournamentById(id);
-      if (!tournament) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
-      if (tournament.creator_id !== req.user.userId) return res.status(403).json({ success: false, message: 'Faqat turnir yaratuvchisi o\'yinlarni qo\'sha oladi!' });
-      if (!Array.isArray(matches) || matches.length === 0) return res.status(400).json({ success: false, message: 'O\'yinlar ro\'yxati kerak!' });
-      const saved = [];
-      for (const m of matches) { await db.saveTournamentMatch(m); saved.push(m); }
-      res.json({ success: true, matches: saved });
-    } catch (err) { console.error('Match saqlash xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/tournaments/:id/pairings', authMiddleware, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const tournament = await db.getTournamentById(id);
-      if (!tournament) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
-      const participants = await db.getTournamentParticipants(id);
-      if (!canManageTournament(tournament, participants, req.user.userId)) return res.status(403).json({ success: false, message: 'Faqat turnir yaratuvchisi yoki ishtirokchilari juftlik yarata oladi!' });
-      if (participants.length < 2) return res.status(400).json({ success: false, message: 'Juftlik uchun kamida 2 o\'yinchi kerak!' });
-      const { swissPairings } = require('./server-helpers');
-      const round = (tournament.current_round || 0) + 1;
-      const maxRounds = tournament.rounds || 7;
-      if (round > maxRounds) return res.status(400).json({ success: false, message: 'Barcha raundlar o\'ynalib bo\'ldi!' });
-      let createdMatches = [];
-      if (tournament.tournament_type === 'team') {
-        res.status(501).json({ success: false, message: "Jamoaviy turnirlar hali qo'llab-quvvatlanmaydi!" }); return;
-      } else {
-        const pairings = swissPairings(participants, round);
-        for (const p of pairings) {
-          const matchId = uuidv4();
-          const match = { id: matchId, tournamentId: id, round, player1Id: p.player1Id, player2Id: p.player2Id || null, winnerId: null, status: p.bye ? 'bye' : 'active' };
-          await db.saveTournamentMatch(match);
-          if (p.bye) await db.addParticipantScore(id, p.player1Id, 1, null);
-          createdMatches.push(match);
-        }
-      }
-      await db.updateTournamentRound(id, round, round >= maxRounds ? 'completed' : 'active');
-      io.to(`tournament_${id}`).emit('tournament-pairings', { tournamentId: id, round, pairings: createdMatches });
-      res.json({ success: true, round, pairings: createdMatches });
-    } catch (err) { console.error('Pairings xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/tournaments/:id/matches/:matchId/result', authMiddleware, async (req, res) => {
-    try {
-      const { id, matchId } = req.params;
-      const { result } = req.body;
-      if (!['white', 'black', 'draw'].includes(result)) return res.status(400).json({ success: false, message: 'Noto\'g\'ri natija turi!' });
-      const tournament = await db.getTournamentById(id);
-      if (!tournament) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
-      const matches = await db.getTournamentMatches(id);
-      const match = matches.find(m => m.id === matchId);
-      if (!match) return res.status(404).json({ success: false, message: 'O\'yin topilmadi!' });
-      if (match.status === 'completed' || match.status === 'bye') return res.status(400).json({ success: false, message: 'O\'yin allaqachon yakunlangan!' });
-      // Natijani faqat turnir yaratuvchisi yoki shu o'yinning o'yinchilari kiritadi
-      const isMatchPlayer = [match.player1Id, match.player2Id].includes(req.user.userId);
-      if (tournament.creator_id !== req.user.userId && !isMatchPlayer) return res.status(403).json({ success: false, message: 'Bu o\'yin natijasini kiritishga ruxsatingiz yo\'q!' });
-      let winnerId = null;
-      if (match.player1Id && match.player2Id) {
-        if (result === 'white') winnerId = match.player1Id;
-        else if (result === 'black') winnerId = match.player2Id;
-        await db.saveTournamentMatch({ ...match, winnerId, status: 'completed', completedAt: new Date().toISOString() });
-        if (result === 'draw') {
-          await db.addParticipantScore(id, match.player1Id, 0.5, match.player2Id);
-          await db.addParticipantScore(id, match.player2Id, 0.5, match.player1Id);
-          await db.updateUserStats(match.player1Id, 'draw', tournament.name, 'Tournament');
-          await db.updateUserStats(match.player2Id, 'draw', tournament.name, 'Tournament');
-        } else {
-          const loserId = winnerId === match.player1Id ? match.player2Id : match.player1Id;
-          await db.addParticipantScore(id, winnerId, 1, loserId);
-          if (loserId) await db.addParticipantScore(id, loserId, 0, winnerId);
-          await db.updateUserStats(winnerId, 'win', tournament.name, 'Tournament');
-          if (loserId) await db.updateUserStats(loserId, 'loss', tournament.name, 'Tournament');
-        }
-      }
-      io.to(`tournament_${id}`).emit('tournament-match-result', { tournamentId: id, matchId, result, winnerId });
-      res.json({ success: true, message: 'Natija saqlandi!', winnerId });
-    } catch (err) { console.error('Match result xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/friends/request', authMiddleware, async (req, res) => {
@@ -2721,42 +2559,9 @@ async function start() {
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  app.post('/api/clubs', authMiddleware, [
-    body('name').isLength({ min: 3, max: 255 }).withMessage('Club name must be 3-255 characters'),
-    body('description').optional().isLength({ max: 1000 }),
-    body('icon').optional().isLength({ max: 10 })
-  ], async (req, res) => {
-    try {
-      const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
-      const { name, description, icon } = req.body;
-      const club = await db.createClub({ name, description, icon, creatorId: req.user.userId });
-      res.json({ success: true, clubId: club.id, message: 'Klub yaratildi!' });
-    } catch (err) { console.error('Create club xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/clubs', apiLimiter, async (req, res) => {
-    try { const clubs = await db.getClubs(); res.json({ success: true, clubs }); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
   app.get('/api/clubs/leaderboard', apiLimiter, async (req, res) => {
     try { const data = await db.getClubLeaderboard(); res.json(data); }
     catch (err) { console.error('Club leaderboard xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/clubs/:id', async (req, res) => {
-    try { const club = await db.getClubById(req.params.id); if (!club) return res.status(404).json({ success: false, message: 'Klub topilmadi!' }); res.json({ success: true, club }); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/clubs/:id/join', authMiddleware, async (req, res) => {
-    try { const result = await db.joinClub(req.params.id, req.user.userId); res.json(result); }
-    catch (err) { console.error('Club join xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/clubs/:id/members', async (req, res) => {
-    try { const members = await db.getClubMembers(req.params.id); res.json({ success: true, members }); }
-    catch (err) { console.error('Club members xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   io.on('connection', (socket) => {
@@ -2877,7 +2682,6 @@ async function start() {
       handlePlayerLeave(socket, roomId, room);
       if (!wasActive) socket.to(roomId).emit('opponent-disconnected');
     });
-    socket.on('join-tournament-room', (tournamentId) => { socket.join(`tournament_${tournamentId}`); });
     socket.on('game-blur', (data) => {
       const room = data && rooms.get(data.roomId);
       const player = room && room.status === 'active' && findPlayer(room, socket.id);
@@ -3100,8 +2904,6 @@ async function start() {
       }
     });
   });
-
-  setInterval(async () => { await db.closeStaleArenas(); }, 60 * 1000);
 
   setInterval(() => { closeWarSeasons(); closeSportMonths(); closePredictionMonths(); }, 60 * 60 * 1000);
   setTimeout(() => { closeSportMonths(); closePredictionMonths(); }, 30 * 1000);

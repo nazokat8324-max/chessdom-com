@@ -8860,10 +8860,6 @@ i18next.init({
   if (!err) updateUI();
 });
 
-function leaderboardAlertText() {
-  return i18next.t('leaderboardSoon');
-}
-
 function updateUI() {
   const t = (key) => i18next.t(key);
 
@@ -9056,12 +9052,6 @@ function updateUI() {
   const dashPlanBtn = document.getElementById("dashPlanBtn"); if (dashPlanBtn) dashPlanBtn.textContent = '\u{1F680} ' + t('infoPlanTitle');
   const dashTechBtn = document.getElementById("dashTechBtn"); if (dashTechBtn) dashTechBtn.textContent = '\u{1F9ED} ' + t('infoTechTitle');
 
-  // Info oynasi ochiq bo'lsa, joriy bo'limni qayta tarjima qilish
-  const infoModalEl = document.getElementById('infoModal');
-  if (infoModalEl && infoModalEl.style.display === 'flex' && window.currentInfoSection) {
-    if (typeof window.renderInfoModal === 'function') window.renderInfoModal(window.currentInfoSection);
-  }
-
   // Klub liga kalendari ekrani ochiq bo'lsa, qayta chizish
   if (typeof window.refreshClubTournaments === 'function') window.refreshClubTournaments();
 
@@ -9075,11 +9065,8 @@ function updateUI() {
 
   // JS orqali chiziladigan ochiq sahifalarni yangi tilda qayta chizish
   const isActive = id => { const el = document.getElementById(id); return !!(el && el.classList.contains('active-view')); };
-  if (isActive('friendsView') && typeof window.loadFriendsList === 'function') window.loadFriendsList();
-  if (isActive('chatView') && typeof window.loadChatMessages === 'function') window.loadChatMessages();
   if (isActive('historyView') && typeof window.updateGameHistoryView === 'function') window.updateGameHistoryView();
   if (isActive('clubChatView') && window.currentClubName && typeof window.showClubChat === 'function') window.showClubChat(window.currentClubName, window.currentClubCode);
-  if (isActive('tournamentDetailView') && typeof window.refreshTournamentDetail === 'function') window.refreshTournamentDetail();
   if (typeof window.refreshArenaPage === 'function') window.refreshArenaPage();
   if (typeof window.refreshLiveView === 'function') window.refreshLiveView();
   if (typeof window.renderHomeWidgets === 'function') window.renderHomeWidgets();

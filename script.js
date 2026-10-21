@@ -341,26 +341,6 @@ window.loadTopPlayers = async function() {
   window.renderTopPlayersList();
 };
 
-window.updateGameHistoryView = function() {
-  const container = document.getElementById("historyTableBody");
-  if (!container) return;
-
-  let history = [];
-  if (window.currentUser && window.currentUser.history) {
-    history = window.currentUser.history;
-  } else {
-    const guestHistory = JSON.parse(localStorage.getItem("justChessGameHistory") || "[]");
-    history = guestHistory;
-  }
-
-  window._allGameHistory = Array.isArray(history) ? history : [];
-  window._currentHistoryFilter = 'all';
-  document.querySelectorAll('#historyView .mode-tab').forEach(tab => {
-    tab.classList.toggle('active', tab.dataset.filter === 'all');
-  });
-  renderHistoryTable(window._allGameHistory);
-};
-
 function renderHistoryTable(history) {
   const container = document.getElementById("historyTableBody");
   if (!container) return;
@@ -481,9 +461,6 @@ window.switchView = function(viewName) {
     }
     viewName = "home";
   }
-  if (typeof window.closeTournamentDetail === 'function') {
-    window.closeTournamentDetail();
-  }
   if (typeof window.gameStartRequested !== 'undefined') {
     window.gameStartRequested = false;
   }
@@ -599,19 +576,6 @@ window.switchView = function(viewName) {
     }
     const navEl = document.getElementById("navTournaments");
     if (navEl) navEl.classList.add("active");
-  } else if (viewName === "friends") {
-    const friendsEl = document.getElementById("friendsView");
-    if (friendsEl) {
-      friendsEl.classList.add("active-view");
-      if (typeof window.playAnimation === "function") {
-        window.playAnimation("friendsView", "fadeIn");
-      }
-      if (typeof window.loadFriendsList === "function") {
-        window.loadFriendsList();
-      }
-    }
-    const navEl = document.getElementById("navFriends");
-    if (navEl) navEl.classList.add("active");
   } else if (viewName === "clubs") {
     const clubsEl = document.getElementById("clubsView");
     if (clubsEl) {
@@ -649,17 +613,6 @@ window.switchView = function(viewName) {
     }
     const navEl = document.getElementById("navChampions");
     if (navEl) navEl.classList.add("active");
-  } else if (viewName === "chat") {
-    const chatEl = document.getElementById("chatView");
-    if (chatEl) {
-      chatEl.classList.add("active-view");
-      if (typeof window.playAnimation === "function") {
-        window.playAnimation("chatView", "fadeIn");
-      }
-      if (typeof window.loadChatMessages === "function") {
-        window.loadChatMessages();
-      }
-    }
   } else if (viewName === "tea") {
     const teaEl = document.getElementById("teaView");
     if (teaEl) teaEl.classList.add("active-view");
@@ -954,84 +907,6 @@ const INFO_SECTIONS = {
   }
 };
 
-window.renderInfoModal = function(section) {
-  const cfg = INFO_SECTIONS[section];
-  const titleEl = document.getElementById("infoModalTitle");
-  const bodyEl = document.getElementById("infoModalBody");
-  if (!cfg || !titleEl || !bodyEl) return;
-
-  const t = (key, fallback) =>
-    (typeof i18next !== 'undefined' && i18next.isInitialized)
-      ? i18next.t(key, { defaultValue: fallback })
-      : fallback;
-
-  titleEl.textContent = t(cfg.titleKey, section);
-
-  bodyEl.textContent = "";
-
-  (cfg.paragraphs || []).forEach(key => {
-    const p = document.createElement("p");
-    p.textContent = t(key, "");
-    bodyEl.appendChild(p);
-  });
-
-  (cfg.lists || []).forEach(key => {
-    const li = document.createElement("div");
-    li.className = "info-list-item";
-    li.textContent = t(key, "");
-    bodyEl.appendChild(li);
-  });
-
-  if (cfg.cards && cfg.cards.length) {
-    const grid = document.createElement("div");
-    grid.className = "info-card-grid";
-    cfg.cards.forEach(card => {
-      const box = document.createElement("div");
-      box.className = "info-card";
-
-      const title = document.createElement("div");
-      title.className = "info-card-title";
-      title.textContent = t(card.titleKey, "");
-      box.appendChild(title);
-
-      const text = document.createElement("div");
-      text.className = "info-card-text";
-      text.textContent = t(card.textKey, "");
-      box.appendChild(text);
-
-      grid.appendChild(box);
-    });
-    bodyEl.appendChild(grid);
-  }
-};
-
-window.openInfoModal = function(section) {
-  const infoModal = document.getElementById("infoModal");
-  if (!infoModal) return;
-
-  // Profil oynasi ochiq bo'lsa, info oynasi ochilmasin
-  const profileModal = document.getElementById("profileModal");
-  if (profileModal && profileModal.style.display === "flex") return;
-
-  window.currentInfoSection = section;
-  window.renderInfoModal(section);
-  infoModal.style.display = "flex";
-};
-
-window.closeInfoModal = function() {
-  const infoModal = document.getElementById("infoModal");
-  if (infoModal) {
-    infoModal.style.display = "none";
-  }
-  window.currentInfoSection = null;
-};
-
-// Country flag helper
-function countryCodeToFlag(code) {
-  const upper = code.toUpperCase();
-  return upper.replace(/./g, ch => String.fromCharCode(127397 + ch.charCodeAt(0)));
-}
-
 // Current opponent data (for dynamic flag)
 window.currentOpponent = {};
 
@@ -1085,9 +960,6 @@ window.updateGameFlags = function() {
   }
 };
 
-// Country selection is now handled only in the Settings page
-window.populateCountrySelect = function() {};
-
 // --- Kirish sahifasi (authGate): tizimga kirilmaguncha saytning o'zi ko'rinmaydi ---
 // mode: 'signup' (yangi foydalanuvchi — standart) yoki 'login'
 window.showAuthGate = function(mode) {
@@ -1132,7 +1004,6 @@ window.togglePasswordVisibility = function(inputId, btn) {
 
 // Eski nomlar (boshqa joylardan chaqiriladi) — endi kirish sahifasini ochadi/yopadi
 window.openLoginModal = function() { window.showAuthGate('login'); };
-window.openSignupModal = function() { window.showAuthGate('signup'); };
 window.closeLoginModal = window.hideAuthGate;
 window.closeSignupModal = window.hideAuthGate;
 window.switchToSignUp = function() { window.showAuthGate('signup'); };
@@ -1941,47 +1812,6 @@ window.markSettingsDirty = function(dirty) {
   if (note) note.hidden = !window.settingsDirty;
 };
 
-window.selectSiteTheme = function(theme) {
-  window.applySiteTheme(theme);
-  window.markSettingsDirty();
-};
-
-// Saqlangan qiymatlarni qayta qo'llash (saqlanmagan o'zgarishlarni bekor qilish)
-window.applySavedSettings = function() {
-  const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
-  window.applySiteTheme(saved.siteTheme || "turquoise");
-  window.applyCoords(saved.showCoords !== false);
-  if (typeof window.applySavedSound === "function") window.applySavedSound();
-};
-
-window.discardSettingsChanges = function() {
-  if (!window.settingsDirty) return;
-  window.applySavedSettings();
-  window.markSettingsDirty(false);
-  showToast(tx('settingsDiscarded', "Saqlanmagan o'zgarishlar bekor qilindi"), "info");
-};
-
-window.updateSettingsView = function() {
-  const saved = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
-  const country = document.getElementById("settingsCountry");
-  const lang = document.getElementById("settingsLanguage");
-  const sound = document.getElementById("settingsSound");
-  const volume = document.getElementById("settingsVolume");
-  const coords = document.getElementById("settingsCoords");
-  if (country) {
-    window.populateSettingsCountries();
-    country.value = saved.country || country.value || "uz";
-  }
-  if (lang) lang.value = saved.language || "en";
-  if (sound) sound.checked = saved.soundEnabled !== false;
-  if (volume) volume.value = Math.round((saved.volume || 0.8) * 100);
-  if (coords) coords.checked = saved.showCoords !== false;
-  window.applySavedSettings();
-  window.markSettingsDirty(false);
-  const volVal = document.getElementById("settingsVolumeVal");
-  if (volVal && volume) volVal.textContent = volume.value + "%";
-};
-
 window.saveSettings = function() {
   const tSettings = (key, fallback) =>
     (typeof i18next !== 'undefined' && i18next.isInitialized)
@@ -2018,27 +1848,6 @@ window.syncMyCountry = function(country) {
       body: JSON.stringify({ country })
     }).catch(err => console.error('Davlatni saqlash xatoligi:', err));
   }
-};
-
-window.resetSettings = function() {
-  const tSettings = (key, fallback) =>
-    (typeof i18next !== 'undefined' && i18next.isInitialized)
-      ? i18next.t(key, { defaultValue: fallback })
-      : fallback;
-  const sound = document.getElementById("settingsSound");
-  const volume = document.getElementById("settingsVolume");
-  const volVal = document.getElementById("settingsVolumeVal");
-  const coords = document.getElementById("settingsCoords");
-  if (sound) sound.checked = true;
-  if (volume) volume.value = 80;
-  if (volVal) volVal.textContent = "80%";
-  if (coords) coords.checked = true;
-  window.applySiteTheme("turquoise");
-  window.applyCoords(true);
-  if (typeof window.applySoundToggle === "function") window.applySoundToggle(true);
-  if (typeof window.setSoundVolume === "function") window.setSoundVolume(0.8);
-  window.markSettingsDirty();
-  showToast(tSettings('settingsResetPending', "Standart qiymatlar qo'yildi — saqlash uchun «Saqlash» tugmasini bosing"), "info", 5000);
 };
 
   const coordsEl = document.getElementById("settingsCoords");
@@ -2104,24 +1913,6 @@ window.resetSettings = function() {
     });
   }
 
-  // Info Modal
-  const infoModal = document.getElementById("infoModal");
-  const closeInfoModalBtn = document.getElementById("closeInfoModal");
-
-  if (closeInfoModalBtn && infoModal) {
-    closeInfoModalBtn.addEventListener("click", () => {
-      window.closeInfoModal();
-    });
-  }
-
-  if (infoModal) {
-    infoModal.addEventListener("click", (e) => {
-      if (e.target === infoModal) {
-        window.closeInfoModal();
-      }
-    });
-  }
-
   // League Detail Modal
   const leagueDetailModal = document.getElementById("leagueDetailModal");
   const closeLeagueDetailBtn = document.getElementById("closeLeagueDetailBtn");
@@ -2143,9 +1934,6 @@ window.resetSettings = function() {
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && profileModal && profileModal.style.display === "flex") {
       profileModal.style.display = "none";
-    }
-    if (e.key === "Escape" && infoModal && infoModal.style.display === "flex") {
-      window.closeInfoModal();
     }
     if (e.key === "Escape" && languageModal && languageModal.style.display === "flex") {
       languageModal.style.display = "none";

@@ -78,16 +78,11 @@ socket.on('chat-message', (data) => {
     if (typeof loadClubChatMessages === 'function') {
       loadClubChatMessages();
     }
-  } else if (isViewActive('chatView') && typeof window.loadChatMessages === 'function') {
-    window.loadChatMessages();
   }
 });
 
 socket.on('friend-request-received', (data) => {
   showToast(tx('friendRequestReceived', "{{name}} sizga do'stlik so'rovi yubordi", { name: (data && data.senderName) || tx('someone', 'Kimdir') }), 'info');
-  if (isViewActive('friendsView') && typeof window.loadFriendRequests === 'function') {
-    window.loadFriendRequests();
-  }
 });
 
 // O'yinni boshlash (match-found) yoki qayta ulanganda tiklash (game-resume) — umumiy qism
@@ -106,7 +101,6 @@ function beginOnlineGame(data, resume) {
   lastSentMove = null;
   updateOnlineStatus(true);
 
-  window.opponentRating = (data.opponent && data.opponent.rating) || 1500;
   window.opponentRatingsByMode = (data.opponent && data.opponent.ratingsByMode) || null;
   window.currentRatingMode = data.ratingMode || data.mode || null;
   if (typeof window.setOpponentData === 'function') {

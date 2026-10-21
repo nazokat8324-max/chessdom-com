@@ -546,24 +546,6 @@
       .view-section.active-view {
         display: flex;
       }
-      #tournamentDetailView {
-        position: relative;
-        width: 100%;
-        max-height: calc(100vh - 48px);
-        overflow-y: auto;
-        background: transparent;
-        padding: 0;
-        display: none;
-      }
-      #tournamentDetailView.active-view {
-        display: block !important;
-      }
-      body.tournament-detail-open .view-section:not(#tournamentDetailView) {
-        display: none !important;
-      }
-      body.tournament-detail-open .top-bar {
-        display: none;
-      }
 
       /* Club Detail View - Full Width, Block Display */
       #clubDetailView.active-view {

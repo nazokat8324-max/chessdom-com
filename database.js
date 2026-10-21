@@ -13,7 +13,10 @@ if (usePostgres) {
   const { Pool } = require('pg');
   // Masofaviy baza bilan sertifikat tekshiriladigan SSL; lokal yoki sslmode=disable bo'lsa SSL'siz
   const noSsl = /@(localhost|127\.0\.0\.1)[:/]/.test(DATABASE_URL) || /sslmode=disable/.test(DATABASE_URL);
-  pool = new Pool({ connectionString: DATABASE_URL, ssl: !noSsl });
+  // sslmode=require/prefer/verify-ca ni pg hozir verify-full deb tushunadi, lekin keyingi versiyada yumshatadi (startda ogohlantirish).
+  // Joriy qat'iy tekshiruv saqlanib qolishi uchun aniq verify-full yoziladi.
+  const connectionString = DATABASE_URL.replace(/([?&]sslmode=)(require|prefer|verify-ca)\b/i, '$1verify-full');
+  pool = new Pool({ connectionString, ssl: !noSsl });
 } else {
   const sqlite3 = require('sqlite3').verbose();
   // SQLITE_FILE — boshqa fayl (avtomatik testlar vaqtinchalik baza bilan ishlaydi)

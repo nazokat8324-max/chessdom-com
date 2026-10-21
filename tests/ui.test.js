@@ -101,6 +101,28 @@ test("Brauzer xatosi admin panelidagi Xatolar bo'limida ko'rinadi", opts, async 
   if (process.env.UI_SHOTS) fs.copyFileSync(require('path').join(srv.dir, 'admin-errors.png'), process.env.UI_SHOTS + '/admin-errors.png');
 });
 
+test("Taklif havolasi: yangi odam banner ko'radi, ro'yxatdan o'tadi va taklif qiluvchiga chaqiruv boradi", opts, async () => {
+  const { once } = require('./helpers');
+  const a = await srv.register('Uinv');
+  const code = (await srv.api(a, '/api/invite')).code;
+  const sa = await srv.connect(a);
+  const p = await page(null, { width: 390, height: 844, isMobile: true });
+  await p.goto(srv.base + '/?invite=' + code + '&tc=180%2B2', { waitUntil: 'networkidle2' });
+  await sleep(1000);
+  assert.equal(await p.evaluate(() => location.search), '', 'kod manzildan olib tashlanadi');
+  assert.match(await p.evaluate(() => (document.getElementById('authInviteBanner') || {}).textContent || ''), new RegExp(a.name));
+  const got = once(sa, 'challenge-received', 15000);
+  await p.type('#signupUsername', 'Uinvd' + Date.now() % 100000);
+  await p.type('#signupPassword', 'secret1');
+  await p.evaluate(() => window.handleSignupModal());
+  const ch = await got;
+  assert.equal(ch.invite, true);
+  assert.deepEqual(ch.clock, { initial: 180, increment: 2 });
+  assert.equal((await srv.api(a, '/api/invite')).count, 1);
+  assert.deepEqual(p.errors, []);
+  sa.disconnect();
+});
+
 test("Service worker ro'yxatdan o'tadi", opts, async () => {
   const u = await srv.register('Us');
   const p = await page(u);

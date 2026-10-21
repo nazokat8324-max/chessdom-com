@@ -110,7 +110,7 @@
     el.innerHTML = `
       <div class="ch-card incoming">
         <div class="ch-icon">⚔️</div>
-        <h3>${esc(tx('chIncoming', "{{name}} sizni o'yinga chaqirmoqda!", { name: data.from.username }))}</h3>
+        <h3>${esc(data.invite ? tx('chIncomingInvite', "🔗 {{name}} taklifingizni qabul qildi va o'ynashga tayyor!", { name: data.from.username }) : tx('chIncoming', "{{name}} sizni o'yinga chaqirmoqda!", { name: data.from.username }))}</h3>
         <p class="ch-from">${flag(data.from.country)} <b>${esc(data.from.username)}</b> <small>${data.from.rating}</small></p>
         <p class="ch-sub">${modeIcon(data.mode)} ${clockLabel(data.clock.initial, data.clock.increment)} · ${esc(data.rated ? tx('chRatedShort', 'Reytingli') : tx('chCasualShort', 'Reytingsiz'))}${data.variant === 'chess960' ? ' · 🎲 Chess960' : ''}</p>
         <div class="ch-timer" id="chTimer"></div>

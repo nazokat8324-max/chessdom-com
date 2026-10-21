@@ -21,6 +21,7 @@ const crypto = require('crypto');
 const webpush = require('web-push');
 const { pushMessage } = require('./push-texts');
 const backup = require('./backup');
+const telegram = require('./telegram');
 const util = require('util');
 const escapeHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -45,7 +46,7 @@ app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -62,6 +63,18 @@ async function sendIndex(req, res) {
   if (title !== PAGE_TITLES['']) title += ' · ChessDom';
   let desc = DEFAULT_DESC;
   const name = typeof req.query.profile === 'string' ? req.query.profile.slice(0, 40) : '';
+  // 🔗 Taklif havolasi: Telegram/WhatsApp oldindan ko'rinishida "X sizni o'yinga chaqiryapti"
+  const inviteCode = typeof req.query.invite === 'string' ? req.query.invite.slice(0, 16) : '';
+  if (inviteCode) {
+    try {
+      const u = await db.getUserByInviteCode(inviteCode);
+      if (u) {
+        const r = u.ratings_by_mode || {};
+        title = `♞ ${u.username} invites you to play chess · ChessDom`;
+        desc = `${u.username} sizni ChessDom'da shaxmat o'yiniga taklif qilyapti — Blitz ${r.blitz || 1500}. Accept the invite and play ${u.username} right away.`;
+      }
+    } catch (e) {}
+  }
   if (name) {
     try {
       const u = await db.getUserByUsername(name);
@@ -541,7 +554,8 @@ function dropChallenge(id) {
   return c;
 }
 
-async function sendChallenge(socket, data) {
+async function sendChallenge(socket, data, opts) {
+  const invite = !!(opts && opts.invite);
   const fromId = socket.data.userId;
   if (!fromId) return socket.emit('challenge-error', { reason: 'auth' });
   const target = data && data.username ? await db.getUserByUsername(String(data.username)) : null;
@@ -549,8 +563,8 @@ async function sendChallenge(socket, data) {
   if (target.id === fromId) return socket.emit('challenge-error', { reason: 'self' });
   if (blockedPair(fromId, target.id)) return socket.emit('challenge-error', { reason: 'blocked' });
   const targetPrivacy = db.userPrivacy(target).challenges;
-  if (targetPrivacy === 'none') return socket.emit('challenge-error', { reason: 'disabled' });
-  if (targetPrivacy === 'friends' && !(await db.areFriends(target.id, fromId))) return socket.emit('challenge-error', { reason: 'friends_only' });
+  if (!invite && targetPrivacy === 'none') return socket.emit('challenge-error', { reason: 'disabled' });
+  if (!invite && targetPrivacy === 'friends' && !(await db.areFriends(target.id, fromId))) return socket.emit('challenge-error', { reason: 'friends_only' });
   if (!userSocket(target.id)) return socket.emit('challenge-error', { reason: 'offline' });
   if (inActiveGame(fromId)) return socket.emit('challenge-error', { reason: 'you_busy' });
   if (inActiveGame(target.id)) return socket.emit('challenge-error', { reason: 'busy' });
@@ -570,7 +584,7 @@ async function sendChallenge(socket, data) {
   }, CHALLENGE_TTL_MS);
   challenges.set(id, c);
   c.payload = {
-    id, clock, rated: c.rated, variant, mode, seconds: CHALLENGE_TTL_MS / 1000,
+    id, clock, rated: c.rated, variant, mode, seconds: CHALLENGE_TTL_MS / 1000, invite,
     from: { username: c.fromName, rating: (me && me.ratings_by_mode && me.ratings_by_mode[fromMode]) || (me && me.rating) || 1500, country: me ? me.country || null : null }
   };
   c.expiresAt = Date.now() + CHALLENGE_TTL_MS;
@@ -736,6 +750,7 @@ async function notify(userId, type, data, collapseKey) {
     const item = await db.addNotification(userId, type, data || {}, collapseKey);
     io.to(`user_${userId}`).emit('notification', item);
     sendPush(userId, type, item && item.data ? item.data : (data || {}), collapseKey || type).catch(() => {});
+    if (telegram.enabled()) telegram.sendNotification(userId, type, item && item.data ? item.data : (data || {})).catch(() => {});
   } catch (err) { console.error('Bildirishnoma xatoligi:', err.message); }
 }
 
@@ -1039,7 +1054,8 @@ const ACHIEVEMENT_RULES = [
   ['streak_5', (c) => c.streak >= 5], ['streak_10', (c) => c.streak >= 10], ['mate_10', (c) => c.mates >= 10],
   ['rank_gold', (c) => c.peak >= 1600], ['rank_platinum', (c) => c.peak >= 1800], ['rank_diamond', (c) => c.peak >= 2000], ['rank_master', (c) => c.peak >= 2200],
   ['chess960', (c) => c.played960], ['all_modes', (c) => c.allModes], ['friends_5', (c) => c.friends >= 5],
-  ['club_member', (c) => c.club], ['league_player', (c) => c.league]
+  ['club_member', (c) => c.club], ['league_player', (c) => c.league],
+  ['invite_3', (c) => c.invited >= 3], ['invite_10', (c) => c.invited >= 10]
 ];
 async function checkAchievements(userId, opts) {
   try {
@@ -1058,7 +1074,8 @@ async function checkAchievements(userId, opts) {
       peak: Math.max(0, ...['rapid', 'blitz', 'bullet', 'chess960'].filter(played).map(m => ratings[m] || 0)),
       played960: history.some(g => g.variant === 'chess960'),
       allModes: ['rapid', 'blitz', 'bullet'].every(played),
-      friends: await db.countFriends(userId), club: !!u.club_country, league: history.some(g => g.league)
+      friends: await db.countFriends(userId), club: !!u.club_country, league: history.some(g => g.league),
+      invited: await db.countInvited(userId)
     };
     const earned = [];
     for (const [key, test] of ACHIEVEMENT_RULES) {
@@ -1370,6 +1387,17 @@ async function start() {
       if (existing) return res.status(409).json({ success: false, message: 'Bu nomli foydalanuvchi mavjud!' });
       const passwordHash = await bcrypt.hash(password, 10);
       const user = await db.createUser({ username, email, passwordHash });
+      // 🔗 Taklif havolasi orqali kelgan bo'lsa — kim taklif qilgani yoziladi, taklif qiluvchiga xabar va yutuq
+      if (req.body.inviteCode) {
+        try {
+          const inviter = await db.getUserByInviteCode(String(req.body.inviteCode));
+          if (inviter && inviter.id !== user.id) {
+            await db.setInvitedBy(user.id, inviter.id);
+            notify(inviter.id, 'invite_joined', { from: user.username });
+            checkAchievements(inviter.id);
+          }
+        } catch (e) { console.error('Taklif kodi xatoligi:', e.message); }
+      }
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
       res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!", user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.statsByMode }, token });
     } catch (err) { console.error('Register xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -1882,6 +1910,22 @@ async function start() {
       games.sort((a, b) => weight[a.kind] - weight[b.kind] || (b.white.rating + b.black.rating) - (a.white.rating + a.black.rating));
       res.json({ success: true, games: games.slice(0, 60) });
     } catch (err) { console.error('Jonli o\'yinlar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // --- 🔗 Taklif havolasi ---
+  app.get('/api/invite', authMiddleware, async (req, res) => {
+    try {
+      const code = await db.getInviteCode(req.user.userId);
+      res.json({ success: true, code, url: `${SITE_URL}/?invite=${code}`, ...(await db.inviteStats(req.user.userId)) });
+    } catch (err) { console.error('Taklif xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.get('/api/invite/:code', apiLimiter, async (req, res) => {
+    try {
+      const u = await db.getUserByInviteCode(String(req.params.code));
+      if (!u) return res.status(404).json({ success: false, message: 'Taklif havolasi topilmadi' });
+      const r = u.ratings_by_mode || {};
+      res.json({ success: true, inviter: { username: u.username, rating: r.blitz || u.rating || 1500, country: u.country || null, avatarVersion: u.avatar_version || null, online: isOnline(u.id) } });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.post('/api/friends/request', authMiddleware, async (req, res) => {
@@ -2840,6 +2884,31 @@ async function start() {
     socket.on('tea-sit', (data) => { teaSit(socket, data || {}).catch(err => console.error('Choyxona xatoligi:', err)); });
     socket.on('tea-stand', () => { if (socket.data.userId) teaStand(socket.data.userId); });
     socket.on('tea-join', (data) => { teaJoin(socket, data && data.id).catch(err => console.error('Choyxona xatoligi:', err)); });
+    // 🔗 Taklif havolasi qabul qilindi: do'st bo'lishadi; taklif qiluvchi onlayn bo'lsa — unga darhol chaqiruv, aks holda bildirishnoma
+    socket.on('invite-accept', async (data, ack) => {
+      const reply = typeof ack === 'function' ? ack : () => {};
+      try {
+        const me = socket.data.userId;
+        if (!me) return reply({ ok: false, reason: 'auth' });
+        const inviter = await db.getUserByInviteCode(String((data && data.code) || ''));
+        if (!inviter) return reply({ ok: false, reason: 'not_found' });
+        if (inviter.id === me) return reply({ ok: false, reason: 'self' });
+        if (blockedPair(me, inviter.id)) return reply({ ok: false, reason: 'blocked' });
+        const friendsNow = await db.makeFriends(me, inviter.id);
+        const base = { ok: true, inviter: inviter.username, friendsNow };
+        if (!userSocket(inviter.id)) {
+          notify(inviter.id, 'invite_waiting', { from: socket.data.username }, 'invw:' + me);
+          return reply({ ...base, status: 'offline' });
+        }
+        if (inActiveGame(me)) return reply({ ok: false, reason: 'you_busy' });
+        if (inActiveGame(inviter.id)) {
+          notify(inviter.id, 'invite_waiting', { from: socket.data.username }, 'invw:' + me);
+          return reply({ ...base, status: 'busy' });
+        }
+        await sendChallenge(socket, { username: inviter.username, initial: data.initial, increment: data.increment, rated: !!data.rated, variant: data.variant }, { invite: true });
+        reply({ ...base, status: 'sent' });
+      } catch (err) { console.error('Taklif qabul xatoligi:', err); reply({ ok: false, reason: 'error' }); }
+    });
     socket.on('challenge-send', (data) => { sendChallenge(socket, data).catch(err => console.error('Challenge xatoligi:', err)); });
     socket.on('challenge-accept', (data) => { acceptChallenge(socket, data && data.id).catch(err => console.error('Challenge accept xatoligi:', err)); });
     socket.on('challenge-decline', (data) => {
@@ -2964,6 +3033,7 @@ async function start() {
     }
   }, 4000);
 
+  telegram.init({ app, db, io, SITE_URL, isActive, authMiddleware, inviteUrl: async (userId) => `${SITE_URL}/?invite=${await db.getInviteCode(userId)}` });
   league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId, notify });
   swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId, notify, awardAchievement });
   // Bloklar, banlar va adminlar (ADMIN_USERNAMES="ism1,ism2" — Render env)

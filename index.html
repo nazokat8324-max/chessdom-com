@@ -486,6 +486,7 @@
             </button>
             <div id="pwaInstallSlot"></div>
             <button type="button" class="tea-home-btn" onclick="switchView('tea')">🍵 <span data-i18n="teaHomeBtn">Choyxonaga kirish</span></button>
+            <button type="button" class="tea-home-btn inv-home-btn" onclick="window.openInviteDialog()">🔗 <span data-i18n="invHomeBtn">Do'stni taklif qilish</span></button>
             <div class="home-widgets" id="homeWidgets"></div>
           </div>
           <!-- O'rtada: sayt bilan tanishtiruv ("ChessDom haqida" sahifasini ochadi) -->
@@ -781,6 +782,14 @@
                 >
                   ⚔️
                   <span data-i18n="gpChallengeFriend">Do'stni chaqirish</span>
+                </button>
+                <button
+                  type="button"
+                  class="control-btn"
+                  onclick="window.openInviteDialog()"
+                >
+                  🔗
+                  <span data-i18n="invByLink">Havola orqali taklif</span>
                 </button>
                 <button
                   type="button"
@@ -2446,6 +2455,7 @@
     <script src="predictions.js"></script>
     <script src="mentor.js"></script>
     <script src="pwa.js"></script>
+    <script src="invite.js"></script>
     <script src="router.js"></script>
     <script src="rating-chart.js"></script>
 

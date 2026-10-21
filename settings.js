@@ -194,7 +194,8 @@
           ${perm === 'default' ? `<button class="set-mini accent" data-notif="1">${esc(tx('setNotifEnable', 'Yoqish'))}</button>` : `<span class="set-status ${perm}">${esc(permText)}</span>`}
         </div>
       </div>
-      <div class="set-card set-push" id="setPushCard"></div>`;
+      <div class="set-card set-push" id="setPushCard"></div>
+      <div class="set-card set-push" id="setTgCard" style="display:none"></div>`;
   }
 
   function privacyHtml() {
@@ -329,6 +330,8 @@
     // 📲 Push-bildirishnomalar kartasi (pwa.js)
     const pushCard = el.querySelector('#setPushCard');
     if (pushCard && typeof window.renderPushSettings === 'function') window.renderPushSettings(pushCard);
+    const tgCard = el.querySelector('#setTgCard');
+    if (tgCard && typeof window.renderTelegramSettings === 'function') window.renderTelegramSettings(tgCard);
   }
 
   function change(patch) {

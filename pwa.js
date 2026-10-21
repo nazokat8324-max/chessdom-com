@@ -205,4 +205,42 @@
       showToast(d && d.success ? tx('pwaPushTestSent', "Sinov xabari yuborildi — bir necha soniyada keladi") : tx('pwaPushFailed', "Bildirishnomalarni yoqib bo'lmadi"), d && d.success ? 'success' : 'warning');
     }));
   };
+
+  // --- ✈️ Telegram bot kartasi (server: /api/telegram, telegram.js). Bot sozlanmagan bo'lsa karta ko'rinmaydi ---
+  let tgEl = null;
+  window.renderTelegramSettings = async function (el) {
+    tgEl = el;
+    if (!window.authToken) { el.style.display = 'none'; return; }
+    const d = await fetch('/api/telegram', { headers: auth() }).then(r => r.json()).catch(() => null);
+    if (tgEl !== el) return;
+    if (!d || !d.success || !d.enabled) { el.style.display = 'none'; return; }
+    el.style.display = '';
+    const head = `<h3>✈️ Telegram</h3><p class="set-hint">${esc(tx('tgHint', "Chaqiruvlar, xabarlar va boshqa voqealar Telegram'ga keladi — sayt yopiq bo'lsa ham. Qaysi turlar kelishi yuqoridagi sozlamalar bilan bir xil."))}</p>`;
+    el.innerHTML = head + (d.linked
+      ? `<div class="set-row"><span><b>${esc(tx('tgLinked', 'Ulangan'))} ✓</b>${d.tgUsername ? `<small>@${esc(d.tgUsername)}</small>` : ''}</span><span class="pwa-status"><button type="button" class="set-mini" data-tg-test>🔔 ${esc(tx('pwaPushTest', "Sinab ko'rish"))}</button><button type="button" class="set-mini" data-tg-unlink>${esc(tx('tgUnlink', 'Uzish'))}</button></span></div>`
+      : `<div class="set-row"><span><b>@${esc(d.bot || '')}</b><small>${esc(tx('tgLinkSub', "Tugmani bosing, Telegram ochiladi — «Start» ni bossangiz bo'ldi"))}</small></span><button type="button" class="set-mini accent" data-tg-link>✈️ ${esc(tx('tgLink', 'Ulash'))}</button></div>`);
+    el.querySelectorAll('[data-tg-link]').forEach(b => b.addEventListener('click', async () => {
+      // Oyna bosish vaqtida ochiladi (keyin ochilsa brauzer bloklaydi), manzil javobdan keyin beriladi
+      const win = window.open('', '_blank');
+      const r = await fetch('/api/telegram/link', { method: 'POST', headers: { 'Content-Type': 'application/json', ...auth() }, body: JSON.stringify({ lang: (window.i18next && i18next.language) || 'en' }) }).then(x => x.json()).catch(() => null);
+      if (r && r.success) { if (win) win.location.href = r.url; else location.href = r.url; }
+      else { if (win) win.close(); showToast(tServer(r && r.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning'); }
+    }));
+    el.querySelectorAll('[data-tg-unlink]').forEach(b => b.addEventListener('click', async () => {
+      await fetch('/api/telegram/unlink', { method: 'POST', headers: auth() }).catch(() => {});
+      window.renderTelegramSettings(el);
+    }));
+    el.querySelectorAll('[data-tg-test]').forEach(b => b.addEventListener('click', async () => {
+      const r = await fetch('/api/telegram/test', { method: 'POST', headers: auth() }).then(x => x.json()).catch(() => null);
+      showToast(r && r.success ? tx('tgTestSent', "Telegram'ga sinov xabari yuborildi") : (tServer(r && r.message) || tx('errGeneric', 'Xatolik yuz berdi!')), r && r.success ? 'success' : 'warning');
+    }));
+  };
+  document.addEventListener('DOMContentLoaded', () => {
+    if (typeof socket === 'undefined') return;
+    // Bot "Start" bosilgach ulanish — karta darhol yangilanadi
+    socket.on('telegram-linked', (data) => {
+      if (tgEl && document.body.contains(tgEl)) window.renderTelegramSettings(tgEl);
+      if (data && data.linked) showToast(tx('tgLinkedToast', "Telegram ulandi ✈️"), 'success');
+    });
+  });
 })();

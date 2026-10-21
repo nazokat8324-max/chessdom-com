@@ -15,6 +15,9 @@ window.tx = function(key, fallback, opts) {
 // Server xato/xabar matnlari o'zbekcha keladi — tanish matnlar joriy tilga tarjima qilinadi
 const SERVER_MESSAGE_KEYS = {
   "Server xatoligi!": 'srvError',
+  "Taklif havolasi topilmadi": 'invErrNotFound',
+  "Telegram bot sozlanmagan": 'srvTgDisabled',
+  "Telegram ulanmagan": 'srvTgNotLinked',
   "Noto'g'ri so'rov": 'srvBadRequest',
   "Ustoz-shogird so'rovini yuborib bo'lmaydi!": 'srvMentorRequestFail',
   "Izoh bo'sh bo'lmasin!": 'srvNoteEmpty',
@@ -733,7 +736,7 @@ window.handleRegister = async function() {
     const res = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({ username, email, password, inviteCode: window.getPendingInviteCode ? window.getPendingInviteCode() : undefined })
     });
     const data = await res.json();
     if (!data.success) {
@@ -1276,7 +1279,7 @@ window.handleSignupModal = async function() {
     const response = await fetch('/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, email: signupEmail || username.toLowerCase() + '@justchess.local', password })
+      body: JSON.stringify({ username, email: signupEmail || username.toLowerCase() + '@justchess.local', password, inviteCode: window.getPendingInviteCode ? window.getPendingInviteCode() : undefined })
     });
     const data = await response.json();
     if (!data.success) {

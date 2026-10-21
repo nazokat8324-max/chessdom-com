@@ -759,6 +759,20 @@ async function initDatabase() {
   `);
   try { await dbExec('CREATE INDEX IF NOT EXISTS idx_error_log_seen ON error_log (resolved, last_seen)'); } catch (e) {}
 
+  // 🔗 Taklif havolasi: har o'yinchining doimiy kodi (/?invite=<kod>) va kim taklif qilgani (faqat ro'yxatdan o'tishda yoziladi)
+  for (const col of ['invite_code', 'invited_by', 'invited_at']) { try { await dbExec(`ALTER TABLE users ADD COLUMN ${col} TEXT DEFAULT NULL`); } catch (e) {} }
+  for (const sql of ['CREATE UNIQUE INDEX IF NOT EXISTS idx_users_invite_code ON users (invite_code)', 'CREATE INDEX IF NOT EXISTS idx_users_invited_by ON users (invited_by)']) { try { await dbExec(sql); } catch (e) {} }
+  // ✈️ Telegram bot: o'yinchi ↔ Telegram chat (bir chatga bitta akkaunt)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS telegram_links (
+      user_id TEXT PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+      chat_id TEXT NOT NULL UNIQUE,
+      tg_username TEXT,
+      lang TEXT,
+      created_at TEXT NOT NULL
+    )
+  `);
+
   // 📜 Admin harakatlari jurnali: kim, qachon, kimga nima qildi. target_id da FK yo'q — o'yinchi o'chirilsa ham yozuv qoladi (nomi target_name da)
   await dbExec(`
     CREATE TABLE IF NOT EXISTS admin_actions (
@@ -1994,6 +2008,73 @@ async function getClubLeaderboard() {
   return { success: true, leaderboard };
 }
 
+// --- 🔗 Taklif havolasi ---
+const INVITE_ALPHABET = 'abcdefghjkmnpqrstuvwxyz23456789';
+async function getInviteCode(userId) {
+  const row = await dbGet('SELECT invite_code as "code" FROM users WHERE id = ?', [userId]);
+  if (!row) return null;
+  if (row.code) return row.code;
+  for (let i = 0; i < 5; i++) {
+    const bytes = require('crypto').randomBytes(8);
+    const code = [...bytes].map(b => INVITE_ALPHABET[b % INVITE_ALPHABET.length]).join('');
+    try {
+      await dbRun('UPDATE users SET invite_code = ? WHERE id = ? AND invite_code IS NULL', [code, userId]);
+      const again = await dbGet('SELECT invite_code as "code" FROM users WHERE id = ?', [userId]);
+      if (again && again.code) return again.code;
+    } catch (e) { /* kod band — boshqasi */ }
+  }
+  throw new Error('Taklif kodi yaratilmadi');
+}
+async function getUserByInviteCode(code) {
+  if (!code || !/^[a-z0-9]{4,16}$/i.test(String(code))) return null;
+  const row = await dbGet('SELECT id FROM users WHERE invite_code = ?', [String(code).toLowerCase()]);
+  return row ? getUserById(row.id) : null;
+}
+async function setInvitedBy(userId, inviterId) {
+  await dbRun('UPDATE users SET invited_by = ?, invited_at = ? WHERE id = ? AND invited_by IS NULL', [inviterId, new Date().toISOString(), userId]);
+}
+async function inviteStats(userId) {
+  const rows = await dbAll('SELECT username, stats, avatar_version as "avatarVersion", invited_at as "invitedAt" FROM users WHERE invited_by = ? ORDER BY invited_at DESC', [userId]);
+  return {
+    count: rows.length,
+    recent: rows.slice(0, 20).map(r => {
+      const s = parseJson(r.stats) || {};
+      return { username: r.username, avatarVersion: r.avatarVersion || null, invitedAt: r.invitedAt, games: (s.wins || 0) + (s.losses || 0) + (s.draws || 0) };
+    })
+  };
+}
+async function countInvited(userId) {
+  return Number((await dbGet('SELECT COUNT(*) as n FROM users WHERE invited_by = ?', [userId])).n) || 0;
+}
+// Taklif qabul qilinganda — ikkalasi darhol do'st (kutayotgan so'rovlar ham yopiladi)
+async function makeFriends(a, b) {
+  if (a === b || await areFriends(a, b)) return false;
+  const now = new Date().toISOString();
+  await dbRun("UPDATE friend_requests SET status = 'accepted', updated_at = ? WHERE status = 'pending' AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))", [now, a, b, b, a]);
+  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), a, b, now]);
+  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), b, a, now]);
+  return true;
+}
+
+// --- ✈️ Telegram ---
+async function linkTelegram(userId, chatId, tgUsername, lang) {
+  await dbRun('DELETE FROM telegram_links WHERE user_id = ? OR chat_id = ?', [userId, String(chatId)]);
+  await dbRun('INSERT INTO telegram_links (user_id, chat_id, tg_username, lang, created_at) VALUES (?, ?, ?, ?, ?)', [userId, String(chatId), tgUsername || null, lang || null, new Date().toISOString()]);
+}
+async function getTelegramLink(userId) {
+  return dbGet('SELECT user_id as "userId", chat_id as "chatId", tg_username as "tgUsername", lang FROM telegram_links WHERE user_id = ?', [userId]);
+}
+async function getTelegramLinkByChat(chatId) {
+  return dbGet('SELECT t.user_id as "userId", t.chat_id as "chatId", t.lang, u.username FROM telegram_links t JOIN users u ON u.id = t.user_id WHERE t.chat_id = ?', [String(chatId)]);
+}
+async function unlinkTelegram({ userId, chatId }) {
+  if (userId) await dbRun('DELETE FROM telegram_links WHERE user_id = ?', [userId]);
+  if (chatId) await dbRun('DELETE FROM telegram_links WHERE chat_id = ?', [String(chatId)]);
+}
+async function setTelegramLang(chatId, lang) {
+  await dbRun('UPDATE telegram_links SET lang = ? WHERE chat_id = ?', [lang, String(chatId)]);
+}
+
 // --- 📜 Admin harakatlari jurnali ---
 const ADMIN_LOG_LIMIT = 20000;
 async function addAdminAction({ adminId, adminName, action, targetType, targetId, targetName, details }) {
@@ -2153,6 +2234,17 @@ async function restoreDump(dump, { force = false, onTable } = {}) {
 }
 
 module.exports = {
+  getInviteCode,
+  getUserByInviteCode,
+  setInvitedBy,
+  inviteStats,
+  countInvited,
+  makeFriends,
+  linkTelegram,
+  getTelegramLink,
+  getTelegramLinkByChat,
+  unlinkTelegram,
+  setTelegramLang,
   addAdminAction,
   listAdminActions,
   logError,

@@ -722,6 +722,41 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_game_notes ON game_notes (owner_id, game_id)'
   ]) { try { await dbExec(sql); } catch (e) {} }
 
+  // 🗂 O'yinlar tarixi: har o'yin — alohida qator (avval users.history JSON ichida edi va har o'yinda butunlay qayta yozilardi).
+  // id — eski history[].id bilan bir xil (game_notes shu id ga bog'langan). moves alohida ustunda: ro'yxatlar yurishlarsiz o'qiladi.
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS user_games (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      played_at TEXT,
+      seq INTEGER DEFAULT 0,
+      result TEXT,
+      opponent TEXT,
+      time_control TEXT,
+      color TEXT,
+      reason TEXT,
+      variant TEXT,
+      move_count INTEGER DEFAULT 0,
+      moves TEXT,
+      data TEXT NOT NULL
+    )
+  `);
+  // Ko'chirishdan oldingi asl JSON (xavfsizlik uchun; oddiy so'rovlarda o'qilmaydi, keyinchalik o'chirsa bo'ladi)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS user_history_archive (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      history TEXT,
+      archived_at TEXT NOT NULL
+    )
+  `);
+  for (const sql of [
+    'CREATE INDEX IF NOT EXISTS idx_user_games_user ON user_games (user_id, played_at)',
+    'CREATE INDEX IF NOT EXISTS idx_user_games_played ON user_games (played_at)',
+    'CREATE INDEX IF NOT EXISTS idx_user_games_opp ON user_games (user_id, opponent)'
+  ]) { try { await dbExec(sql); } catch (e) {} }
+  await migrateHistoryToTable();
+
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
 
@@ -782,8 +817,83 @@ async function migrateDirectChatRooms() {
   }
 }
 
+// --- 🗂 O'yinlar tarixi (user_games) ---
+// Yozuv shakli eski users.history[] bilan bir xil: {id, date, timestamp, result, opponent, mode, timeControl, color, reason, clock, variant, startFen, league, moves}
+const USER_GAME_COLS = 'id, user_id, played_at, seq, result, opponent, time_control, color, reason, variant, move_count, moves, data';
+function userGameParams(userId, g, seq) {
+  const { moves, ...rest } = g;
+  const list = Array.isArray(moves) ? moves : [];
+  // Vaqti yo'q eski yozuvlar uchun '' (NULL SQLite va Postgres da turlicha tartiblanadi)
+  return [g.id, userId, g.timestamp || '', seq || 0, g.result || null, g.opponent || null, g.timeControl || null, g.color || null, g.reason || null,
+    g.variant || null, list.length, JSON.stringify(list), JSON.stringify(rest)];
+}
+function rowToGame(row, withMoves) {
+  const g = { ...(parseJson(row.data) || {}), id: row.id, moveCount: Number(row.move_count) || 0 };
+  if (withMoves) g.moves = parseJson(row.moves) || [];
+  return g;
+}
+async function addUserGame(userId, g) {
+  await dbRun(`INSERT INTO user_games (${USER_GAME_COLS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, userGameParams(userId, g, 0));
+}
+// Eskidan yangiga tartibda. opts: withMoves, from/to (ISO, played_at oralig'i)
+async function getUserHistory(userId, opts) {
+  const o = opts || {};
+  const where = ['user_id = ?'], params = [userId];
+  if (o.from) { where.push('played_at >= ?'); params.push(o.from); }
+  if (o.to) { where.push('played_at < ?'); params.push(o.to); }
+  const cols = o.withMoves ? USER_GAME_COLS : USER_GAME_COLS.replace(', moves', '');
+  const rows = await dbAll(`SELECT ${cols} FROM user_games WHERE ${where.join(' AND ')} ORDER BY played_at ASC, seq ASC`, params);
+  return rows.map(r => rowToGame(r, o.withMoves));
+}
+async function getUserGameById(userId, gameId) {
+  const row = await dbGet(`SELECT ${USER_GAME_COLS} FROM user_games WHERE user_id = ? AND id = ?`, [userId, gameId]);
+  return row ? rowToGame(row, true) : null;
+}
+// Raqiblar bo'yicha hisob: [{name, games, win, draw, loss}]
+async function opponentSummary(userId, opponent) {
+  const rows = await dbAll(`SELECT opponent, result, COUNT(*) as "n" FROM user_games WHERE user_id = ? AND opponent IS NOT NULL${opponent ? ' AND opponent = ?' : ''} GROUP BY opponent, result`,
+    opponent ? [userId, opponent] : [userId]);
+  const map = new Map();
+  for (const r of rows) {
+    const o = map.get(r.opponent) || { name: r.opponent, games: 0, win: 0, draw: 0, loss: 0 };
+    const n = Number(r.n) || 0;
+    o.games += n;
+    if (r.result in o) o[r.result] += n;
+    map.set(r.opponent, o);
+  }
+  return [...map.values()];
+}
+// Bir martalik ko'chirish: users.history JSON → user_games. Takroriy ishga tushirishga chidamli
+// (id lar bo'yicha o'tkazib yuboriladi), har foydalanuvchi uchun soni tekshirilgandan keyingina history tozalanadi.
+async function migrateHistoryToTable() {
+  const rows = await dbAll("SELECT id, history FROM users WHERE history IS NOT NULL AND history <> '' AND history <> '[]'");
+  if (!rows.length) return;
+  let moved = 0;
+  for (const row of rows) {
+    const list = parseJson(row.history);
+    if (!Array.isArray(list)) { console.error("Tarixni ko'chirib bo'lmadi (JSON emas):", row.id); continue; }
+    const games = list.filter(g => g && typeof g === 'object').map((g, i) => ({ ...g, id: g.id || `legacy-${row.id}-${i}`, __seq: i }));
+    const existing = new Set((await dbAll('SELECT id FROM user_games WHERE user_id = ?', [row.id])).map(r => r.id));
+    const fresh = games.filter(g => !existing.has(g.id));
+    for (let i = 0; i < fresh.length; i += 50) {
+      const chunk = fresh.slice(i, i + 50);
+      const params = [];
+      for (const g of chunk) { const { __seq, ...entry } = g; params.push(...userGameParams(row.id, entry, __seq)); }
+      await dbRun(`INSERT INTO user_games (${USER_GAME_COLS}) VALUES ${chunk.map(() => '(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').join(', ')}`, params);
+    }
+    const ids = new Set((await dbAll('SELECT id FROM user_games WHERE user_id = ?', [row.id])).map(r => r.id));
+    if (!games.every(g => ids.has(g.id))) { console.error("Tarix to'liq ko'chmadi, tozalanmaydi:", row.id); continue; }
+    await dbRun('DELETE FROM user_history_archive WHERE user_id = ?', [row.id]);
+    await dbRun('INSERT INTO user_history_archive (id, user_id, history, archived_at) VALUES (?, ?, ?, ?)', [uuidv4(), row.id, row.history, new Date().toISOString()]);
+    await dbRun("UPDATE users SET history = '[]' WHERE id = ?", [row.id]);
+    moved += fresh.length;
+  }
+  console.log(`🗂 O'yinlar tarixi ko'chirildi: ${rows.length} foydalanuvchi, ${moved} o'yin`);
+}
+
 function mapUserRow(row) {
-  return { ...row, stats: parseJson(row.stats), stats_by_mode: parseJson(row.stats_by_mode), ratings_by_mode: normalizeRatingsByMode(row), history: parseJson(row.history) };
+  const { history, ...rest } = row; // tarix endi user_games jadvalida (getUserHistory)
+  return { ...rest, stats: parseJson(row.stats), stats_by_mode: parseJson(row.stats_by_mode), ratings_by_mode: normalizeRatingsByMode(row) };
 }
 
 async function getUserByUsername(username) {
@@ -802,7 +912,7 @@ async function createUser(user) {
     'INSERT INTO users (id, username, email, password_hash, rating, ratings_by_mode, stats, stats_by_mode, history, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
     [id, user.username, user.email, user.passwordHash, user.rating || 1500, JSON.stringify({ rapid: 1500, blitz: 1500, bullet: 1500 }), JSON.stringify(user.stats || { wins: 0, losses: 0, draws: 0 }), JSON.stringify(user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }), JSON.stringify(user.history || []), new Date().toISOString()]
   );
-  return { id, username: user.username, email: user.email, rating: user.rating || 1500, ratingsByMode: { rapid: 1500, blitz: 1500, bullet: 1500 }, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }, history: user.history || [], created_at: new Date().toISOString() };
+  return { id, username: user.username, email: user.email, rating: user.rating || 1500, ratingsByMode: { rapid: 1500, blitz: 1500, bullet: 1500 }, stats: user.stats || { wins: 0, losses: 0, draws: 0 }, statsByMode: user.statsByMode || { rapid: { wins: 0, losses: 0, draws: 0 }, blitz: { wins: 0, losses: 0, draws: 0 }, bullet: { wins: 0, losses: 0, draws: 0 } }, created_at: new Date().toISOString() };
 }
 
 async function updateUserStats(userId, result, opponent, mode, moves, timeControl, extra) {
@@ -821,12 +931,12 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
   else if (result === 'loss') statsByMode[modeKey].losses++;
   else statsByMode[modeKey].draws++;
 
-  const history = user.history || [];
-  history.push({ id: uuidv4(), date: new Date().toLocaleDateString(), timestamp: new Date().toISOString(), result, opponent: opponent || 'Online', mode: mode || 'Online o\'yin', timeControl: timeControl || 'blitz', moves: moves || [], ...(extra || {}) });
+  const game = { id: uuidv4(), date: new Date().toLocaleDateString(), timestamp: new Date().toISOString(), result, opponent: opponent || 'Online', mode: mode || 'Online o\'yin', timeControl: timeControl || 'blitz', moves: moves || [], ...(extra || {}) };
+  await addUserGame(userId, game);
 
-  await dbRun('UPDATE users SET stats = ?, stats_by_mode = ?, history = ?, last_active = ? WHERE id = ?', [JSON.stringify(stats), JSON.stringify(statsByMode), JSON.stringify(history), new Date().toISOString(), userId]);
+  await dbRun('UPDATE users SET stats = ?, stats_by_mode = ?, last_active = ? WHERE id = ?', [JSON.stringify(stats), JSON.stringify(statsByMode), new Date().toISOString(), userId]);
 
-  return { stats, statsByMode, history };
+  return { stats, statsByMode, gameId: game.id };
 }
 
 // Davlat kodi (masalan 'uz', 'pk') — raqibga bayroq ko'rsatish uchun
@@ -906,7 +1016,7 @@ async function adminStats() {
   return {
     users: await one('SELECT COUNT(*) as "n" FROM users'),
     newUsers24h: await one('SELECT COUNT(*) as "n" FROM users WHERE created_at >= ?', [dayAgo]),
-    games24h: await one('SELECT COUNT(*) as "n" FROM games WHERE date >= ?', [dayAgo]),
+    games24h: Math.round(await one('SELECT COUNT(*) as "n" FROM user_games WHERE played_at >= ?', [dayAgo]) / 2),
     openReports: await one("SELECT COUNT(*) as \"n\" FROM reports WHERE status = 'open'"),
     banned: await one('SELECT COUNT(*) as "n" FROM users WHERE banned_until IS NOT NULL')
   };
@@ -1032,15 +1142,12 @@ async function getLeaderboard() {
 async function getDailyWinners(period) {
   const span = period === 'week' ? 7 : 1;
   const cutoff = Date.now() - span * 24 * 60 * 60 * 1000;
-  const users = await dbAll('SELECT username, history, rating, country, avatar_version FROM users');
+  const users = await dbAll(`SELECT u.username, u.rating, u.country, u.avatar_version, COUNT(*) as "games", SUM(CASE WHEN g.result = 'win' THEN 1 ELSE 0 END) as "wins"
+    FROM user_games g JOIN users u ON u.id = g.user_id WHERE g.played_at >= ? GROUP BY u.id, u.username, u.rating, u.country, u.avatar_version`, [new Date(cutoff).toISOString()]);
   const winners = users.map(u => {
-    const recent = (parseJson(u.history) || []).filter(game => {
-      const t = new Date(game.timestamp || game.date || 0).getTime();
-      return !isNaN(t) && t >= cutoff;
-    });
-    const wins = recent.filter(g => g.result === 'win').length;
+    const games = Number(u.games) || 0, wins = Number(u.wins) || 0;
     return {
-      username: u.username, dailyWins: wins, games: recent.length, winRate: recent.length ? Math.round(wins / recent.length * 100) : 0,
+      username: u.username, dailyWins: wins, games, winRate: games ? Math.round(wins / games * 100) : 0,
       rating: u.rating || 1500, country: u.country || null, avatarVersion: u.avatar_version || null
     };
   }).filter(u => u.dailyWins > 0)
@@ -1060,7 +1167,7 @@ async function getStatsByUsername(username) {
 async function getGameReplay(username, gameId) {
   const user = await getUserByUsername(username);
   if (!user) return null;
-  const g = (Array.isArray(user.history) ? user.history : []).find(x => x.id === gameId);
+  const g = await getUserGameById(user.id, gameId);
   if (!g) return null;
   return {
     id: g.id, player: user.username, opponent: g.opponent || null, result: g.result, color: g.color || null,
@@ -1073,10 +1180,10 @@ async function getGameReplay(username, gameId) {
 async function getPublicProfile(username) {
   const user = await getUserByUsername(username);
   if (!user) return null;
-  const history = Array.isArray(user.history) ? user.history : [];
+  const history = await getUserHistory(user.id);
   const recentGames = history.slice(-10).reverse().map(g => ({
     id: g.id || null,
-    hasMoves: Array.isArray(g.moves) && g.moves.length > 0,
+    hasMoves: g.moveCount > 0,
     result: g.result,
     opponent: g.opponent || null,
     timeControl: g.timeControl || null,
@@ -1162,8 +1269,9 @@ async function deleteNewsPost(id) {
 }
 
 // --- O'yinlar tarixi (filtr va sahifalash) ---
-function historyEntries(user) {
-  return (Array.isArray(user.history) ? user.history : []).slice().reverse();
+// Yangidan eskiga; withMoves — PGN uchun
+async function historyEntries(user, withMoves) {
+  return (await getUserHistory(user.id, { withMoves })).reverse();
 }
 function filterHistory(list, f) {
   const q = String(f.q || '').trim().toLowerCase();
@@ -1178,7 +1286,7 @@ function filterHistory(list, f) {
 
 // --- Kengaytirilgan statistika ---
 async function getExtendedStats(user) {
-  const history = Array.isArray(user.history) ? user.history : [];
+  const history = await getUserHistory(user.id);
   let longest = 0, run = 0;
   for (const g of history) { if (g.result === 'win') { run++; longest = Math.max(longest, run); } else run = 0; }
   let current = 0;
@@ -1203,7 +1311,7 @@ async function getExtendedStats(user) {
     const peak = Number(r && r.m) || 0;
     best[mode] = Math.max(peak, (user.ratings_by_mode || {})[mode] || 0);
   }
-  const lengths = history.map(g => (Array.isArray(g.moves) ? g.moves.length : 0)).filter(Boolean);
+  const lengths = history.map(g => g.moveCount || 0).filter(Boolean);
   return {
     games: history.length,
     longestStreak: longest,
@@ -1627,7 +1735,7 @@ async function getCountryClubMembers(name) {
 async function getUserGames(userId) {
   const user = await getUserById(userId);
   if (!user) return null;
-  return user.history || [];
+  return getUserHistory(userId, { withMoves: true });
 }
 
 async function saveGame(userId, gameData) {
@@ -2093,6 +2201,9 @@ module.exports = {
   addNewsPost,
   deleteNewsPost,
   historyEntries,
+  getUserHistory,
+  getUserGameById,
+  opponentSummary,
   filterHistory,
   getExtendedStats,
   addFairplayGame,

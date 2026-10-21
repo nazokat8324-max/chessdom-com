@@ -366,7 +366,6 @@ async function endGame(roomId, room, winnerColor, reason) {
         const oppUser = before[opp.color];
         const result = scoreFor(p.color, winnerColor);
         const ratingMode = ratingModeOf(room);
-        await db.saveGame(p.userId, { result, opponent: opp.username, mode: "Online o'yin", timeControl: ratingMode, moves });
         const statsData = await db.updateUserStats(p.userId, result, opp.username, "Online o'yin", moves, ratingMode,
           { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}), ...(room.leagueGameId ? { league: true } : {}) });
         let ratingData = null;
@@ -852,33 +851,22 @@ async function mentorAfterGame(userId, result, opponent) {
 }
 
 // --- ⚔️ Raqib-do'st: eng ko'p va teng o'ynaladigan raqib (kamida 3 o'yin) ---
-function rivalsOf(user) {
-  const map = new Map();
-  for (const g of (Array.isArray(user.history) ? user.history : [])) {
-    if (!g.opponent) continue;
-    const r = map.get(g.opponent) || { name: g.opponent, games: 0, win: 0, draw: 0, loss: 0 };
-    r.games++; r[g.result] = (r[g.result] || 0) + 1;
-    map.set(g.opponent, r);
-  }
-  return [...map.values()].filter(r => r.games >= 3)
+async function rivalsOf(userId) {
+  return (await db.opponentSummary(userId)).filter(r => r.games >= 3)
     .map(r => ({ ...r, score: r.games - Math.abs(r.win - r.loss) * 0.6 }))
     .sort((a, b) => b.score - a.score || b.games - a.games).slice(0, 3)
     .map(({ score, ...r }) => r);
 }
-function headToHead(user, opponentName) {
-  const out = { games: 0, win: 0, draw: 0, loss: 0 };
-  for (const g of (Array.isArray(user.history) ? user.history : [])) {
-    if (g.opponent !== opponentName) continue;
-    out.games++; out[g.result] = (out[g.result] || 0) + 1;
-  }
-  return out;
+async function headToHead(userId, opponentName) {
+  const row = (await db.opponentSummary(userId, opponentName))[0];
+  return row ? { games: row.games, win: row.win, draw: row.draw, loss: row.loss } : { games: 0, win: 0, draw: 0, loss: 0 };
 }
 // Raqib onlayn bo'ldi — ikkalasiga ham (6 soatda bir martadan ko'p emas)
 const rivalPings = new Map();
 async function notifyRivalOnline(userId) {
   try {
     const me = await db.getUserById(userId);
-    const top = me && rivalsOf(me)[0];
+    const top = me && (await rivalsOf(me.id))[0];
     if (!top) return;
     const rival = await db.getUserByUsername(top.name);
     if (!rival || !isOnline(rival.id) || blockedPair(userId, rival.id)) return;
@@ -903,7 +891,7 @@ async function checkAchievements(userId, opts) {
   try {
     const u = await db.getUserById(userId);
     if (!u) return [];
-    const history = Array.isArray(u.history) ? u.history : [];
+    const history = await db.getUserHistory(userId);
     const s = u.stats || {};
     let streak = 0, run = 0;
     for (const g of history) { if (g.result === 'win') { run++; streak = Math.max(streak, run); } else run = 0; }
@@ -2080,7 +2068,7 @@ async function start() {
         ...(await db.followCounts(u.id)),
         isFollowing: viewer && viewer !== u.id ? await db.isFollowing(viewer, u.id) : false,
         cheater: u.fairplay_flag === 'cheater',
-        rivals: rivalsOf(u),
+        rivals: await rivalsOf(u.id),
         sportsmanship: await db.sportSummary(u.id),
         predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)
@@ -2274,8 +2262,8 @@ async function start() {
     try {
       const a = await db.getUserByUsername(String(req.params.a));
       if (!a) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      const rival = rivalsOf(a)[0];
-      res.json({ success: true, ...headToHead(a, String(req.params.b)), isRival: !!(rival && rival.name === String(req.params.b)) });
+      const rival = (await rivalsOf(a.id))[0];
+      res.json({ success: true, ...(await headToHead(a.id, String(req.params.b))), isRival: !!(rival && rival.name === String(req.params.b)) });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -2285,9 +2273,9 @@ async function start() {
       const u = await db.getUserByUsername(String(req.params.username));
       if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
       const season = /^\d{4}-\d{2}$/.test(String(req.query.season || '')) ? String(req.query.season) : warSeasonKey();
-      const history = Array.isArray(u.history) ? u.history : [];
+      const history = await db.getUserHistory(u.id);
       const inSeason = (ts) => { const t = new Date(ts || 0).getTime(); return !isNaN(t) && warSeasonKey(t) === season; };
-      const games = history.filter(g => inSeason(g.timestamp || g.date));
+      const games = (await db.getUserHistory(u.id, { withMoves: true, from: monthStartIso(season), to: warSeasonEnd(season) })).filter(g => inSeason(g.timestamp));
       const seasons = [...new Set(history.map(g => { const t = new Date(g.timestamp || g.date || 0).getTime(); return isNaN(t) || !t ? null : warSeasonKey(t); }).filter(Boolean))].sort().reverse().slice(0, 12);
       const sum = { win: 0, draw: 0, loss: 0 };
       let streak = 0, run = 0;
@@ -2362,7 +2350,7 @@ async function start() {
     try {
       const u = await db.getUserByUsername(String(req.params.username));
       if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      const all = db.historyEntries(u);
+      const all = await db.historyEntries(u);
       const list = db.filterHistory(all, historyFilter(req.query));
       const per = 20;
       const pages = Math.max(1, Math.ceil(list.length / per));
@@ -2373,7 +2361,7 @@ async function start() {
         success: true, total: list.length, page, pages, summary,
         games: list.slice((page - 1) * per, page * per).map(g => ({ id: g.id || null, result: g.result, opponent: g.opponent || null, timeControl: g.timeControl || null,
           variant: g.variant || 'standard', color: g.color || null, reason: g.reason || null, clock: g.clock || null, date: g.timestamp || g.date || null,
-          moves: Array.isArray(g.moves) ? Math.ceil(g.moves.length / 2) : 0, hasMoves: Array.isArray(g.moves) && g.moves.length > 0 }))
+          moves: Math.ceil((g.moveCount || 0) / 2), hasMoves: (g.moveCount || 0) > 0 }))
       });
     } catch (err) { console.error('Tarix xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -2381,7 +2369,7 @@ async function start() {
     try {
       const u = await db.getUserByUsername(String(req.params.username));
       if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
-      const list = db.filterHistory(db.historyEntries(u), historyFilter(req.query)).filter(g => Array.isArray(g.moves) && g.moves.length).slice(0, 1000);
+      const list = db.filterHistory(await db.historyEntries(u, true), historyFilter(req.query)).filter(g => Array.isArray(g.moves) && g.moves.length).slice(0, 1000);
       const pgn = list.map(g => {
         const asWhite = g.color !== 'b';
         const white = asWhite ? u.username : (g.opponent || '?'), black = asWhite ? (g.opponent || '?') : u.username;

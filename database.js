@@ -756,6 +756,22 @@ async function initDatabase() {
   `);
   try { await dbExec('CREATE INDEX IF NOT EXISTS idx_error_log_seen ON error_log (resolved, last_seen)'); } catch (e) {}
 
+  // 📜 Admin harakatlari jurnali: kim, qachon, kimga nima qildi. target_id da FK yo'q — o'yinchi o'chirilsa ham yozuv qoladi (nomi target_name da)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS admin_actions (
+      id TEXT PRIMARY KEY,
+      admin_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      admin_name TEXT NOT NULL,
+      action TEXT NOT NULL,
+      target_type TEXT,
+      target_id TEXT,
+      target_name TEXT,
+      details TEXT,
+      created_at TEXT NOT NULL
+    )
+  `);
+  try { await dbExec('CREATE INDEX IF NOT EXISTS idx_admin_actions_time ON admin_actions (created_at)'); } catch (e) {}
+
   // Eski, ishlatilmaydigan jadvallar (2026-10-21): o'yinlar endi user_games da, sessiyalar JWT bilan, sayt yangiliklari va
   // foydalanuvchi yaratgan klublar olib tashlangan. clubs jadvali qoladi — tournaments unga FK bilan bog'langan.
   for (const t of ['games', 'sessions', 'news_posts', 'club_members']) {
@@ -1038,6 +1054,7 @@ async function listReports(status) {
 
 async function resolveReport(id, adminId, resolution) {
   await dbRun("UPDATE reports SET status = 'resolved', resolved_at = ?, resolved_by = ?, resolution = ? WHERE id = ?", [new Date().toISOString(), adminId, resolution || '', id]);
+  return dbGet('SELECT r.target_id as "targetId", u.username as "target", r.reason FROM reports r LEFT JOIN users u ON u.id = r.target_id WHERE r.id = ?', [id]);
 }
 
 // --- Admin ---
@@ -1671,7 +1688,7 @@ async function addClubNews(club, authorId, title, body, pinned) {
 }
 
 async function getClubNews(id) {
-  return dbGet('SELECT id, club_country as "club", pinned FROM club_news WHERE id = ?', [id]);
+  return dbGet('SELECT id, club_country as "club", title, pinned FROM club_news WHERE id = ?', [id]);
 }
 
 async function deleteClubNews(id) {
@@ -1688,7 +1705,7 @@ async function getClubMemberIds(club) {
 }
 
 async function getChatMessageById(id) {
-  return dbGet('SELECT id, room_id as "roomId", sender_id as "senderId" FROM chat_messages WHERE id = ?', [id]);
+  return dbGet('SELECT m.id, m.room_id as "roomId", m.sender_id as "senderId", m.message, u.username as "sender" FROM chat_messages m LEFT JOIN users u ON u.id = m.sender_id WHERE m.id = ?', [id]);
 }
 
 async function deleteChatMessage(id) {
@@ -1974,6 +1991,28 @@ async function getClubLeaderboard() {
   return { success: true, leaderboard };
 }
 
+// --- 📜 Admin harakatlari jurnali ---
+const ADMIN_LOG_LIMIT = 20000;
+async function addAdminAction({ adminId, adminName, action, targetType, targetId, targetName, details }) {
+  await dbRun('INSERT INTO admin_actions (id, admin_id, admin_name, action, target_type, target_id, target_name, details, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    [uuidv4(), adminId || null, adminName || '?', action, targetType || null, targetId || null, targetName || null, details ? JSON.stringify(details).slice(0, 2000) : null, new Date().toISOString()]);
+  if (Math.random() < 0.02) {
+    const total = await dbGet('SELECT COUNT(*) as n FROM admin_actions');
+    if (Number(total.n) > ADMIN_LOG_LIMIT) await dbRun('DELETE FROM admin_actions WHERE id IN (SELECT id FROM admin_actions ORDER BY created_at ASC LIMIT ?)', [Number(total.n) - ADMIN_LOG_LIMIT]);
+  }
+}
+// Filtr: action (aniq nom yoki "ban" kabi guruh boshi), q — admin yoki nishon nomi; 50 tadan sahifalab
+async function listAdminActions({ action, q, page } = {}) {
+  const where = [], params = [];
+  if (action) { where.push('action LIKE ?'); params.push(String(action).replace(/[%_]/g, '') + '%'); }
+  if (q) { const like = '%' + String(q).replace(/[%_]/g, '').toLowerCase() + '%'; where.push('(LOWER(admin_name) LIKE ? OR LOWER(target_name) LIKE ?)'); params.push(like, like); }
+  const per = 50, p = Math.max(0, Number(page) || 0);
+  const w = where.length ? 'WHERE ' + where.join(' AND ') : '';
+  const rows = await dbAll(`SELECT id, admin_name as "admin", action, target_type as "targetType", target_id as "targetId", target_name as "target", details, created_at as "createdAt"
+    FROM admin_actions ${w} ORDER BY created_at DESC LIMIT ${per + 1} OFFSET ${p * per}`, params);
+  return { actions: rows.slice(0, per).map(r => ({ ...r, details: parseJson(r.details) })), more: rows.length > per, page: p };
+}
+
 // --- 🐞 Xatolar jurnali ---
 const ERROR_LOG_LIMIT = 500;
 // Natija: isNew — bu xato birinchi marta (yoki hal qilingandan keyin qayta) chiqdi
@@ -2111,6 +2150,8 @@ async function restoreDump(dump, { force = false, onTable } = {}) {
 }
 
 module.exports = {
+  addAdminAction,
+  listAdminActions,
   logError,
   listErrors,
   errorCounts,

@@ -499,7 +499,7 @@ async function cancelTournament(tournamentId) {
     if (entry.room.swissMatch && entry.room.swissMatch.tournamentId === t.id) { entry.room.swissMatch = null; matchRooms.delete(matchId); }
   }
   emitUpdate();
-  return { success: true };
+  return { success: true, name: t.name };
 }
 
 // Server qayta ishga tushganda tiklangan turnir o'yinini qayta bog'lash

@@ -1671,6 +1671,17 @@ async function start() {
   });
 
   // --- Admin paneli ---
+  // 📜 Jurnal: har admin amali (kim, qachon, kimga) admin_actions ga yoziladi; xato bo'lsa amalning o'zi to'xtamaydi
+  function auditLog(req, action, target, details) {
+    const t = target || {};
+    db.addAdminAction({ adminId: req.user.userId, adminName: req.user.username, action, targetType: t.type, targetId: t.id, targetName: t.name, details })
+      .catch(err => console.error('Admin jurnaliga yozib bo\'lmadi:', err.message));
+  }
+  app.get('/api/admin/audit', adminMiddleware, async (req, res) => {
+    try { res.json({ success: true, ...(await db.listAdminActions({ action: req.query.action ? String(req.query.action).slice(0, 40) : '', q: req.query.q ? String(req.query.q).slice(0, 40) : '', page: req.query.page })) }); }
+    catch (err) { console.error('Admin jurnali xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.get('/api/admin/stats', adminMiddleware, async (req, res) => {
     try {
       let activeGames = 0;
@@ -1688,14 +1699,16 @@ async function start() {
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   app.post('/api/admin/errors/clear-resolved', adminMiddleware, async (req, res) => {
-    try { await db.deleteResolvedErrors(); res.json({ success: true }); }
+    try { await db.deleteResolvedErrors(); auditLog(req, 'errors_clear'); res.json({ success: true }); }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   // 💾 Zaxira nusxa: admin — siqilgan JSON yuklab olish
   const backupName = (ext) => `chessdom-${new Date().toISOString().slice(0, 16).replace(/[-T:]/g, '')}.${ext}`;
   app.get('/api/admin/backup', adminMiddleware, async (req, res) => {
     try {
-      const data = backup.pack(await db.dumpDatabase());
+      const dump = await db.dumpDatabase();
+      const data = backup.pack(dump);
+      auditLog(req, 'backup_download', null, { rows: dump.rows, bytes: data.length });
       res.set({ 'Content-Type': 'application/gzip', 'Content-Disposition': `attachment; filename="${backupName('json.gz')}"`, 'Cache-Control': 'no-store' });
       res.send(data);
     } catch (err) { console.error('Zaxira xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -1706,7 +1719,12 @@ async function start() {
     catch (err) { console.error('Admin reports xatoligi:', err.message); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   app.post('/api/admin/reports/:id/resolve', adminMiddleware, async (req, res) => {
-    try { await db.resolveReport(req.params.id, req.user.userId, String((req.body && req.body.resolution) || '').slice(0, 200)); res.json({ success: true }); }
+    try {
+      const resolution = String((req.body && req.body.resolution) || '').slice(0, 200);
+      const r = await db.resolveReport(req.params.id, req.user.userId, resolution);
+      auditLog(req, 'report_resolve', r ? { type: 'user', id: r.targetId, name: r.target } : { type: 'report', id: req.params.id }, { reason: r && r.reason, resolution });
+      res.json({ success: true });
+    }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   app.get('/api/admin/users', adminMiddleware, async (req, res) => {
@@ -1725,6 +1743,7 @@ async function start() {
       const reason = String((req.body && req.body.reason) || '').slice(0, 200);
       await db.setBan(target.id, until, reason);
       bans.set(target.id, { until, reason });
+      auditLog(req, 'ban', { type: 'user', id: target.id, name: target.username }, { days: days > 0 ? days : 'forever', reason });
       // Ochiq sahifalari darhol chiqariladi, davom etayotgan o'yini yutqazilgan hisoblanadi
       io.to(`user_${target.id}`).emit('auth-error', { banned: true, message: banMessage({ until, reason }) });
       for (const [roomId, room] of rooms.entries()) {
@@ -1735,7 +1754,13 @@ async function start() {
     } catch (err) { console.error('Ban xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   app.post('/api/admin/users/:id/unban', adminMiddleware, async (req, res) => {
-    try { await db.setBan(req.params.id, null, null); bans.delete(req.params.id); res.json({ success: true }); }
+    try {
+      const target = await db.getUserById(req.params.id);
+      await db.setBan(req.params.id, null, null);
+      bans.delete(req.params.id);
+      auditLog(req, 'unban', { type: 'user', id: req.params.id, name: target && target.username });
+      res.json({ success: true });
+    }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   app.get('/api/admin/tournaments', adminMiddleware, async (req, res) => {
@@ -1743,7 +1768,11 @@ async function start() {
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   app.post('/api/admin/tournaments/:id/cancel', adminMiddleware, async (req, res) => {
-    try { res.json(await swiss.cancelTournament(req.params.id)); }
+    try {
+      const result = await swiss.cancelTournament(req.params.id);
+      if (result && result.success) auditLog(req, 'tournament_cancel', { type: 'tournament', id: req.params.id, name: result.name || null });
+      res.json(result);
+    }
     catch (err) { console.error('Turnir bekor qilish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -2110,6 +2139,7 @@ async function start() {
         await db.setClubRole(club, target.id, role);
       }
       if (target.id !== req.user.userId) notify(target.id, 'club_role', { club, code: target.club_code || null, role });
+      if (ctx.isAdmin && !ctx.isCaptain) auditLog(req, 'club_role', { type: 'user', id: target.id, name: target.username }, { club, role });
       const staff = await db.getClubStaff(club);
       res.json({ success: true, ...publicStaff(staff) });
     } catch (err) { console.error('Klub roli xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -2140,6 +2170,7 @@ async function start() {
       if (!ctx.canModerate) return res.status(403).json({ success: false, message: 'Faqat kapitan va moderatorlar yangilik yoza oladi!' });
       if (action === 'delete') await db.deleteClubNews(news.id);
       else await db.setClubNewsPinned(news.id, !Number(news.pinned));
+      if (ctx.isAdmin && !ctx.isCaptain && !ctx.isModerator) auditLog(req, action === 'delete' ? 'club_news_delete' : 'club_news_pin', { type: 'club', name: news.club }, { title: news.title });
       res.json({ success: true, news: await db.listClubNews(news.club) });
     } catch (err) { console.error('Klub yangiligi xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   };
@@ -2154,6 +2185,7 @@ async function start() {
       const ctx = await clubContext(msg.roomId.slice(5), req.user.userId);
       if (!ctx.canModerate) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
       await db.deleteChatMessage(msg.id);
+      if (ctx.isAdmin && !ctx.isCaptain && !ctx.isModerator) auditLog(req, 'chat_delete', { type: 'user', id: msg.senderId, name: msg.sender }, { club: msg.roomId.slice(5), message: String(msg.message || '').slice(0, 200) });
       io.to(msg.roomId).emit('chat-message-deleted', { roomId: msg.roomId, messageId: msg.id });
       res.json({ success: true });
     } catch (err) { console.error('Chat xabarini o\'chirish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -2506,7 +2538,11 @@ async function start() {
       const target = await db.getUserById(req.params.id);
       if (!target) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
       const action = req.body && req.body.action;
-      if (action === 'clear') { await db.setFairplayFlag(target.id, 'cleared'); return res.json({ success: true }); }
+      if (action === 'clear') {
+        await db.setFairplayFlag(target.id, 'cleared');
+        auditLog(req, 'fairplay_clear', { type: 'user', id: target.id, name: target.username });
+        return res.json({ success: true });
+      }
       if (action !== 'cheater') return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
       await db.setFairplayFlag(target.id, 'cheater');
       const refunds = await db.refundAgainst(target.id);
@@ -2514,7 +2550,9 @@ async function start() {
       for (const r of refunds) { const x = byUser.get(r.userId) || 0; byUser.set(r.userId, x + r.amount); }
       for (const [uid, amount] of byUser) notify(uid, 'rating_refund', { name: target.username, amount });
       invalidateCache('leaderboard');
-      res.json({ success: true, refunded: byUser.size, points: refunds.reduce((s, r) => s + r.amount, 0) });
+      const points = refunds.reduce((s, r) => s + r.amount, 0);
+      auditLog(req, 'fairplay_cheater', { type: 'user', id: target.id, name: target.username }, { refunded: byUser.size, points });
+      res.json({ success: true, refunded: byUser.size, points });
     } catch (err) { console.error('Fair-play xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -2532,6 +2570,7 @@ async function start() {
       await db.setMute(target.id, until);
       if (until) mutes.set(target.id, until); else mutes.delete(target.id);
       if (until) notify(target.id, 'muted', { until });
+      auditLog(req, until ? 'mute' : 'unmute', { type: 'user', id: target.id, name: target.username }, until ? { hours } : null);
       res.json({ success: true, until });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -2540,6 +2579,7 @@ async function start() {
       const word = String((req.body && req.body.word) || '').trim().toLowerCase().slice(0, 40);
       if (!word) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
       if (req.body.remove) await db.removeChatFilterWord(word); else await db.addChatFilterWord(word);
+      auditLog(req, req.body.remove ? 'filter_remove' : 'filter_add', { type: 'word', name: word });
       setChatFilter(await db.listChatFilter());
       res.json({ success: true, words: chatFilterWords });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }

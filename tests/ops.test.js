@@ -132,3 +132,29 @@ test('Zaxira: token bilan shifrlangan nusxa, admin yuklab olishi, tiklash vosita
   assert.equal(r4.code, 1);
   assert.match(r4.out, /BACKUP_TOKEN/);
 });
+
+test("Admin jurnali: amallar yoziladi, filtr va qidiruv, oddiy o'yinchiga yopiq", async () => {
+  const victim = await srv.register('Vic');
+  assert.equal((await srv.api(user, '/api/admin/audit')).status, 403);
+  // Vaqt tamg'alari bir xil bo'lib qolmasin (tartib tekshiriladi)
+  await srv.api(admin, `/api/admin/users/${victim.id}/ban`, 'POST', { days: 7, reason: 'spam' }); await sleep(15);
+  await srv.api(admin, `/api/admin/users/${victim.id}/unban`, 'POST', {}); await sleep(15);
+  await srv.api(admin, `/api/admin/users/${victim.id}/mute`, 'POST', { hours: 24 }); await sleep(15);
+  await srv.api(admin, '/api/admin/chat-filter', 'POST', { word: 'yomonso' }); await sleep(15);
+  await srv.api(admin, '/api/admin/chat-filter', 'POST', { word: 'yomonso', remove: true });
+  await sleep(300);
+  const all = await srv.api(admin, '/api/admin/audit?q=' + victim.name);
+  assert.deepEqual(all.actions.map((a) => a.action), ['mute', 'unban', 'ban'], 'yangidan eskiga');
+  const ban = all.actions[2];
+  assert.equal(ban.admin, admin.name);
+  assert.equal(ban.target, victim.name);
+  assert.equal(ban.targetType, 'user');
+  assert.deepEqual(ban.details, { days: 7, reason: 'spam' });
+  assert.deepEqual((await srv.api(admin, '/api/admin/audit?action=filter')).actions.map((a) => a.action), ['filter_remove', 'filter_add']);
+  assert.equal((await srv.api(admin, '/api/admin/audit?action=ban&q=' + victim.name)).actions.length, 1, "'ban' — unban ni qamramaydi");
+  // Zaxirani yuklab olish ham yoziladi (oldingi testda)
+  assert.ok((await srv.api(admin, '/api/admin/audit?action=backup')).actions.some((a) => a.details.rows > 0));
+  // O'yinchi o'chirilsa ham yozuv qoladi
+  await srv.api(victim, '/api/users/me/delete', 'POST', { password: victim.password, confirm: victim.name });
+  assert.equal((await srv.api(admin, '/api/admin/audit?q=' + victim.name)).actions.length, 3);
+});

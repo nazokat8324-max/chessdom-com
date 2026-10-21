@@ -1,7 +1,7 @@
-// Admin paneli (faqat users.role = 'admin'): statistika (+ 💾 zaxira nusxa), shikoyatlar, o'yinchilarni bloklash, turnirlar, fair-play, chat, 🐞 xatolar.
+// Admin paneli (faqat users.role = 'admin'): statistika (+ 💾 zaxira nusxa), shikoyatlar, o'yinchilarni bloklash, turnirlar, fair-play, chat, 🐞 xatolar, 📜 jurnal (admin amallari).
 // Server: /api/admin/* (adminMiddleware). Admin Render env ADMIN_USERNAMES orqali beriladi.
 (function () {
-  const st = { tab: 'stats', reportStatus: 'open', query: '', stats: null, reports: [], users: [], tournaments: [], fairplay: [], chat: { messages: [], words: [], club: '', user: '' }, errors: { list: [], counts: { server: 0, client: 0 }, status: 'open', source: '' } };
+  const st = { tab: 'stats', reportStatus: 'open', query: '', stats: null, reports: [], users: [], tournaments: [], fairplay: [], chat: { messages: [], words: [], club: '', user: '' }, errors: { list: [], counts: { server: 0, client: 0 }, status: 'open', source: '' }, audit: { list: [], action: '', q: '', page: 0, more: false } };
   const esc = (v) => {
     const div = document.createElement('div');
     div.textContent = (v === null || v === undefined) ? '' : String(v);
@@ -29,6 +29,11 @@
       const e = st.errors;
       const d = await api('/api/admin/errors?status=' + e.status + '&source=' + e.source);
       if (d && d.success) { e.list = d.errors; e.counts = d.counts; }
+    }
+    if (st.tab === 'audit') {
+      const a = st.audit;
+      const d = await api('/api/admin/audit?action=' + encodeURIComponent(a.action) + '&q=' + encodeURIComponent(a.q) + '&page=' + a.page);
+      if (d && d.success) { a.list = d.actions; a.more = d.more; }
     }
     if (st.tab === 'chat') {
       const d = await api('/api/admin/chat?club=' + encodeURIComponent(st.chat.club) + '&user=' + encodeURIComponent(st.chat.user));
@@ -77,6 +82,73 @@
           : `<button class="set-mini accent" data-err-resolve="${esc(x.id)}">✓ ${esc(tx('admErrResolve', 'Hal qilindi'))}</button>`}</div>
       </div>`;
     }).join('')}</div>`;
+  }
+
+  // 📜 Jurnal: adminlarning barcha amallari (o'chirib bo'lmaydi)
+  const AUDIT = {
+    ban: ['🚫', () => tx('audBan', 'Blokladi')],
+    unban: ['✓', () => tx('audUnban', 'Blokdan chiqardi')],
+    mute: ['🔇', () => tx('audMute', 'Jim qildi')],
+    unmute: ['🔈', () => tx('audUnmute', 'Chatga ruxsat berdi')],
+    report_resolve: ['⚠️', () => tx('audReportResolve', "Shikoyatni ko'rib chiqdi")],
+    fairplay_cheater: ['⛔', () => tx('audFairplayCheater', 'Qoidabuzar deb belgiladi')],
+    fairplay_clear: ['🕵️', () => tx('audFairplayClear', 'Toza deb belgiladi')],
+    filter_add: ['🚫', () => tx('audFilterAdd', "Taqiqlangan so'z qo'shdi")],
+    filter_remove: ['↩️', () => tx('audFilterRemove', "Taqiqlangan so'zni olib tashladi")],
+    club_role: ['👑', () => tx('audClubRole', "Klubdagi rolni o'zgartirdi")],
+    club_news_delete: ['📰', () => tx('audClubNewsDelete', "Klub yangiligini o'chirdi")],
+    club_news_pin: ['📌', () => tx('audClubNewsPin', 'Klub yangiligini mahkamladi')],
+    chat_delete: ['💬', () => tx('audChatDelete', "Klub chatidagi xabarni o'chirdi")],
+    tournament_cancel: ['🏁', () => tx('audTournamentCancel', 'Turnirni bekor qildi')],
+    backup_download: ['💾', () => tx('audBackup', 'Zaxira nusxani yuklab oldi')],
+    errors_clear: ['🐞', () => tx('audErrorsClear', "Hal qilingan xatolarni o'chirdi")]
+  };
+  function auditDetails(a) {
+    const d = a.details || {};
+    const role = { captain: tx('csCaptain', 'Kapitan'), moderator: tx('csModerator', 'Moderator'), member: tx('audRoleMember', "Oddiy a'zo") };
+    switch (a.action) {
+      case 'ban': return (d.days === 'forever' ? tx('admForever', 'Doimiy') : tx('audDays', '{{n}} kun', { n: d.days })) + (d.reason ? ' · ' + d.reason : '');
+      case 'mute': return tx('audHours', '{{n}} soat', { n: d.hours });
+      case 'report_resolve': return [reasons[d.reason] || d.reason, d.resolution].filter(Boolean).join(' · ');
+      case 'fairplay_cheater': return tx('audRefund', "{{n}} o'yinchiga {{p}} reyting qaytarildi", { n: d.refunded, p: d.points });
+      case 'club_role': return '🏳️ ' + d.club + ' · ' + (role[d.role] || d.role);
+      case 'club_news_delete': case 'club_news_pin': return d.title || '';
+      case 'chat_delete': return '🏳️ ' + d.club + ' · «' + d.message + '»';
+      case 'backup_download': return tx('audRows', '{{n}} qator', { n: d.rows });
+      default: return '';
+    }
+  }
+  function auditHtml() {
+    const a = st.audit;
+    const filters = [['', tx('audAll', 'Barcha amallar')], ['ban', AUDIT.ban[1]()], ['unban', AUDIT.unban[1]()], ['mute', AUDIT.mute[1]()], ['unmute', AUDIT.unmute[1]()],
+      ['report', AUDIT.report_resolve[1]()], ['fairplay', tx('admTabFairplay', 'Fair-play')], ['filter', tx('admBadWords', "Taqiqlangan so'zlar")], ['club', tx('audClubs', 'Klublar')],
+      ['chat_delete', AUDIT.chat_delete[1]()], ['tournament', AUDIT.tournament_cancel[1]()], ['backup', AUDIT.backup_download[1]()], ['errors', AUDIT.errors_clear[1]()]];
+    const bar = `<p class="adm-note">${esc(tx('audIntro', "Adminlarning barcha amallari shu yerda yoziladi: kim, qachon, kimga nima qildi. Yozuvlarni o'chirib bo'lmaydi."))}</p>
+      <form class="adm-search" id="admAuditForm">
+        <select class="set-input" id="admAuditAction">${filters.map(([id, l]) => `<option value="${id}"${a.action === id ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>
+        <input class="set-input" id="admAuditQ" placeholder="${esc(tx('audSearch', 'Admin yoki o\'yinchi nomi'))}" value="${esc(a.q)}">
+        <button class="set-mini accent" type="submit">🔍</button>
+      </form>`;
+    if (!a.list.length) return bar + `<div class="adm-empty">${esc(tx('audNone', "Yozuvlar yo'q"))}</div>`;
+    const rows = a.list.map(x => {
+      const info = AUDIT[x.action] || ['•', () => x.action];
+      const det = auditDetails(x);
+      const target = x.target ? (x.targetType === 'user' ? `<span class="player-link" data-username="${esc(x.target)}">${esc(x.target)}</span>` : `<b>${esc(x.target)}</b>`) : '';
+      return `<div class="adm-item adm-audit">
+        <span class="adm-audit-ico">${info[0]}</span>
+        <div class="adm-item-main">
+          <b><span class="player-link" data-username="${esc(x.admin)}">${esc(x.admin)}</span> · ${esc(info[1]())}${target ? ' — ' + target : ''}</b>
+          ${det ? `<small>${esc(det)}</small>` : ''}
+        </div>
+        <small class="adm-audit-time">${esc(fmt(x.createdAt))}</small>
+      </div>`;
+    }).join('');
+    const pager = (a.page > 0 || a.more) ? `<div class="adm-pager">
+        <button class="set-mini" data-apage="-1"${a.page > 0 ? '' : ' disabled'}>${esc(tx('audPrev', '← Oldingi'))}</button>
+        <span>${a.page + 1}</span>
+        <button class="set-mini" data-apage="1"${a.more ? '' : ' disabled'}>${esc(tx('audNext', 'Keyingi →'))}</button>
+      </div>` : '';
+    return bar + `<div class="adm-list">${rows}</div>` + pager;
   }
 
   async function downloadBackup(btn) {
@@ -204,8 +276,8 @@
     const el = root();
     if (!el) return;
     if (!window.currentUser || window.currentUser.role !== 'admin') { el.innerHTML = `<div class="adm-empty">${esc(tx('admNoAccess', "Bu bo'lim faqat adminlar uchun"))}</div>`; return; }
-    const tabs = [['stats', '📊', tx('admTabStats', 'Statistika')], ['reports', '⚠️', tx('admTabReports', 'Shikoyatlar')], ['users', '👥', tx('admTabUsers', "O'yinchilar")], ['tournaments', '🏁', tx('admTabTournaments', 'Turnirlar')], ['fairplay', '🕵️', tx('admTabFairplay', 'Fair-play')], ['chat', '💬', tx('admTabChat', 'Chat')], ['errors', '🐞', tx('admTabErrors', 'Xatolar')]];
-    const body = { stats: statsHtml, reports: reportsHtml, users: usersHtml, tournaments: tournamentsHtml, fairplay: fairplayHtml, chat: chatHtml, errors: errorsHtml }[st.tab]();
+    const tabs = [['stats', '📊', tx('admTabStats', 'Statistika')], ['reports', '⚠️', tx('admTabReports', 'Shikoyatlar')], ['users', '👥', tx('admTabUsers', "O'yinchilar")], ['tournaments', '🏁', tx('admTabTournaments', 'Turnirlar')], ['fairplay', '🕵️', tx('admTabFairplay', 'Fair-play')], ['chat', '💬', tx('admTabChat', 'Chat')], ['errors', '🐞', tx('admTabErrors', 'Xatolar')], ['audit', '📜', tx('admTabAudit', 'Jurnal')]];
+    const body = { stats: statsHtml, reports: reportsHtml, users: usersHtml, tournaments: tournamentsHtml, fairplay: fairplayHtml, chat: chatHtml, errors: errorsHtml, audit: auditHtml }[st.tab]();
     el.innerHTML = `
       <header class="set-head"><div><h1>🛡️ ${esc(tx('admTitle', 'Admin paneli'))}</h1><p>${esc(tx('admSub', "Shikoyatlar, o'yinchilar va turnirlarni boshqarish"))}</p></div></header>
       <div class="lb-seg adm-tabs">${tabs.map(([id, i, l]) => `<button class="${st.tab === id ? 'active' : ''}" data-atab="${id}">${i} ${esc(l)}</button>`).join('')}</div>
@@ -228,6 +300,17 @@
       await api('/api/admin/errors/clear-resolved', {});
       load();
     });
+    const auditForm = el.querySelector('#admAuditForm');
+    if (auditForm) auditForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      st.audit.action = el.querySelector('#admAuditAction').value;
+      st.audit.q = el.querySelector('#admAuditQ').value.trim();
+      st.audit.page = 0;
+      load();
+    });
+    const auditAction = el.querySelector('#admAuditAction');
+    if (auditAction) auditAction.addEventListener('change', () => auditForm.requestSubmit());
+    el.querySelectorAll('[data-apage]').forEach(b => b.addEventListener('click', () => { st.audit.page = Math.max(0, st.audit.page + Number(b.dataset.apage)); load(); }));
     const backupBtn = el.querySelector('#admBackupBtn');
     if (backupBtn) backupBtn.addEventListener('click', () => downloadBackup(backupBtn));
     el.querySelectorAll('[data-rstatus]').forEach(b => b.addEventListener('click', () => { st.reportStatus = b.dataset.rstatus; load(); }));

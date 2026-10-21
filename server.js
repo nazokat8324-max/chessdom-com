@@ -43,7 +43,7 @@ app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|server-helpers|continents|push-texts)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|server-helpers|continents|push-texts)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -131,12 +131,14 @@ app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
   sendIndex(req, res);
 });
 
-const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, message: { success: false, message: 'Too many requests, please try again later.' } });
+// Avtomatik testlarda (NODE_ENV=test) so'rovlar chegarasi o'chiriladi — testlar ko'p foydalanuvchi ochadi
+const TEST_MODE = process.env.NODE_ENV === 'test';
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100, skip: () => TEST_MODE, message: { success: false, message: 'Too many requests, please try again later.' } });
 const tooMany = { success: false, message: "Juda ko'p urinish. Biroz kutib, qayta urinib ko'ring." };
 // Kirish: faqat muvaffaqiyatsiz urinishlar sanaladi
-const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, skipSuccessfulRequests: true, message: tooMany });
-const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, message: tooMany });
-const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, message: tooMany });
+const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, skipSuccessfulRequests: true, skip: () => TEST_MODE, message: tooMany });
+const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, skip: () => TEST_MODE, message: tooMany });
+const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, skip: () => TEST_MODE, message: tooMany });
 
 // O'yin xonalari: roomId → { players, chess, clock, status, ... }. O'yin holati faqat serverda hisoblanadi.
 const rooms = new Map();

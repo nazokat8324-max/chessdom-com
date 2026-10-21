@@ -1,0 +1,140 @@
+// ChessDom'ning o'ziga xos imkoniyatlari: Choyxona, Raqib-do'st, Bayroqlar bellashuvi, Bashorat, Odob reytingi, Ustoz-shogird, Oy yakuni
+const { test, before, after } = require('node:test');
+const assert = require('node:assert/strict');
+const path = require('path');
+const sqlite3 = require('sqlite3');
+const { startServer, startGame, play, finish, closeAll, once, ack, sleep } = require('./helpers');
+
+let srv;
+before(async () => { srv = await startServer(); });
+after(async () => { await srv.stop(); });
+const sql = (q, p) => new Promise((res, rej) => { const d = new sqlite3.Database(path.join(srv.dir, 'test.sqlite')); d.run(q, p || [], (e) => { d.close(); e ? rej(e) : res(); }); });
+
+test("Choyxona: stolga o'tirish va qarshisiga o'tirib o'yin boshlash", async () => {
+  const a = await srv.register('Te'), b = await srv.register('Te');
+  const sa = await srv.connect(a), sb = await srv.connect(b);
+  sb.emit('tea-enter'); await once(sb, 'tea-seats');
+  const seen = once(sb, 'tea-seats');
+  sa.emit('tea-sit', { initial: 180, increment: 2, rated: true });
+  const seats = (await seen).seats;
+  const seat = seats.find((s) => s.username === a.name);
+  assert.ok(seat && seat.mode === 'blitz');
+  const fa = once(sa, 'match-found'), fb = once(sb, 'match-found');
+  sb.emit('tea-join', { id: seat.id });
+  const [ma] = await Promise.all([fa, fb]);
+  assert.equal(ma.tea, true);
+  assert.equal((await srv.api(null, '/api/tea')).seats.length, 0, "o'yin boshlangach stol bo'shaydi");
+  sa.emit('game-over', { roomId: ma.roomId, result: { type: 'resign' } });
+  await sleep(300);
+  sa.disconnect(); sb.disconnect();
+});
+
+test("Raqib-do'st va o'zaro hisob (3 o'yindan keyin)", async () => {
+  const a = await srv.register('Rv'), b = await srv.register('Rv');
+  for (const how of ['white-resigns', 'black-resigns', 'draw']) {
+    const g = await startGame(srv, a, b);
+    await play(g, ['e2e4', 'e7e5']);
+    await finish(g, how);
+  }
+  closeAll(a, b);
+  const ex = await srv.api(null, '/api/users/' + a.name + '/extras');
+  assert.equal(ex.rivals[0].name, b.name);
+  assert.equal(ex.rivals[0].games, 3);
+  const h = await srv.api(null, '/api/h2h/' + a.name + '/' + b.name);
+  assert.equal(h.games, 3);
+  assert.equal(h.draw, 1);
+  assert.equal(h.win + h.loss, 2);
+  assert.equal(h.isRival, true);
+});
+
+test('Bayroqlar bellashuvi: reytingli g\'alaba klubga ochko beradi (qo\'shni davlat bonusi)', async () => {
+  const a = await srv.register('Wa'), b = await srv.register('Wb');
+  await srv.api(a, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
+  await srv.api(b, '/api/country-clubs/join', 'POST', { country: 'Kazakhstan', code: 'kz' });
+  const g = await startGame(srv, a, b);
+  await play(g, ['e2e4', 'e7e5']);
+  await finish(g, g.white === a ? 'black-resigns' : 'white-resigns'); // a yutadi
+  closeAll(a, b);
+  await sleep(400);
+  const war = await srv.api(a, '/api/war');
+  const uz = war.clubs.find((c) => c.code === 'uz');
+  assert.equal(uz.points, 5, 'g\'alaba 3 + boshqa klub 1 + qo\'shni 1');
+  assert.equal(war.regions.uz.ruler, 'uz');
+  assert.equal(war.me.myPoints, 5);
+});
+
+test('Bashorat: natija taxmini, qabul yopilishi, ochkolar', async () => {
+  const a = await srv.register('Pa'), b = await srv.register('Pb'), c = await srv.register('Pc');
+  const g = await startGame(srv, a, b);
+  const sc = await srv.connect(c);
+  sc.emit('watch-game', g.roomId); await once(sc, 'watch-state');
+  const pick = await ack(sc, 'predict-result', { roomId: g.roomId, pick: 'w' });
+  assert.equal(pick.ok, true);
+  assert.equal(pick.points, 25, 'teng reytingda oq g\'alabasi: 10/0.4');
+  assert.equal((await ack(sc, 'predict-result', { roomId: g.roomId, pick: 'b' })).reason, 'already');
+  assert.equal((await ack(g.white.socket, 'predict-result', { roomId: g.roomId, pick: 'w' })).reason, 'player');
+  const guess = await ack(sc, 'predict-move', { roomId: g.roomId, ply: 0, from: 'e2', to: 'e4' });
+  assert.equal(guess.san, 'e4');
+  const gr = once(sc, 'guess-result');
+  await play(g, ['e2e4', 'e7e5']);
+  assert.deepEqual(await gr, { roomId: g.roomId, ply: 0, san: 'e4', correct: 1, total: 1, points: 5 });
+  const resolved = once(sc, 'predict-resolved');
+  await finish(g, 'black-resigns');
+  const r = await resolved;
+  assert.equal(r.outcome, 'w');
+  assert.equal(r.winners, 1);
+  sc.disconnect(); closeAll(a, b);
+  const lb = await srv.api(c, '/api/predictions/leaderboard?period=month');
+  assert.equal(lb.me.points, 30, '25 natija + 5 yurish');
+});
+
+test("Odob reytingi: o'yindan keyin bir marta baho", async () => {
+  const a = await srv.register('Sp'), b = await srv.register('Sp');
+  const g = await startGame(srv, a, b);
+  await play(g, ['e2e4', 'e7e5']);
+  await finish(g, 'white-resigns');
+  assert.equal((await ack(a.socket, 'rate-opponent', { roomId: g.roomId, value: 1 })).ok, true);
+  assert.equal((await ack(a.socket, 'rate-opponent', { roomId: g.roomId, value: -1 })).reason, 'already');
+  closeAll(a, b);
+  const ex = await srv.api(null, '/api/users/' + b.name + '/extras');
+  assert.equal(ex.sportsmanship.up, 1);
+  assert.equal(ex.sportsmanship.percent, 100);
+});
+
+test("Ustoz-shogird: shartlar, so'rov, qabul, izoh", async () => {
+  const m = await srv.register('Mm'), s = await srv.register('Ms'), weak = await srv.register('Mw');
+  // Ustoz bo'lish uchun reyting 1700+ va 20+ o'yin kerak — bazada o'rnatamiz
+  await sql("UPDATE users SET ratings_by_mode = ?, stats = ? WHERE id = ?", [JSON.stringify({ rapid: 1500, blitz: 1850, bullet: 1500 }), JSON.stringify({ wins: 25, losses: 0, draws: 0 }), m.id]);
+  assert.equal((await srv.api(s, '/api/mentor/request', 'POST', { username: weak.name, as: 'student' })).reason, 'mentor_weak');
+  const req = await srv.api(m, '/api/mentor/request', 'POST', { username: s.name, as: 'mentor' });
+  assert.equal(req.success, true);
+  assert.equal((await srv.api(m, '/api/mentor/request', 'POST', { username: s.name, as: 'mentor' })).reason, 'pending');
+  assert.equal((await srv.api(s, '/api/mentor/respond', 'POST', { id: req.id, accept: true })).status, 'active');
+  const prof = await srv.api(null, '/api/mentor/' + m.name);
+  assert.equal(prof.students[0].username, s.name);
+  // Shogirdning o'yiniga ustoz izohi
+  const g = await startGame(srv, s, weak);
+  await play(g, ['e2e4', 'e7e5']);
+  await finish(g, 'white-resigns');
+  closeAll(s, weak);
+  const gameId = (await srv.api(null, '/api/users/' + s.name + '/history')).games[0].id;
+  assert.equal((await srv.api(m, `/api/notes/${s.name}/${gameId}`, 'POST', { ply: 1, text: 'Yaxshi boshlanish' })).success, true);
+  assert.equal((await srv.api(weak, `/api/notes/${s.name}/${gameId}`, 'POST', { ply: 1, text: 'men ham' })).status, 403);
+  const notes = await srv.api(null, `/api/notes/${s.name}/${gameId}`);
+  assert.equal(notes.notes.length, 1);
+  assert.ok((await srv.api(m, '/api/notifications')).notifications.some((n) => n.type === 'student_game'));
+});
+
+test('Oy yakuni: oy statistikasi', async () => {
+  const a = await srv.register('Wr'), b = await srv.register('Wr');
+  const g = await startGame(srv, a, b);
+  await play(g, ['e2e4', 'e7e5']);
+  await finish(g, 'black-resigns');
+  closeAll(a, b);
+  const w = await srv.api(null, '/api/users/' + g.white.name + '/wrapped');
+  assert.equal(w.games, 1);
+  assert.equal(w.win, 1);
+  assert.equal(w.ratings.blitz.from, 1500);
+  assert.ok(w.ratings.blitz.to > 1500);
+  assert.deepEqual(w.openingLines, [['e4', 'e5']]);
+});

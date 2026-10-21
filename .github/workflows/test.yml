@@ -1,0 +1,23 @@
+# Har push va pull request'da avtomatik testlar (npm test). Natija GitHub → Actions bo'limida.
+name: Tests
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Brauzer testlari uchun runner'dagi Google Chrome
+      - run: npm test
+        env:
+          CHROME_PATH: /usr/bin/google-chrome

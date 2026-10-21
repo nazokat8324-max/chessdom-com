@@ -16,7 +16,8 @@ if (usePostgres) {
   pool = new Pool({ connectionString: DATABASE_URL, ssl: !noSsl });
 } else {
   const sqlite3 = require('sqlite3').verbose();
-  sqliteDb = new sqlite3.Database(path.join(__dirname, 'database.sqlite'));
+  // SQLITE_FILE — boshqa fayl (avtomatik testlar vaqtinchalik baza bilan ishlaydi)
+  sqliteDb = new sqlite3.Database(process.env.SQLITE_FILE || path.join(__dirname, 'database.sqlite'));
   sqliteDb.serialize(() => {
     sqliteDb.run('PRAGMA journal_mode = WAL');
     sqliteDb.run('PRAGMA foreign_keys = ON');

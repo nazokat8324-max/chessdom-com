@@ -1,0 +1,50 @@
+name: Database backup
+
+# Har kuni saytdan shifrlangan zaxira nusxa olinadi va 30 kun GitHub Actions artefakti sifatida saqlanadi.
+# Kerak: repo Secrets → BACKUP_TOKEN (Render env dagi BACKUP_TOKEN bilan bir xil, kamida 16 belgi).
+# Ixtiyoriy: repo Variables → BACKUP_URL (standart — https://chessdom-com.onrender.com).
+# Fayl shifrlangan (AES-256-GCM), ochish/tiklash: BACKUP_TOKEN=... node tools/backup-restore.js <fayl>
+on:
+  schedule:
+    - cron: '30 23 * * *' # Toshkent vaqti bilan 04:30
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Download encrypted backup
+        id: dl
+        env:
+          BACKUP_TOKEN: ${{ secrets.BACKUP_TOKEN }}
+          BACKUP_URL: ${{ vars.BACKUP_URL || 'https://chessdom-com.onrender.com' }}
+        run: |
+          if [ -z "$BACKUP_TOKEN" ]; then
+            echo "::warning::BACKUP_TOKEN secret o'rnatilmagan — zaxira olinmadi"
+            exit 0
+          fi
+          name="chessdom-$(date -u +%Y%m%d-%H%M).cdbk"
+          # Render bepul rejimida server uxlab qolgan bo'lishi mumkin — bir necha marta urinamiz
+          for i in 1 2 3 4 5 6; do
+            code=$(curl -sS -o "$name" -w '%{http_code}' --max-time 240 -H "X-Backup-Token: $BACKUP_TOKEN" "$BACKUP_URL/api/backup" || echo 000)
+            if [ "$code" = "200" ]; then break; fi
+            echo "Urinish $i: HTTP $code"
+            sleep 30
+          done
+          if [ "$code" != "200" ]; then echo "::error::Zaxira olinmadi (HTTP $code)"; exit 1; fi
+          head -c 5 "$name" | grep -q CDBK1 || { echo "::error::Javob shifrlangan zaxira emas"; exit 1; }
+          echo "Hajmi: $(du -h "$name" | cut -f1)"
+          echo "file=$name" >> "$GITHUB_OUTPUT"
+      - name: Store artifact
+        if: steps.dl.outputs.file != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.dl.outputs.file }}
+          path: ${{ steps.dl.outputs.file }}
+          retention-days: 30
+          compression-level: 0
+          if-no-files-found: error

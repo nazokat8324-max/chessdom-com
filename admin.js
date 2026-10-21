@@ -1,7 +1,7 @@
-// Admin paneli (faqat users.role = 'admin'): statistika, shikoyatlar, o'yinchilarni bloklash, turnirlar.
+// Admin paneli (faqat users.role = 'admin'): statistika (+ 💾 zaxira nusxa), shikoyatlar, o'yinchilarni bloklash, turnirlar, fair-play, chat, 🐞 xatolar.
 // Server: /api/admin/* (adminMiddleware). Admin Render env ADMIN_USERNAMES orqali beriladi.
 (function () {
-  const st = { tab: 'stats', reportStatus: 'open', query: '', stats: null, reports: [], users: [], tournaments: [], fairplay: [], chat: { messages: [], words: [], club: '', user: '' } };
+  const st = { tab: 'stats', reportStatus: 'open', query: '', stats: null, reports: [], users: [], tournaments: [], fairplay: [], chat: { messages: [], words: [], club: '', user: '' }, errors: { list: [], counts: { server: 0, client: 0 }, status: 'open', source: '' } };
   const esc = (v) => {
     const div = document.createElement('div');
     div.textContent = (v === null || v === undefined) ? '' : String(v);
@@ -25,6 +25,11 @@
     if (st.tab === 'users') { const d = await api('/api/admin/users?q=' + encodeURIComponent(st.query)); st.users = d && d.success ? d.users : []; }
     if (st.tab === 'tournaments') { const d = await api('/api/admin/tournaments'); st.tournaments = d && d.success ? d.tournaments : []; }
     if (st.tab === 'fairplay') { const d = await api('/api/admin/fairplay'); st.fairplay = d && d.success ? d.users : []; }
+    if (st.tab === 'errors') {
+      const e = st.errors;
+      const d = await api('/api/admin/errors?status=' + e.status + '&source=' + e.source);
+      if (d && d.success) { e.list = d.errors; e.counts = d.counts; }
+    }
     if (st.tab === 'chat') {
       const d = await api('/api/admin/chat?club=' + encodeURIComponent(st.chat.club) + '&user=' + encodeURIComponent(st.chat.user));
       if (d && d.success) { st.chat.messages = d.messages; st.chat.words = d.words; }
@@ -37,7 +42,57 @@
     if (!s) return `<div class="adm-empty">${esc(tx('loadingText', 'Yuklanmoqda...'))}</div>`;
     const cards = [['👥', s.users, tx('admUsers', "O'yinchilar")], ['🟢', s.online, tx('admOnline', 'Hozir onlayn')], ['♟️', s.activeGames, tx('admActiveGames', "Davom etayotgan o'yinlar")],
       ['🆕', s.newUsers24h, tx('admNewUsers', "Yangi (24 soat)")], ['🎮', s.games24h, tx('admGames24', "O'yinlar (24 soat)")], ['⚠️', s.openReports, tx('admOpenReports', 'Ochiq shikoyatlar')], ['🚫', s.banned, tx('admBanned', 'Bloklanganlar')]];
-    return `<div class="adm-stats">${cards.map(([i, n, l]) => `<div class="adm-stat"><span>${i}</span><b>${n}</b><small>${esc(l)}</small></div>`).join('')}</div>`;
+    const errs = s.errors || { server: 0, client: 0 };
+    cards.push(['🐞', errs.server + errs.client, tx('admOpenErrors', 'Hal qilinmagan xatolar')]);
+    return `<div class="adm-stats">${cards.map(([i, n, l]) => `<div class="adm-stat"><span>${i}</span><b>${n}</b><small>${esc(l)}</small></div>`).join('')}</div>
+      <div class="adm-box adm-backup">
+        <b>💾 ${esc(tx('admBackupTitle', 'Zaxira nusxa'))}</b>
+        <p class="adm-note">${esc(tx('admBackupHint', "Butun bazaning nusxasi (siqilgan JSON). Faylda parol xeshlari va emaillar bor — ishonchli joyda saqlang. Avtomatik kunlik nusxa GitHub Actions orqali shifrlangan holda olinadi."))}</p>
+        <button class="set-mini accent" id="admBackupBtn">⬇ ${esc(tx('admBackupDownload', 'Nusxani yuklab olish'))}</button>
+      </div>`;
+  }
+
+  // 🐞 Xatolar: server (console.error, ushlanmagan xatolar) va brauzer (errors.js) — bir xil xato bitta qatorda, ×N
+  function errorsHtml() {
+    const e = st.errors;
+    const seg = (items, cur, attr) => `<div class="set-seg">${items.map(([id, l]) => `<button class="${cur === id ? 'active' : ''}" ${attr}="${id}">${esc(l)}</button>`).join('')}</div>`;
+    const bar = `<div class="adm-err-bar">
+      ${seg([['open', tx('admErrOpen', 'Ochiq')], ['resolved', tx('admErrResolved', 'Hal qilingan')]], e.status, 'data-estatus')}
+      ${seg([['', tx('admErrAll', 'Hammasi')], ['server', '🖥 ' + tx('admErrServer', 'Server') + ' ' + (e.counts.server || 0)], ['client', '🌐 ' + tx('admErrClient', 'Brauzer') + ' ' + (e.counts.client || 0)]], e.source, 'data-esource')}
+      ${e.status === 'resolved' && e.list.length ? `<button class="set-mini danger" id="admErrClear">🗑 ${esc(tx('admErrClear', "Hammasini o'chirish"))}</button>` : ''}
+    </div>`;
+    if (!e.list.length) return bar + `<div class="adm-empty">${esc(e.status === 'open' ? tx('admErrNone', "Xatolar yo'q 🎉") : tx('admErrNoneResolved', "Hal qilingan xatolar yo'q"))}</div>`;
+    return bar + `<div class="adm-list">${e.list.map(x => {
+      const c = x.context || {};
+      const meta = [c.method && c.path ? c.method + ' ' + c.path : '', c.url ? c.url : '', c.user ? '👤 ' + c.user : '', c.ua ? c.ua.replace(/^Mozilla\/5\.0 /, '').slice(0, 70) : ''].filter(Boolean);
+      return `<div class="adm-item adm-err">
+        <div class="adm-item-main">
+          <b><em class="adm-tag${x.source === 'server' ? ' red' : ''}">${x.source === 'server' ? '🖥 ' + esc(tx('admErrServer', 'Server')) : '🌐 ' + esc(tx('admErrClient', 'Brauzer'))}</em> <span class="adm-err-count">×${x.count}</span> ${esc(x.message)}</b>
+          <small>${esc(tx('admErrFirst', 'Birinchi'))}: ${esc(fmt(x.firstSeen))} · ${esc(tx('admErrLast', 'Oxirgi'))}: ${esc(fmt(x.lastSeen))}</small>
+          ${meta.length ? `<small class="adm-err-meta">${meta.map(esc).join(' · ')}</small>` : ''}
+          ${x.stack ? `<details><summary>Stack</summary><pre>${esc(x.stack)}</pre></details>` : ''}
+        </div>
+        <div class="adm-actions">${x.resolved
+          ? `<button class="set-mini" data-err-reopen="${esc(x.id)}">↺ ${esc(tx('admErrReopen', 'Qayta ochish'))}</button>`
+          : `<button class="set-mini accent" data-err-resolve="${esc(x.id)}">✓ ${esc(tx('admErrResolve', 'Hal qilindi'))}</button>`}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  async function downloadBackup(btn) {
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/admin/backup', { headers: headers() });
+      if (!r.ok) throw new Error(r.status);
+      const name = (/filename="([^"]+)"/.exec(r.headers.get('Content-Disposition') || '') || [])[1] || 'chessdom-backup.json.gz';
+      const url = URL.createObjectURL(await r.blob());
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+      showToast(tx('admBackupDone', 'Zaxira nusxa yuklab olindi'), 'success');
+    } catch (e) { showToast(tx('errGeneric', 'Xatolik yuz berdi!'), 'warning'); }
+    btn.disabled = false;
   }
 
   function banControls(userId) {
@@ -149,8 +204,8 @@
     const el = root();
     if (!el) return;
     if (!window.currentUser || window.currentUser.role !== 'admin') { el.innerHTML = `<div class="adm-empty">${esc(tx('admNoAccess', "Bu bo'lim faqat adminlar uchun"))}</div>`; return; }
-    const tabs = [['stats', '📊', tx('admTabStats', 'Statistika')], ['reports', '⚠️', tx('admTabReports', 'Shikoyatlar')], ['users', '👥', tx('admTabUsers', "O'yinchilar")], ['tournaments', '🏁', tx('admTabTournaments', 'Turnirlar')], ['fairplay', '🕵️', tx('admTabFairplay', 'Fair-play')], ['chat', '💬', tx('admTabChat', 'Chat')]];
-    const body = { stats: statsHtml, reports: reportsHtml, users: usersHtml, tournaments: tournamentsHtml, fairplay: fairplayHtml, chat: chatHtml }[st.tab]();
+    const tabs = [['stats', '📊', tx('admTabStats', 'Statistika')], ['reports', '⚠️', tx('admTabReports', 'Shikoyatlar')], ['users', '👥', tx('admTabUsers', "O'yinchilar")], ['tournaments', '🏁', tx('admTabTournaments', 'Turnirlar')], ['fairplay', '🕵️', tx('admTabFairplay', 'Fair-play')], ['chat', '💬', tx('admTabChat', 'Chat')], ['errors', '🐞', tx('admTabErrors', 'Xatolar')]];
+    const body = { stats: statsHtml, reports: reportsHtml, users: usersHtml, tournaments: tournamentsHtml, fairplay: fairplayHtml, chat: chatHtml, errors: errorsHtml }[st.tab]();
     el.innerHTML = `
       <header class="set-head"><div><h1>🛡️ ${esc(tx('admTitle', 'Admin paneli'))}</h1><p>${esc(tx('admSub', "Shikoyatlar, o'yinchilar va turnirlarni boshqarish"))}</p></div></header>
       <div class="lb-seg adm-tabs">${tabs.map(([id, i, l]) => `<button class="${st.tab === id ? 'active' : ''}" data-atab="${id}">${i} ${esc(l)}</button>`).join('')}</div>
@@ -160,6 +215,21 @@
 
   function bind(el) {
     el.querySelectorAll('[data-atab]').forEach(b => b.addEventListener('click', () => { st.tab = b.dataset.atab; render(); load(); }));
+    el.querySelectorAll('[data-estatus]').forEach(b => b.addEventListener('click', () => { st.errors.status = b.dataset.estatus; load(); }));
+    el.querySelectorAll('[data-esource]').forEach(b => b.addEventListener('click', () => { st.errors.source = b.dataset.esource; load(); }));
+    el.querySelectorAll('[data-err-resolve], [data-err-reopen]').forEach(b => b.addEventListener('click', async () => {
+      const id = b.dataset.errResolve || b.dataset.errReopen;
+      await api('/api/admin/errors/' + encodeURIComponent(id) + '/resolve', { resolved: !!b.dataset.errResolve });
+      load();
+    }));
+    const errClear = el.querySelector('#admErrClear');
+    if (errClear) errClear.addEventListener('click', async () => {
+      if (!confirm(tx('admErrClearConfirm', "Hal qilingan xatolarni o'chirasizmi?"))) return;
+      await api('/api/admin/errors/clear-resolved', {});
+      load();
+    });
+    const backupBtn = el.querySelector('#admBackupBtn');
+    if (backupBtn) backupBtn.addEventListener('click', () => downloadBackup(backupBtn));
     el.querySelectorAll('[data-rstatus]').forEach(b => b.addEventListener('click', () => { st.reportStatus = b.dataset.rstatus; load(); }));
     const search = el.querySelector('#admSearch');
     if (search) search.addEventListener('submit', (e) => { e.preventDefault(); st.query = el.querySelector('#admQuery').value.trim(); load(); });
@@ -218,6 +288,8 @@
   }
 
   window.renderAdminView = function () { render(); load(); };
+  // Bildirishnomadan: kerakli tab bilan ochish
+  window.openAdminTab = function (tab) { st.tab = tab; switchView('admin'); };
   window.refreshAdminView = function () { const v = document.getElementById('adminView'); if (v && v.classList.contains('active-view')) render(); };
   document.addEventListener('DOMContentLoaded', () => window.updateAdminNav());
 })();

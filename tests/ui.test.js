@@ -75,6 +75,32 @@ test('Telefon: pastki menyu va gorizontal aylantirish yo\'q', opts, async () => 
   assert.deepEqual(p.errors, []);
 });
 
+test("Brauzer xatosi admin panelidagi Xatolar bo'limida ko'rinadi", opts, async () => {
+  const u = await srv.register('Ua');
+  await new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(require('path').join(srv.dir, 'test.sqlite'));
+    d.run("UPDATE users SET role = 'admin' WHERE id = ?", [u.id], (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  u.user.role = 'admin';
+  const p = await page(u);
+  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await sleep(800);
+  // Sahifaning o'z skripti (puppeteer evaluate ichidagi xato brauzerda "Script error." bo'lib ko'rinadi)
+  await p.evaluate(() => { const s = document.createElement('script'); s.textContent = "throw new Error('UI sinov xatosi')"; document.body.appendChild(s); });
+  await sleep(800);
+  await p.evaluate(() => window.openAdminTab('errors'));
+  await sleep(1200);
+  const r = await p.evaluate(() => ({
+    path: location.pathname,
+    items: [...document.querySelectorAll('#adminRoot .adm-err b')].map((b) => b.textContent),
+    tab: (document.querySelector('#adminRoot [data-atab].active') || {}).dataset
+  }));
+  assert.equal(r.path, '/admin');
+  assert.ok(r.items.some((t) => t.includes('UI sinov xatosi')), JSON.stringify(r.items));
+  await p.screenshot({ path: require('path').join(srv.dir, 'admin-errors.png') }).catch(() => {});
+  if (process.env.UI_SHOTS) fs.copyFileSync(require('path').join(srv.dir, 'admin-errors.png'), process.env.UI_SHOTS + '/admin-errors.png');
+});
+
 test("Service worker ro'yxatdan o'tadi", opts, async () => {
   const u = await srv.register('Us');
   const p = await page(u);

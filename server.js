@@ -20,6 +20,8 @@ const mailer = require('./mailer');
 const crypto = require('crypto');
 const webpush = require('web-push');
 const { pushMessage } = require('./push-texts');
+const backup = require('./backup');
+const util = require('util');
 const escapeHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
 const app = express();
@@ -43,7 +45,7 @@ app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|server-helpers|continents|push-texts)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|\.github)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|server-helpers|continents|push-texts|backup)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -139,6 +141,75 @@ const tooMany = { success: false, message: "Juda ko'p urinish. Biroz kutib, qayt
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, skipSuccessfulRequests: true, skip: () => TEST_MODE, message: tooMany });
 const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, skip: () => TEST_MODE, message: tooMany });
 const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, skip: () => TEST_MODE, message: tooMany });
+
+// --- 🐞 Xatolarni kuzatish (tashqi xizmatsiz): console.error, ushlanmagan xatolar, Express va brauzer xatolari → error_log.
+// Bir xil xato (fingerprint: matn raqamlarsiz + birinchi stack qatori) bitta qatorda sanaladi. Yangi xato — adminlarga bildirishnoma.
+const errorTracker = (() => {
+  const origError = console.error.bind(console);
+  let ready = false, writing = 0;
+  const early = [];          // baza tayyor bo'lguncha
+  const recent = new Map();  // fingerprint → {at, extra}: tez-tez takrorlansa bazaga 5 s da bir marta yoziladi
+  const alerts = [];         // adminlarga bildirishnomalar vaqti (soatiga ko'pi bilan 10 ta)
+  const normalize = (m) => String(m).replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f-]{27,}/gi, '<id>').replace(/\d+/g, 'N').slice(0, 300);
+  const firstFrame = (stack) => {
+    const line = String(stack || '').split('\n').find(l => /^\s*at\s/.test(l)) || '';
+    return line.trim().replace(/\?v=[^:)\s]*/, '').replace(/:\d+:\d+\)?$/, '');
+  };
+  const fingerprintOf = (source, message, stack) => crypto.createHash('sha1').update(source + '|' + normalize(message) + '|' + firstFrame(stack)).digest('hex');
+
+  async function write(entry) {
+    const now = Date.now();
+    const r = recent.get(entry.fingerprint);
+    if (r && now - r.at < 5000) { r.extra++; return; }
+    const times = 1 + (r ? r.extra : 0);
+    recent.set(entry.fingerprint, { at: now, extra: 0 });
+    if (recent.size > 1000) recent.delete(recent.keys().next().value);
+    writing++;
+    try {
+      const res = await db.logError({ ...entry, times });
+      if (res.isNew) alertAdmins(entry);
+    } catch (e) { origError('Xatolar jurnaliga yozib bo\'lmadi:', e.message); }
+    finally { writing--; }
+  }
+  async function alertAdmins(entry) {
+    const now = Date.now();
+    while (alerts.length && now - alerts[0] > 3600000) alerts.shift();
+    if (alerts.length >= 10) return;
+    alerts.push(now);
+    try {
+      for (const id of await db.adminIds()) notify(id, 'server_error', { source: entry.source, message: entry.message.slice(0, 140) }, 'errors');
+    } catch (e) {}
+  }
+  function capture(source, message, stack, context) {
+    message = String(message || 'Error').slice(0, 1000);
+    const entry = { fingerprint: fingerprintOf(source, message, stack), source, message, stack: stack ? String(stack).slice(0, 4000) : null, context: context || null };
+    if (!ready) { if (early.length < 50) early.push(entry); return Promise.resolve(); }
+    return write(entry);
+  }
+  // console.error(...) — matn va (bo'lsa) birinchi Error ning stack'i
+  console.error = (...args) => {
+    origError(...args);
+    if (writing > 5) return; // jurnalning o'zi xato bersa — cheksiz aylanish bo'lmasin
+    try {
+      const err = args.find(a => a instanceof Error);
+      capture('server', util.format(...args.map(x => (x instanceof Error ? x.message : x))), err && err.stack);
+    } catch (e) {}
+  };
+  return {
+    capture, fingerprintOf,
+    start() { ready = true; early.splice(0).forEach(write); }
+  };
+})();
+process.on('unhandledRejection', (reason) => {
+  const err = reason instanceof Error ? reason : new Error(String(reason));
+  console.error('Ushlanmagan Promise xatoligi:', err);
+});
+process.on('uncaughtException', async (err) => {
+  try { console.error('Ushlanmagan xato (server qayta ishga tushadi):', err); } catch (e) {}
+  // Yozilishini biroz kutib, o'yinlar soatini saqlab chiqamiz (Render serverni qayta ishga tushiradi)
+  await new Promise(r => setTimeout(r, 1500));
+  persistAllOnShutdown('uncaughtException', 1);
+});
 
 // O'yin xonalari: roomId → { players, chess, clock, status, ... }. O'yin holati faqat serverda hisoblanadi.
 const rooms = new Map();
@@ -273,7 +344,7 @@ function resumeClock(roomId, room) {
 
 // Render deploy oldidan SIGTERM yuboradi: davom etayotgan o'yinlarning soati shu paytdagi qiymat bilan saqlanadi
 let shuttingDown = false;
-async function persistAllOnShutdown(signal) {
+async function persistAllOnShutdown(signal, exitCode = 0) {
   if (shuttingDown) return;
   shuttingDown = true;
   const jobs = [];
@@ -289,7 +360,7 @@ async function persistAllOnShutdown(signal) {
   }
   await Promise.race([Promise.allSettled(jobs), new Promise(r => setTimeout(r, 8000))]);
   console.log(`${signal}: ${jobs.length} ta o'yin soati saqlandi`);
-  process.exit(0);
+  process.exit(exitCode);
 }
 process.once('SIGTERM', () => persistAllOnShutdown('SIGTERM'));
 process.once('SIGINT', () => persistAllOnShutdown('SIGINT'));
@@ -1265,6 +1336,30 @@ function validateMove(move) {
 
 async function start() {
   await db.initDatabase();
+  errorTracker.start();
+
+  // --- 🐞 Brauzer xatolari (errors.js) — kirmagan foydalanuvchidan ham; IP bo'yicha cheklangan ---
+  const clientErrorLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, skip: () => TEST_MODE, message: tooMany });
+  const CLIENT_ERROR_IGNORE = /^Script error\.?$|ResizeObserver loop|chrome-extension:|moz-extension:|safari-extension:|^Load failed$|^NetworkError|Failed to fetch/i;
+  app.post('/api/client-errors', clientErrorLimiter, (req, res) => {
+    const b = req.body || {};
+    const message = String(b.message || '').slice(0, 500).trim();
+    const stack = String(b.stack || '').slice(0, 4000);
+    const src = String(b.source || '').slice(0, 300);
+    if (!message || CLIENT_ERROR_IGNORE.test(message) || CLIENT_ERROR_IGNORE.test(src) || CLIENT_ERROR_IGNORE.test(stack)) return res.json({ success: true, ignored: true });
+    let user = null;
+    try {
+      const h = req.headers.authorization;
+      if (h && h.startsWith('Bearer ')) user = jwt.verify(h.slice(7), JWT_SECRET).username;
+    } catch (e) {}
+    const context = {
+      url: String(b.url || '').slice(0, 300), source: src || undefined, line: Number(b.line) || undefined, col: Number(b.col) || undefined,
+      ua: String(req.headers['user-agent'] || '').slice(0, 200), user, version: String(b.version || '').slice(0, 40) || undefined
+    };
+    errorTracker.capture('client', message, stack || (src ? `    at ${src}:${context.line || 0}:${context.col || 0}` : ''), context);
+    res.json({ success: true });
+  });
+  if (TEST_MODE) app.get('/api/test/throw', () => { throw new Error('Test uchun xato'); });
 
   app.post('/api/auth/register', registerLimiter, [
     body('username').isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters')
@@ -1587,9 +1682,32 @@ async function start() {
     try {
       let activeGames = 0;
       for (const room of rooms.values()) if (room.status === 'active') activeGames++;
-      res.json({ success: true, stats: { ...(await db.adminStats()), online: onlineUsers.size, activeGames } });
+      res.json({ success: true, stats: { ...(await db.adminStats()), online: onlineUsers.size, activeGames, errors: await db.errorCounts() } });
     } catch (err) { console.error('Admin stats xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
+  // 🐞 Xatolar jurnali
+  app.get('/api/admin/errors', adminMiddleware, async (req, res) => {
+    try { res.json({ success: true, errors: await db.listErrors(req.query.status, req.query.source), counts: await db.errorCounts() }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/admin/errors/:id/resolve', adminMiddleware, async (req, res) => {
+    try { await db.setErrorResolved(req.params.id, !(req.body && req.body.resolved === false)); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/admin/errors/clear-resolved', adminMiddleware, async (req, res) => {
+    try { await db.deleteResolvedErrors(); res.json({ success: true }); }
+    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  // 💾 Zaxira nusxa: admin — siqilgan JSON yuklab olish
+  const backupName = (ext) => `chessdom-${new Date().toISOString().slice(0, 16).replace(/[-T:]/g, '')}.${ext}`;
+  app.get('/api/admin/backup', adminMiddleware, async (req, res) => {
+    try {
+      const data = backup.pack(await db.dumpDatabase());
+      res.set({ 'Content-Type': 'application/gzip', 'Content-Disposition': `attachment; filename="${backupName('json.gz')}"`, 'Cache-Control': 'no-store' });
+      res.send(data);
+    } catch (err) { console.error('Zaxira xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.get('/api/admin/reports', adminMiddleware, async (req, res) => {
     try { res.json({ success: true, reports: await db.listReports(req.query.status === 'resolved' ? 'resolved' : 'open') }); }
     catch (err) { console.error('Admin reports xatoligi:', err.message); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -3027,6 +3145,28 @@ async function start() {
   swiss.tick();
   setInterval(league.tick, league.CFG.tickMs);
   league.tick();
+
+  // 💾 Avtomatik zaxira (GitHub Actions): X-Backup-Token = BACKUP_TOKEN (env); javob shu token bilan shifrlangan
+  const backupLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, skip: () => TEST_MODE, message: tooMany });
+  app.get('/api/backup', backupLimiter, async (req, res) => {
+    const token = process.env.BACKUP_TOKEN;
+    if (!token || token.length < 16) return res.status(404).json({ success: false, message: 'Not found' });
+    if (!backup.sameToken(req.headers['x-backup-token'], token)) return res.status(403).json({ success: false, message: "Ruxsat yo'q" });
+    try {
+      const dump = await db.dumpDatabase();
+      res.set({ 'Content-Type': 'application/octet-stream', 'Content-Disposition': `attachment; filename="${backupName('cdbk')}"`, 'Cache-Control': 'no-store', 'X-Backup-Rows': String(dump.rows) });
+      res.send(backup.encrypt(backup.pack(dump), token));
+    } catch (err) { console.error('Avtomatik zaxira xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Routelarda ushlanmagan xatolar: jurnalga yoziladi, foydalanuvchiga umumiy javob
+  app.use((err, req, res, next) => {
+    if (err && (err.type === 'entity.parse.failed' || err.type === 'entity.too.large')) return res.status(err.status || 400).json({ success: false, message: "Noto'g'ri so'rov" });
+    errorTracker.capture('server', (err && err.message) || String(err), err && err.stack, { method: req.method, path: req.path });
+    console.log('Route xatoligi:', req.method, req.path, err && err.message);
+    if (res.headersSent) return next(err);
+    res.status(500).json({ success: false, message: 'Server xatoligi!' });
+  });
 
   server.listen(PORT, () => {
     console.log('Server ishga tushdi: http://localhost:' + PORT);

@@ -19,6 +19,7 @@ const T = {
   prediction_won: L("Bashoratingiz to'g'ri chiqdi! +{{points}} 🔮", 'Your prediction was right! +{{points}} 🔮', 'Прогноз сбылся! +{{points}} 🔮', '¡Acertaste! +{{points}} 🔮', 'Richtig getippt! +{{points}} 🔮', 'Bon pronostic ! +{{points}} 🔮'),
   achievement: L('Yangi yutuq! 🏅', 'New achievement! 🏅', 'Новое достижение! 🏅', '¡Nuevo logro! 🏅', 'Neuer Erfolg! 🏅', 'Nouveau succès ! 🏅'),
   rank_up: L('Yangi daraja! Reytingingiz {{rating}} ⭐', 'New rank! Your rating is {{rating}} ⭐', 'Новый уровень! Рейтинг {{rating}} ⭐', '¡Nuevo rango! Tu rating es {{rating}} ⭐', 'Neuer Rang! Deine Wertung: {{rating}} ⭐', 'Nouveau rang ! Classement {{rating}} ⭐'),
+  server_error: L('🐞 Saytda yangi xato: {{message}}', '🐞 New site error: {{message}}', '🐞 Новая ошибка на сайте: {{message}}', '🐞 Nuevo error en el sitio: {{message}}', '🐞 Neuer Fehler auf der Seite: {{message}}', '🐞 Nouvelle erreur sur le site : {{message}}'),
   test: L("Push-bildirishnomalar ishlayapti! ♞", 'Push notifications are working! ♞', 'Push-уведомления работают! ♞', '¡Las notificaciones push funcionan! ♞', 'Push-Benachrichtigungen funktionieren! ♞', 'Les notifications push fonctionnent ! ♞'),
   generic: L('Sizga yangi bildirishnoma bor', 'You have a new notification', 'У вас новое уведомление', 'Tienes una notificación nueva', 'Du hast eine neue Benachrichtigung', 'Vous avez une nouvelle notification')
 };
@@ -53,6 +54,7 @@ function pushMessage(type, data, lang, ownName) {
     case 'mentor_note': url = '/tarix?u=' + encodeURIComponent(d.owner || ''); break;
     case 'student_game': url = '/tarix?u=' + encodeURIComponent(d.student || ''); break;
     case 'prediction_won': url = '/jonli'; break;
+    case 'server_error': url = '/admin'; break;
   }
   return { title: 'ChessDom', body: fill(T[key][l], vars).slice(0, 180), url, category: CATEGORY[type] || 'events' };
 }

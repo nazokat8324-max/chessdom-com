@@ -785,6 +785,22 @@ async function initDatabase() {
       deleted_at TEXT NOT NULL
     )
   `);
+  // 🐞 Xatolar jurnali (server va brauzer): bir xil xato bitta qatorda — fingerprint bo'yicha, count oshadi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS error_log (
+      id TEXT PRIMARY KEY,
+      fingerprint TEXT UNIQUE NOT NULL,
+      source TEXT NOT NULL,
+      message TEXT NOT NULL,
+      stack TEXT,
+      context TEXT,
+      count INTEGER DEFAULT 1,
+      first_seen TEXT NOT NULL,
+      last_seen TEXT NOT NULL,
+      resolved INTEGER DEFAULT 0
+    )
+  `);
+  try { await dbExec('CREATE INDEX IF NOT EXISTS idx_error_log_seen ON error_log (resolved, last_seen)'); } catch (e) {}
 
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
@@ -2188,7 +2204,152 @@ async function getClubLeaderboard() {
   return { success: true, leaderboard };
 }
 
+// --- 🐞 Xatolar jurnali ---
+const ERROR_LOG_LIMIT = 500;
+// Natija: isNew — bu xato birinchi marta (yoki hal qilingandan keyin qayta) chiqdi
+async function logError({ fingerprint, source, message, stack, context, times }) {
+  const n = Math.max(1, Number(times) || 1);
+  const now = new Date().toISOString();
+  const ctx = context ? JSON.stringify(context).slice(0, 2000) : null;
+  const row = await dbGet('SELECT id, resolved FROM error_log WHERE fingerprint = ?', [fingerprint]);
+  if (row) {
+    await dbRun('UPDATE error_log SET count = count + ?, last_seen = ?, message = ?, stack = ?, context = ?, resolved = 0 WHERE id = ?',
+      [n, now, message, stack || null, ctx, row.id]);
+    return { id: row.id, isNew: Number(row.resolved) === 1 };
+  }
+  const id = uuidv4();
+  await dbRun('INSERT INTO error_log (id, fingerprint, source, message, stack, context, count, first_seen, last_seen, resolved) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0)',
+    [id, fingerprint, source, message, stack || null, ctx, n, now, now]);
+  // Eng eski qatorlar o'chiriladi (jadval cheksiz o'smasin)
+  const total = await dbGet('SELECT COUNT(*) as n FROM error_log');
+  if (Number(total.n) > ERROR_LOG_LIMIT) {
+    await dbRun('DELETE FROM error_log WHERE id IN (SELECT id FROM error_log ORDER BY resolved DESC, last_seen ASC LIMIT ?)', [Number(total.n) - ERROR_LOG_LIMIT]);
+  }
+  return { id, isNew: true };
+}
+async function listErrors(status, source) {
+  const where = ['resolved = ?'], params = [status === 'resolved' ? 1 : 0];
+  if (source === 'server' || source === 'client') { where.push('source = ?'); params.push(source); }
+  const rows = await dbAll(`SELECT id, source, message, stack, context, count, first_seen as "firstSeen", last_seen as "lastSeen", resolved
+    FROM error_log WHERE ${where.join(' AND ')} ORDER BY last_seen DESC LIMIT 200`, params);
+  return rows.map(r => ({ ...r, count: Number(r.count) || 0, resolved: Number(r.resolved) === 1, context: parseJson(r.context) }));
+}
+async function errorCounts() {
+  const rows = await dbAll('SELECT source, COUNT(*) as n FROM error_log WHERE resolved = 0 GROUP BY source');
+  const out = { server: 0, client: 0 };
+  for (const r of rows) out[r.source] = Number(r.n) || 0;
+  return out;
+}
+async function setErrorResolved(id, resolved) {
+  await dbRun('UPDATE error_log SET resolved = ? WHERE id = ?', [resolved ? 1 : 0, id]);
+}
+async function deleteResolvedErrors() {
+  await dbRun('DELETE FROM error_log WHERE resolved = 1');
+}
+
+// --- 💾 Zaxira nusxa: barcha jadvallar (FK tartibida) ---
+const quoteId = (name) => '"' + String(name).replace(/"/g, '""') + '"';
+async function tableNames() {
+  if (usePostgres) {
+    return (await dbAll("SELECT table_name as name FROM information_schema.tables WHERE table_schema = 'public' AND table_type = 'BASE TABLE'")).map(r => r.name);
+  }
+  return (await dbAll("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")).map(r => r.name);
+}
+async function tableColumns(table) {
+  if (usePostgres) {
+    return (await dbAll("SELECT column_name as name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = ? ORDER BY ordinal_position", [table])).map(r => r.name);
+  }
+  return (await dbAll(`PRAGMA table_info(${quoteId(table)})`)).map(r => r.name);
+}
+// Jadvallar: avval murojaat qilinadiganlari (users), keyin ularga bog'langanlari
+async function tablesInFkOrder() {
+  const names = await tableNames();
+  const deps = new Map(names.map(n => [n, new Set()]));
+  if (usePostgres) {
+    const rows = await dbAll(`SELECT tc.table_name as child, ccu.table_name as parent FROM information_schema.table_constraints tc
+      JOIN information_schema.constraint_column_usage ccu ON tc.constraint_name = ccu.constraint_name AND tc.table_schema = ccu.table_schema
+      WHERE tc.constraint_type = 'FOREIGN KEY' AND tc.table_schema = 'public'`);
+    for (const r of rows) if (deps.has(r.child) && r.child !== r.parent) deps.get(r.child).add(r.parent);
+  } else {
+    for (const n of names) {
+      for (const fk of await dbAll(`PRAGMA foreign_key_list(${quoteId(n)})`)) if (fk.table !== n && deps.has(fk.table)) deps.get(n).add(fk.table);
+    }
+  }
+  const order = [], seen = new Set();
+  const visit = (n, stack = new Set()) => {
+    if (seen.has(n) || stack.has(n)) return;
+    stack.add(n);
+    for (const p of deps.get(n) || []) visit(p, stack);
+    seen.add(n); order.push(n);
+  };
+  names.sort().forEach(n => visit(n));
+  return order;
+}
+async function dumpDatabase() {
+  const tables = {};
+  let rowsTotal = 0;
+  for (const name of await tablesInFkOrder()) {
+    const rows = await dbAll(`SELECT * FROM ${quoteId(name)}`);
+    tables[name] = rows;
+    rowsTotal += rows.length;
+  }
+  return { format: 'chessdom-backup', version: 1, createdAt: new Date().toISOString(), engine: usePostgres ? 'postgres' : 'sqlite', rows: rowsTotal, tables };
+}
+function closeDatabase() {
+  if (usePostgres) return pool.end();
+  return new Promise((resolve) => sqliteDb.close(() => resolve()));
+}
+async function isDatabaseEmpty() {
+  return Number((await dbGet('SELECT COUNT(*) as n FROM users')).n) === 0;
+}
+// Zaxiradan tiklash (jadvallar initDatabase bilan yaratilgan bo'lishi kerak). force — mavjud ma'lumot o'chiriladi.
+// Faqat ikkala tomonda bor ustunlar yoziladi; mavjud qator (bir xil kalit) o'tkazib yuboriladi.
+async function restoreDump(dump, { force = false, onTable } = {}) {
+  if (!dump || dump.format !== 'chessdom-backup' || !dump.tables) throw new Error("Zaxira fayli formati noto'g'ri");
+  const order = await tablesInFkOrder();
+  if (force) {
+    for (const name of [...order].reverse()) await dbRun(`DELETE FROM ${quoteId(name)}`);
+  } else if (!(await isDatabaseEmpty())) {
+    throw new Error("Baza bo'sh emas (--force bilan mavjud ma'lumot o'chiriladi)");
+  }
+  const result = {};
+  const pending = [];
+  for (const name of order) {
+    const rows = dump.tables[name];
+    if (!Array.isArray(rows) || !rows.length) continue;
+    const have = new Set(await tableColumns(name));
+    const cols = Object.keys(rows[0]).filter(c => have.has(c));
+    if (!cols.length) continue;
+    const sql = `INSERT INTO ${quoteId(name)} (${cols.map(quoteId).join(', ')}) VALUES (${cols.map(() => '?').join(', ')}) ON CONFLICT DO NOTHING`;
+    let ok = 0;
+    for (const row of rows) {
+      const vals = cols.map(c => {
+        const v = row[c];
+        return v !== null && typeof v === 'object' ? JSON.stringify(v) : (v === undefined ? null : v);
+      });
+      // O'ziga bog'langan jadvallar (masalan, javob xabari) — tartib buzilsa, oxirida qayta urinish
+      try { await dbRun(sql, vals); ok++; } catch (e) { pending.push({ name, sql, vals, err: e }); }
+    }
+    result[name] = ok;
+    if (onTable) onTable(name, ok, rows.length);
+  }
+  const failed = [];
+  for (const p of pending) {
+    try { await dbRun(p.sql, p.vals); result[p.name] = (result[p.name] || 0) + 1; } catch (e) { failed.push({ table: p.name, error: e.message }); }
+  }
+  return { tables: result, failed };
+}
+
 module.exports = {
+  logError,
+  listErrors,
+  errorCounts,
+  setErrorResolved,
+  deleteResolvedErrors,
+  dumpDatabase,
+  restoreDump,
+  isDatabaseEmpty,
+  closeDatabase,
   initDatabase,
   closeStaleArenas,
   getUserByUsername,

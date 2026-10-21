@@ -9645,6 +9645,39 @@ html.hide-last-move #chessBoard .sq-last {
   cursor: pointer;
 }
 /* Admin paneli */
+.adm-backup { margin-top: 16px; }
+.adm-err-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.adm-err .adm-item-main b { font-size: 14px; font-weight: 700; word-break: break-word; }
+.adm-err-count {
+  display: inline-block;
+  padding: 1px 8px;
+  margin: 0 4px;
+  border-radius: 999px;
+  background: rgba(var(--accent-rgb), 0.16);
+  color: var(--accent-light);
+  font-size: 12px;
+  font-weight: 800;
+}
+.adm-err-meta { word-break: break-all; }
+.adm-err details summary { cursor: pointer; color: var(--accent-light); font-size: 12px; margin-top: 4px; }
+.adm-err pre {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  max-height: 260px;
+  overflow: auto;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #d9e4de;
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
 .adm-tabs {
   margin-bottom: 16px;
 }

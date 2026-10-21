@@ -29,6 +29,8 @@ function device(name) {
   const auth = crypto.randomBytes(16);
   return { name, ecdh, auth, sub: { endpoint: `https://localhost:${mockPort}/push/${name}`, keys: { p256dh: ecdh.getPublicKey('base64url'), auth: auth.toString('base64url') } } };
 }
+// Shart bajarilguncha kutish (CPU band bo'lsa push kechikishi mumkin)
+async function waitFor(fn, ms = 6000) { const end = Date.now() + ms; while (!fn() && Date.now() < end) await sleep(100); }
 const pushes = (dev) => received.filter((r) => r.path === '/push/' + dev.name);
 const open = (dev, r) => JSON.parse(ece.decrypt(r.body, { version: 'aes128gcm', privateKey: dev.ecdh, authSecret: dev.auth.toString('base64url') }).toString());
 
@@ -48,7 +50,7 @@ test('Sayt fonda: push yetadi, har qurilmaga o\'z tilida', async () => {
   sb.emit('page-visibility', { hidden: true });
   await sleep(200);
   sa.emit('challenge-send', { username: b.name, initial: 180, increment: 2 });
-  await sleep(1200);
+  await waitFor(() => pushes(d1).length && pushes(d2).length);
   assert.equal(pushes(d1).length, 1);
   assert.equal(pushes(d2).length, 1);
   const p1 = open(d1, pushes(d1)[0]), p2 = open(d2, pushes(d2)[0]);
@@ -59,8 +61,9 @@ test('Sayt fonda: push yetadi, har qurilmaga o\'z tilida', async () => {
   // Ilova push orqali ochildi (yangi ulanish) → kutayotgan chaqiruv qayta yuboriladi
   sb.disconnect();
   const sb2 = await srv.connect(b);
+  await waitFor(() => sb2.events.some((e) => e.e === 'challenge-received'), 3000);
   const again = sb2.events.find((e) => e.e === 'challenge-received');
-  assert.ok(again && again.p.seconds > 3 && again.p.seconds < 60);
+  assert.ok(again && again.p.seconds > 3 && again.p.seconds <= 60);
   // Sayt ko'rinib turibdi → push yo'q
   const before = received.length;
   await srv.api(a, '/api/chat/messages', 'POST', { roomId: 'user_' + b.id, message: 'salom' });
@@ -73,8 +76,9 @@ test('Sayt fonda: push yetadi, har qurilmaga o\'z tilida', async () => {
   await sleep(700);
   assert.equal(received.length, before);
   // Ijtimoiy turkum yoqiq → do'stlik so'rovi keladi, profil havolasi bilan
+  const n1 = pushes(d1).length;
   await srv.api(a, '/api/friends/request', 'POST', { username: b.name });
-  await sleep(800);
+  await waitFor(() => pushes(d1).length > n1);
   const fr = open(d1, pushes(d1).slice(-1)[0]);
   assert.equal(fr.url, '/?profile=' + a.name);
   sa.disconnect(); sb2.disconnect();

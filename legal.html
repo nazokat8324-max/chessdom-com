@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ChessDom</title>
+  <meta name="robots" content="index, follow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- Maxfiylik siyosati (/maxfiylik) va Foydalanish shartlari (/shartlar). Matnlar — legal-content.js; aloqa manzili server tomonidan qo'yiladi (CONTACT_EMAIL). -->
+  <style>
+    :root { --accent: #01ccd5; --bg: #0b1114; --surface: #121b1f; --border: rgba(255, 255, 255, 0.08); --text: #e8eef0; --muted: #93a4aa; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: Inter, 'Segoe UI', Arial, sans-serif; background: radial-gradient(circle at 0 0, rgba(1, 204, 213, 0.12), transparent 40%), var(--bg); color: var(--text); line-height: 1.6; }
+    .lg-top { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 20px; background: rgba(11, 17, 20, 0.9); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+    .lg-brand { display: flex; align-items: center; gap: 8px; color: #fff; font-weight: 800; font-size: 18px; text-decoration: none; }
+    .lg-brand span { color: var(--accent); }
+    .lg-langs { display: flex; gap: 4px; flex-wrap: wrap; }
+    .lg-langs button { padding: 5px 9px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .lg-langs button.active { color: #fff; border-color: var(--accent); background: rgba(1, 204, 213, 0.15); }
+    main { max-width: 820px; margin: 0 auto; padding: 28px 20px 60px; }
+    .lg-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 5px; margin-bottom: 24px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
+    .lg-tabs a { padding: 10px; border-radius: 10px; text-align: center; color: var(--muted); font-weight: 700; text-decoration: none; }
+    .lg-tabs a.active { color: #fff; background: rgba(1, 204, 213, 0.18); box-shadow: inset 0 0 0 1px rgba(1, 204, 213, 0.5); }
+    h1 { margin: 0 0 6px; font-size: 30px; line-height: 1.2; }
+    .lg-date { margin: 0 0 18px; font-size: 13px; color: var(--muted); }
+    .lg-intro { padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); }
+    h2 { margin: 28px 0 8px; font-size: 18px; color: #fff; }
+    h2 i { display: inline-block; min-width: 26px; font-style: normal; color: var(--accent); }
+    p { margin: 0 0 10px; color: #d3dde0; }
+    ul { margin: 0 0 10px; padding-left: 22px; color: #d3dde0; }
+    li { margin-bottom: 6px; }
+    a { color: var(--accent); }
+    .lg-back { display: inline-block; margin-top: 30px; padding: 10px 18px; border-radius: 12px; background: var(--accent); color: #032326; font-weight: 800; text-decoration: none; }
+    @media (max-width: 560px) { h1 { font-size: 24px; } .lg-top { padding: 10px 14px; } main { padding: 20px 14px 50px; } }
+  </style>
+</head>
+<body data-contact="__CONTACT__">
+  <header class="lg-top">
+    <a class="lg-brand" href="/">♞ Chess<span>Dom</span></a>
+    <nav class="lg-langs" id="lgLangs"></nav>
+  </header>
+  <main>
+    <nav class="lg-tabs"><a href="/maxfiylik" id="lgTabPrivacy"></a><a href="/shartlar" id="lgTabTerms"></a></nav>
+    <article id="lgDoc"></article>
+    <a class="lg-back" href="/" id="lgBack"></a>
+  </main>
+  <script src="legal-content.js"></script>
+  <script>
+    (function () {
+      var LANGS = [['uz', "O'zbekcha"], ['en', 'English'], ['ru', 'Русский'], ['es', 'Español'], ['de', 'Deutsch'], ['fr', 'Français']];
+      var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
+      var doc = /shartlar|terms/.test(location.pathname) ? 'terms' : 'privacy';
+      var saved = null;
+      try { saved = localStorage.getItem('justChessLang'); } catch (e) {}
+      var q = new URLSearchParams(location.search).get('lang');
+      var lang = [q, saved, (navigator.language || 'en').slice(0, 2), 'en'].filter(function (l) { return l && LEGAL_TEXT[l]; })[0];
+      var contact = document.body.getAttribute('data-contact');
+      function render() {
+        var T = LEGAL_TEXT[lang], D = T[doc], ui = T.ui;
+        var contactHtml = contact && contact.indexOf('@') > 0 ? '<a href="mailto:' + esc(contact) + '">' + esc(contact) + '</a>' : esc(ui.contactNone);
+        var html = '<h1>' + esc(ui[doc]) + '</h1><p class="lg-date">' + esc(ui.updated) + ': ' + esc(LEGAL_UPDATED) + '</p><p class="lg-intro">' + esc(D.intro) + '</p>';
+        D.sections.forEach(function (s, i) {
+          html += '<h2><i>' + (i + 1) + '.</i>' + esc(s[0]) + '</h2>';
+          s[1].forEach(function (block) {
+            if (Array.isArray(block)) html += '<ul>' + block.map(function (li) { return '<li>' + esc(li) + '</li>'; }).join('') + '</ul>';
+            else html += '<p>' + esc(block).replace('{{contact}}', contactHtml) + '</p>';
+          });
+        });
+        document.getElementById('lgDoc').innerHTML = html;
+        document.getElementById('lgTabPrivacy').textContent = ui.privacy;
+        document.getElementById('lgTabTerms').textContent = ui.terms;
+        document.getElementById('lgTabPrivacy').className = doc === 'privacy' ? 'active' : '';
+        document.getElementById('lgTabTerms').className = doc === 'terms' ? 'active' : '';
+        document.getElementById('lgBack').textContent = '← ' + ui.back;
+        document.title = ui[doc] + ' · ChessDom';
+        document.documentElement.lang = lang;
+        document.getElementById('lgLangs').innerHTML = LANGS.map(function (l) { return '<button type="button" data-lang="' + l[0] + '" class="' + (l[0] === lang ? 'active' : '') + '">' + esc(l[1]) + '</button>'; }).join('');
+        Array.prototype.forEach.call(document.querySelectorAll('[data-lang]'), function (b) {
+          b.addEventListener('click', function () { lang = b.getAttribute('data-lang'); try { localStorage.setItem('justChessLang', lang); } catch (e) {} render(); });
+        });
+      }
+      render();
+    })();
+  </script>
+</body>
+</html>

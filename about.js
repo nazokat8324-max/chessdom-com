@@ -122,7 +122,7 @@
           <li><b>flagcdn.com</b> — ${esc(t('aboutCreditFlags', 'davlat bayroqlari'))}</li>
         </ul>
       </section>
-      <footer class="ab-footer">© 2026 ChessDom</footer>`;
+      <footer class="ab-footer">© 2026 ChessDom · <a href="/shartlar" target="_blank" rel="noopener">${esc(t('legalTerms', 'Foydalanish shartlari'))}</a> · <a href="/maxfiylik" target="_blank" rel="noopener">${esc(t('legalPrivacy', 'Maxfiylik siyosati'))}</a></footer>`;
 
     bindInteractions(root);
   }

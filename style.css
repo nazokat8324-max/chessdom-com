@@ -13618,6 +13618,57 @@ button.tea-chair:not([disabled]):hover {
   font-size: 10px;
 }
 
+/* ===== Huquqiy hujjatlar havolalari va akkauntni o'chirish ===== */
+.auth-legal {
+  margin: 10px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--cd-muted, #93a4aa);
+}
+.auth-legal a,
+.ab-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.auth-legal a:hover,
+.ab-footer a:hover {
+  text-decoration: underline;
+}
+.set-legal {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.set-legal a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.set-del-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(248, 113, 113, 0.08);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+}
+.set-del-form[hidden] {
+  display: none;
+}
+.set-del-form .set-input {
+  flex: none; /* ustunli flex ichida balandligi qisqarmasin */
+}
+.set-del-form p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #fecaca;
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {

@@ -224,6 +224,35 @@
       </div>`;
   }
 
+  // Akkauntni butunlay o'chirish (POST /api/users/me/delete): parol + nomni qayta yozish
+  async function deleteAccount(e) {
+    e.preventDefault();
+    const msg = document.getElementById('setDelMsg');
+    const btn = document.getElementById('setDelSubmit');
+    const password = document.getElementById('setDelPass').value;
+    const confirmName = document.getElementById('setDelName').value.trim();
+    const u = window.currentUser;
+    const show = (text) => { if (msg) { msg.textContent = text; msg.className = 'set-msg err'; } };
+    if (!u) return;
+    if (!password) return show(tx('setDeleteNeedPass', 'Parolni kiriting'));
+    if (confirmName !== u.username) return show(tx('setDeleteNameMismatch', "Foydalanuvchi nomi mos kelmadi"));
+    if (!confirm(tx('setDeleteFinal', "Akkauntingiz butunlay o'chiriladi. Davom etasizmi?"))) return;
+    btn.disabled = true;
+    const d = await fetch('/api/users/me/delete', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + window.authToken }, body: JSON.stringify({ password, confirm: confirmName }) })
+      .then(r => r.json()).catch(() => null);
+    btn.disabled = false;
+    if (!d || !d.success) return show(tServer(d && d.message) || tx('errGeneric', 'Xatolik yuz berdi!'));
+    // Sessiya tozalanadi va kirish sahifasi ochiladi
+    window.currentUser = null;
+    window.authToken = null;
+    ['justChessCurrentUser', 'justChessAuthToken', 'justChessStatsByMode', 'justChessGuestStats'].forEach(k => { try { localStorage.removeItem(k); } catch (err) {} });
+    window.stats = { wins: 0, losses: 0, draws: 0 };
+    if (typeof window.updateAuthHeaderUI === 'function') window.updateAuthHeaderUI();
+    if (typeof window.switchView === 'function') window.switchView('home');
+    if (typeof window.showAuthGate === 'function') window.showAuthGate('signup');
+    showToast(tx('setDeleteDone', "Akkauntingiz o'chirildi. Xayr! ♟"), 'success', 6000);
+  }
+
   function accountHtml() {
     const u = window.currentUser;
     if (!u) return '';
@@ -248,11 +277,27 @@
         </div>
         <div class="set-pass-actions"><span id="setPassMsg" class="set-msg"></span><button type="submit" class="set-mini accent">${esc(tx('setPassSubmit', "Parolni o'zgartirish"))}</button></div>
       </form>
+      <div class="set-card">
+        <div class="set-row">
+          <span><b>📜 ${esc(tx('setLegal', 'Hujjatlar'))}</b><small>${esc(tx('setLegalHint', "Saytdan foydalanish qoidalari va ma'lumotlaringiz qanday saqlanishi"))}</small></span>
+          <span class="set-legal"><a href="/shartlar" target="_blank" rel="noopener">${esc(tx('legalTerms', 'Foydalanish shartlari'))}</a><a href="/maxfiylik" target="_blank" rel="noopener">${esc(tx('legalPrivacy', 'Maxfiylik siyosati'))}</a></span>
+        </div>
+      </div>
       <div class="set-card set-danger">
         <div class="set-row">
           <span><b>${esc(tx('setLogout', 'Hisobdan chiqish'))}</b><small>${esc(tx('setLogoutHint', "Shu qurilmada tizimdan chiqasiz"))}</small></span>
           <button class="set-mini danger" data-logout="1">${esc(tx('btnLogout', 'Chiqish'))}</button>
         </div>
+        <div class="set-row">
+          <span><b>🗑 ${esc(tx('setDelete', "Akkauntni o'chirish"))}</b><small>${esc(tx('setDeleteHint', "Hisobingiz va barcha shaxsiy ma'lumotlaringiz butunlay o'chiriladi. Buni qaytarib bo'lmaydi."))}</small></span>
+          <button class="set-mini danger" data-del-open="1">${esc(tx('setDeleteOpen', "O'chirish…"))}</button>
+        </div>
+        <form class="set-del-form" id="setDeleteForm" autocomplete="off" hidden>
+          <p>${esc(tx('setDeleteWhat', "O'chiriladi: profil, rasm, o'yinlar tarixi, xabarlar, do'stlar, bildirishnomalar, yutuqlar, izohlar. Raqiblaringizning tarixida o'yinlar anonim nom bilan qoladi."))}</p>
+          <input type="password" id="setDelPass" class="set-input" placeholder="${esc(tx('setPassCurrent', 'Joriy parol'))}" autocomplete="current-password">
+          <input type="text" id="setDelName" class="set-input" placeholder="${esc(tx('setDeleteConfirm', 'Tasdiqlash uchun foydalanuvchi nomingizni yozing: {{name}}', { name: u.username }))}" autocomplete="off">
+          <div class="set-pass-actions"><span id="setDelMsg" class="set-msg"></span><button type="submit" class="set-mini danger" id="setDelSubmit">${esc(tx('setDeleteSubmit', "Butunlay o'chirish"))}</button></div>
+        </form>
       </div>`;
   }
 
@@ -330,6 +375,12 @@
     el.querySelectorAll('[data-go-profile]').forEach(b => b.addEventListener('click', () => window.openProfileModal && window.openProfileModal()));
     el.querySelectorAll('[data-email]').forEach(b => b.addEventListener('click', async () => { if (window.editProfileEmail) { await window.editProfileEmail(); render(); } }));
     el.querySelectorAll('[data-logout]').forEach(b => b.addEventListener('click', () => { if (confirm(tx('setLogoutConfirm', 'Hisobdan chiqasizmi?')) && window.handleLogout) window.handleLogout(); }));
+    el.querySelectorAll('[data-del-open]').forEach(b => b.addEventListener('click', () => {
+      const f = el.querySelector('#setDeleteForm');
+      if (f) { f.hidden = !f.hidden; if (!f.hidden) f.querySelector('#setDelPass').focus(); }
+    }));
+    const delForm = el.querySelector('#setDeleteForm');
+    if (delForm) delForm.addEventListener('submit', deleteAccount);
     el.querySelectorAll('[data-save]').forEach(b => b.addEventListener('click', save));
     el.querySelectorAll('[data-discard]').forEach(b => b.addEventListener('click', () => discard(true)));
     el.querySelectorAll('[data-reset]').forEach(b => b.addEventListener('click', () => {

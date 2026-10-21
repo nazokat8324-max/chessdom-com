@@ -756,6 +756,13 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_user_games_opp ON user_games (user_id, opponent)'
   ]) { try { await dbExec(sql); } catch (e) {} }
   await migrateHistoryToTable();
+  // O'chirilgan akkauntlar (FK siz): eski tokenlar bilan kirib bo'lmasligi uchun
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS deleted_accounts (
+      user_id TEXT PRIMARY KEY,
+      deleted_at TEXT NOT NULL
+    )
+  `);
 
   await migrateRatingsByMode();
   await migrateDirectChatRooms();
@@ -889,6 +896,27 @@ async function migrateHistoryToTable() {
     moved += fresh.length;
   }
   console.log(`🗂 O'yinlar tarixi ko'chirildi: ${rows.length} foydalanuvchi, ${moved} o'yin`);
+}
+
+// Akkauntni butunlay o'chirish. users qatori o'chirilganda bog'liq jadvallar (o'yinlar, xabarlar, do'stlar,
+// bildirishnomalar, izohlar...) FK ON DELETE CASCADE / SET NULL orqali tozalanadi. Raqiblarning tarixida
+// o'yinchi nomi anonim yorliq bilan almashtiriladi (bu nomni keyin boshqa odam olishi mumkin).
+async function deleteUserAccount(userId) {
+  const user = await dbGet('SELECT id, username FROM users WHERE id = ?', [userId]);
+  if (!user) return null;
+  const label = 'deleted-' + uuidv4().slice(0, 8);
+  await dbRun('DELETE FROM users WHERE id = ?', [userId]);
+  const rows = await dbAll('SELECT id, data FROM user_games WHERE opponent = ?', [user.username]);
+  for (const r of rows) {
+    const data = parseJson(r.data) || {};
+    data.opponent = label;
+    await dbRun('UPDATE user_games SET opponent = ?, data = ? WHERE id = ?', [label, JSON.stringify(data), r.id]);
+  }
+  await dbRun('INSERT INTO deleted_accounts (user_id, deleted_at) VALUES (?, ?)', [userId, new Date().toISOString()]);
+  return { username: user.username, label, renamedGames: rows.length };
+}
+async function loadDeletedAccountIds() {
+  return (await dbAll('SELECT user_id as "id" FROM deleted_accounts')).map(r => r.id);
 }
 
 function mapUserRow(row) {
@@ -2201,6 +2229,8 @@ module.exports = {
   addNewsPost,
   deleteNewsPost,
   historyEntries,
+  deleteUserAccount,
+  loadDeletedAccountIds,
   getUserHistory,
   getUserGameById,
   opponentSummary,

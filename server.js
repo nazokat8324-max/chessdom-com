@@ -90,12 +90,20 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona'];
+  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'maxfiylik', 'shartlar'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
   res.type('application/xml').send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + urls.map(u => `  <url><loc>${u.replace(/&/g, '&amp;')}</loc></url>`).join('\n') + '\n</urlset>\n');
+});
+// Maxfiylik siyosati va Foydalanish shartlari — alohida ommaviy sahifa (kirish talab qilinmaydi). CONTACT_EMAIL (env) — aloqa manzili
+const LEGAL_HTML = fs.readFileSync(path.join(__dirname, 'legal.html'), 'utf8').replace('__CONTACT__', escapeHtml(process.env.CONTACT_EMAIL || ''));
+const LEGAL_ALIASES = { '/privacy': '/maxfiylik', '/terms': '/shartlar' };
+app.get(['/maxfiylik', '/shartlar', '/privacy', '/terms'], (req, res) => {
+  if (LEGAL_ALIASES[req.path]) return res.redirect(301, LEGAL_ALIASES[req.path]);
+  res.set('Cache-Control', 'no-cache');
+  res.type('html').send(LEGAL_HTML);
 });
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
@@ -1083,6 +1091,7 @@ function blockedPair(a, b) { return blocks.has(a + '|' + b) || blocks.has(b + '|
 
 // --- Hisobni bloklash (ban): userId -> { until, reason }. Har so'rovda bazaga murojaat qilmaslik uchun xotirada ---
 const bans = new Map();
+const deletedUsers = new Set(); // o'chirilgan akkauntlar (eski JWT bilan kira olmasin)
 function activeBan(userId) {
   const b = bans.get(userId);
   if (!b) return null;
@@ -1105,6 +1114,7 @@ function authMiddleware(req, res, next) {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    if (deletedUsers.has(decoded.userId)) return res.status(401).json({ success: false, message: 'Invalid or expired token' });
     const ban = activeBan(decoded.userId);
     if (ban) return res.status(403).json({ success: false, banned: true, message: banMessage(ban) });
     req.user = decoded;
@@ -1387,6 +1397,36 @@ async function start() {
       await db.updateUserPassword(user.id, await bcrypt.hash(next, 10));
       res.json({ success: true, message: "Parol o'zgartirildi!" });
     } catch (err) { console.error('Parol xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // Akkauntni butunlay o'chirish: parol + foydalanuvchi nomini qayta yozish bilan tasdiqlanadi
+  app.post('/api/users/me/delete', authMiddleware, loginLimiter, async (req, res) => {
+    try {
+      const password = String((req.body && req.body.password) || '');
+      const confirmName = String((req.body && req.body.confirm) || '').trim();
+      const user = await db.getUserById(req.user.userId);
+      if (!user) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      if (!(await bcrypt.compare(password, user.password_hash))) return res.status(401).json({ success: false, reason: 'password', message: "Joriy parol noto'g'ri!" });
+      if (confirmName !== user.username) return res.status(400).json({ success: false, reason: 'confirm', message: "Foydalanuvchi nomi mos kelmadi!" });
+      if (inActiveGame(user.id)) return res.status(409).json({ success: false, reason: 'in_game', message: "Avval joriy o'yiningizni tugating!" });
+      // Xotiradagi holat: navbat, choyxona stoli, chaqiruvlar
+      const qi = matchmakingQueue.findIndex(q => q.userId === user.id);
+      if (qi !== -1) matchmakingQueue.splice(qi, 1);
+      teaStand(user.id);
+      for (const c of challenges.values()) if (c.fromId === user.id || c.toId === user.id) dropChallenge(c.id);
+      const result = await db.deleteUserAccount(user.id);
+      deletedUsers.add(user.id);
+      bans.delete(user.id);
+      mutes.delete(user.id);
+      invalidateCache('leaderboard', 'daily:day', 'daily:week', 'clubs');
+      console.log(`🗑 Akkaunt o'chirildi: ${user.username} (${result ? result.renamedGames : 0} ta raqib yozuvi anonimlashtirildi)`);
+      res.json({ success: true, message: "Akkauntingiz o'chirildi" });
+      // Ochiq qurilmalardagi ulanishlar uziladi
+      setTimeout(() => {
+        io.in('user_' + user.id).disconnectSockets(true);
+        if (onlineUsers.delete(user.id)) io.emit('presence', { userId: user.id, online: false, lastSeen: new Date().toISOString() });
+      }, 300);
+    } catch (err) { console.error("Akkauntni o'chirish xatoligi:", err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   // --- Onlayn holat ---
@@ -2501,6 +2541,7 @@ async function start() {
     socket.on('authenticate', (token) => {
       try {
         const decoded = jwt.verify(token, JWT_SECRET);
+        if (deletedUsers.has(decoded.userId)) { socket.emit('auth-error', { deleted: true }); return; }
         const ban = activeBan(decoded.userId);
         if (ban) { socket.emit('auth-error', { banned: true, message: banMessage(ban) }); return; }
         socket.data.userId = decoded.userId;
@@ -2854,6 +2895,7 @@ async function start() {
   try {
     for (const b of await db.loadAllBlocks()) blocks.add(b.userId + '|' + b.blockedId);
     for (const b of await db.loadBans()) bans.set(b.id, { until: b.until, reason: b.reason || '' });
+    for (const id of await db.loadDeletedAccountIds()) deletedUsers.add(id);
     for (const m of await db.loadMutes()) if (m.until) mutes.set(m.id, m.until);
     setChatFilter(await db.listChatFilter());
     const admins = String(process.env.ADMIN_USERNAMES || '').split(',').map(s => s.trim()).filter(Boolean);

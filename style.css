@@ -12288,6 +12288,7 @@ body.wr-open {
 .wr-nav.prev { left: 0; }
 .wr-nav.next { right: 0; width: 65%; }
 .wr-slide {
+  overflow-wrap: anywhere; /* uzun ism (30 belgi) tor ekranda chetga chiqmasin */
   position: absolute;
   inset: 0;
   padding: 80px 28px 40px;
@@ -14014,8 +14015,10 @@ button.tea-chair:not([disabled]):hover {
    - Taxtada brauzer aylantirish/kattalashtirishni o'zi qilmasin: chessboard.js touchmove ni window ga ulaydi va u yerda
      preventDefault passiv bo'lgani uchun ishlamaydi — donani sudraganda sahifa ham aylanib ketardi.
    - Tugmalarda ikki marta bosishdagi kattalashish va 300 ms kechikish yo'q. */
-#chessBoard,
-#liveBoard {
+/* Faqat dona surilishi mumkin bo'lganda: o'yin davomida va jonli o'yinda "Keyingi yurishni top" yoqilganda.
+   O'yindan oldin/keyin taxta ustidan sahifani aylantirib, pastdagi tugmalarga yetish mumkin. */
+#gameView.pg-mode-in #chessBoard,
+#liveBoard.lv-guess-mode {
   touch-action: none;
 }
 button,

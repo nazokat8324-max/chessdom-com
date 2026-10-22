@@ -196,6 +196,24 @@ test("Telefon: Xabarlar — uzun havolali suhbat ekranga sig'adi, yuborish tugma
   assert.deepEqual(p.errors, []);
 });
 
+test("Bosh sahifadagi \"Onlayn o'ynash\" darhol raqib qidiradi; taxta o'yindan oldin sahifani aylantirishga xalaqit bermaydi", opts, async () => {
+  const u = await srv.register('Uqp');
+  const p = await page(u, { width: 375, height: 667, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await sleep(700);
+  await p.evaluate(() => switchView('game'));
+  await sleep(300);
+  assert.equal(await p.evaluate(() => getComputedStyle(document.getElementById('chessBoard')).touchAction), 'auto', "o'yindan oldin taxta ustidan aylantirish mumkin");
+  await p.evaluate(() => switchView('home'));
+  await sleep(300);
+  await (await p.$('#playOnlineBtn')).tap();
+  await sleep(1200);
+  const s = await p.evaluate(() => ({ view: document.querySelector('.view-section.active-view').id, searching: !!window.isSearchingOpponent }));
+  assert.deepEqual(s, { view: 'gameView', searching: true });
+  await p.evaluate(() => window.cancelSearch && window.cancelSearch());
+  assert.deepEqual(p.errors, []);
+});
+
 test("Service worker ro'yxatdan o'tadi", opts, async () => {
   const u = await srv.register('Us');
   const p = await page(u);

@@ -63,6 +63,9 @@
     const tg = el.querySelector('[data-guess-toggle]');
     if (tg) tg.addEventListener('click', () => { st.guessMode = !st.guessMode; if (!st.guessMode) clearGuess(); render(); });
     el.querySelector('[data-pred-lb]').addEventListener('click', openLeaderboard);
+    // Taxmin rejimida taxtada barmoq donani suradi (sahifa aylanmaydi), aks holda taxta ustidan sahifani aylantirish mumkin
+    const lb = document.getElementById('liveBoard');
+    if (lb) lb.classList.toggle('lv-guess-mode', !!(st.guessMode && !st.ended));
   }
 
   function pick(k) {

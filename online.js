@@ -325,10 +325,15 @@ window.updateOnlineStatus = function(online) {
 };
 
 window.handleStartGame = async function() {
-  if (window.pendingOnlineMatchmaking) {
-    window.pendingOnlineMatchmaking = false;
-  }
   await startMatchmaking();
+};
+
+// Bosh sahifadagi "⚡ Onlayn o'ynash": o'yin sahifasini ochib, darhol raqib qidiradi (o'yin panelidagi vaqt —
+// standart holatda Sozlamalardagi "Onlayn o'ynash" vaqti). O'yin davom etayotgan yoki qidiruv ketayotgan bo'lsa — faqat sahifa.
+window.quickPlayOnline = function() {
+  const busy = window.isSearchingOpponent || (typeof window.isGameInProgress === 'function' && window.isGameInProgress());
+  if (busy || !window.currentUser) { switchView('game'); return; }
+  startMatchmaking();
 };
 
 // Sozlamalarda tanlangan davlat ustun; bo'lmasa akkauntdagisi

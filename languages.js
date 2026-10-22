@@ -2781,6 +2781,7 @@ const translationsExtra = {
     shAgreement: "Kelishilgan durrang",
     provisionalHint: "Taxminiy reyting: dastlabki 15 o'yinda tezroq o'zgaradi",
     profModeGamesProvisional: "{{count}} ta o'yin · taxminiy",
+    legalCredits: "Mualliflar va litsenziyalar",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -4097,6 +4098,7 @@ const translationsExtra = {
     shAgreement: "Draw agreed",
     provisionalHint: "Provisional rating: changes faster during the first 15 games",
     profModeGamesProvisional: "{{count}} games · provisional",
+    legalCredits: "Credits & licenses",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -5413,6 +5415,7 @@ const translationsExtra = {
     shAgreement: "Ничья по соглашению",
     provisionalHint: "Предварительный рейтинг: в первых 15 партиях меняется быстрее",
     profModeGamesProvisional: "Партий: {{count}} · предварительный",
+    legalCredits: "Авторы и лицензии",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -6729,6 +6732,7 @@ const translationsExtra = {
     shAgreement: "Tablas acordadas",
     provisionalHint: "Rating provisional: cambia más rápido en las primeras 15 partidas",
     profModeGamesProvisional: "{{count}} partidas · provisional",
+    legalCredits: "Créditos y licencias",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -8045,6 +8049,7 @@ const translationsExtra = {
     shAgreement: "Remis vereinbart",
     provisionalHint: "Vorläufige Wertung: ändert sich in den ersten 15 Partien schneller",
     profModeGamesProvisional: "{{count}} Partien · vorläufig",
+    legalCredits: "Mitwirkende & Lizenzen",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -9361,6 +9366,7 @@ const translationsExtra = {
     shAgreement: "Nulle par accord",
     provisionalHint: "Classement provisoire : évolue plus vite pendant les 15 premières parties",
     profModeGamesProvisional: "{{count}} parties · provisoire",
+    legalCredits: "Crédits et licences",
     searchNoResults: "Aucun résultat"
   }
 };

@@ -1,8 +1,10 @@
+// Ovozlar saytning o'zida: tools/make-sounds.js bilan sintez qilingan (mualliflik huquqi loyihaniki).
+// 2026-10-22 gacha lichess.org "standard" ovozlari ishlatilardi — ular lichess litsenziyasida "non-free".
 const sounds = {
-  move: new Howl({ src: ['https://lichess1.org/assets/sound/standard/Move.ogg', 'https://lichess1.org/assets/sound/standard/Move.mp3'] }),
-  capture: new Howl({ src: ['https://lichess1.org/assets/sound/standard/Capture.ogg', 'https://lichess1.org/assets/sound/standard/Capture.mp3'] }),
-  check: new Howl({ src: ['https://lichess1.org/assets/sound/standard/Move.ogg', 'https://lichess1.org/assets/sound/standard/Move.mp3'] }),
-  gameEnd: new Howl({ src: ['https://lichess1.org/assets/sound/standard/Victory.ogg', 'https://lichess1.org/assets/sound/standard/Victory.mp3'] })
+  move: new Howl({ src: ['assets/sounds/move.wav'] }),
+  capture: new Howl({ src: ['assets/sounds/capture.wav'] }),
+  check: new Howl({ src: ['assets/sounds/check.wav'] }),
+  gameEnd: new Howl({ src: ['assets/sounds/game-end.wav'] })
 };
 
 function playSound(type) {

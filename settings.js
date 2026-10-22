@@ -11,7 +11,8 @@
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français']];
   const THEMES = [['turquoise', 'themeTurquoise', 'Firuza'], ['ocean', 'themeOcean', 'Okean'], ['amethyst', 'themeAmethyst', 'Ametist'], ['sunset', 'themeSunset', 'Shafaq']];
-  const PIECES = [['wikipedia', 'Klassik'], ['cburnett', 'Lichess'], ['merida', 'Merida'], ['alpha', 'Alpha'], ['california', 'California'], ['staunty', 'Staunty']];
+  // Faqat erkin litsenziyali to'plamlar (board.js PIECE_SETS); mualliflari /mualliflar sahifasida
+  const PIECES = [['wikipedia', 'Klassik'], ['cburnett', 'Cburnett'], ['merida', 'Merida']];
   // Namuna pozitsiya (Italyan o'yini): oxirgi yurish Bc4, tanlangan ot g1 va uning yurishlari
   const PREVIEW_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR';
 
@@ -277,7 +278,7 @@
       <div class="set-card">
         <div class="set-row">
           <span><b>📜 ${esc(tx('setLegal', 'Hujjatlar'))}</b><small>${esc(tx('setLegalHint', "Saytdan foydalanish qoidalari va ma'lumotlaringiz qanday saqlanishi"))}</small></span>
-          <span class="set-legal"><a href="/shartlar" target="_blank" rel="noopener">${esc(tx('legalTerms', 'Foydalanish shartlari'))}</a><a href="/maxfiylik" target="_blank" rel="noopener">${esc(tx('legalPrivacy', 'Maxfiylik siyosati'))}</a></span>
+          <span class="set-legal"><a href="/shartlar" target="_blank" rel="noopener">${esc(tx('legalTerms', 'Foydalanish shartlari'))}</a><a href="/maxfiylik" target="_blank" rel="noopener">${esc(tx('legalPrivacy', 'Maxfiylik siyosati'))}</a><a href="/mualliflar" target="_blank" rel="noopener">${esc(tx('legalCredits', 'Mualliflar va litsenziyalar'))}</a></span>
         </div>
       </div>
       <div class="set-card set-danger">

@@ -46,6 +46,27 @@ test('Huquqiy sahifalar, sitemap va robots', async () => {
   for (const p of ['/choyxona', '/bayroqlar', '/maxfiylik', '/shartlar']) assert.ok(sm.includes(p), p);
   assert.ok(!sm.includes('/turnirlar'), "to'xtatilgan turnirlar sitemap'da yo'q");
   assert.match(await (await get('/robots.txt')).text(), /Sitemap: /);
+  assert.equal((await get('/mualliflar')).status, 200);
+  assert.equal((await get('/credits')).headers.get('location'), '/mualliflar');
+  assert.ok(sm.includes('/mualliflar'));
+});
+
+test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mualliflar ro'yxati to'liq", async () => {
+  const fs = require('fs');
+  const path = require('path');
+  const root = path.join(__dirname, '..');
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const files = [...html.matchAll(/<script src="([\w.-]+\.js)"/g)].map((m) => m[1]);
+  for (const f of files.concat(['index.html', 'style.css'])) {
+    assert.ok(!fs.readFileSync(path.join(root, f), 'utf8').includes('lichess1.org'), f + " lichess serveridan resurs olmasin");
+  }
+  for (const s of ['move', 'capture', 'check', 'game-end']) assert.equal((await get('/assets/sounds/' + s + '.wav')).status, 200, s);
+  for (const set of ['cburnett', 'merida']) assert.equal((await get('/img/chesspieces/' + set + '/wK.svg')).status, 200, set);
+  global.window = {};
+  require(path.join(root, 'legal-content.js'));
+  const credits = JSON.stringify(window.LEGAL_CREDITS);
+  for (const name of ['Stockfish', 'Noto Emoji Animation', 'Cburnett', 'Merida', 'chessboard.js', 'gifenc']) assert.ok(credits.includes(name), name);
+  assert.ok(!/alpha|california|staunty/i.test(fs.readFileSync(path.join(root, 'board.js'), 'utf8').match(/PIECE_SETS = \[[^\]]*\]/)[0]), "NC/shaxsiy litsenziyali to'plamlar yo'q");
 });
 
 test('PWA: manifest, service worker, ikonkalar, VAPID kaliti', async () => {

@@ -2,7 +2,8 @@
 // Har hujjat: title, updated, intro, sections: [[sarlavha, [paragraf yoki ["ro'yxat", ...]] ...]]. {{contact}} — aloqa manzili.
 window.LEGAL_TEXT = {
   uz: {
-    ui: { privacy: 'Maxfiylik siyosati', terms: 'Foydalanish shartlari', back: "Saytga qaytish", updated: 'Oxirgi yangilanish', contactNone: "sayt ichidagi «Shikoyat» tugmasi orqali ma'muriyatga yozing" },
+    ui: { credits: "Mualliflar va litsenziyalar", privacy: 'Maxfiylik siyosati', terms: 'Foydalanish shartlari', back: "Saytga qaytish", updated: 'Oxirgi yangilanish', contactNone: "sayt ichidagi «Shikoyat» tugmasi orqali ma'muriyatga yozing" },
+    credits: {"intro":"ChessDom ochiq kodli kutubxonalar va erkin litsenziyali resurslar asosida qurilgan. Ularning mualliflariga rahmat! Quyida saytda ishlatiladigan har bir begona resurs, muallifi va litsenziyasi.","code":"Dasturiy kutubxonalar (brauzerda)","assets":"Rasmlar, shriftlar va ma'lumotlar","own":"ChessDom'ning o'zi yaratgan","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite va boshqa ochiq kodli paketlar (MIT, BSD, ISC, MPL-2.0 litsenziyalari) — ular foydalanuvchiga uzatilmaydi.","gpl":"GPL litsenziyali qismlar (Stockfish tahlil dvigateli va GPL dona to'plamlari) o'zgartirilmagan holda ishlatiladi; ularning manba kodi yuqoridagi havolalarda ochiq.","ownText":"Yurish ovozlari (dastur bilan sintez qilingan), logotip, ikonkalar, atlas naqshi va havola rasmi."},
     privacy: {
       intro: "ChessDom — onlayn shaxmat sayti. Bu sahifa qanday ma'lumotlaringizni saqlashimiz, nima uchun va qanday himoya qilishimizni tushuntiradi. Saytdan foydalanib, siz shu siyosatga rozilik bildirasiz.",
       sections: [
@@ -21,7 +22,7 @@ window.LEGAL_TEXT = {
         ]],
         ["Uchinchi tomon xizmatlari", [
           ["Render — sayt serveri (hosting).", "Neon — PostgreSQL ma'lumotlar bazasi.", "Brevo — parolni tiklash xatlarini yuborish.", "Telegram — faqat botni ulasangiz: chat ID va bildirishnoma matnlari yuboriladi.", "Push-bildirishnomalar — faqat yoqsangiz, brauzeringiz xizmati (Google, Apple, Mozilla) orqali.",
-           "Kutubxona va shriftlar uchun CDN'lar: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; bayroqlar — flagcdn.com; dona rasmlari — lichess1.org; stikerlar — Google Noto Emoji.",
+           "Kutubxona va shriftlar uchun CDN'lar: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; bayroqlar — flagcdn.com; stikerlar — Google Noto Emoji.",
            "Bu xizmatlar texnik sabablarga ko'ra IP manzilingizni ko'rishi mumkin. O'yin tahlili (Stockfish) to'liq brauzeringizda ishlaydi."]
         ]],
         ["Saqlash muddati", [
@@ -79,7 +80,8 @@ window.LEGAL_TEXT = {
     }
   },
   en: {
-    ui: { privacy: 'Privacy Policy', terms: 'Terms of Use', back: 'Back to the site', updated: 'Last updated', contactNone: 'write to the administrators using the “Report” button on the site' },
+    ui: { credits: "Credits & licenses", privacy: 'Privacy Policy', terms: 'Terms of Use', back: 'Back to the site', updated: 'Last updated', contactNone: 'write to the administrators using the “Report” button on the site' },
+    credits: {"intro":"ChessDom is built on open-source libraries and freely licensed resources. Thank you to their authors! Below is every third-party resource the site uses, with its author and license.","code":"Software libraries (in the browser)","assets":"Images, fonts and data","own":"Made by ChessDom","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite and other open-source packages (MIT, BSD, ISC, MPL-2.0 licenses) — these are not delivered to users.","gpl":"GPL-licensed parts (the Stockfish analysis engine and the GPL piece sets) are used unmodified; their source code is available at the links above.","ownText":"Move sounds (synthesized in code), the logo, icons, the atlas pattern and the link preview image."},
     privacy: {
       intro: 'ChessDom is an online chess site. This page explains what data we store, why, and how we protect it. By using the site you agree to this policy.',
       sections: [
@@ -98,7 +100,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Third-party services', [
           ['Render — web hosting.', 'Neon — PostgreSQL database.', 'Brevo — sending password-reset emails.', 'Telegram — only if you link the bot: your chat ID and notification texts are sent.', 'Push notifications — only if you enable them, via your browser vendor (Google, Apple, Mozilla).',
-           'CDNs for libraries and fonts: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; flags — flagcdn.com; piece images — lichess1.org; stickers — Google Noto Emoji.',
+           'CDNs for libraries and fonts: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; flags — flagcdn.com; stickers — Google Noto Emoji.',
            'For technical reasons these services may see your IP address. Game analysis (Stockfish) runs entirely in your browser.']
         ]],
         ['How long we keep data', [
@@ -156,7 +158,8 @@ window.LEGAL_TEXT = {
     }
   },
   ru: {
-    ui: { privacy: 'Политика конфиденциальности', terms: 'Условия использования', back: 'Вернуться на сайт', updated: 'Последнее обновление', contactNone: 'напишите администрации через кнопку «Пожаловаться» на сайте' },
+    ui: { credits: "Авторы и лицензии", privacy: 'Политика конфиденциальности', terms: 'Условия использования', back: 'Вернуться на сайт', updated: 'Последнее обновление', contactNone: 'напишите администрации через кнопку «Пожаловаться» на сайте' },
+    credits: {"intro":"ChessDom построен на библиотеках с открытым кодом и ресурсах со свободными лицензиями. Спасибо их авторам! Ниже — каждый сторонний ресурс сайта, его автор и лицензия.","code":"Программные библиотеки (в браузере)","assets":"Изображения, шрифты и данные","own":"Создано ChessDom","server":"Сервер: Node.js, Express, Socket.IO, PostgreSQL / SQLite и другие пакеты с открытым кодом (лицензии MIT, BSD, ISC, MPL-2.0) — пользователям не передаются.","gpl":"Части под GPL (движок анализа Stockfish и наборы фигур под GPL) используются без изменений; их исходный код доступен по ссылкам выше.","ownText":"Звуки ходов (синтезированы программно), логотип, иконки, узор атласа и картинка для превью ссылок."},
     privacy: {
       intro: 'ChessDom — сайт для игры в шахматы онлайн. Здесь объясняется, какие данные мы храним, зачем и как защищаем. Пользуясь сайтом, вы соглашаетесь с этой политикой.',
       sections: [
@@ -175,7 +178,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Сторонние сервисы', [
           ['Render — хостинг сайта.', 'Neon — база данных PostgreSQL.', 'Brevo — отправка писем для сброса пароля.', 'Telegram — только если вы подключите бота: передаются ID чата и тексты уведомлений.', 'Push-уведомления — только если вы их включите, через сервис браузера (Google, Apple, Mozilla).',
-           'CDN для библиотек и шрифтов: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; флаги — flagcdn.com; изображения фигур — lichess1.org; стикеры — Google Noto Emoji.',
+           'CDN для библиотек и шрифтов: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; флаги — flagcdn.com; стикеры — Google Noto Emoji.',
            'По техническим причинам эти сервисы могут видеть ваш IP-адрес. Анализ партий (Stockfish) полностью работает в вашем браузере.']
         ]],
         ['Сроки хранения', [
@@ -233,7 +236,8 @@ window.LEGAL_TEXT = {
     }
   },
   es: {
-    ui: { privacy: 'Política de privacidad', terms: 'Condiciones de uso', back: 'Volver al sitio', updated: 'Última actualización', contactNone: 'escribe a los administradores con el botón «Denunciar» del sitio' },
+    ui: { credits: "Créditos y licencias", privacy: 'Política de privacidad', terms: 'Condiciones de uso', back: 'Volver al sitio', updated: 'Última actualización', contactNone: 'escribe a los administradores con el botón «Denunciar» del sitio' },
+    credits: {"intro":"ChessDom está construido con bibliotecas de código abierto y recursos con licencias libres. ¡Gracias a sus autores! Abajo está cada recurso de terceros que usa el sitio, con su autor y licencia.","code":"Bibliotecas de software (en el navegador)","assets":"Imágenes, fuentes y datos","own":"Creado por ChessDom","server":"Servidor: Node.js, Express, Socket.IO, PostgreSQL / SQLite y otros paquetes de código abierto (licencias MIT, BSD, ISC, MPL-2.0); no se envían a los usuarios.","gpl":"Las partes con licencia GPL (el motor de análisis Stockfish y los juegos de piezas GPL) se usan sin modificar; su código fuente está en los enlaces de arriba.","ownText":"Sonidos de las jugadas (sintetizados por código), el logotipo, los iconos, el patrón atlas y la imagen de vista previa."},
     privacy: {
       intro: 'ChessDom es un sitio de ajedrez en línea. Aquí explicamos qué datos guardamos, para qué y cómo los protegemos. Al usar el sitio aceptas esta política.',
       sections: [
@@ -252,7 +256,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Servicios de terceros', [
           ['Render — alojamiento web.', 'Neon — base de datos PostgreSQL.', 'Brevo — envío de emails de restablecimiento de contraseña.', 'Telegram — solo si conectas el bot: se envían tu ID de chat y los textos de las notificaciones.', 'Notificaciones push — solo si las activas, a través del servicio de tu navegador (Google, Apple, Mozilla).',
-           'CDN de bibliotecas y fuentes: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; banderas — flagcdn.com; imágenes de piezas — lichess1.org; stickers — Google Noto Emoji.',
+           'CDN de bibliotecas y fuentes: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; banderas — flagcdn.com; stickers — Google Noto Emoji.',
            'Por motivos técnicos estos servicios pueden ver tu IP. El análisis de partidas (Stockfish) funciona por completo en tu navegador.']
         ]],
         ['Cuánto tiempo los guardamos', [
@@ -310,7 +314,8 @@ window.LEGAL_TEXT = {
     }
   },
   de: {
-    ui: { privacy: 'Datenschutzerklärung', terms: 'Nutzungsbedingungen', back: 'Zurück zur Website', updated: 'Zuletzt aktualisiert', contactNone: 'schreibe den Administratoren über die Schaltfläche „Melden“ auf der Website' },
+    ui: { credits: "Mitwirkende & Lizenzen", privacy: 'Datenschutzerklärung', terms: 'Nutzungsbedingungen', back: 'Zurück zur Website', updated: 'Zuletzt aktualisiert', contactNone: 'schreibe den Administratoren über die Schaltfläche „Melden“ auf der Website' },
+    credits: {"intro":"ChessDom basiert auf Open-Source-Bibliotheken und frei lizenzierten Ressourcen. Danke an ihre Autoren! Unten steht jede fremde Ressource der Seite mit Autor und Lizenz.","code":"Software-Bibliotheken (im Browser)","assets":"Bilder, Schriften und Daten","own":"Von ChessDom erstellt","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite und weitere Open-Source-Pakete (Lizenzen MIT, BSD, ISC, MPL-2.0) — sie werden nicht an Nutzer ausgeliefert.","gpl":"GPL-lizenzierte Teile (die Stockfish-Analyse-Engine und die GPL-Figurensätze) werden unverändert genutzt; ihr Quellcode ist über die Links oben verfügbar.","ownText":"Zugklänge (per Code synthetisiert), Logo, Icons, das Atlas-Muster und das Link-Vorschaubild."},
     privacy: {
       intro: 'ChessDom ist eine Online-Schach-Website. Hier erklären wir, welche Daten wir speichern, wofür und wie wir sie schützen. Mit der Nutzung der Website stimmst du dieser Erklärung zu.',
       sections: [
@@ -329,7 +334,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Dienste von Drittanbietern', [
           ['Render — Webhosting.', 'Neon — PostgreSQL-Datenbank.', 'Brevo — Versand von E-Mails zum Zurücksetzen des Passworts.', 'Telegram — nur wenn du den Bot verbindest: Chat-ID und Benachrichtigungstexte werden gesendet.', 'Push-Benachrichtigungen — nur wenn du sie aktivierst, über den Dienst deines Browsers (Google, Apple, Mozilla).',
-           'CDNs für Bibliotheken und Schriften: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; Flaggen — flagcdn.com; Figurenbilder — lichess1.org; Sticker — Google Noto Emoji.',
+           'CDNs für Bibliotheken und Schriften: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; Flaggen — flagcdn.com; Sticker — Google Noto Emoji.',
            'Aus technischen Gründen können diese Dienste deine IP-Adresse sehen. Die Partieanalyse (Stockfish) läuft vollständig in deinem Browser.']
         ]],
         ['Speicherdauer', [
@@ -387,7 +392,8 @@ window.LEGAL_TEXT = {
     }
   },
   fr: {
-    ui: { privacy: 'Politique de confidentialité', terms: "Conditions d'utilisation", back: 'Retour au site', updated: 'Dernière mise à jour', contactNone: 'écrivez aux administrateurs avec le bouton « Signaler » du site' },
+    ui: { credits: "Crédits et licences", privacy: 'Politique de confidentialité', terms: "Conditions d'utilisation", back: 'Retour au site', updated: 'Dernière mise à jour', contactNone: 'écrivez aux administrateurs avec le bouton « Signaler » du site' },
+    credits: {"intro":"ChessDom repose sur des bibliothèques open source et des ressources sous licence libre. Merci à leurs auteurs ! Voici chaque ressource tierce utilisée par le site, avec son auteur et sa licence.","code":"Bibliothèques logicielles (dans le navigateur)","assets":"Images, polices et données","own":"Créé par ChessDom","server":"Serveur : Node.js, Express, Socket.IO, PostgreSQL / SQLite et d’autres paquets open source (licences MIT, BSD, ISC, MPL-2.0) — ils ne sont pas transmis aux utilisateurs.","gpl":"Les parties sous GPL (le moteur d’analyse Stockfish et les jeux de pièces GPL) sont utilisées sans modification ; leur code source est disponible via les liens ci-dessus.","ownText":"Sons des coups (synthétisés par code), logo, icônes, motif atlas et image d’aperçu des liens."},
     privacy: {
       intro: "ChessDom est un site d'échecs en ligne. Cette page explique quelles données nous conservons, pourquoi et comment nous les protégeons. En utilisant le site, vous acceptez cette politique.",
       sections: [
@@ -406,7 +412,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Services tiers', [
           ['Render — hébergement.', 'Neon — base de données PostgreSQL.', 'Brevo — envoi des emails de réinitialisation du mot de passe.', 'Telegram — uniquement si vous connectez le bot : votre ID de chat et les textes des notifications sont envoyés.', 'Notifications push — uniquement si vous les activez, via le service de votre navigateur (Google, Apple, Mozilla).',
-           'CDN pour les bibliothèques et les polices : cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts ; drapeaux — flagcdn.com ; images des pièces — lichess1.org ; stickers — Google Noto Emoji.',
+           'CDN pour les bibliothèques et les polices : cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts ; drapeaux — flagcdn.com ; stickers — Google Noto Emoji.',
            "Pour des raisons techniques, ces services peuvent voir votre adresse IP. L'analyse des parties (Stockfish) s'exécute entièrement dans votre navigateur."]
         ]],
         ['Durée de conservation', [
@@ -465,3 +471,35 @@ window.LEGAL_TEXT = {
   }
 };
 window.LEGAL_UPDATED = '2026-10-22';
+
+// 📜 Mualliflar va litsenziyalar (/mualliflar): [nomi, havola, muallif, litsenziya, litsenziya havolasi]
+// Yangi begona resurs (kutubxona, rasm, ovoz, shrift) qo'shilsa — shu yerga ham. Litsenziyasi noaniq yoki tijoratni
+// taqiqlaydigan (NC, "faqat shaxsiy") resurslarni ishlatmang.
+window.LEGAL_CREDITS = {
+  code: [
+    ['jQuery 3.5.1', 'https://jquery.com', 'OpenJS Foundation', 'MIT', 'https://opensource.org/license/mit'],
+    ['chess.js 0.10.3', 'https://github.com/jhlywa/chess.js', 'Jeff Hlywa', 'BSD-2-Clause', 'https://opensource.org/license/bsd-2-clause'],
+    ['chessboard.js 1.0.0', 'https://chessboardjs.com', 'Chris Oakman', 'MIT', 'https://opensource.org/license/mit'],
+    ['Socket.IO 4.7.2', 'https://socket.io', 'Guillermo Rauch & contributors', 'MIT', 'https://opensource.org/license/mit'],
+    ['howler.js 2.2.4', 'https://howlerjs.com', 'James Simpson (GoldFire Studios)', 'MIT', 'https://opensource.org/license/mit'],
+    ['Chart.js', 'https://www.chartjs.org', 'Chart.js contributors', 'MIT', 'https://opensource.org/license/mit'],
+    ['canvas-confetti 1.9.3', 'https://github.com/catdad/canvas-confetti', 'Kiril Vatev', 'ISC', 'https://opensource.org/license/isc-license-txt'],
+    ['i18next 23.11.5', 'https://www.i18next.com', 'Jan Mühlemann & contributors', 'MIT', 'https://opensource.org/license/mit'],
+    ['animate.css 4.1.1', 'https://animate.style', 'Daniel Eden & contributors', 'MIT', 'https://opensource.org/license/mit'],
+    ['D3 7.9.0', 'https://d3js.org', 'Mike Bostock', 'ISC', 'https://opensource.org/license/isc-license-txt'],
+    ['TopoJSON client 3.1.0', 'https://github.com/topojson/topojson-client', 'Mike Bostock', 'ISC', 'https://opensource.org/license/isc-license-txt'],
+    ['gifenc 1.0.3', 'https://github.com/mattdesl/gifenc', 'Matt DesLauriers', 'MIT', 'https://opensource.org/license/mit'],
+    ['Stockfish.js 10.0.2', 'https://github.com/niklasf/stockfish.js', 'Stockfish developers; port: Niklas Fiekas', 'GPL-3.0', 'https://www.gnu.org/licenses/gpl-3.0.html']
+  ],
+  assets: [
+    ['Wikipedia chess pieces', 'https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces', 'Colin M.L. Burnett', 'GPL / BSD / GFDL', 'https://www.gnu.org/licenses/gpl-2.0.html'],
+    ['Cburnett pieces', 'https://github.com/lichess-org/lila/tree/master/public/piece/cburnett', 'Colin M.L. Burnett', 'GPLv2+', 'https://www.gnu.org/licenses/gpl-2.0.html'],
+    ['Merida pieces', 'https://github.com/lichess-org/lila/tree/master/public/piece/merida', 'Armando Hernandez Marroquin', 'GPLv2+', 'https://www.gnu.org/licenses/gpl-2.0.html'],
+    ['Noto Emoji Animation', 'https://googlefonts.github.io/noto-emoji-animation/', 'Google', 'CC BY 4.0', 'https://creativecommons.org/licenses/by/4.0/'],
+    ['Noto Emoji', 'https://github.com/googlefonts/noto-emoji', 'Google', 'Apache-2.0', 'https://www.apache.org/licenses/LICENSE-2.0'],
+    ['Inter font', 'https://rsms.me/inter/', 'Rasmus Andersson & The Inter Project Authors', 'SIL OFL 1.1', 'https://openfontlicense.org'],
+    ['Country flags (flagcdn)', 'https://flagcdn.com', 'Flagpedia.net', 'Public domain', 'https://flagpedia.net'],
+    ['World map (Natural Earth, world-atlas)', 'https://github.com/topojson/world-atlas', 'Natural Earth; Mike Bostock', 'Public domain / ISC', 'https://www.naturalearthdata.com/about/terms-of-use/'],
+    ['Opening names (chess-openings)', 'https://github.com/lichess-org/chess-openings', 'lichess.org contributors', 'CC0 1.0', 'https://creativecommons.org/publicdomain/zero/1.0/']
+  ]
+};

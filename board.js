@@ -952,13 +952,15 @@ function onSnapEnd() {
 }
 
 // --- Donalar to'plami (Sozlamalar → Taxta) ---
-// 'wikipedia' — loyihadagi rasmlar; qolganlari lichess'ning ochiq SVG to'plamlari
-window.PIECE_SETS = ['wikipedia', 'cburnett', 'merida', 'alpha', 'california', 'staunty'];
+// Hammasi saytning o'zida (img/chesspieces/<to'plam>/): wikipedia (PNG), cburnett va merida (SVG) — GPLv2+,
+// mualliflari /mualliflar sahifasida. 2026-10-22 da alpha (faqat shaxsiy foydalanish), california va staunty
+// (CC BY-NC — tijorat taqiqlangan) olib tashlangan; saqlangan eski tanlov wikipedia ga qaytadi.
+window.PIECE_SETS = ['wikipedia', 'cburnett', 'merida'];
 window.currentPieceSet = 'wikipedia';
 window.pieceUrl = function(code, set) {
   const s = set || window.currentPieceSet;
   if (s === 'wikipedia' || !window.PIECE_SETS.includes(s)) return 'img/chesspieces/wikipedia/' + code + '.png';
-  return 'https://lichess1.org/assets/piece/' + s + '/' + code + '.svg';
+  return 'img/chesspieces/' + s + '/' + code + '.svg';
 };
 
 // Taxta afzalliklari: nuqtalar, oxirgi yurish, avtomatik farzin, taslimdan oldin so'rash

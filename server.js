@@ -107,7 +107,7 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'maxfiylik', 'shartlar'];
+  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'maxfiylik', 'shartlar', 'mualliflar'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
@@ -125,8 +125,8 @@ app.get('/manifest.json', (req, res) => {
 });
 // Maxfiylik siyosati va Foydalanish shartlari — alohida ommaviy sahifa (kirish talab qilinmaydi). CONTACT_EMAIL (env) — aloqa manzili
 const LEGAL_HTML = fs.readFileSync(path.join(__dirname, 'legal.html'), 'utf8').replace('__CONTACT__', escapeHtml(process.env.CONTACT_EMAIL || ''));
-const LEGAL_ALIASES = { '/privacy': '/maxfiylik', '/terms': '/shartlar' };
-app.get(['/maxfiylik', '/shartlar', '/privacy', '/terms'], (req, res) => {
+const LEGAL_ALIASES = { '/privacy': '/maxfiylik', '/terms': '/shartlar', '/credits': '/mualliflar' };
+app.get(['/maxfiylik', '/shartlar', '/mualliflar', '/privacy', '/terms', '/credits'], (req, res) => {
   if (LEGAL_ALIASES[req.path]) return res.redirect(301, LEGAL_ALIASES[req.path]);
   res.set('Cache-Control', 'no-cache');
   res.type('html').send(LEGAL_HTML);

@@ -148,6 +148,38 @@ test("O'yinni ulashish: GIF va rasm brauzerda yasaladi", opts, async () => {
   assert.deepEqual(p.errors, []);
 });
 
+test("Telefon yon holatda: oyna tugmasiga yetiladi, menyu ekranga sig'adi; klublar ikki ustunda", opts, async () => {
+  const u = await srv.register('Uland'), o = await srv.register('Ulando');
+  const p = await page(u, { width: 740, height: 360, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await sleep(700);
+  // O'yinga chaqirish oynasi: karta ekrandan oshmaydi va ichida aylanib "Chaqirish" ga yetiladi
+  await p.evaluate((n) => window.openChallengeDialog(n), o.name);
+  await sleep(500);
+  const ch = await p.evaluate(() => {
+    const card = document.querySelector('#challengeModal .ch-card');
+    const r = card.getBoundingClientRect();
+    card.scrollTop = card.scrollHeight;
+    const btn = card.querySelector('[data-send]').getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, btnBottom: btn.bottom, vh: innerHeight };
+  });
+  assert.ok(ch.top >= 0 && ch.bottom <= ch.vh, JSON.stringify(ch));
+  assert.ok(ch.btnBottom <= ch.vh, 'Chaqirish tugmasi: ' + JSON.stringify(ch));
+  await p.evaluate(() => document.getElementById('challengeModal').remove());
+  // "Ko'proq" menyusi chap chetdan chiqib ketmaydi
+  await p.tap('#navMore');
+  await sleep(400);
+  const menu = await p.evaluate(() => { const r = document.querySelector('.menu-list').getBoundingClientRect(); return { left: r.left, right: r.right, sw: document.documentElement.scrollWidth, vw: innerWidth }; });
+  assert.ok(menu.left >= 0 && menu.right <= menu.vw && menu.sw <= menu.vw, JSON.stringify(menu));
+  // Tik holatda klublar — ikki ustun
+  const p2 = await page(u, { width: 375, height: 667, isMobile: true, hasTouch: true });
+  await p2.goto(srv.base + '/klublar', { waitUntil: 'networkidle2' });
+  await sleep(900);
+  const cols = await p2.evaluate(() => getComputedStyle(document.getElementById('clubsListContainer')).gridTemplateColumns.split(' ').length);
+  assert.equal(cols, 2);
+  assert.deepEqual([...p.errors, ...p2.errors], []);
+});
+
 test("Service worker ro'yxatdan o'tadi", opts, async () => {
   const u = await srv.register('Us');
   const p = await page(u);

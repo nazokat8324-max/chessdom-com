@@ -7439,6 +7439,18 @@ button.ar-slot:hover {
   animation: chPop 0.22s ease;
 }
 @keyframes chPop { from { transform: scale(0.94); opacity: 0; } to { transform: none; opacity: 1; } }
+/* Past ekran (telefon yon holatda): karta ekrandan oshmaydi, ichida aylanadi — pastdagi tugmaga yetib boriladi */
+.ch-card {
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+@media (max-height: 500px) {
+  .ch-overlay { padding: 10px; }
+  .ch-card { max-height: calc(100dvh - 20px); padding: 16px 16px 14px; }
+  .ch-card .ch-icon { font-size: 26px; margin-bottom: 2px; }
+}
 .ch-card.incoming {
   border-color: rgba(246, 196, 69, 0.5);
 }
@@ -10495,6 +10507,10 @@ body:has(#gameView.active-view) .top-bar {
   .pg-moves-box {
     min-height: 120px;
     max-height: 220px;
+  }
+  /* O'yin paytida Durrang/Taslim — yurishlar ro'yxatidan oldin (taxtaga yaqinroq, kamroq aylantirish) */
+  #gameView.pg-mode-in #inGameButtons {
+    order: -1;
   }
 }
 
@@ -13971,6 +13987,44 @@ button.tea-chair:not([disabled]):hover {
   .inv-actions { flex-direction: column; }
 }
 
+/* ===== Telefon: teginish
+   - Taxtada brauzer aylantirish/kattalashtirishni o'zi qilmasin: chessboard.js touchmove ni window ga ulaydi va u yerda
+     preventDefault passiv bo'lgani uchun ishlamaydi — donani sudraganda sahifa ham aylanib ketardi.
+   - Tugmalarda ikki marta bosishdagi kattalashish va 300 ms kechikish yo'q. */
+#chessBoard,
+#liveBoard {
+  touch-action: none;
+}
+button,
+a,
+[onclick],
+.menu-item,
+.player-link,
+.tea-chair,
+.tea-table {
+  touch-action: manipulation;
+}
+/* iPhone (Safari): shrifti 16px dan kichik maydon bosilganda sahifa kattalashadi — faqat iOS da 16px */
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
+/* ===== Telefon: klublar ro'yxati ikki ustunda (bitta ustunda 200 ta davlat juda uzun bo'lardi) */
+@media (max-width: 600px) {
+  #clubsListContainer {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+    padding: 4px 0 !important;
+  }
+  .stamp-inner { padding: 10px 6px 8px; gap: 6px; }
+  .stamp-flag { width: 52px; height: 34px; }
+  .stamp-country-name { font-size: 12px; line-height: 1.25; word-break: break-word; }
+}
+
 /* ===== Telefon: pastki navigatsiya paneli ===== */
 .mobile-only,
 .mobile-menu-backdrop {
@@ -14611,7 +14665,11 @@ html.landscape-phone #gameView .time-btn {
   html.landscape-phone .sidebar-bottom {
     display: none;
   }
+  html.landscape-phone .sidebar-top {
+    width: 100%;
+  }
   html.landscape-phone .menu-list {
+    width: 100%;
     position: static;
     display: flex;
     flex-direction: column;
@@ -14625,6 +14683,8 @@ html.landscape-phone #gameView .time-btn {
     display: none;
   }
   html.landscape-phone .menu-list .menu-item.mobile-main {
+    width: 100%;
+    justify-content: center;
     padding: 9px 0;
   }
   html.landscape-phone .main-wrapper {
@@ -14646,6 +14706,39 @@ html.landscape-phone #gameView .time-btn {
   html.landscape-phone #gameView .control-panel {
     width: auto !important;
     flex: 1;
+  }
+  /* "Ko'proq" ochilganda: 60px ustun o'rniga chapdan to'liq yozuvli ro'yxat (aks holda yozuvlar ekrandan chiqib ketardi) */
+  html.landscape-phone body.mobile-menu-open .menu-list {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 900;
+    width: min(280px, 80vw);
+    max-height: none;
+    padding: 8px;
+    overflow-y: auto;
+    border-radius: 0;
+    border-right: 1px solid var(--cd-border-strong);
+    background: var(--cd-sidebar);
+    box-shadow: 12px 0 40px rgba(0, 0, 0, 0.5);
+  }
+  html.landscape-phone body.mobile-menu-open .menu-list .menu-item,
+  html.landscape-phone body.mobile-menu-open .menu-list .menu-item.mobile-main {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  html.landscape-phone body.mobile-menu-open .menu-list .menu-item.mobile-main span:not(.icon):not(.lg-nav-badge) {
+    display: inline;
+  }
+  /* Menyu ochiq — chap pastdagi 🔔 uning oxirgi bandini yopmasin */
+  html.landscape-phone body.mobile-menu-open .nf-wrap {
+    display: none;
   }
 }
 

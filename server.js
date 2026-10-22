@@ -1385,6 +1385,7 @@ async function start() {
       const { username, email, password } = req.body;
       const existing = await db.getUserByUsername(username);
       if (existing) return res.status(409).json({ success: false, message: 'Bu nomli foydalanuvchi mavjud!' });
+      if (await db.getUserByEmail(email)) return res.status(409).json({ success: false, message: 'Bu email boshqa akkauntga biriktirilgan!' });
       const passwordHash = await bcrypt.hash(password, 10);
       const user = await db.createUser({ username, email, passwordHash });
       // 🔗 Taklif havolasi orqali kelgan bo'lsa — kim taklif qilgani yoziladi, taklif qiluvchiga xabar va yutuq
@@ -1400,7 +1401,14 @@ async function start() {
       }
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
       res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!", user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.statsByMode }, token });
-    } catch (err) { console.error('Register xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+    } catch (err) {
+      // Bir vaqtda ikki so'rov: tekshiruvdan o'tib, UNIQUE cheklovga urilgan — server xatosi emas
+      if (/unique|duplicate/i.test(err && err.message)) {
+        const message = /email/i.test(err.message) ? 'Bu email boshqa akkauntga biriktirilgan!' : 'Bu nomli foydalanuvchi mavjud!';
+        return res.status(409).json({ success: false, message });
+      }
+      console.error('Register xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' });
+    }
   });
 
   app.post('/api/auth/login', loginLimiter, [

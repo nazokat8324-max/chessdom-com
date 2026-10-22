@@ -15,6 +15,10 @@ test("Ro'yxatdan o'tish: tekshiruvlar", async () => {
   const u = await srv.register('Reg');
   assert.ok(u.token);
   assert.equal(await bad({ username: u.name, email: 'd@t.uz', password: 'secret1' }), 409, 'band nom');
+  // Band email — 500 emas, tushunarli 409 (katta-kichik harf farqi ham)
+  const dup = await srv.api(null, '/api/auth/register', 'POST', { username: uniq('Em'), email: u.name.toUpperCase() + '@TEST.UZ', password: 'secret1' });
+  assert.equal(dup.status, 409, 'band email');
+  assert.equal(dup.message, 'Bu email boshqa akkauntga biriktirilgan!');
 });
 
 test('Kirish va token', async () => {

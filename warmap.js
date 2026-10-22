@@ -80,7 +80,7 @@
     root.innerHTML = `
       <section class="war-hero">
         <div class="war-hero-text">
-          <span class="war-kicker">🚩 ${esc(tx('warKicker', 'Faqat ChessDom da'))}</span>
+          <span class="war-kicker">🚩 ${esc(tx('warKicker', 'Faqat ChessCaravan da'))}</span>
           <h1>${esc(tx('warTitle', 'Bayroqlar bellashuvi'))}</h1>
           <p>${esc(tx('warLead', "Har reytingli g'alabangiz davlatingiz klubiga bayroq ochkosi beradi. Ochko ko'p bo'lsa — klubingiz bayrog'i qo'shni davlatlarda ham hilpiraydi. Oy oxirida xaritaning eng katta qismi kimning bayrog'i ostida bo'lsa, o'sha klub mavsum chempioni bo'ladi."))}</p>
         </div>

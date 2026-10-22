@@ -12,9 +12,9 @@ const get = (p, opts) => fetch(srv.base + p, { redirect: 'manual', ...(opts || {
 test('Bosh sahifa va bo\'limlar sarlavhasi bilan beriladi', async () => {
   const home = await get('/');
   assert.equal(home.status, 200);
-  assert.match(await home.text(), /<title>ChessDom/);
+  assert.match(await home.text(), /<title>ChessCaravan/);
   const lb = await (await get('/reyting')).text();
-  assert.match(lb, /<title>Leaderboard · ChessDom<\/title>/);
+  assert.match(lb, /<title>Leaderboard · ChessCaravan<\/title>/);
   assert.match(lb, /rel="canonical"/);
 });
 

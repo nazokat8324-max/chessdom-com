@@ -365,7 +365,7 @@ window.exportPGN = function() {
     return;
   }
   
-  let pgn = `[Event "Just Chess Game"]\n`;
+  let pgn = `[Event "ChessCaravan"]\n`;
   pgn += `[Date "${new Date().toISOString().split('T')[0].replace(/-/g, '.')}"]\n`;
   pgn += `[White "Player"]\n`;
   pgn += `[Black "Opponent"]\n`;

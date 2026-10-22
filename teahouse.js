@@ -108,7 +108,7 @@
     root.innerHTML = `
       <section class="tea-hero">
         <div class="tea-hero-text">
-          <span class="tea-kicker">🍵 ${esc(tx('teaKicker', 'Faqat ChessDom da'))}</span>
+          <span class="tea-kicker">🍵 ${esc(tx('teaKicker', 'Faqat ChessCaravan da'))}</span>
           <h1>${esc(tx('teaTitle', 'Choyxona'))}</h1>
           <p>${esc(tx('teaLead', "Bo'sh stulga o'tiring — kimdir qarshingizga o'tirishi bilan o'yin boshlanadi. Band stollarni bosib, o'yinni tomosha qiling."))}</p>
         </div>

@@ -15,7 +15,7 @@ async function sendMail({ to, subject, html, text }) {
     method: 'POST',
     headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json', Accept: 'application/json' },
     body: JSON.stringify({
-      sender: { email: process.env.MAIL_FROM, name: 'ChessDom' },
+      sender: { email: process.env.MAIL_FROM, name: 'ChessCaravan' },
       to: [{ email: to }],
       subject,
       htmlContent: html,

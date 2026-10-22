@@ -34,7 +34,7 @@
     oracle: ["Oyning bashoratchisi", "Oy davomida bashorat o'yinida eng ko'p ochko to'plang"],
     mentor: ['Ustoz', "Shogirdingiz reytingini 100 ga oshiring"],
     invite_3: ['Taklifchi', "Havolangiz orqali 3 ta do'stingizni saytga olib keling"],
-    invite_10: ['ChessDom elchisi', "Havolangiz orqali 10 ta do'stingizni saytga olib keling"]
+    invite_10: ['ChessCaravan elchisi', "Havolangiz orqali 10 ta do'stingizni saytga olib keling"]
   };
   const keyName = (k) => k.replace(/(^|_)(\w)/g, (m, a, c) => c.toUpperCase());
   window.achievementInfo = function (key) {

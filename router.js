@@ -9,7 +9,7 @@
   };
   const BY_PATH = {};
   Object.entries(ROUTES).forEach(([view, p]) => { BY_PATH[p] = view; });
-  const BASE_TITLE = 'ChessDom';
+  const BASE_TITLE = 'ChessCaravan';
   // Har bo'limning yon menyudagi tugmasi (ba'zi bo'limlar o'zi belgilamaydi)
   const NAV = { home: 'navHome', game: 'navPlay', tea: 'navTea', leaderboard: 'navLeaderboard', tournaments: 'navTournaments', live: 'navLive', messages: 'navMessages',
     clubs: 'navClubs', leagues: 'navLeagues', war: 'navWar', champions: 'navChampions', settings: 'navSettings', admin: 'navAdmin' };

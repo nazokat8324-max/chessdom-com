@@ -3658,6 +3658,12 @@ sidebar {
 .logo-area .chessdom-text .cd-letter:nth-child(n + 6) {
   color: var(--cd-accent);
 }
+/* "ChessCaravan" (12 harf) ☰ tugmasiga tegmasin */
+@media (min-width: 769px) {
+  .logo-area .chessdom-text {
+    font-size: 18px;
+  }
+}
 .menu-item {
   color: #a9b6b0;
   border-radius: 12px;
@@ -5329,7 +5335,7 @@ sidebar {
   .lg-game-row { grid-template-columns: 1fr; gap: 8px; }
 }
 
-/* ===== "ChessDom haqida" sahifasi (about.js) ===== */
+/* ===== "ChessCaravan haqida" sahifasi (about.js) ===== */
 #aboutPage {
   position: fixed;
   inset: 0;
@@ -5755,7 +5761,7 @@ sidebar {
   color: #56655f;
 }
 
-/* Bosh sahifadagi "ChessDom haqida" tugmasi */
+/* Bosh sahifadagi "ChessCaravan haqida" tugmasi */
 .about-open-btn {
   display: flex;
   align-items: center;
@@ -7010,7 +7016,7 @@ button.ar-slot:hover {
   .ar-card { padding: 16px 12px; }
 }
 
-/* ===== Bosh sahifa: "ChessDom haqida" tanishtiruv kartasi ===== */
+/* ===== Bosh sahifa: "ChessCaravan haqida" tanishtiruv kartasi ===== */
 .dash-card.home-about {
   position: relative;
   display: flex;

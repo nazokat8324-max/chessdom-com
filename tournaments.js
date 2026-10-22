@@ -339,7 +339,7 @@
       showToast('⏰ ' + text, 'warning', 10000);
       try {
         if ('Notification' in window && Notification.permission === 'granted' && document.hidden) {
-          new Notification('ChessDom', { body: text, icon: 'img/chesspieces/wikipedia/wN.png' });
+          new Notification('ChessCaravan', { body: text, icon: 'img/chesspieces/wikipedia/wN.png' });
         }
       } catch (e) {}
     });

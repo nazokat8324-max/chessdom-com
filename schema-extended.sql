@@ -1,4 +1,4 @@
--- Just Chess - Extended schema for Tournaments, Friends, Chat, Clubs
+-- ChessCaravan - Extended schema for Tournaments, Friends, Chat, Clubs
 
 -- Tournaments
 CREATE TABLE IF NOT EXISTS tournaments (

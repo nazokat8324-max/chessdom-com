@@ -1,4 +1,4 @@
-// ChessDom service worker: ilovani o'rnatish, internet yo'qligida offline sahifa va push-bildirishnomalar.
+// ChessCaravan service worker: ilovani o'rnatish, internet yo'qligida offline sahifa va push-bildirishnomalar.
 // Sayt fayllari KESHLANMAYDI (har doim tarmoqdan) — deploydan keyin eski versiya qolib ketmasligi uchun.
 // Faqat offline sahifa va ikonkalar keshda. Kesh nomi o'zgarsa, eskilari o'chiriladi.
 const CACHE = 'chessdom-shell-v1';
@@ -33,7 +33,7 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
   let d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : '' }; }
-  event.waitUntil(self.registration.showNotification(d.title || 'ChessDom', {
+  event.waitUntil(self.registration.showNotification(d.title || 'ChessCaravan', {
     body: d.body || '',
     icon: '/assets/icons/icon-192.png',
     badge: '/assets/icons/badge-96.png',

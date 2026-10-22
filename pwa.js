@@ -88,7 +88,7 @@
     }
     m.innerHTML = `<div class="pwa-ios">
       <img src="assets/icons/icon-192.png" alt="">
-      <h3>${esc(tx('pwaIosTitle', "ChessDom'ni iPhone ekraningizga qo'shing"))}</h3>
+      <h3>${esc(tx('pwaIosTitle', "ChessCaravan'ni iPhone ekraningizga qo'shing"))}</h3>
       <ol>
         <li>${esc(tx('pwaIos1', "Safari pastidagi «Ulashish» tugmasini bosing (kvadrat va yuqoriga strelka)"))}</li>
         <li>${esc(tx('pwaIos2', "Ro'yxatdan «Bosh ekranga qo'shish» ni tanlang"))}</li>

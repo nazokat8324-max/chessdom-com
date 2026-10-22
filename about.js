@@ -1,4 +1,4 @@
-// "ChessDom haqida" — to'liq ekranli sahifa: Sayt haqida, Maqsadimiz, Kelajak rejalari, Sayt tuzilishi
+// "ChessCaravan haqida" — to'liq ekranli sahifa: Sayt haqida, Maqsadimiz, Kelajak rejalari, Sayt tuzilishi
 (function () {
   const esc = (v) => {
     const div = document.createElement('div');
@@ -54,7 +54,7 @@
     root.innerHTML = `
       <header class="ab-topbar">
         <button class="ab-back" onclick="window.closeAboutPage()">← ${esc(t('clubDetailBack', 'Orqaga'))}</button>
-        <div class="ab-logo">👑 <span>Chess<b>Dom</b></span></div>
+        <div class="ab-logo">👑 <span>Chess<b>Caravan</b></span></div>
       </header>
 
       <section class="ab-hero">
@@ -66,7 +66,7 @@
           <span style="--x:48%;--y:80%;--s:52px;--t:8s">♟</span>
         </div>
         <span class="ab-hero-chip">✦ ${esc(t('aboutHeroTag', '2026-yildan beri'))}</span>
-        <h1 class="ab-hero-title">Chess<span>Dom</span></h1>
+        <h1 class="ab-hero-title">Chess<span>Caravan</span></h1>
         <p class="ab-hero-sub">${esc(t('aboutHeroSubtitle', "Shaxmat strategiyasi va futbol jamoaviyligini birlashtirgan onlayn platforma"))}</p>
         <div class="ab-scroll-hint" aria-hidden="true"><span></span></div>
       </section>
@@ -122,7 +122,7 @@
           <li><b>flagcdn.com</b> — ${esc(t('aboutCreditFlags', 'davlat bayroqlari'))}</li>
         </ul>
       </section>
-      <footer class="ab-footer">© 2026 ChessDom · <a href="/shartlar" target="_blank" rel="noopener">${esc(t('legalTerms', 'Foydalanish shartlari'))}</a> · <a href="/maxfiylik" target="_blank" rel="noopener">${esc(t('legalPrivacy', 'Maxfiylik siyosati'))}</a> · <a href="/mualliflar" target="_blank" rel="noopener">${esc(t('legalCredits', 'Mualliflar va litsenziyalar'))}</a></footer>`;
+      <footer class="ab-footer">© 2026 ChessCaravan · <a href="/shartlar" target="_blank" rel="noopener">${esc(t('legalTerms', 'Foydalanish shartlari'))}</a> · <a href="/maxfiylik" target="_blank" rel="noopener">${esc(t('legalPrivacy', 'Maxfiylik siyosati'))}</a> · <a href="/mualliflar" target="_blank" rel="noopener">${esc(t('legalCredits', 'Mualliflar va litsenziyalar'))}</a></footer>`;
 
     bindInteractions(root);
   }

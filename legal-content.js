@@ -3,9 +3,9 @@
 window.LEGAL_TEXT = {
   uz: {
     ui: { credits: "Mualliflar va litsenziyalar", privacy: 'Maxfiylik siyosati', terms: 'Foydalanish shartlari', back: "Saytga qaytish", updated: 'Oxirgi yangilanish', contactNone: "sayt ichidagi «Shikoyat» tugmasi orqali ma'muriyatga yozing" },
-    credits: {"intro":"ChessDom ochiq kodli kutubxonalar va erkin litsenziyali resurslar asosida qurilgan. Ularning mualliflariga rahmat! Quyida saytda ishlatiladigan har bir begona resurs, muallifi va litsenziyasi.","code":"Dasturiy kutubxonalar (brauzerda)","assets":"Rasmlar, shriftlar va ma'lumotlar","own":"ChessDom'ning o'zi yaratgan","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite va boshqa ochiq kodli paketlar (MIT, BSD, ISC, MPL-2.0 litsenziyalari) — ular foydalanuvchiga uzatilmaydi.","gpl":"GPL litsenziyali qismlar (Stockfish tahlil dvigateli va GPL dona to'plamlari) o'zgartirilmagan holda ishlatiladi; ularning manba kodi yuqoridagi havolalarda ochiq.","ownText":"Yurish ovozlari (dastur bilan sintez qilingan), logotip, ikonkalar, atlas naqshi va havola rasmi."},
+    credits: {"intro":"ChessCaravan ochiq kodli kutubxonalar va erkin litsenziyali resurslar asosida qurilgan. Ularning mualliflariga rahmat! Quyida saytda ishlatiladigan har bir begona resurs, muallifi va litsenziyasi.","code":"Dasturiy kutubxonalar (brauzerda)","assets":"Rasmlar, shriftlar va ma'lumotlar","own":"ChessCaravan'ning o'zi yaratgan","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite va boshqa ochiq kodli paketlar (MIT, BSD, ISC, MPL-2.0 litsenziyalari) — ular foydalanuvchiga uzatilmaydi.","gpl":"GPL litsenziyali qismlar (Stockfish tahlil dvigateli va GPL dona to'plamlari) o'zgartirilmagan holda ishlatiladi; ularning manba kodi yuqoridagi havolalarda ochiq.","ownText":"Yurish ovozlari (dastur bilan sintez qilingan), logotip, ikonkalar, atlas naqshi va havola rasmi."},
     privacy: {
-      intro: "ChessDom — onlayn shaxmat sayti. Bu sahifa qanday ma'lumotlaringizni saqlashimiz, nima uchun va qanday himoya qilishimizni tushuntiradi. Saytdan foydalanib, siz shu siyosatga rozilik bildirasiz.",
+      intro: "ChessCaravan — onlayn shaxmat sayti. Bu sahifa qanday ma'lumotlaringizni saqlashimiz, nima uchun va qanday himoya qilishimizni tushuntiradi. Saytdan foydalanib, siz shu siyosatga rozilik bildirasiz.",
       sections: [
         ["Qanday ma'lumotlarni saqlaymiz", [
           ["Hisob: foydalanuvchi nomi, email (ixtiyoriy), parol — faqat shifrlangan ko'rinishda (bcrypt xesh), davlat, profil rasmi, profilga o'zingiz yozgan ma'lumotlar.",
@@ -68,7 +68,7 @@ window.LEGAL_TEXT = {
           "O'yinlaringiz (yurishlar va natijalar) ommaviy va ularni boshqalar ko'rishi, tahlil qilishi va PGN sifatida yuklab olishi mumkin. Xabarlar va izohlaringiz uchun o'zingiz javobgarsiz. Siz bizga ushbu kontentni xizmatni ko'rsatish uchun saqlash va ko'rsatish huquqini berasiz."
         ]],
         ['Xizmat', [
-          "ChessDom bepul va «boricha» taqdim etiladi. Biz uzluksiz ishlashni, xatolar yo'qligini yoki ma'lumotlar hech qachon yo'qolmasligini kafolatlamaymiz. Imkoniyatlarni o'zgartirish, to'xtatib turish yoki yopish huquqini saqlab qolamiz. Qonun ruxsat bergan darajada, sayt bilan bog'liq bilvosita zararlar uchun javobgar emasmiz."
+          "ChessCaravan bepul va «boricha» taqdim etiladi. Biz uzluksiz ishlashni, xatolar yo'qligini yoki ma'lumotlar hech qachon yo'qolmasligini kafolatlamaymiz. Imkoniyatlarni o'zgartirish, to'xtatib turish yoki yopish huquqini saqlab qolamiz. Qonun ruxsat bergan darajada, sayt bilan bog'liq bilvosita zararlar uchun javobgar emasmiz."
         ]],
         ['Hisobni yopish', [
           "Hisobingizni istalgan vaqtda Sozlamalar → Hisob → «Akkauntni o'chirish» orqali butunlay o'chirishingiz mumkin. Qoidalarni buzgan hisoblarni biz yopishimiz mumkin."
@@ -81,9 +81,9 @@ window.LEGAL_TEXT = {
   },
   en: {
     ui: { credits: "Credits & licenses", privacy: 'Privacy Policy', terms: 'Terms of Use', back: 'Back to the site', updated: 'Last updated', contactNone: 'write to the administrators using the “Report” button on the site' },
-    credits: {"intro":"ChessDom is built on open-source libraries and freely licensed resources. Thank you to their authors! Below is every third-party resource the site uses, with its author and license.","code":"Software libraries (in the browser)","assets":"Images, fonts and data","own":"Made by ChessDom","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite and other open-source packages (MIT, BSD, ISC, MPL-2.0 licenses) — these are not delivered to users.","gpl":"GPL-licensed parts (the Stockfish analysis engine and the GPL piece sets) are used unmodified; their source code is available at the links above.","ownText":"Move sounds (synthesized in code), the logo, icons, the atlas pattern and the link preview image."},
+    credits: {"intro":"ChessCaravan is built on open-source libraries and freely licensed resources. Thank you to their authors! Below is every third-party resource the site uses, with its author and license.","code":"Software libraries (in the browser)","assets":"Images, fonts and data","own":"Made by ChessCaravan","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite and other open-source packages (MIT, BSD, ISC, MPL-2.0 licenses) — these are not delivered to users.","gpl":"GPL-licensed parts (the Stockfish analysis engine and the GPL piece sets) are used unmodified; their source code is available at the links above.","ownText":"Move sounds (synthesized in code), the logo, icons, the atlas pattern and the link preview image."},
     privacy: {
-      intro: 'ChessDom is an online chess site. This page explains what data we store, why, and how we protect it. By using the site you agree to this policy.',
+      intro: 'ChessCaravan is an online chess site. This page explains what data we store, why, and how we protect it. By using the site you agree to this policy.',
       sections: [
         ['What we store', [
           ['Account: username, email (optional), password — only as an encrypted bcrypt hash, country, profile picture and anything you add to your profile.',
@@ -146,7 +146,7 @@ window.LEGAL_TEXT = {
           'Your games (moves and results) are public; others may view, analyse and download them as PGN. You are responsible for your messages and notes. You give us the right to store and display this content in order to provide the service.'
         ]],
         ['The service', [
-          'ChessDom is free and provided “as is”. We do not guarantee uninterrupted operation, the absence of bugs, or that data will never be lost. We may change, suspend or close features. To the extent allowed by law, we are not liable for indirect damages related to the site.'
+          'ChessCaravan is free and provided “as is”. We do not guarantee uninterrupted operation, the absence of bugs, or that data will never be lost. We may change, suspend or close features. To the extent allowed by law, we are not liable for indirect damages related to the site.'
         ]],
         ['Closing your account', [
           'You can delete your account at any time via Settings → Account → “Delete account”. We may close accounts that break the rules.'
@@ -159,9 +159,9 @@ window.LEGAL_TEXT = {
   },
   ru: {
     ui: { credits: "Авторы и лицензии", privacy: 'Политика конфиденциальности', terms: 'Условия использования', back: 'Вернуться на сайт', updated: 'Последнее обновление', contactNone: 'напишите администрации через кнопку «Пожаловаться» на сайте' },
-    credits: {"intro":"ChessDom построен на библиотеках с открытым кодом и ресурсах со свободными лицензиями. Спасибо их авторам! Ниже — каждый сторонний ресурс сайта, его автор и лицензия.","code":"Программные библиотеки (в браузере)","assets":"Изображения, шрифты и данные","own":"Создано ChessDom","server":"Сервер: Node.js, Express, Socket.IO, PostgreSQL / SQLite и другие пакеты с открытым кодом (лицензии MIT, BSD, ISC, MPL-2.0) — пользователям не передаются.","gpl":"Части под GPL (движок анализа Stockfish и наборы фигур под GPL) используются без изменений; их исходный код доступен по ссылкам выше.","ownText":"Звуки ходов (синтезированы программно), логотип, иконки, узор атласа и картинка для превью ссылок."},
+    credits: {"intro":"ChessCaravan построен на библиотеках с открытым кодом и ресурсах со свободными лицензиями. Спасибо их авторам! Ниже — каждый сторонний ресурс сайта, его автор и лицензия.","code":"Программные библиотеки (в браузере)","assets":"Изображения, шрифты и данные","own":"Создано ChessCaravan","server":"Сервер: Node.js, Express, Socket.IO, PostgreSQL / SQLite и другие пакеты с открытым кодом (лицензии MIT, BSD, ISC, MPL-2.0) — пользователям не передаются.","gpl":"Части под GPL (движок анализа Stockfish и наборы фигур под GPL) используются без изменений; их исходный код доступен по ссылкам выше.","ownText":"Звуки ходов (синтезированы программно), логотип, иконки, узор атласа и картинка для превью ссылок."},
     privacy: {
-      intro: 'ChessDom — сайт для игры в шахматы онлайн. Здесь объясняется, какие данные мы храним, зачем и как защищаем. Пользуясь сайтом, вы соглашаетесь с этой политикой.',
+      intro: 'ChessCaravan — сайт для игры в шахматы онлайн. Здесь объясняется, какие данные мы храним, зачем и как защищаем. Пользуясь сайтом, вы соглашаетесь с этой политикой.',
       sections: [
         ['Какие данные мы храним', [
           ['Аккаунт: имя пользователя, email (необязательно), пароль — только в зашифрованном виде (хеш bcrypt), страна, фото профиля и сведения, которые вы добавили в профиль.',
@@ -224,7 +224,7 @@ window.LEGAL_TEXT = {
           'Ваши партии (ходы и результаты) публичны; другие могут просматривать, анализировать и скачивать их в формате PGN. Вы отвечаете за свои сообщения и комментарии. Вы даёте нам право хранить и показывать этот контент для работы сервиса.'
         ]],
         ['Сервис', [
-          'ChessDom бесплатен и предоставляется «как есть». Мы не гарантируем бесперебойную работу, отсутствие ошибок и полную сохранность данных. Мы можем изменять, приостанавливать или закрывать функции. В пределах, допустимых законом, мы не несём ответственности за косвенный ущерб, связанный с сайтом.'
+          'ChessCaravan бесплатен и предоставляется «как есть». Мы не гарантируем бесперебойную работу, отсутствие ошибок и полную сохранность данных. Мы можем изменять, приостанавливать или закрывать функции. В пределах, допустимых законом, мы не несём ответственности за косвенный ущерб, связанный с сайтом.'
         ]],
         ['Закрытие аккаунта', [
           'Вы можете в любой момент удалить аккаунт: Настройки → Аккаунт → «Удалить аккаунт». Мы можем закрывать аккаунты нарушителей.'
@@ -237,9 +237,9 @@ window.LEGAL_TEXT = {
   },
   es: {
     ui: { credits: "Créditos y licencias", privacy: 'Política de privacidad', terms: 'Condiciones de uso', back: 'Volver al sitio', updated: 'Última actualización', contactNone: 'escribe a los administradores con el botón «Denunciar» del sitio' },
-    credits: {"intro":"ChessDom está construido con bibliotecas de código abierto y recursos con licencias libres. ¡Gracias a sus autores! Abajo está cada recurso de terceros que usa el sitio, con su autor y licencia.","code":"Bibliotecas de software (en el navegador)","assets":"Imágenes, fuentes y datos","own":"Creado por ChessDom","server":"Servidor: Node.js, Express, Socket.IO, PostgreSQL / SQLite y otros paquetes de código abierto (licencias MIT, BSD, ISC, MPL-2.0); no se envían a los usuarios.","gpl":"Las partes con licencia GPL (el motor de análisis Stockfish y los juegos de piezas GPL) se usan sin modificar; su código fuente está en los enlaces de arriba.","ownText":"Sonidos de las jugadas (sintetizados por código), el logotipo, los iconos, el patrón atlas y la imagen de vista previa."},
+    credits: {"intro":"ChessCaravan está construido con bibliotecas de código abierto y recursos con licencias libres. ¡Gracias a sus autores! Abajo está cada recurso de terceros que usa el sitio, con su autor y licencia.","code":"Bibliotecas de software (en el navegador)","assets":"Imágenes, fuentes y datos","own":"Creado por ChessCaravan","server":"Servidor: Node.js, Express, Socket.IO, PostgreSQL / SQLite y otros paquetes de código abierto (licencias MIT, BSD, ISC, MPL-2.0); no se envían a los usuarios.","gpl":"Las partes con licencia GPL (el motor de análisis Stockfish y los juegos de piezas GPL) se usan sin modificar; su código fuente está en los enlaces de arriba.","ownText":"Sonidos de las jugadas (sintetizados por código), el logotipo, los iconos, el patrón atlas y la imagen de vista previa."},
     privacy: {
-      intro: 'ChessDom es un sitio de ajedrez en línea. Aquí explicamos qué datos guardamos, para qué y cómo los protegemos. Al usar el sitio aceptas esta política.',
+      intro: 'ChessCaravan es un sitio de ajedrez en línea. Aquí explicamos qué datos guardamos, para qué y cómo los protegemos. Al usar el sitio aceptas esta política.',
       sections: [
         ['Qué datos guardamos', [
           ['Cuenta: nombre de usuario, email (opcional), contraseña — solo como hash cifrado bcrypt, país, foto de perfil y lo que añadas a tu perfil.',
@@ -302,7 +302,7 @@ window.LEGAL_TEXT = {
           'Tus partidas (jugadas y resultados) son públicas; otros pueden verlas, analizarlas y descargarlas en PGN. Eres responsable de tus mensajes y notas. Nos das derecho a guardar y mostrar ese contenido para prestar el servicio.'
         ]],
         ['El servicio', [
-          'ChessDom es gratuito y se ofrece «tal cual». No garantizamos un funcionamiento ininterrumpido, la ausencia de errores ni que nunca se pierdan datos. Podemos cambiar, suspender o cerrar funciones. En la medida permitida por la ley, no respondemos de daños indirectos relacionados con el sitio.'
+          'ChessCaravan es gratuito y se ofrece «tal cual». No garantizamos un funcionamiento ininterrumpido, la ausencia de errores ni que nunca se pierdan datos. Podemos cambiar, suspender o cerrar funciones. En la medida permitida por la ley, no respondemos de daños indirectos relacionados con el sitio.'
         ]],
         ['Cierre de la cuenta', [
           'Puedes eliminar tu cuenta en cualquier momento en Ajustes → Cuenta → «Eliminar cuenta». Podemos cerrar cuentas que incumplan las normas.'
@@ -315,9 +315,9 @@ window.LEGAL_TEXT = {
   },
   de: {
     ui: { credits: "Mitwirkende & Lizenzen", privacy: 'Datenschutzerklärung', terms: 'Nutzungsbedingungen', back: 'Zurück zur Website', updated: 'Zuletzt aktualisiert', contactNone: 'schreibe den Administratoren über die Schaltfläche „Melden“ auf der Website' },
-    credits: {"intro":"ChessDom basiert auf Open-Source-Bibliotheken und frei lizenzierten Ressourcen. Danke an ihre Autoren! Unten steht jede fremde Ressource der Seite mit Autor und Lizenz.","code":"Software-Bibliotheken (im Browser)","assets":"Bilder, Schriften und Daten","own":"Von ChessDom erstellt","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite und weitere Open-Source-Pakete (Lizenzen MIT, BSD, ISC, MPL-2.0) — sie werden nicht an Nutzer ausgeliefert.","gpl":"GPL-lizenzierte Teile (die Stockfish-Analyse-Engine und die GPL-Figurensätze) werden unverändert genutzt; ihr Quellcode ist über die Links oben verfügbar.","ownText":"Zugklänge (per Code synthetisiert), Logo, Icons, das Atlas-Muster und das Link-Vorschaubild."},
+    credits: {"intro":"ChessCaravan basiert auf Open-Source-Bibliotheken und frei lizenzierten Ressourcen. Danke an ihre Autoren! Unten steht jede fremde Ressource der Seite mit Autor und Lizenz.","code":"Software-Bibliotheken (im Browser)","assets":"Bilder, Schriften und Daten","own":"Von ChessCaravan erstellt","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite und weitere Open-Source-Pakete (Lizenzen MIT, BSD, ISC, MPL-2.0) — sie werden nicht an Nutzer ausgeliefert.","gpl":"GPL-lizenzierte Teile (die Stockfish-Analyse-Engine und die GPL-Figurensätze) werden unverändert genutzt; ihr Quellcode ist über die Links oben verfügbar.","ownText":"Zugklänge (per Code synthetisiert), Logo, Icons, das Atlas-Muster und das Link-Vorschaubild."},
     privacy: {
-      intro: 'ChessDom ist eine Online-Schach-Website. Hier erklären wir, welche Daten wir speichern, wofür und wie wir sie schützen. Mit der Nutzung der Website stimmst du dieser Erklärung zu.',
+      intro: 'ChessCaravan ist eine Online-Schach-Website. Hier erklären wir, welche Daten wir speichern, wofür und wie wir sie schützen. Mit der Nutzung der Website stimmst du dieser Erklärung zu.',
       sections: [
         ['Welche Daten wir speichern', [
           ['Konto: Benutzername, E-Mail (optional), Passwort — nur als verschlüsselter bcrypt-Hash, Land, Profilbild und deine Profilangaben.',
@@ -380,7 +380,7 @@ window.LEGAL_TEXT = {
           'Deine Partien (Züge und Ergebnisse) sind öffentlich; andere können sie ansehen, analysieren und als PGN herunterladen. Für deine Nachrichten und Notizen bist du selbst verantwortlich. Du räumst uns das Recht ein, diese Inhalte zur Bereitstellung des Dienstes zu speichern und anzuzeigen.'
         ]],
         ['Der Dienst', [
-          'ChessDom ist kostenlos und wird „wie besehen“ bereitgestellt. Wir garantieren keinen unterbrechungsfreien Betrieb, keine Fehlerfreiheit und keinen dauerhaften Datenerhalt. Wir können Funktionen ändern, aussetzen oder einstellen. Soweit gesetzlich zulässig, haften wir nicht für mittelbare Schäden im Zusammenhang mit der Website.'
+          'ChessCaravan ist kostenlos und wird „wie besehen“ bereitgestellt. Wir garantieren keinen unterbrechungsfreien Betrieb, keine Fehlerfreiheit und keinen dauerhaften Datenerhalt. Wir können Funktionen ändern, aussetzen oder einstellen. Soweit gesetzlich zulässig, haften wir nicht für mittelbare Schäden im Zusammenhang mit der Website.'
         ]],
         ['Konto schließen', [
           'Du kannst dein Konto jederzeit unter Einstellungen → Konto → „Konto löschen“ löschen. Wir können Konten schließen, die gegen die Regeln verstoßen.'
@@ -393,9 +393,9 @@ window.LEGAL_TEXT = {
   },
   fr: {
     ui: { credits: "Crédits et licences", privacy: 'Politique de confidentialité', terms: "Conditions d'utilisation", back: 'Retour au site', updated: 'Dernière mise à jour', contactNone: 'écrivez aux administrateurs avec le bouton « Signaler » du site' },
-    credits: {"intro":"ChessDom repose sur des bibliothèques open source et des ressources sous licence libre. Merci à leurs auteurs ! Voici chaque ressource tierce utilisée par le site, avec son auteur et sa licence.","code":"Bibliothèques logicielles (dans le navigateur)","assets":"Images, polices et données","own":"Créé par ChessDom","server":"Serveur : Node.js, Express, Socket.IO, PostgreSQL / SQLite et d’autres paquets open source (licences MIT, BSD, ISC, MPL-2.0) — ils ne sont pas transmis aux utilisateurs.","gpl":"Les parties sous GPL (le moteur d’analyse Stockfish et les jeux de pièces GPL) sont utilisées sans modification ; leur code source est disponible via les liens ci-dessus.","ownText":"Sons des coups (synthétisés par code), logo, icônes, motif atlas et image d’aperçu des liens."},
+    credits: {"intro":"ChessCaravan repose sur des bibliothèques open source et des ressources sous licence libre. Merci à leurs auteurs ! Voici chaque ressource tierce utilisée par le site, avec son auteur et sa licence.","code":"Bibliothèques logicielles (dans le navigateur)","assets":"Images, polices et données","own":"Créé par ChessCaravan","server":"Serveur : Node.js, Express, Socket.IO, PostgreSQL / SQLite et d’autres paquets open source (licences MIT, BSD, ISC, MPL-2.0) — ils ne sont pas transmis aux utilisateurs.","gpl":"Les parties sous GPL (le moteur d’analyse Stockfish et les jeux de pièces GPL) sont utilisées sans modification ; leur code source est disponible via les liens ci-dessus.","ownText":"Sons des coups (synthétisés par code), logo, icônes, motif atlas et image d’aperçu des liens."},
     privacy: {
-      intro: "ChessDom est un site d'échecs en ligne. Cette page explique quelles données nous conservons, pourquoi et comment nous les protégeons. En utilisant le site, vous acceptez cette politique.",
+      intro: "ChessCaravan est un site d'échecs en ligne. Cette page explique quelles données nous conservons, pourquoi et comment nous les protégeons. En utilisant le site, vous acceptez cette politique.",
       sections: [
         ['Données conservées', [
           ["Compte : nom d'utilisateur, email (facultatif), mot de passe — uniquement sous forme de hachage bcrypt, pays, photo de profil et ce que vous ajoutez à votre profil.",
@@ -458,7 +458,7 @@ window.LEGAL_TEXT = {
           "Vos parties (coups et résultats) sont publiques ; d'autres peuvent les consulter, les analyser et les télécharger en PGN. Vous êtes responsable de vos messages et notes. Vous nous accordez le droit de conserver et d'afficher ce contenu pour fournir le service."
         ]],
         ['Le service', [
-          "ChessDom est gratuit et fourni « en l'état ». Nous ne garantissons ni un fonctionnement ininterrompu, ni l'absence de bogues, ni la conservation permanente des données. Nous pouvons modifier, suspendre ou fermer des fonctionnalités. Dans les limites permises par la loi, nous ne sommes pas responsables des dommages indirects liés au site."
+          "ChessCaravan est gratuit et fourni « en l'état ». Nous ne garantissons ni un fonctionnement ininterrompu, ni l'absence de bogues, ni la conservation permanente des données. Nous pouvons modifier, suspendre ou fermer des fonctionnalités. Dans les limites permises par la loi, nous ne sommes pas responsables des dommages indirects liés au site."
         ]],
         ['Fermeture du compte', [
           'Vous pouvez supprimer votre compte à tout moment via Réglages → Compte → « Supprimer le compte ». Nous pouvons fermer les comptes qui enfreignent les règles.'

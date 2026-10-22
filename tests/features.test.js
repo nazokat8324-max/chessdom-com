@@ -1,4 +1,4 @@
-// ChessDom'ning o'ziga xos imkoniyatlari: Choyxona, Raqib-do'st, Bayroqlar bellashuvi, Bashorat, Odob reytingi, Ustoz-shogird, Oy yakuni
+// ChessCaravan'ning o'ziga xos imkoniyatlari: Choyxona, Raqib-do'st, Bayroqlar bellashuvi, Bashorat, Odob reytingi, Ustoz-shogird, Oy yakuni
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');

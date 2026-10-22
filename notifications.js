@@ -63,7 +63,7 @@
       case 'fairplay_flag':
         return { icon: '🕵️', text: tx('nfFairplayFlag', "Fair-play: {{name}} shubhali deb belgilandi", { name: d.name }), go: () => switchView('admin') };
       case 'invite_joined':
-        return { icon: '🎉', text: tx('nfInviteJoined', "{{name}} taklifingiz bilan ChessDom'ga qo'shildi", { name: d.from }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
+        return { icon: '🎉', text: tx('nfInviteJoined', "{{name}} taklifingiz bilan ChessCaravan'ga qo'shildi", { name: d.from }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
       case 'invite_waiting':
         return { icon: '🔗', text: tx('nfInviteWaiting', "{{name}} siz bilan o'ynamoqchi — uni o'yinga chaqiring", { name: d.from }), go: () => window.openChallengeDialog ? window.openChallengeDialog(d.from) : (window.openPlayerProfile && window.openPlayerProfile(d.from)) };
       case 'server_error':

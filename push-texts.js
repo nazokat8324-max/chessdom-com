@@ -20,7 +20,7 @@ const T = {
   prediction_won: L("Bashoratingiz to'g'ri chiqdi! +{{points}} 🔮", 'Your prediction was right! +{{points}} 🔮', 'Прогноз сбылся! +{{points}} 🔮', '¡Acertaste! +{{points}} 🔮', 'Richtig getippt! +{{points}} 🔮', 'Bon pronostic ! +{{points}} 🔮'),
   achievement: L('Yangi yutuq! 🏅', 'New achievement! 🏅', 'Новое достижение! 🏅', '¡Nuevo logro! 🏅', 'Neuer Erfolg! 🏅', 'Nouveau succès ! 🏅'),
   rank_up: L('Yangi daraja! Reytingingiz {{rating}} ⭐', 'New rank! Your rating is {{rating}} ⭐', 'Новый уровень! Рейтинг {{rating}} ⭐', '¡Nuevo rango! Tu rating es {{rating}} ⭐', 'Neuer Rang! Deine Wertung: {{rating}} ⭐', 'Nouveau rang ! Classement {{rating}} ⭐'),
-  invite_joined: L("{{from}} taklifingiz bilan ChessDom'ga qo'shildi 🎉", '{{from}} joined ChessDom with your invite 🎉', '{{from}} присоединился к ChessDom по вашему приглашению 🎉', '{{from}} se unió a ChessDom con tu invitación 🎉', '{{from}} ist ChessDom über deine Einladung beigetreten 🎉', '{{from}} a rejoint ChessDom grâce à votre invitation 🎉'),
+  invite_joined: L("{{from}} taklifingiz bilan ChessCaravan'ga qo'shildi 🎉", '{{from}} joined ChessCaravan with your invite 🎉', '{{from}} присоединился к ChessCaravan по вашему приглашению 🎉', '{{from}} se unió a ChessCaravan con tu invitación 🎉', '{{from}} ist ChessCaravan über deine Einladung beigetreten 🎉', '{{from}} a rejoint ChessCaravan grâce à votre invitation 🎉'),
   invite_waiting: L("{{from}} siz bilan o'ynamoqchi — saytga kiring va uni chaqiring ⚔️", '{{from}} wants to play you — come online and challenge them ⚔️', '{{from}} хочет сыграть с вами — зайдите и вызовите его ⚔️', '{{from}} quiere jugar contigo: entra y desafíale ⚔️', '{{from}} will gegen dich spielen — komm online und fordere heraus ⚔️', '{{from}} veut jouer contre vous — connectez-vous et défiez-le ⚔️'),
   server_error: L('🐞 Saytda yangi xato: {{message}}', '🐞 New site error: {{message}}', '🐞 Новая ошибка на сайте: {{message}}', '🐞 Nuevo error en el sitio: {{message}}', '🐞 Neuer Fehler auf der Seite: {{message}}', '🐞 Nouvelle erreur sur le site : {{message}}'),
   test: L("Push-bildirishnomalar ishlayapti! ♞", 'Push notifications are working! ♞', 'Push-уведомления работают! ♞', '¡Las notificaciones push funcionan! ♞', 'Push-Benachrichtigungen funktionieren! ♞', 'Les notifications push fonctionnent ! ♞'),
@@ -60,21 +60,21 @@ function pushMessage(type, data, lang, ownName) {
     case 'prediction_won': url = '/jonli'; break;
     case 'server_error': url = '/admin'; break;
   }
-  return { title: 'ChessDom', body: fill(T[key][l], vars).slice(0, 180), url, category: CATEGORY[type] || 'events' };
+  return { title: 'ChessCaravan', body: fill(T[key][l], vars).slice(0, 180), url, category: CATEGORY[type] || 'events' };
 }
 
 // --- ✈️ Telegram bot javoblari ---
 const BOT = {
-  open: L('♞ Saytni ochish', '♞ Open ChessDom', '♞ Открыть сайт', '♞ Abrir ChessDom', '♞ ChessDom öffnen', '♞ Ouvrir ChessDom'),
+  open: L('♞ Saytni ochish', '♞ Open ChessCaravan', '♞ Открыть сайт', '♞ Abrir ChessCaravan', '♞ ChessCaravan öffnen', '♞ Ouvrir ChessCaravan'),
   openShort: L('Ochish ↗', 'Open ↗', 'Открыть ↗', 'Abrir ↗', 'Öffnen ↗', 'Ouvrir ↗'),
   share: L('📤 Do\'stlarga yuborish', '📤 Send to friends', '📤 Отправить друзьям', '📤 Enviar a amigos', '📤 An Freunde senden', '📤 Envoyer à des amis'),
   welcome: L(
-    "Salom! Bu — ChessDom boti ♞\n\nU o'yinga chaqiruvlar, xabarlar va boshqa muhim voqealarni shu yerga yuboradi.\n\nUlash uchun saytda: Sozlamalar → Ovoz va bildirishnomalar → Telegram → «Ulash».",
-    "Hi! This is the ChessDom bot ♞\n\nIt sends you game challenges, messages and other important events right here.\n\nTo connect: on the site open Settings → Sound & notifications → Telegram → “Connect”.",
-    "Привет! Это бот ChessDom ♞\n\nОн присылает сюда вызовы на партию, сообщения и другие важные события.\n\nЧтобы подключить: на сайте Настройки → Звук и уведомления → Telegram → «Подключить».",
-    "¡Hola! Este es el bot de ChessDom ♞\n\nTe envía aquí desafíos, mensajes y otros eventos importantes.\n\nPara conectarlo: en el sitio, Ajustes → Sonido y notificaciones → Telegram → «Conectar».",
-    "Hallo! Das ist der ChessDom-Bot ♞\n\nEr schickt dir Herausforderungen, Nachrichten und andere wichtige Ereignisse hierher.\n\nVerbinden: auf der Seite Einstellungen → Ton & Benachrichtigungen → Telegram → „Verbinden“.",
-    "Bonjour ! Voici le bot ChessDom ♞\n\nIl vous envoie ici les défis, messages et autres événements importants.\n\nPour le connecter : sur le site, Paramètres → Son et notifications → Telegram → « Connecter »."),
+    "Salom! Bu — ChessCaravan boti ♞\n\nU o'yinga chaqiruvlar, xabarlar va boshqa muhim voqealarni shu yerga yuboradi.\n\nUlash uchun saytda: Sozlamalar → Ovoz va bildirishnomalar → Telegram → «Ulash».",
+    "Hi! This is the ChessCaravan bot ♞\n\nIt sends you game challenges, messages and other important events right here.\n\nTo connect: on the site open Settings → Sound & notifications → Telegram → “Connect”.",
+    "Привет! Это бот ChessCaravan ♞\n\nОн присылает сюда вызовы на партию, сообщения и другие важные события.\n\nЧтобы подключить: на сайте Настройки → Звук и уведомления → Telegram → «Подключить».",
+    "¡Hola! Este es el bot de ChessCaravan ♞\n\nTe envía aquí desafíos, mensajes y otros eventos importantes.\n\nPara conectarlo: en el sitio, Ajustes → Sonido y notificaciones → Telegram → «Conectar».",
+    "Hallo! Das ist der ChessCaravan-Bot ♞\n\nEr schickt dir Herausforderungen, Nachrichten und andere wichtige Ereignisse hierher.\n\nVerbinden: auf der Seite Einstellungen → Ton & Benachrichtigungen → Telegram → „Verbinden“.",
+    "Bonjour ! Voici le bot ChessCaravan ♞\n\nIl vous envoie ici les défis, messages et autres événements importants.\n\nPour le connecter : sur le site, Paramètres → Son et notifications → Telegram → « Connecter »."),
   linked: L(
     "✅ Tayyor! Telegram {{name}} akkauntiga ulandi.\n\nSayt yopiq bo'lganda chaqiruvlar va xabarlar shu yerga keladi.\n/invite — do'stlarni taklif qilish havolasi\n/stop — o'chirish",
     "✅ Done! Telegram is now connected to {{name}}.\n\nWhen the site is closed, challenges and messages will arrive here.\n/invite — your invite link for friends\n/stop — disconnect",
@@ -84,7 +84,7 @@ const BOT = {
     "✅ C'est fait ! Telegram est connecté à {{name}}.\n\nQuand le site est fermé, défis et messages arriveront ici.\n/invite — votre lien d'invitation\n/stop — déconnecter"),
   already: L('Bu chat {{name}} akkauntiga ulangan ✅\n/invite — taklif havolasi · /stop — o\'chirish', 'This chat is connected to {{name}} ✅\n/invite — invite link · /stop — disconnect', 'Этот чат подключён к {{name}} ✅\n/invite — приглашение · /stop — отключить', 'Este chat está conectado a {{name}} ✅\n/invite — invitación · /stop — desconectar', 'Dieser Chat ist mit {{name}} verbunden ✅\n/invite — Einladung · /stop — trennen', 'Ce chat est connecté à {{name}} ✅\n/invite — invitation · /stop — déconnecter'),
   badCode: L("Havola eskirgan yoki noto'g'ri. Saytdagi «Ulash» tugmasini qayta bosing.", 'This link has expired or is invalid. Press “Connect” on the site again.', 'Ссылка устарела или неверна. Нажмите «Подключить» на сайте ещё раз.', 'El enlace caducó o no es válido. Pulsa «Conectar» en el sitio de nuevo.', 'Der Link ist abgelaufen oder ungültig. Klicke auf der Seite erneut auf „Verbinden“.', 'Lien expiré ou invalide. Appuyez à nouveau sur « Connecter » sur le site.'),
-  stopped: L("Telegram ChessDom akkauntingizdan uzildi. Qayta ulash — saytdagi Sozlamalar orqali.", 'Telegram has been disconnected from your ChessDom account. Reconnect any time in Settings.', 'Telegram отключён от аккаунта ChessDom. Подключить снова можно в Настройках.', 'Telegram se desconectó de tu cuenta de ChessDom. Puedes reconectarlo en Ajustes.', 'Telegram wurde von deinem ChessDom-Konto getrennt. Jederzeit in den Einstellungen neu verbinden.', 'Telegram est déconnecté de votre compte ChessDom. Reconnectez-le dans les Paramètres.'),
+  stopped: L("Telegram ChessCaravan akkauntingizdan uzildi. Qayta ulash — saytdagi Sozlamalar orqali.", 'Telegram has been disconnected from your ChessCaravan account. Reconnect any time in Settings.', 'Telegram отключён от аккаунта ChessCaravan. Подключить снова можно в Настройках.', 'Telegram se desconectó de tu cuenta de ChessCaravan. Puedes reconectarlo en Ajustes.', 'Telegram wurde von deinem ChessCaravan-Konto getrennt. Jederzeit in den Einstellungen neu verbinden.', 'Telegram est déconnecté de votre compte ChessCaravan. Reconnectez-le dans les Paramètres.'),
   notLinked: L("Avval akkauntingizni ulang: saytda Sozlamalar → Ovoz va bildirishnomalar → Telegram.", 'Connect your account first: on the site, Settings → Sound & notifications → Telegram.', 'Сначала подключите аккаунт: на сайте Настройки → Звук и уведомления → Telegram.', 'Primero conecta tu cuenta: en el sitio, Ajustes → Sonido y notificaciones → Telegram.', 'Verbinde zuerst dein Konto: Einstellungen → Ton & Benachrichtigungen → Telegram.', "Connectez d'abord votre compte : Paramètres → Son et notifications → Telegram."),
   invite: L(
     "Sizning taklif havolangiz 👇\nUni do'stlaringizga yuboring: ular ro'yxatdan o'tishi bilan siz bilan o'yinga tushadi.\n\n{{url}}",
@@ -93,7 +93,7 @@ const BOT = {
     "Tu enlace de invitación 👇\nEnvíalo a tus amigos: al registrarse podrán jugar contigo.\n\n{{url}}",
     "Dein Einladungslink 👇\nSchick ihn Freunden: Nach der Anmeldung können sie direkt gegen dich spielen.\n\n{{url}}",
     "Votre lien d'invitation 👇\nEnvoyez-le à vos amis : dès leur inscription, ils pourront jouer contre vous.\n\n{{url}}"),
-  shareText: L("{{name}} sizni ChessDom'da shaxmat o'yiniga taklif qilyapti ♞", '{{name}} invites you to a game of chess on ChessDom ♞', '{{name}} приглашает вас сыграть в шахматы на ChessDom ♞', '{{name}} te invita a jugar al ajedrez en ChessDom ♞', '{{name}} lädt dich zu einer Schachpartie auf ChessDom ein ♞', "{{name}} vous invite à une partie d'échecs sur ChessDom ♞"),
+  shareText: L("{{name}} sizni ChessCaravan'da shaxmat o'yiniga taklif qilyapti ♞", '{{name}} invites you to a game of chess on ChessCaravan ♞', '{{name}} приглашает вас сыграть в шахматы на ChessCaravan ♞', '{{name}} te invita a jugar al ajedrez en ChessCaravan ♞', '{{name}} lädt dich zu einer Schachpartie auf ChessCaravan ein ♞', "{{name}} vous invite à une partie d'échecs sur ChessCaravan ♞"),
   help: L(
     "Buyruqlar:\n/invite — do'stlarni taklif qilish havolasi\n/stop — Telegram'ni akkauntdan uzish\n/help — yordam",
     "Commands:\n/invite — invite link for friends\n/stop — disconnect Telegram from your account\n/help — help",

@@ -35,7 +35,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   body { width: 1200px; height: 630px; overflow: hidden; font-family: 'Segoe UI', Inter, Arial, sans-serif;
     background: radial-gradient(circle at 18% 12%, #0d4a50 0%, transparent 55%), radial-gradient(circle at 95% 100%, #2a2a14 0%, transparent 45%), #0a1214; color: #fff; }
   .left { position: absolute; left: 80px; top: 0; bottom: 0; width: 600px; display: flex; flex-direction: column; justify-content: center; }
-  .logo { display: flex; align-items: center; gap: 22px; font-size: 76px; font-weight: 800; letter-spacing: -1px; margin-bottom: 34px; }
+  .logo { display: flex; align-items: center; gap: 18px; font-size: 60px; font-weight: 800; letter-spacing: -1px; margin-bottom: 34px; }
   .logo span { color: #01ccd5; }
   h1 { font-size: 40px; line-height: 1.22; font-weight: 800; margin-bottom: 26px; }
   .chips { display: flex; flex-wrap: wrap; gap: 12px; }
@@ -47,7 +47,7 @@ const html = `<!doctype html><html><head><meta charset="utf-8"><style>
   .sq img { width: 86%; height: 86%; }
 </style></head><body>
   <div class="left">
-    <div class="logo">👑 <b>Chess<span>Dom</span></b></div>
+    <div class="logo">👑 <b>Chess<span>Caravan</span></b></div>
     <h1>${TITLE}</h1>
     <div class="chips">${CHIPS.map((c) => `<div class="chip">${c}</div>`).join('')}</div>
   </div>

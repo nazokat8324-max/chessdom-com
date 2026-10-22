@@ -55,12 +55,12 @@ app.use((req, res, next) => {
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
-const PAGE_TITLES = { '': 'ChessDom — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse' };
-const DEFAULT_DESC = 'ChessDom — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
+const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse' };
+const DEFAULT_DESC = 'ChessCaravan — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
-  let title = PAGE_TITLES[req.params && req.params[0] ? req.params[0].toLowerCase() : ''] || 'ChessDom';
-  if (title !== PAGE_TITLES['']) title += ' · ChessDom';
+  let title = PAGE_TITLES[req.params && req.params[0] ? req.params[0].toLowerCase() : ''] || 'ChessCaravan';
+  if (title !== PAGE_TITLES['']) title += ' · ChessCaravan';
   let desc = DEFAULT_DESC;
   const name = typeof req.query.profile === 'string' ? req.query.profile.slice(0, 40) : '';
   // 🔗 Taklif havolasi: Telegram/WhatsApp oldindan ko'rinishida "X sizni o'yinga chaqiryapti"
@@ -70,8 +70,8 @@ async function sendIndex(req, res) {
       const u = await db.getUserByInviteCode(inviteCode);
       if (u) {
         const r = u.ratings_by_mode || {};
-        title = `♞ ${u.username} invites you to play chess · ChessDom`;
-        desc = `${u.username} sizni ChessDom'da shaxmat o'yiniga taklif qilyapti — Blitz ${r.blitz || 1500}. Accept the invite and play ${u.username} right away.`;
+        title = `♞ ${u.username} invites you to play chess · ChessCaravan`;
+        desc = `${u.username} sizni ChessCaravan'da shaxmat o'yiniga taklif qilyapti — Blitz ${r.blitz || 1500}. Accept the invite and play ${u.username} right away.`;
       }
     } catch (e) {}
   }
@@ -81,8 +81,8 @@ async function sendIndex(req, res) {
       if (u) {
         const r = u.ratings_by_mode || {};
         const s = u.stats || {};
-        title = u.username + ' · ChessDom';
-        desc = `${u.username} on ChessDom — Rapid ${r.rapid || 1500} · Blitz ${r.blitz || 1500} · Bullet ${r.bullet || 1500} · ${(s.wins || 0) + (s.losses || 0) + (s.draws || 0)} games`;
+        title = u.username + ' · ChessCaravan';
+        desc = `${u.username} on ChessCaravan — Rapid ${r.rapid || 1500} · Blitz ${r.blitz || 1500} · Bullet ${r.bullet || 1500} · ${(s.wins || 0) + (s.losses || 0) + (s.draws || 0)} games`;
       }
     } catch (e) {}
   }
@@ -91,7 +91,7 @@ async function sendIndex(req, res) {
     <meta name="description" content="${escAttr(desc)}" />
     <link rel="canonical" href="${escAttr(SITE_URL + req.path)}" />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="ChessDom" />
+    <meta property="og:site_name" content="ChessCaravan" />
     <meta property="og:title" content="${escAttr(title)}" />
     <meta property="og:description" content="${escAttr(desc)}" />
     <meta property="og:url" content="${escAttr(url)}" />
@@ -1490,10 +1490,10 @@ async function start() {
       const link = `${appUrl(req)}/?reset=${token}`;
       await mailer.sendMail({
         to: user.email,
-        subject: 'ChessDom — parolni tiklash',
+        subject: 'ChessCaravan — parolni tiklash',
         text: `Salom, ${user.username}!\n\nParolingizni tiklash uchun havola (30 daqiqa amal qiladi):\n${link}\n\nAgar siz so'ramagan bo'lsangiz, bu xatni e'tiborsiz qoldiring.`,
         html: `<div style="font-family:Arial,sans-serif;max-width:480px;margin:auto;padding:24px;background:#141b19;color:#e8ece9;border-radius:16px">
-          <h2 style="margin:0 0 12px;color:#fff">♞ ChessDom</h2>
+          <h2 style="margin:0 0 12px;color:#fff">♞ ChessCaravan</h2>
           <p>Salom, <b>${escapeHtml(user.username)}</b>!</p>
           <p>Parolingizni tiklash uchun quyidagi tugmani bosing. Havola 30 daqiqa amal qiladi.</p>
           <p style="text-align:center;margin:28px 0"><a href="${link}" style="background:#00b1b9;color:#fff;padding:14px 28px;border-radius:12px;text-decoration:none;font-weight:bold">Parolni tiklash</a></p>
@@ -2557,7 +2557,7 @@ async function start() {
         const white = asWhite ? u.username : (g.opponent || '?'), black = asWhite ? (g.opponent || '?') : u.username;
         const res1 = g.result === 'draw' ? '1/2-1/2' : ((g.result === 'win') === asWhite ? '1-0' : '0-1');
         const d = new Date(g.timestamp || Date.now());
-        const head = [`[Event "ChessDom"]`, `[Site "${SITE_URL}"]`, `[Date "${isNaN(d) ? '????.??.??' : d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
+        const head = [`[Event "ChessCaravan"]`, `[Site "${SITE_URL}"]`, `[Date "${isNaN(d) ? '????.??.??' : d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
           `[White "${white}"]`, `[Black "${black}"]`, `[Result "${g.color ? res1 : '*'}"]`]
           .concat(g.clock ? [`[TimeControl "${g.clock}"]`] : [])
           .concat(g.variant === 'chess960' && g.startFen ? ['[Variant "Chess960"]', '[SetUp "1"]', `[FEN "${g.startFen}"]`] : []);

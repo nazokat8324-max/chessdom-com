@@ -46,7 +46,7 @@
     return { light: v('--board-light', '#e3f1f1'), dark: v('--board-dark', '#4e9ea3'), accent: v('--accent', '#01ccd5') };
   }
 
-  // --- Bitta kadr: tepada raqib, taxta, pastda o'yinchi, eng pastda ChessDom ---
+  // --- Bitta kadr: tepada raqib, taxta, pastda o'yinchi, eng pastda ChessCaravan ---
   function layout(scale) {
     const s = scale || 1;
     const sq = 52 * s, bar = 46 * s, foot = 30 * s;
@@ -120,7 +120,7 @@
       if (reason) { ctx.font = `600 ${15 * s}px ${FONT}`; ctx.fillStyle = '#b8c7c0'; ctx.fillText(reason, W / 2, by + 64 * s); }
       ctx.textAlign = 'left';
     }
-    // ChessDom
+    // ChessCaravan
     const fy = top + sq * 8 + bar;
     ctx.fillStyle = '#081113';
     ctx.fillRect(0, fy, W, foot);
@@ -129,7 +129,7 @@
     ctx.fillText('Chess', 14 * s, fy + foot / 2);
     const cw = ctx.measureText('Chess').width;
     ctx.fillStyle = col.accent;
-    ctx.fillText('Dom', 14 * s + cw, fy + foot / 2);
+    ctx.fillText('Caravan', 14 * s + cw, fy + foot / 2);
     ctx.font = `500 ${12 * s}px ${FONT}`;
     ctx.fillStyle = '#8fa29a';
     ctx.textAlign = 'right';
@@ -207,8 +207,8 @@
     const opp = (myColor === 'w' ? d.black : d.white) || {};
     const won = (d.result === '1-0' && myColor === 'w') || (d.result === '0-1' && myColor === 'b');
     const line = won && opp.name
-      ? tx('shTextWin', "♞ ChessDom'da {{name}} ustidan g'alaba qozondim!", { name: opp.name })
-      : tx('shTextGame', "♞ ChessDom'dagi o'yinim: {{white}} — {{black}}", { white: (d.white && d.white.name) || '?', black: (d.black && d.black.name) || '?' });
+      ? tx('shTextWin', "♞ ChessCaravan'da {{name}} ustidan g'alaba qozondim!", { name: opp.name })
+      : tx('shTextGame', "♞ ChessCaravan'dagi o'yinim: {{white}} — {{black}}", { white: (d.white && d.white.name) || '?', black: (d.black && d.black.name) || '?' });
     return line + (st.invite ? '\n' + tx('shTextInvite', "Men bilan o'ynab ko'ring:") : '');
   }
   const fileName = (kind) => `chessdom-${((st.data.white && st.data.white.name) || 'white')}-vs-${((st.data.black && st.data.black.name) || 'black')}.${kind === 'gif' ? 'gif' : 'png'}`.replace(/[^\w.-]+/g, '_');

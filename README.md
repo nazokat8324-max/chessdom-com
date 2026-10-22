@@ -1,4 +1,4 @@
-# Just Chess - Global Online Chess Platform
+# ChessCaravan - Global Online Chess Platform
 
 Professional chess web application with online multiplayer, Elo ratings, tournaments, friends, chat, clubs, and multilingual support.
 

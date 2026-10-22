@@ -126,7 +126,7 @@
     if (st.rated) params.set('r', '1');
     return location.origin + '/?' + params.toString();
   }
-  function shareText() { return tx('invShareText', "Keling, ChessDom'da shaxmat o'ynaymiz! ♞ {{clock}}", { clock: clockLabel(st.clock) }); }
+  function shareText() { return tx('invShareText', "Keling, ChessCaravan'da shaxmat o'ynaymiz! ♞ {{clock}}", { clock: clockLabel(st.clock) }); }
 
   function render() {
     const el = modal();
@@ -147,7 +147,7 @@
           ${navigator.share ? `<button class="inv-btn ghost" data-share>📤 ${esc(tx('invShare', 'Ulashish'))}</button>` : ''}
         </div>
         <div class="inv-stats"><b>${esc(tx('invCount', 'Siz taklif qilganlar: {{n}}', { n: d.count }))}</b>
-          <small>${esc(tx('invGoal', "3 ta do'st — «Taklifchi» 📣, 10 ta — «ChessDom elchisi» 🌟 nishoni"))}</small>${list}</div>`
+          <small>${esc(tx('invGoal', "3 ta do'st — «Taklifchi» 📣, 10 ta — «ChessCaravan elchisi» 🌟 nishoni"))}</small>${list}</div>`
         : `<div class="inv-loading">${esc(tx('loadingText', 'Yuklanmoqda...'))}</div>`}
       </div>`;
     bindClose(el);
@@ -161,7 +161,7 @@
       showToast(tx('invCopied', 'Havola nusxalandi — endi uni do\'stingizga yuboring'), 'success');
     };
     const share = el.querySelector('[data-share]');
-    if (share) share.onclick = () => navigator.share({ title: 'ChessDom', text: shareText(), url }).catch(() => {});
+    if (share) share.onclick = () => navigator.share({ title: 'ChessCaravan', text: shareText(), url }).catch(() => {});
   }
 
   window.openInviteDialog = async function () {

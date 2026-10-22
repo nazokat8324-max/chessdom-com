@@ -35,7 +35,7 @@
     const s = [];
     const month = monthName(d.season);
     s.push({ key: 'cover', cls: 'wr-s-cover', html: `
-      <div class="wr-kicker">ChessDom · ${esc(month)}</div>
+      <div class="wr-kicker">ChessCaravan · ${esc(month)}</div>
       <div class="wr-avatar"><span>${esc(d.username.charAt(0).toUpperCase())}</span>${window.avatarOverlay ? window.avatarOverlay(d.username, d.avatarVersion) : ''}</div>
       <h2>${esc(tx('wrCoverTitle', '{{name}}, sizning oyingiz', { name: d.username }))}</h2>
       <p>${esc(tx('wrCoverSub', "Bu oy taxtada nimalar bo'lganini birga ko'rib chiqamiz"))}</p>` });
@@ -129,7 +129,7 @@
     x.fillStyle = accent; x.fillRect(80, 100, 120, 10);
     x.textBaseline = 'alphabetic';
     const font = (w, s) => `${w} ${s}px Inter, "Segoe UI", Arial, sans-serif`;
-    x.fillStyle = '#ffffff'; x.font = font(800, 44); x.fillText('ChessDom', 80, 180);
+    x.fillStyle = '#ffffff'; x.font = font(800, 44); x.fillText('ChessCaravan', 80, 180);
     x.fillStyle = 'rgba(255,255,255,0.65)'; x.font = font(600, 38); x.fillText(monthName(d.season), 80, 240);
     x.fillStyle = '#ffffff'; x.font = font(900, 92); x.fillText(d.username.length > 16 ? d.username.slice(0, 15) + '…' : d.username, 80, 380);
     const stat = (label, value, color, cx, cy) => {
@@ -159,7 +159,7 @@
     try {
       const file = new File([blob], name, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: 'ChessDom', text: tx('wrShareText', 'Mening shaxmat oyim — ChessDom') });
+        await navigator.share({ files: [file], title: 'ChessCaravan', text: tx('wrShareText', 'Mening shaxmat oyim — ChessCaravan') });
         return;
       }
     } catch (e) { if (e && e.name === 'AbortError') return; }

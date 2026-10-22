@@ -1,4 +1,4 @@
--- PostgreSQL schema for Just Chess
+-- PostgreSQL schema for ChessCaravan
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 

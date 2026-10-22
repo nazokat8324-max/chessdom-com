@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ChessDom</title>
+  <title>ChessCaravan</title>
   <meta name="robots" content="index, follow">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -44,7 +44,7 @@
 </head>
 <body data-contact="__CONTACT__">
   <header class="lg-top">
-    <a class="lg-brand" href="/">♞ <b>Chess<span>Dom</span></b></a>
+    <a class="lg-brand" href="/">♞ <b>Chess<span>Caravan</span></b></a>
     <nav class="lg-langs" id="lgLangs"></nav>
   </header>
   <main>
@@ -88,7 +88,7 @@
         document.getElementById('lgTabCredits').textContent = ui.credits;
         document.getElementById('lgTabCredits').className = doc === 'credits' ? 'active' : '';
         document.getElementById('lgBack').textContent = '← ' + ui.back;
-        document.title = ui[doc] + ' · ChessDom';
+        document.title = ui[doc] + ' · ChessCaravan';
         document.documentElement.lang = lang;
         document.getElementById('lgLangs').innerHTML = LANGS.map(function (l) { return '<button type="button" data-lang="' + l[0] + '" class="' + (l[0] === lang ? 'active' : '') + '">' + esc(l[1]) + '</button>'; }).join('');
         Array.prototype.forEach.call(document.querySelectorAll('[data-lang]'), function (b) {

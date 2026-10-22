@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#0b1114">
-  <title>ChessDom</title>
+  <title>ChessCaravan</title>
   <!-- Service worker internet yo'q paytda ko'rsatadi (sw.js) -->
   <style>
     html, body { height: 100%; margin: 0; }
@@ -21,16 +21,16 @@
   <div class="card">
     <img src="/assets/icons/icon-192.png" alt="">
     <h1 id="t">No internet connection</h1>
-    <p id="p">ChessDom needs the internet. Check your connection and try again.</p>
+    <p id="p">ChessCaravan needs the internet. Check your connection and try again.</p>
     <button id="b" onclick="location.reload()">Try again</button>
   </div>
   <script>
     var T = {
-      uz: ["Internet aloqasi yo'q", "ChessDom ishlashi uchun internet kerak. Aloqani tekshirib, qayta urinib ko'ring.", "Qayta urinish"],
-      ru: ['Нет подключения к интернету', 'Для ChessDom нужен интернет. Проверьте подключение и попробуйте снова.', 'Повторить'],
-      es: ['Sin conexión a internet', 'ChessDom necesita internet. Revisa tu conexión e inténtalo de nuevo.', 'Reintentar'],
-      de: ['Keine Internetverbindung', 'ChessDom braucht Internet. Prüfe deine Verbindung und versuche es erneut.', 'Erneut versuchen'],
-      fr: ['Pas de connexion internet', 'ChessDom a besoin d’internet. Vérifiez votre connexion et réessayez.', 'Réessayer']
+      uz: ["Internet aloqasi yo'q", "ChessCaravan ishlashi uchun internet kerak. Aloqani tekshirib, qayta urinib ko'ring.", "Qayta urinish"],
+      ru: ['Нет подключения к интернету', 'Для ChessCaravan нужен интернет. Проверьте подключение и попробуйте снова.', 'Повторить'],
+      es: ['Sin conexión a internet', 'ChessCaravan necesita internet. Revisa tu conexión e inténtalo de nuevo.', 'Reintentar'],
+      de: ['Keine Internetverbindung', 'ChessCaravan braucht Internet. Prüfe deine Verbindung und versuche es erneut.', 'Erneut versuchen'],
+      fr: ['Pas de connexion internet', 'ChessCaravan a besoin d’internet. Vérifiez votre connexion et réessayez.', 'Réessayer']
     };
     var l = null; try { l = localStorage.getItem('justChessLang'); } catch (e) {}
     var t = T[l] || T[(navigator.language || '').slice(0, 2)];

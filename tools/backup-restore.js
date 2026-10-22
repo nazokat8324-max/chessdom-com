@@ -17,7 +17,7 @@ async function main() {
     process.exit(2);
   }
   const dump = backup.readBackup(fs.readFileSync(path.resolve(file)), process.env.BACKUP_TOKEN);
-  if (dump.format !== 'chessdom-backup') throw new Error("Bu ChessDom zaxira fayli emas");
+  if (dump.format !== 'chessdom-backup') throw new Error("Bu ChessCaravan zaxira fayli emas");
   console.log(`Zaxira: ${dump.createdAt} · ${dump.engine} · ${dump.rows} qator`);
   for (const [name, rows] of Object.entries(dump.tables)) if (rows.length) console.log(`  ${name.padEnd(28)} ${rows.length}`);
   if (dry) return;

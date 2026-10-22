@@ -1383,8 +1383,7 @@ async function start() {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
       const { username, email, password } = req.body;
-      const existing = await db.getUserByUsername(username);
-      if (existing) return res.status(409).json({ success: false, message: 'Bu nomli foydalanuvchi mavjud!' });
+      if (await db.usernameTaken(username)) return res.status(409).json({ success: false, message: 'Bu nomli foydalanuvchi mavjud!' });
       if (await db.getUserByEmail(email)) return res.status(409).json({ success: false, message: 'Bu email boshqa akkauntga biriktirilgan!' });
       const passwordHash = await bcrypt.hash(password, 10);
       const user = await db.createUser({ username, email, passwordHash });

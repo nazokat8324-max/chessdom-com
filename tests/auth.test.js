@@ -19,6 +19,12 @@ test("Ro'yxatdan o'tish: tekshiruvlar", async () => {
   const dup = await srv.api(null, '/api/auth/register', 'POST', { username: uniq('Em'), email: u.name.toUpperCase() + '@TEST.UZ', password: 'secret1' });
   assert.equal(dup.status, 409, 'band email');
   assert.equal(dup.message, 'Bu email boshqa akkauntga biriktirilgan!');
+  // Nom katta-kichik harfni farqlamaydi: "Reg123" bor bo'lsa "reg123"/"REG123" band (kirillda ham)
+  assert.equal(await bad({ username: u.name.toLowerCase(), email: uniq('lc') + '@t.uz', password: 'secret1' }), 409, 'kichik harfli nom');
+  assert.equal(await bad({ username: u.name.toUpperCase(), email: uniq('uc') + '@t.uz', password: 'secret1' }), 409, 'katta harfli nom');
+  const cyr = 'Шахматист' + Date.now() % 100000;
+  assert.equal(await bad({ username: cyr, email: uniq('cy') + '@t.uz', password: 'secret1' }), 200, 'kirill nom');
+  assert.equal(await bad({ username: cyr.toLowerCase(), email: uniq('cz') + '@t.uz', password: 'secret1' }), 409, 'kirill nom kichik harfda');
 });
 
 test('Kirish va token', async () => {

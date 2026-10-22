@@ -985,6 +985,17 @@ async function getUserByUsername(username) {
   return row ? mapUserRow(row) : null;
 }
 
+// Ro'yxatdan o'tishda: "Ali" bor bo'lsa "ali"/"ALI" ham band (katta-kichik harf farqlanmaydi)
+async function usernameTaken(username) {
+  const name = String(username);
+  if (await dbGet('SELECT id FROM users WHERE LOWER(username) = LOWER(?)', [name])) return true;
+  // SQLite LOWER faqat lotin harflarini kichraytiradi — kirill va boshqalar uchun JS da solishtiriladi
+  if (usePostgres || /^[\x00-\x7f]*$/.test(name)) return false;
+  const rows = await dbAll('SELECT username FROM users');
+  const low = name.toLowerCase();
+  return rows.some((r) => String(r.username).toLowerCase() === low);
+}
+
 async function getUserById(id) {
   const row = await dbGet('SELECT * FROM users WHERE id = ?', id);
   return row ? mapUserRow(row) : null;
@@ -2421,6 +2432,7 @@ module.exports = {
   deleteAvatar,
   getAvatarByUsername,
   getUserByEmail,
+  usernameTaken,
   updateUserEmail,
   updateUserPassword,
   createPasswordReset,

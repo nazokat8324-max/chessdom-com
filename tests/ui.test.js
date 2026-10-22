@@ -180,6 +180,22 @@ test("Telefon yon holatda: oyna tugmasiga yetiladi, menyu ekranga sig'adi; klubl
   assert.deepEqual([...p.errors, ...p2.errors], []);
 });
 
+test("Telefon: Xabarlar — uzun havolali suhbat ekranga sig'adi, yuborish tugmasi ko'rinadi", opts, async () => {
+  const a = await srv.register('Umsg'), b = await srv.register('Umsgb');
+  await srv.api(b, '/api/chat/messages', 'POST', { roomId: 'user_' + a.id, message: 'Havola: https://chessdom-com.onrender.com/?profile=' + 'juda_uzun_bolinmaydigan_havola_'.repeat(4) });
+  const p = await page(a, { width: 360, height: 640, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/xabarlar', { waitUntil: 'networkidle2' });
+  await sleep(800);
+  await p.evaluate((n) => window.openMessagesWith(n), b.name);
+  await sleep(1000);
+  const r = await p.evaluate(() => {
+    const right = (sel) => Math.round(document.querySelector(sel).getBoundingClientRect().right);
+    return { vw: innerWidth, sw: document.documentElement.scrollWidth, head: right('.msg-chat-head'), send: right('#msgComposer .msg-send'), bubble: right('.msg-bubble.theirs') };
+  });
+  assert.ok(r.head <= r.vw && r.send <= r.vw && r.bubble <= r.vw && r.sw <= r.vw, JSON.stringify(r));
+  assert.deepEqual(p.errors, []);
+});
+
 test("Service worker ro'yxatdan o'tadi", opts, async () => {
   const u = await srv.register('Us');
   const p = await page(u);

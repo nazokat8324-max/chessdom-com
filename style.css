@@ -6071,6 +6071,7 @@ sidebar {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  min-width: 0;
   background:
     radial-gradient(circle at 100% 0%, rgba(var(--accent-rgb), 0.06), transparent 40%),
     var(--cd-surface);
@@ -6116,10 +6117,19 @@ sidebar {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
 }
 .msg-chat-title b {
   font-size: 16px;
   color: #fff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.msg-chat-head > button,
+.msg-chat-head .msg-av-wrap {
+  flex: none;
 }
 .msg-thread {
   flex: 1;
@@ -6145,6 +6155,7 @@ sidebar {
   font-size: 14px;
   line-height: 1.45;
   word-wrap: break-word;
+  overflow-wrap: anywhere;
   white-space: pre-wrap;
   animation: msgIn 0.18s ease;
 }
@@ -6180,10 +6191,12 @@ sidebar {
 }
 .msg-composer .form-input {
   flex: 1;
+  min-width: 0;
   height: 46px;
   padding: 0 14px;
 }
 .msg-send {
+  flex: none;
   width: 46px;
   height: 46px;
   border: none;
@@ -6221,11 +6234,18 @@ sidebar {
 
 @media (max-width: 900px) {
   #messagesRoot { height: calc(100vh - 135px); height: calc(100dvh - 135px); min-height: 380px; }
-  .msg-layout { grid-template-columns: 1fr; }
+  .msg-layout { grid-template-columns: minmax(0, 1fr); }
+  .msg-chat-head { padding: 10px 12px; gap: 8px; }
+  .msg-composer { padding: 10px 12px; gap: 8px; }
+  .msg-thread { padding: 14px 12px; }
   .msg-layout.has-active .msg-sidebar { display: none; }
   .msg-layout:not(.has-active) .msg-chat { display: none; }
   .msg-back { display: block; }
   .msg-bubble { max-width: 85%; }
+}
+@media (max-width: 440px) {
+  /* Tor ekranda "O'ynash" — faqat ⚔️, ism uchun joy ko'proq */
+  .msg-challenge span { display: none; }
 }
 
 /* ===== Turnirlar: Swiss (tournaments.js) ===== */
@@ -9076,6 +9096,9 @@ html.hide-last-move #chessBoard .sq-last {
   bottom: 78px;
   z-index: 5;
   width: min(380px, calc(100% - 28px));
+  /* Past suhbat oynasida (telefon yon holatda) tepadan chiqib ketmasin — ichida aylanadi */
+  max-height: calc(100% - 92px);
+  overflow-y: auto;
   border-radius: 18px;
   background: var(--cd-surface-2);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -14013,6 +14036,14 @@ a,
   }
 }
 
+/* Chat xabarlari: uzun havola yoki bo'linmaydigan so'z pufakdan (va telefonda ekrandan) chiqib ketmasin */
+.club-chat-message,
+.gc-msg,
+#lvChatList > * {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+
 /* ===== Telefon: klublar ro'yxati ikki ustunda (bitta ustunda 200 ta davlat juda uzun bo'lardi) */
 @media (max-width: 600px) {
   #clubsListContainer {
@@ -14153,6 +14184,12 @@ a,
   }
   #messagesRoot {
     height: calc(100dvh - 160px);
+  }
+}
+@media (max-width: 768px) {
+  html.landscape-phone #messagesRoot {
+    height: calc(100dvh - 32px);
+    min-height: 0;
   }
 }
 

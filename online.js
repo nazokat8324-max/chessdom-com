@@ -353,8 +353,17 @@ window.startMatchmaking = async function() {
   }
 
   if (!socket.connected) {
-    alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
-    return;
+    // Sahifa endigina ochilgan yoki internet sekin (telefon) — ulanishni biroz kutamiz, darhol xato bermaymiz
+    const connected = await new Promise((resolve) => {
+      const done = (ok) => { clearTimeout(timer); socket.off('connect', onConnect); resolve(ok); };
+      const onConnect = () => done(true);
+      const timer = setTimeout(() => done(false), 6000);
+      socket.on('connect', onConnect);
+    });
+    if (!connected) {
+      alert(tx('errServerUnreachable', "Serverga ulanib bo'lmadi!"));
+      return;
+    }
   }
 
   // switchView('game') raqib holatini tozalaydi, shuning uchun so'rovdan oldin chaqiriladi

@@ -17,7 +17,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      # Brauzer testlari uchun runner'dagi Google Chrome
-      - run: npm test
+      # Brauzer testlari uchun runner'dagi Google Chrome.
+      # Yiqilgan testlar va xato matni annotatsiya (::error::) bo'lib chiqadi — jurnalni yuklamasdan ham ko'rinadi.
+      - name: npm test
+        shell: bash
         env:
           CHROME_PATH: /usr/bin/google-chrome
+        run: |
+          set -o pipefail
+          if npm test 2>&1 | tee test.log; then exit 0; fi
+          grep -E "^✖|AssertionError|actual:|expected:|Error:" test.log | grep -v "failing tests" | head -30 | while IFS= read -r line; do echo "::error::$line"; done
+          exit 1

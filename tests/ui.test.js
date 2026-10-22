@@ -206,10 +206,14 @@ test("Bosh sahifadagi \"Onlayn o'ynash\" darhol raqib qidiradi; taxta o'yindan o
   assert.equal(await p.evaluate(() => getComputedStyle(document.getElementById('chessBoard')).touchAction), 'auto', "o'yindan oldin taxta ustidan aylantirish mumkin");
   await p.evaluate(() => switchView('home'));
   await sleep(300);
+  const dialogs = [];
+  p.on('dialog', (d) => dialogs.push(d.message()));
   await (await p.$('#playOnlineBtn')).tap();
-  await sleep(1200);
-  const s = await p.evaluate(() => ({ view: document.querySelector('.view-section.active-view').id, searching: !!window.isSearchingOpponent }));
-  assert.deepEqual(s, { view: 'gameView', searching: true });
+  // Qidiruv boshlanguncha kutamiz (sekin muhitda socket ulanishi kechikishi mumkin)
+  await p.waitForFunction(() => window.isSearchingOpponent === true, { timeout: 10000 }).catch(() => {});
+  const s = await p.evaluate(() => ({ view: document.querySelector('.view-section.active-view').id, searching: !!window.isSearchingOpponent, socket: typeof socket !== 'undefined' && socket.connected }));
+  assert.equal(s.view, 'gameView', JSON.stringify({ s, dialogs }));
+  assert.equal(s.searching, true, JSON.stringify({ s, dialogs }));
   await p.evaluate(() => window.cancelSearch && window.cancelSearch());
   assert.deepEqual(p.errors, []);
 });

@@ -1470,10 +1470,16 @@ window.renderProfileCommon = function(p) {
   ['rapid', 'blitz', 'bullet', 'chess960'].forEach(mode => {
     const cap = mode.charAt(0).toUpperCase() + mode.slice(1);
     const rating = ratingsByMode[mode] || baseRating;
-    setText('stat' + cap, rating);
+    // 🌱 Dastlabki 15 o'yinda reyting taxminiy — "?" bilan
+    const provisional = gamesOf(byMode[mode]) < (window.PROVISIONAL_GAMES || 15);
+    setText('stat' + cap, rating + (provisional ? '?' : ''));
     const input = document.getElementById('input' + cap);
     if (input) input.value = rating;
-    setText('stat' + cap + 'Games', tx('profModeGames', "{{count}} ta o'yin", { count: gamesOf(byMode[mode]) }));
+    setText('stat' + cap + 'Games', provisional
+      ? tx('profModeGamesProvisional', "{{count}} ta o'yin · taxminiy", { count: gamesOf(byMode[mode]) })
+      : tx('profModeGames', "{{count}} ta o'yin", { count: gamesOf(byMode[mode]) }));
+    const statEl = document.getElementById('stat' + cap);
+    if (statEl) statEl.title = provisional ? tx('provisionalHint', "Taxminiy reyting: dastlabki 15 o'yinda tezroq o'zgaradi") : '';
     // Daraja — faqat shu rejimda o'ynagan bo'lsa
     const gamesEl = document.getElementById('stat' + cap + 'Games');
     if (gamesEl && typeof window.rankBadge === 'function') {

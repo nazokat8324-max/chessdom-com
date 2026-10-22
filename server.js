@@ -622,7 +622,7 @@ function startDirectGame(a, b, clock, rated, variant, flags) {
     clock, rated, { variant }
   );
   rooms.set(roomId, room);
-  const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null });
+  const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null, provisional: db.isProvisional(u, ratingModeOf(room), false) });
   for (const [side, color, opp] of [[white, 'w', black], [black, 'b', white]]) {
     side.socket.join(roomId);
     side.socket.emit('match-found', { roomId, color, opponent: info(opp.user), clock, rated: room.rated, mode: room.mode, ...(flags || {}), ...variantInfo(room) });
@@ -730,7 +730,7 @@ async function startRematch(oldRoomId, old) {
     clock, old.rated, { variant: old.variant, startFen: old.startFen }
   );
   rooms.set(roomId, room);
-  const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null });
+  const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null, provisional: db.isProvisional(u, ratingModeOf(room), false) });
   for (const [p, color, opp] of [[prevBlack, 'w', blackUser], [prevWhite, 'b', whiteUser]]) {
     const s = io.sockets.sockets.get(p.socketId);
     if (s) { s.leave(oldRoomId); s.join(roomId); }
@@ -1834,8 +1834,10 @@ async function start() {
         myCountry = country;
         await db.updateUserCountry(req.user.userId, country);
       }
-      const me = { userId: req.user.userId, username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId, clock, rated, variant };
-      // Faqat bir xil vaqt nazorati va reyting turini tanlagan o'yinchi bilan juftlanadi
+      const mmMode = variant === 'chess960' ? 'chess960' : clockMode(clock);
+      const me = { userId: req.user.userId, username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId, clock, rated, variant,
+        provisional: db.isProvisional(user, mmMode, false) };
+      // Faqat bir xil vaqt nazorati, reyting turi va variantni tanlagan o'yinchi bilan juftlanadi
       const waitingIndex = matchmakingQueue.findIndex(u => u.clock.initial === clock.initial && u.clock.increment === clock.increment && u.rated === rated && (u.variant || 'standard') === variant && !blockedPair(u.userId, req.user.userId));
       if (waitingIndex === -1) {
         matchmakingQueue.push(me);
@@ -1847,7 +1849,7 @@ async function start() {
       const playerInfo = (u) => ({ socketId: u.socketId, userId: u.userId, username: u.username });
       const room = createGameRoom(playerInfo(waiting), playerInfo(me), clock, rated, { variant });
       rooms.set(roomId, room);
-      const opponentInfo = (u) => ({ username: u.username, rating: u.rating, ratingsByMode: u.ratingsByMode, country: u.country });
+      const opponentInfo = (u) => ({ username: u.username, rating: u.rating, ratingsByMode: u.ratingsByMode, country: u.country, provisional: !!u.provisional });
       for (const [player, opponent, color] of [[waiting, me, 'w'], [me, waiting, 'b']]) {
         const s = io.sockets.sockets.get(player.socketId);
         if (s) s.join(roomId);

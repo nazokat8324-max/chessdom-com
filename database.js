@@ -1802,26 +1802,48 @@ async function getUserGames(userId) {
   return getUserHistory(userId, { withMoves: true });
 }
 
-function eloChange(playerRating, opponentRating, result) {
+function eloChange(playerRating, opponentRating, result, k) {
   const expectedScore = 1 / (1 + Math.pow(10, (opponentRating - playerRating) / 400));
   const score = result === 'win' ? 1 : (result === 'loss' ? 0 : 0.5);
-  return Math.round(32 * (score - expectedScore));
+  return Math.round((k || 32) * (score - expectedScore));
+}
+
+// 🌱 Yumshoq start: rejimdagi dastlabki PROVISIONAL_GAMES o'yinda reyting "taxminiy" — tezroq o'zgaradi (K=64),
+// shunda yangi o'yinchi o'z darajasini tez topadi. Tajribali o'yinchi taxminiy reytingli raqibdan kamroq yo'qotadi/oladi (K=16).
+const PROVISIONAL_GAMES = 15;
+const gamesIn = (stats) => stats ? (stats.wins || 0) + (stats.losses || 0) + (stats.draws || 0) : 0;
+function modeGames(user, mode) {
+  if (!user) return 0;
+  return mode === 'overall' ? gamesIn(user.stats) : gamesIn((user.stats_by_mode || {})[mode]);
+}
+// endGame da statistika reytingdan oldin yoziladi — joriy o'yin ham sanaladi (<=)
+function isProvisional(user, mode, includesCurrent) {
+  const n = modeGames(user, mode);
+  return includesCurrent ? n <= PROVISIONAL_GAMES : n < PROVISIONAL_GAMES;
+}
+function kFactor(meProvisional, oppProvisional) {
+  if (meProvisional) return 64;
+  if (oppProvisional) return 16;
+  return 32;
 }
 
 // Umumiy reyting va (berilgan bo'lsa) o'yin rejimi reytingini yangilaydi
 async function updateUserRatingByResult(userId, result, opponentRating, timeControl, opponentModeRating, opponentId) {
   const user = await getUserById(userId);
   if (!user) return null;
+  const opp = opponentId ? await getUserById(opponentId) : null;
   const playerRating = user.rating || 1500;
   // Chess960 o'yini umumiy reytingni o'zgartirmaydi — faqat o'z reytingini
-  const ratingChange = timeControl === 'chess960' ? 0 : eloChange(playerRating, Number(opponentRating) || 1500, result);
+  const kOverall = kFactor(isProvisional(user, 'overall', true), !!opp && isProvisional(opp, 'overall', false));
+  const ratingChange = timeControl === 'chess960' ? 0 : eloChange(playerRating, Number(opponentRating) || 1500, result, kOverall);
   const newRating = Math.max(100, playerRating + ratingChange);
 
   const ratingsByMode = user.ratings_by_mode;
   let modeChange = null;
   if (RATING_MODES.includes(timeControl)) {
     const modeRating = ratingsByMode[timeControl];
-    modeChange = eloChange(modeRating, Number(opponentModeRating) || Number(opponentRating) || 1500, result);
+    const kMode = kFactor(isProvisional(user, timeControl, true), !!opp && isProvisional(opp, timeControl, false));
+    modeChange = eloChange(modeRating, Number(opponentModeRating) || Number(opponentRating) || 1500, result, kMode);
     ratingsByMode[timeControl] = Math.max(100, modeRating + modeChange);
     await dbRun('INSERT INTO rating_history (id, user_id, mode, rating_before, rating, created_at, opponent_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
       [uuidv4(), userId, timeControl, modeRating, ratingsByMode[timeControl], new Date().toISOString(), opponentId || null]);
@@ -2234,6 +2256,8 @@ async function restoreDump(dump, { force = false, onTable } = {}) {
 }
 
 module.exports = {
+  PROVISIONAL_GAMES,
+  isProvisional,
   getInviteCode,
   getUserByInviteCode,
   setInvitedBy,

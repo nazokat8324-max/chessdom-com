@@ -180,6 +180,7 @@
           <div class="rp-moves">${moves || `<p class="rp-meta">${esc(tx('lvNoMoves', 'Hali yurish qilinmadi'))}</p>`}</div>
           <div class="rp-notes" id="rpNotes" hidden></div>
           <button class="rp-pgn" data-pgn="1">📄 ${esc(tx('rpDownloadPgn', 'PGN yuklab olish'))}</button>
+          ${st.sans.length && typeof window.openGameShare === 'function' ? `<button class="rp-pgn" data-share-game="1">📤 ${esc(tx('shTitle', "O'yinni ulashish"))}</button>` : ''}
         </div>
       </div>`;
     document.body.appendChild(el);
@@ -190,6 +191,11 @@
       const ply = e.target.closest('[data-ply]');
       if (ply) return go(Number(ply.dataset.ply));
       if (e.target.closest('[data-analyze]')) return analyze();
+      if (e.target.closest('[data-share-game]')) {
+        const white = g.color === 'b' ? g.opponent : g.player, black = g.color === 'b' ? g.player : g.opponent;
+        const result = !g.color ? '*' : g.result === 'draw' ? '1/2-1/2' : ((g.result === 'win') === (g.color !== 'b') ? '1-0' : '0-1');
+        return window.openGameShare({ moves: st.sans.slice(), variant: g.variant, startFen: g.startFen || null, white: { name: white }, black: { name: black }, result, reason: g.reason, myColor: g.color || 'w' });
+      }
       if (e.target.closest('[data-pgn]')) {
         const blob = new Blob([pgn()], { type: 'application/x-chess-pgn' });
         const a = document.createElement('a');

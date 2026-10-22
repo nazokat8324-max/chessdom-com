@@ -102,6 +102,7 @@ function beginOnlineGame(data, resume) {
   updateOnlineStatus(true);
 
   window.opponentRatingsByMode = (data.opponent && data.opponent.ratingsByMode) || null;
+  window.opponentProvisional = !!(data.opponent && data.opponent.provisional);
   window.currentRatingMode = data.ratingMode || data.mode || null;
   if (typeof window.setOpponentData === 'function') {
     window.setOpponentData(data.opponent);
@@ -279,6 +280,8 @@ socket.on('game-ended', (data) => {
     showToast(tx('gameAborted', "O'yin bekor qilindi: birinchi yurish qilinmadi."), 'warning', 5000);
     return;
   }
+  // 🎬 Ulashish uchun: natija va sabab (share.js)
+  window.lastGameEnd = { winner: data.winner === undefined ? null : data.winner, reason: data.reason };
   if (typeof window.finishGame === 'function') {
     const type = data.result === 'win' ? 'success' : (data.result === 'loss' ? 'error' : 'info');
     window.finishGame(data.winner, gameEndMessage(data), type);

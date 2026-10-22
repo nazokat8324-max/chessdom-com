@@ -55,6 +55,8 @@ window.setGamePanelMode = function(mode) {
   if (drawBtn) drawBtn.hidden = mode !== 'in';
   if (resignBtn) resignBtn.hidden = mode !== 'in';
   if (newGameBtn) newGameBtn.hidden = mode !== 'over';
+  const shareBtn = document.getElementById('btnShareGame');
+  if (shareBtn) shareBtn.hidden = !(mode === 'over' && game && game.history().length > 0);
   // Turnir o'yini tugaganda — "Turnir jadvaliga qaytish" tugmasi (keyingi tur o'zi boshlanadi)
   const tournamentBtn = document.getElementById('btnTournamentBack');
   if (tournamentBtn) tournamentBtn.hidden = !(mode === 'over' && window.lastGameSwiss);
@@ -337,6 +339,20 @@ window.offerDraw = function() {
   }
 };
 
+// 🎬 Tugagan o'yin ma'lumoti — share.js uchun (o'yinchilar paneldan, natija online.js dagi window.lastGameEnd dan)
+window.currentGameShareData = function() {
+  const panel = (c) => {
+    const nameEl = document.getElementById(c + 'PlayerName'), ratingEl = document.getElementById(c + 'PlayerRating');
+    return { name: nameEl ? nameEl.textContent.trim() : '', rating: ratingEl && ratingEl.dataset.rating ? Number(ratingEl.dataset.rating) : null };
+  };
+  const end = window.lastGameEnd || {};
+  const result = !gameFinished ? '*' : end.winner === 'w' ? '1-0' : end.winner === 'b' ? '0-1' : '1/2-1/2';
+  return {
+    moves: game ? game.history() : [], variant: window.currentVariant || 'standard', startFen: window.currentStartFen || null,
+    white: panel('white'), black: panel('black'), result, reason: end.reason || null, myColor: window.myColor || 'w'
+  };
+};
+
 window.exportPGN = function() {
   if (!game || !game.history) {
     alert(tx('noMovesYet', "Hali hech qanday yurish yo'q!"));
@@ -519,11 +535,14 @@ window.startNewGame = function() {
     const rm = window.currentRatingMode;
     const myByMode = window.currentUser.ratingsByMode || {};
     const oppByMode = window.opponentRatingsByMode || {};
-    const me = { name: window.currentUser.username, rating: (rm && myByMode[rm]) || window.currentUser.rating || 1500 };
-    const them = { name: opponent.username || tx('colOpponent', 'Raqib'), rating: (rm && oppByMode[rm]) || opponent.rating || 1500 };
+    // 🌱 Taxminiy reyting (rejimda 15 tadan kam o'yin) — "?" bilan
+    const mine = (window.currentUser.statsByMode || {})[rm];
+    const myGames = mine ? (mine.wins || 0) + (mine.losses || 0) + (mine.draws || 0) : 0;
+    const me = { name: window.currentUser.username, rating: (rm && myByMode[rm]) || window.currentUser.rating || 1500, provisional: !!rm && myGames < window.PROVISIONAL_GAMES };
+    const them = { name: opponent.username || tx('colOpponent', 'Raqib'), rating: (rm && oppByMode[rm]) || opponent.rating || 1500, provisional: !!window.opponentProvisional };
     const [white, black] = window.myColor === 'b' ? [them, me] : [me, them];
-    updatePlayerInfo('white', white.name, white.rating);
-    updatePlayerInfo('black', black.name, black.rating);
+    updatePlayerInfo('white', white.name, white.rating, white.provisional);
+    updatePlayerInfo('black', black.name, black.rating, black.provisional);
   } else {
     updatePlayerInfo('white', tx('whiteText', 'Oq'), 1500);
     updatePlayerInfo('black', tx('blackText', 'Qora'), 1500);
@@ -592,7 +611,8 @@ window.refreshPlayerInfoLabels = function() {
   refreshSearchOverlay();
 };
 
-window.updatePlayerInfo = function(color, name, rating) {
+window.PROVISIONAL_GAMES = 15; // server: database.js PROVISIONAL_GAMES
+window.updatePlayerInfo = function(color, name, rating, provisional) {
   const avatarEl = document.getElementById(`${color}PlayerAvatar`);
   const nameEl = document.getElementById(`${color}PlayerName`);
   const ratingEl = document.getElementById(`${color}PlayerRating`);
@@ -617,7 +637,8 @@ window.updatePlayerInfo = function(color, name, rating) {
   }
   if (ratingEl) {
     ratingEl.dataset.rating = waiting ? '' : (rating || 1500);
-    ratingEl.textContent = waiting ? '' : String(rating || 1500);
+    ratingEl.textContent = waiting ? '' : String(rating || 1500) + (provisional ? '?' : '');
+    ratingEl.title = provisional && !waiting ? tx('provisionalHint', "Taxminiy reyting: dastlabki 15 o'yinda tezroq o'zgaradi") : '';
   }
   const rankEl = document.getElementById(`${color}PlayerRank`);
   if (rankEl) rankEl.innerHTML = waiting || typeof window.rankBadge !== 'function' ? '' : window.rankBadge(rating || 1500);

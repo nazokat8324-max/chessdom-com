@@ -851,6 +851,9 @@
                 <button class="control-btn" onclick="exportPGN()" id="btnPgn">
                   📄 <span id="btnPgnText">PGN</span>
                 </button>
+                <button class="control-btn pg-share" onclick="window.openGameShare(window.currentGameShareData())" id="btnShareGame" hidden>
+                  📤 <span data-i18n="shShareBtn">Ulashish</span>
+                </button>
               </div>
 
               <!-- Odob reytingi (sportsmanship.js): tugagan o'yindan keyin raqibni baholash -->
@@ -2456,6 +2459,7 @@
     <script src="mentor.js"></script>
     <script src="pwa.js"></script>
     <script src="invite.js"></script>
+    <script src="share.js"></script>
     <script src="router.js"></script>
     <script src="rating-chart.js"></script>
 

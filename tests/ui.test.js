@@ -87,9 +87,12 @@ test("Brauzer xatosi admin panelidagi Xatolar bo'limida ko'rinadi", opts, async 
   await sleep(800);
   // Sahifaning o'z skripti (puppeteer evaluate ichidagi xato brauzerda "Script error." bo'lib ko'rinadi)
   await p.evaluate(() => { const s = document.createElement('script'); s.textContent = "throw new Error('UI sinov xatosi')"; document.body.appendChild(s); });
-  await sleep(800);
-  await p.evaluate(() => window.openAdminTab('errors'));
-  await sleep(1200);
+  // Xato serverga yetib borishi va ro'yxat yuklanishi yuklama ostida cho'zilishi mumkin — paydo bo'lguncha qayta ochamiz
+  const found = () => [...document.querySelectorAll('#adminRoot .adm-err b')].some((b) => b.textContent.includes('UI sinov xatosi'));
+  for (let i = 0; i < 12 && !(await p.evaluate(found)); i++) {
+    await p.evaluate(() => window.openAdminTab('errors'));
+    await sleep(800);
+  }
   const r = await p.evaluate(() => ({
     path: location.pathname,
     items: [...document.querySelectorAll('#adminRoot .adm-err b')].map((b) => b.textContent),
@@ -121,6 +124,28 @@ test("Taklif havolasi: yangi odam banner ko'radi, ro'yxatdan o'tadi va taklif qi
   assert.equal((await srv.api(a, '/api/invite')).count, 1);
   assert.deepEqual(p.errors, []);
   sa.disconnect();
+});
+
+test("O'yinni ulashish: GIF va rasm brauzerda yasaladi", opts, async () => {
+  const u = await srv.register('Ushr');
+  const p = await page(u);
+  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await sleep(600);
+  const data = { moves: ['e4', 'e5', 'Bc4', 'Nc6', 'Qh5', 'Nf6', 'Qxf7#'], variant: 'standard', white: { name: u.name, rating: 1532 }, black: { name: 'Raqib', rating: 1488 }, result: '1-0', reason: 'checkmate', myColor: 'w' };
+  await p.evaluate((d) => window.openGameShare(d), data);
+  await p.waitForSelector('.sh-preview img', { timeout: 20000 });
+  const r = await p.evaluate(async (d) => {
+    const gif = await window.gameShareRender.makeGif(d);
+    const png = await window.gameShareRender.makeImage(d);
+    const head = new TextDecoder().decode(new Uint8Array(await gif.slice(0, 6).arrayBuffer()));
+    const img = await createImageBitmap(png);
+    return { head, gifType: gif.type, pngW: img.width, pngH: img.height, buttons: document.querySelectorAll('.sh-card .inv-btn').length };
+  }, data);
+  assert.equal(r.head, 'GIF89a');
+  assert.equal(r.gifType, 'image/gif');
+  assert.deepEqual([r.pngW, r.pngH], [1040, 1345]);
+  assert.ok(r.buttons >= 2);
+  assert.deepEqual(p.errors, []);
 });
 
 test("Service worker ro'yxatdan o'tadi", opts, async () => {

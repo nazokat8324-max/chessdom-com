@@ -90,6 +90,20 @@ test("Klublar: mening klubim kartasi, faol klublar tepada, klub sahifasidagi 4 t
   assert.deepEqual(p.errors, []);
 });
 
+test("Kun o'yini kartasi: mini-taxtaning bo'sh qatorlari ham siqilmaydi (64 katak teng)", opts, async () => {
+  const u = await srv.register('Gdui');
+  const p = await page(u);
+  const fake = { success: true, game: { day: '2026-01-01', id: 'x', white: { name: 'A', rating: 1500 }, black: { name: 'B', rating: 1500 }, result: '1-0', reason: 'resign', variant: 'standard', startFen: null, clock: '3+2', moves: [] } };
+  await p.setRequestInterception(true);
+  p.on('request', (r) => (r.url().endsWith('/api/game-of-day') ? r.respond({ status: 200, contentType: 'application/json', body: JSON.stringify(fake) }) : r.continue()));
+  await p.goto(srv.base + '/jonli', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#lvGameDay .gd-board i', { timeout: 10000 });
+  const h = await p.evaluate(() => [...document.querySelectorAll('.gd-board i')].map((c) => Math.round(c.getBoundingClientRect().height)));
+  assert.equal(h.length, 64);
+  assert.equal(Math.min(...h), Math.max(...h), JSON.stringify(h));
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

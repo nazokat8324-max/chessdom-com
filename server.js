@@ -910,6 +910,48 @@ async function pickGameOfDay(now) {
   };
 }
 
+// --- 📖 Debyutlar (assets/openings.json — lichess chess-openings, CC0): o'yinchining o'z o'yinlaridan statistika ---
+let OPENINGS_DB = null;
+function openingsDb() {
+  if (!OPENINGS_DB) { try { OPENINGS_DB = JSON.parse(fs.readFileSync(path.join(__dirname, 'assets', 'openings.json'), 'utf8')); } catch (e) { OPENINGS_DB = {}; } }
+  return OPENINGS_DB;
+}
+// Birinchi 40 yarim yurish ichidagi oxirgi tanish pozitsiya — [ECO, nom] (klientdagi openings.js bilan bir xil qoida)
+function openingOfMoves(moves) {
+  const dbo = openingsDb();
+  const c = new Chess();
+  let found = null;
+  for (let i = 0; i < moves.length && i < 40; i++) {
+    if (!c.move(moves[i])) break;
+    const hit = dbo[c.fen().split(' ').slice(0, 4).join(' ')];
+    if (hit) found = hit;
+  }
+  return found;
+}
+async function openingStats(userId) {
+  const games = (await db.getUserHistory(userId, { withMoves: true }))
+    .filter((g) => (!g.variant || g.variant === 'standard') && Array.isArray(g.moves) && g.moves.length >= 2 && (g.color === 'w' || g.color === 'b'))
+    .slice(-400);
+  const fams = new Map();
+  let unknown = 0;
+  for (const g of games) {
+    const op = openingOfMoves(g.moves);
+    if (!op) { unknown++; continue; }
+    const family = op[1].split(':')[0].trim();
+    const f = fams.get(family) || { name: family, games: 0, win: 0, draw: 0, loss: 0, white: { games: 0, win: 0, draw: 0, loss: 0 }, black: { games: 0, win: 0, draw: 0, loss: 0 }, ecos: {}, lines: {} };
+    const side = g.color === 'w' ? f.white : f.black;
+    const r = g.result === 'win' ? 'win' : g.result === 'loss' ? 'loss' : 'draw';
+    f.games++; f[r]++; side.games++; side[r]++;
+    f.ecos[op[0]] = (f.ecos[op[0]] || 0) + 1;
+    f.lines[op[1]] = (f.lines[op[1]] || 0) + 1;
+    fams.set(family, f);
+  }
+  const top = (o) => Object.entries(o).sort((a, b) => b[1] - a[1])[0][0];
+  const openings = [...fams.values()].sort((a, b) => b.games - a.games || a.name.localeCompare(b.name)).slice(0, 15)
+    .map(({ ecos, lines, ...f }) => ({ ...f, eco: top(ecos), line: top(lines) }));
+  return { analysed: games.length, unknown, openings };
+}
+
 async function closeWarSeasons() {
   try {
     const prev = warPrevSeason(warSeasonKey());
@@ -2381,6 +2423,15 @@ async function start() {
       });
       res.json({ success: true, ...data });
     } catch (err) { console.error('Karvon xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // 📖 Profil: o'yinchining debyutlari (standart o'yinlar, oxirgi 400 ta) — kesh 5 daqiqa
+  app.get('/api/users/:username/openings', apiLimiter, async (req, res) => {
+    try {
+      const u = await db.getUserByUsername(String(req.params.username));
+      if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      res.json({ success: true, ...(await cached('open:' + u.id, 300000, () => openingStats(u.id))) });
+    } catch (err) { console.error('Debyutlar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.get('/api/users/:username/extras', apiLimiter, async (req, res) => {

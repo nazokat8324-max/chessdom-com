@@ -2871,6 +2871,14 @@ const translationsExtra = {
     localAutoFlip: "Avto-aylantirish",
     localOn: "yoqilgan",
     localOff: "o'chiq",
+    opTitle: "Debyutlarim",
+    opBest: "Eng yaxshi debyut",
+    opWorst: "E'tibor talab qiladi",
+    opEmpty: "Hali yetarli o'yin yo'q — debyutlar standart o'yinlardan yig'iladi.",
+    opGamesN: "{{n}} o'yin",
+    opAnalysed: "{{n}} ta standart o'yin tahlil qilindi",
+    opAll: "Hammasi",
+    opScore: "natija",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -4277,6 +4285,14 @@ const translationsExtra = {
     localAutoFlip: "Auto-flip",
     localOn: "on",
     localOff: "off",
+    opTitle: "My openings",
+    opBest: "Best opening",
+    opWorst: "Needs work",
+    opEmpty: "Not enough games yet — openings are collected from standard games.",
+    opGamesN: "{{n}} games",
+    opAnalysed: "{{n}} standard games analysed",
+    opAll: "All",
+    opScore: "score",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -5683,6 +5699,14 @@ const translationsExtra = {
     localAutoFlip: "Автоповорот",
     localOn: "вкл",
     localOff: "выкл",
+    opTitle: "Мои дебюты",
+    opBest: "Лучший дебют",
+    opWorst: "Требует внимания",
+    opEmpty: "Пока мало партий — дебюты собираются из обычных партий.",
+    opGamesN: "партий: {{n}}",
+    opAnalysed: "Проанализировано обычных партий: {{n}}",
+    opAll: "Все",
+    opScore: "результат",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -7089,6 +7113,14 @@ const translationsExtra = {
     localAutoFlip: "Giro automático",
     localOn: "sí",
     localOff: "no",
+    opTitle: "Mis aperturas",
+    opBest: "Mejor apertura",
+    opWorst: "Necesita trabajo",
+    opEmpty: "Aún no hay suficientes partidas: las aperturas se recogen de partidas estándar.",
+    opGamesN: "{{n}} partidas",
+    opAnalysed: "{{n}} partidas estándar analizadas",
+    opAll: "Todas",
+    opScore: "puntuación",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -8495,6 +8527,14 @@ const translationsExtra = {
     localAutoFlip: "Auto-Drehen",
     localOn: "an",
     localOff: "aus",
+    opTitle: "Meine Eröffnungen",
+    opBest: "Beste Eröffnung",
+    opWorst: "Ausbaufähig",
+    opEmpty: "Noch zu wenige Partien — Eröffnungen werden aus Standardpartien gesammelt.",
+    opGamesN: "{{n}} Partien",
+    opAnalysed: "{{n}} Standardpartien ausgewertet",
+    opAll: "Alle",
+    opScore: "Ergebnis",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -9901,6 +9941,14 @@ const translationsExtra = {
     localAutoFlip: "Rotation auto",
     localOn: "oui",
     localOff: "non",
+    opTitle: "Mes ouvertures",
+    opBest: "Meilleure ouverture",
+    opWorst: "À travailler",
+    opEmpty: "Pas encore assez de parties — les ouvertures viennent des parties standard.",
+    opGamesN: "{{n}} parties",
+    opAnalysed: "{{n}} parties standard analysées",
+    opAll: "Toutes",
+    opScore: "score",
     searchNoResults: "Aucun résultat"
   }
 };

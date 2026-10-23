@@ -48,8 +48,16 @@
   window.currentProfileUser = () => st.username;
 
   // Yutuqlar / Batafsil statistika — tugma bosilganda profil ichida ochiladi (bir vaqtda bittasi)
+  // Profil havola orqali (?profile=) juda erta ochilsa, load() hali ulanmagan bo'lishi mumkin — nom profil oynasining o'zidan olinadi
+  function viewedUsername() {
+    if (st.username) return st.username;
+    const el = document.getElementById('profileModalUsername');
+    const name = el && el.textContent.trim();
+    return name || (window.currentUser && window.currentUser.username) || null;
+  }
+
   window.toggleProfilePanel = function (name, force) {
-    const panels = { ach: ['profAchPanel', 'profAchBtn'], ext: ['profExtPanel', 'profExtBtn'] };
+    const panels = { ach: ['profAchPanel', 'profAchBtn'], ext: ['profExtPanel', 'profExtBtn'], open: ['profOpenPanel', 'profOpenBtn'] };
     Object.entries(panels).forEach(([key, [panelId, btnId]]) => {
       const panel = document.getElementById(panelId), btn = document.getElementById(btnId);
       if (!panel) return;
@@ -57,6 +65,8 @@
       panel.hidden = !open;
       if (btn) btn.classList.toggle('active', open);
       if (open) setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 30);
+      if (open && !st.username) { const who = viewedUsername(); if (who) { st.username = who; load(who); } }
+      if (open && key === 'open' && typeof window.loadProfileOpenings === 'function') window.loadProfileOpenings(viewedUsername());
     });
   };
 

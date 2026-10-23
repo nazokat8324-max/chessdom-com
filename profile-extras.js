@@ -80,6 +80,7 @@
     renderFollow();
     if (window.renderProfileRivals) window.renderProfileRivals(st.username, st.data && st.data.rivals);
     if (window.renderProfileSport) window.renderProfileSport(st.data && st.data.sportsmanship);
+    if (window.renderProfileCaravan) window.renderProfileCaravan(st.data ? st.data.caravan : null);
     if (window.renderProfilePredict) window.renderProfilePredict(st.data && st.data.predictions);
     const banner = document.getElementById('profileCheater');
     if (banner) banner.hidden = !(st.data && st.data.cheater);

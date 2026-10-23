@@ -12,6 +12,7 @@ const path = require('path');
 const fs = require('fs');
 const { Chess } = require('chess.js');
 const Chess960 = require('./chess960');
+const Caravan = require('./caravan');
 
 const db = require('./database');
 const league = require('./league');
@@ -55,7 +56,7 @@ app.use((req, res, next) => {
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
 const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
-const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse' };
+const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road' };
 const DEFAULT_DESC = 'ChessCaravan — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
@@ -107,7 +108,7 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'maxfiylik', 'shartlar', 'mualliflar'];
+  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'karvon', 'maxfiylik', 'shartlar', 'mualliflar'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
@@ -134,7 +135,7 @@ app.get(['/maxfiylik', '/shartlar', '/mualliflar', '/privacy', '/terms', '/credi
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon']);
 // Nomi o'zgargan bo'limlar: eski manzil → yangisi (301)
 const ROUTE_ALIASES = { urush: 'bayroqlar', dostlar: 'xabarlar', chat: 'xabarlar' };
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
@@ -484,7 +485,16 @@ async function endGame(roomId, room, winnerColor, reason) {
             notify(p.userId, 'rank_up', { mode: ratingMode, rank: rankOf(modeAfter), rating: modeAfter });
           }
         }
+        // 🐪 Karvon yo'li: qadamlar statistikadan; yangi shaharga yetgan bo'lsa — bildirishnoma (mehmonga emas)
+        let caravan = null;
+        if (statsData && statsData.stats) {
+          const points = Caravan.pointsOf(statsData.stats), gained = Caravan.STEP[result] || 0;
+          const idx = Caravan.cityIndex(points);
+          caravan = { points, gained, city: Caravan.CITIES[idx].key, arrived: idx > Caravan.cityIndex(points - gained) };
+          if (caravan.arrived && !isGuest(p.userId)) notify(p.userId, 'caravan_city', { city: caravan.city });
+        }
         updates[p.color] = {
+          caravan,
           stats: statsData && statsData.stats,
           statsByMode: statsData && statsData.statsByMode,
           newRating: ratingData ? ratingData.newRating : (before[p.color] && before[p.color].rating) || 1500,
@@ -2305,6 +2315,20 @@ async function start() {
   });
 
   // --- Profil qo'shimchalari: yutuqlar, kuzatuvchilar, kengaytirilgan statistika ---
+  // 🐪 Karvon yo'li: eng uzoqqa yurgan karvonlar (mehmonlarsiz) va har shahardagi karvonlar soni
+  app.get('/api/caravan', apiLimiter, async (req, res) => {
+    try {
+      const data = await cached('caravan', 60000, async () => {
+        const rows = (await db.caravanRows()).map((r) => ({ ...r, points: Caravan.pointsOf(r.stats) })).filter((r) => r.points > 0);
+        rows.sort((a, b) => b.points - a.points);
+        const perCity = Caravan.CITIES.map(() => 0);
+        for (const r of rows) perCity[Caravan.cityIndex(r.points)]++;
+        return { leaders: rows.slice(0, 10).map((r) => ({ username: r.username, country: r.country, avatarVersion: r.avatarVersion, points: r.points, city: Caravan.CITIES[Caravan.cityIndex(r.points)].key })), perCity, travellers: rows.length };
+      });
+      res.json({ success: true, ...data });
+    } catch (err) { console.error('Karvon xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.get('/api/users/:username/extras', apiLimiter, async (req, res) => {
     try {
       const u = await db.getUserByUsername(String(req.params.username));
@@ -2319,6 +2343,7 @@ async function start() {
         cheater: u.fairplay_flag === 'cheater',
         rivals: await rivalsOf(u.id),
         sportsmanship: await db.sportSummary(u.id),
+        caravan: isGuest(u.id) ? null : Caravan.pointsOf(u.stats),
         predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)
       });

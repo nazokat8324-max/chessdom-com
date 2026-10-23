@@ -2,6 +2,7 @@
 // klientda yasaydi (notifications.js, nf* kalitlar); push esa sayt yopiq paytda keladi, shuning uchun matn shu yerda.
 // pushMessage(type, data, lang, ownName) → { title, body, url, category } — tur ro'yxatda bo'lmasa umumiy matn.
 // Telegram bot ham shu matnlardan foydalanadi; botning o'z javoblari — botText(key, lang, vars).
+const Caravan = require('./caravan');
 const L = (uz, en, ru, es, de, fr) => ({ uz, en, ru, es, de, fr });
 const T = {
   challenge: L("{{from}} sizni o'yinga chaqirdi ({{clock}})", '{{from}} challenged you to a game ({{clock}})', '{{from}} вызывает вас на партию ({{clock}})', '{{from}} te desafía a una partida ({{clock}})', '{{from}} fordert dich zu einer Partie heraus ({{clock}})', '{{from}} vous défie ({{clock}})'),
@@ -19,6 +20,7 @@ const T = {
   student_game: L("Shogirdingiz {{student}} o'ynadi — izoh qoldiring", 'Your student {{student}} played — leave a note', 'Ваш ученик {{student}} сыграл — прокомментируйте', 'Tu alumno {{student}} jugó: deja una nota', 'Dein Schüler {{student}} hat gespielt — schreib eine Notiz', 'Votre élève {{student}} a joué — laissez une note'),
   prediction_won: L("Bashoratingiz to'g'ri chiqdi! +{{points}} 🔮", 'Your prediction was right! +{{points}} 🔮', 'Прогноз сбылся! +{{points}} 🔮', '¡Acertaste! +{{points}} 🔮', 'Richtig getippt! +{{points}} 🔮', 'Bon pronostic ! +{{points}} 🔮'),
   achievement: L('Yangi yutuq! 🏅', 'New achievement! 🏅', 'Новое достижение! 🏅', '¡Nuevo logro! 🏅', 'Neuer Erfolg! 🏅', 'Nouveau succès ! 🏅'),
+  caravan_city: L("🐪 Karvoningiz {{city}}ga yetib keldi!", '🐪 Your caravan has reached {{city}}!', '🐪 Ваш караван прибыл в {{city}}!', '🐪 ¡Tu caravana ha llegado a {{city}}!', '🐪 Deine Karawane hat {{city}} erreicht!', '🐪 Votre caravane est arrivée à {{city}} !'),
   rank_up: L('Yangi daraja! Reytingingiz {{rating}} ⭐', 'New rank! Your rating is {{rating}} ⭐', 'Новый уровень! Рейтинг {{rating}} ⭐', '¡Nuevo rango! Tu rating es {{rating}} ⭐', 'Neuer Rang! Deine Wertung: {{rating}} ⭐', 'Nouveau rang ! Classement {{rating}} ⭐'),
   invite_joined: L("{{from}} taklifingiz bilan ChessCaravan'ga qo'shildi 🎉", '{{from}} joined ChessCaravan with your invite 🎉', '{{from}} присоединился к ChessCaravan по вашему приглашению 🎉', '{{from}} se unió a ChessCaravan con tu invitación 🎉', '{{from}} ist ChessCaravan über deine Einladung beigetreten 🎉', '{{from}} a rejoint ChessCaravan grâce à votre invitation 🎉'),
   invite_waiting: L("{{from}} siz bilan o'ynamoqchi — saytga kiring va uni chaqiring ⚔️", '{{from}} wants to play you — come online and challenge them ⚔️', '{{from}} хочет сыграть с вами — зайдите и вызовите его ⚔️', '{{from}} quiere jugar contigo: entra y desafíale ⚔️', '{{from}} will gegen dich spielen — komm online und fordere heraus ⚔️', '{{from}} veut jouer contre vous — connectez-vous et défiez-le ⚔️'),
@@ -58,6 +60,7 @@ function pushMessage(type, data, lang, ownName) {
     case 'mentor_note': url = '/tarix?u=' + encodeURIComponent(d.owner || ''); break;
     case 'student_game': url = '/tarix?u=' + encodeURIComponent(d.student || ''); break;
     case 'prediction_won': url = '/jonli'; break;
+    case 'caravan_city': url = '/karvon'; vars = { ...d, city: Caravan.cityName(d.city, l) }; break;
     case 'server_error': url = '/admin'; break;
   }
   return { title: 'ChessCaravan', body: fill(T[key][l], vars).slice(0, 180), url, category: CATEGORY[type] || 'events' };

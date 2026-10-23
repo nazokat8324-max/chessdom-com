@@ -395,6 +395,10 @@
             <span class="icon">🚩</span>
             <span data-i18n="warTitle">Bayroqlar bellashuvi</span>
           </a>
+          <a class="menu-item" id="navCaravan" onclick="switchView('caravan')">
+            <span class="icon">🐪</span>
+            <span data-i18n="cvTitle">Karvon yo'li</span>
+          </a>
           <a
             class="menu-item"
             id="navChampions"
@@ -1546,6 +1550,11 @@
         <div class="tea-page" id="teaRoot"></div>
       </div>
 
+      <!-- 🐪 KARVON YO'LI (caravan-page.js) -->
+      <div id="caravanView" class="view-section">
+        <div class="cv-page" id="caravanRoot"></div>
+      </div>
+
       <!-- DAVLATLAR URUSHI (warmap.js) -->
       <div id="warView" class="view-section">
         <div class="war-page" id="warRoot"></div>
@@ -2469,6 +2478,8 @@
     <script src="invite.js"></script>
     <script src="guest.js"></script>
     <script src="share.js"></script>
+    <script src="caravan.js"></script>
+    <script src="caravan-page.js"></script>
     <script src="router.js"></script>
     <script src="rating-chart.js"></script>
 
@@ -2521,6 +2532,7 @@
             <div class="profile-rank-chip" id="profileRankChip"></div>
             <div class="profile-follow-counts" id="profileFollowCounts"></div>
             <div class="profile-sport" id="profileSport" hidden></div>
+            <div class="profile-caravan" id="profileCaravan" hidden></div>
             <div class="profile-sport" id="profilePredict" hidden></div>
             <div class="profile-cheater" id="profileCheater" hidden>⚠️ <span data-i18n="fpCheaterBanner">Fair-play qoidalarini buzgan</span></div>
             <p class="profile-handle" id="profileModalHandle"></p>

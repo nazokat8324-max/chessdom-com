@@ -1257,6 +1257,12 @@ async function getLeaderboard() {
 }
 
 // Top 5 g'oliblar: shu davrda (24 soat yoki 7 kun) eng ko'p g'alaba; tenglikda — kam o'yin, keyin reyting
+// 🐪 Karvon yo'li uchun: statistikasi bor oddiy (mehmon emas) o'yinchilar
+async function caravanRows() {
+  const rows = await dbAll('SELECT username, stats, country, avatar_version FROM users WHERE COALESCE(is_guest, 0) = 0');
+  return rows.map((r) => ({ username: r.username, stats: parseJson(r.stats) || {}, country: r.country || null, avatarVersion: r.avatar_version || null }));
+}
+
 async function getDailyWinners(period) {
   const span = period === 'week' ? 7 : 1;
   const cutoff = Date.now() - span * 24 * 60 * 60 * 1000;
@@ -2465,6 +2471,7 @@ module.exports = {
   usernameTaken,
   markGuest,
   listGuestIds,
+  caravanRows,
   claimGuest,
   deleteExpiredGuests,
   updateUserEmail,

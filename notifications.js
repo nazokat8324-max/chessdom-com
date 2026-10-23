@@ -52,6 +52,10 @@
         const rank = window.rankByKey ? window.rankByKey(d.rank) : null;
         return { icon: rank ? rank.icon : '⭐', text: tx('nfRankUp', 'Yangi daraja! {{mode}}: {{rank}} ({{rating}})', { mode: modeName(d.mode), rank: rank ? rank.label : d.rank, rating: d.rating }), go: () => window.openProfileModal && window.openProfileModal() };
       }
+      case 'caravan_city': {
+        const city = window.Caravan ? window.Caravan.cityName(d.city, window.currentLang || 'en') : d.city;
+        return { icon: '🐪', text: tx('cvArrived', '🐪 Karvoningiz {{city}}ga yetib keldi!', { city }).replace(/^🐪\s*/, ''), go: () => window.switchView && window.switchView('caravan') };
+      }
       case 'achievement': {
         const a = window.achievementInfo ? window.achievementInfo(d.key) : { icon: '🏅', title: d.key };
         return { icon: a.icon, text: tx('nfAchievement', 'Yangi yutuq: {{title}}', { title: a.title }), go: () => window.openProfileModal && window.openProfileModal() };

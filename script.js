@@ -624,6 +624,12 @@ window.switchView = function(viewName) {
     const navEl = document.getElementById("navTea");
     if (navEl) navEl.classList.add("active");
     if (typeof window.renderTeaView === "function") window.renderTeaView();
+  } else if (viewName === "caravan") {
+    const cvEl = document.getElementById("caravanView");
+    if (cvEl) cvEl.classList.add("active-view");
+    const navEl = document.getElementById("navCaravan");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.renderCaravanView === "function") window.renderCaravanView();
   } else if (viewName === "war") {
     const warEl = document.getElementById("warView");
     if (warEl) warEl.classList.add("active-view");

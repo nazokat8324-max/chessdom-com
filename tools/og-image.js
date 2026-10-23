@@ -22,7 +22,7 @@ function boardHtml() {
     for (const ch of row) {
       if (/\d/.test(ch)) { for (let i = 0; i < Number(ch); i++, c++) cells += `<div class="sq ${(r + c) % 2 ? 'd' : 'l'}"></div>`; continue; }
       const code = (ch === ch.toUpperCase() ? 'w' : 'b') + ch.toUpperCase();
-      const src = 'data:image/png;base64,' + fs.readFileSync(path.join(ROOT, 'img/chesspieces/wikipedia', code + '.png')).toString('base64');
+      const src = 'data:image/svg+xml;base64,' + fs.readFileSync(path.join(ROOT, 'img/chesspieces/karvon', code + '.svg')).toString('base64');
       cells += `<div class="sq ${(r + c) % 2 ? 'd' : 'l'}"><img src="${src}"></div>`;
       c++;
     }

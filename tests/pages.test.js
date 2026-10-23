@@ -66,6 +66,9 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
   require(path.join(root, 'legal-content.js'));
   const credits = JSON.stringify(window.LEGAL_CREDITS);
   for (const name of ['Stockfish', 'Noto Emoji Animation', 'Cburnett', 'Merida', 'chessboard.js', 'gifenc']) assert.ok(credits.includes(name), name);
+  // Standart to'plam — o'zimizning Karvon (mualliflik huquqi loyihaniki)
+  assert.match(fs.readFileSync(path.join(root, 'settings.js'), 'utf8'), /pieceSet: 'karvon'/);
+  assert.match(fs.readFileSync(path.join(root, 'board.js'), 'utf8'), /window.currentPieceSet = 'karvon'/);
   assert.ok(!/alpha|california|staunty/i.test(fs.readFileSync(path.join(root, 'board.js'), 'utf8').match(/PIECE_SETS = \[[^\]]*\]/)[0]), "NC/shaxsiy litsenziyali to'plamlar yo'q");
 });
 

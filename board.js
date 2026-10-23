@@ -956,10 +956,11 @@ function onSnapEnd() {
 // mualliflari /mualliflar sahifasida. 2026-10-22 da alpha (faqat shaxsiy foydalanish), california va staunty
 // (CC BY-NC — tijorat taqiqlangan) olib tashlangan; saqlangan eski tanlov wikipedia ga qaytadi.
 window.PIECE_SETS = ['wikipedia', 'karvon', 'cburnett', 'merida'];
-window.currentPieceSet = 'wikipedia';
+window.currentPieceSet = 'karvon'; // standart — o'zimizning to'plam
 window.pieceUrl = function(code, set) {
   const s = set || window.currentPieceSet;
-  if (s === 'wikipedia' || !window.PIECE_SETS.includes(s)) return 'img/chesspieces/wikipedia/' + code + '.png';
+  if (s === 'wikipedia') return 'img/chesspieces/wikipedia/' + code + '.png';
+  if (!window.PIECE_SETS.includes(s)) return 'img/chesspieces/karvon/' + code + '.svg';
   return 'img/chesspieces/' + s + '/' + code + '.svg';
 };
 
@@ -982,7 +983,7 @@ let config = {
 
 // Donalar to'plami o'zgarganda taxtani pozitsiya va tomonni saqlagan holda qayta chizamiz
 window.applyPieceSet = function(set) {
-  const next = window.PIECE_SETS.includes(set) ? set : 'wikipedia';
+  const next = window.PIECE_SETS.includes(set) ? set : 'karvon';
   if (next === window.currentPieceSet && board) return;
   window.currentPieceSet = next;
   if (!board || !document.getElementById('chessBoard')) return;

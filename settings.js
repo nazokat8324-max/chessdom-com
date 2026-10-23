@@ -4,13 +4,15 @@
 (function () {
   const DEFAULTS = {
     country: 'uz', language: 'en', soundEnabled: true, volume: 0.8,
-    siteTheme: 'turquoise', showCoords: true, pieceSet: 'karvon',
+    siteTheme: 'turquoise', boardStyle: 'auto', showCoords: true, pieceSet: 'karvon',
     showHints: true, showLastMove: true, autoQueen: false, confirmResign: true,
     quickClock: [300, 0], quickRated: true, vibration: true
   };
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français']];
   const THEMES = [['turquoise', 'themeTurquoise', 'Firuza'], ['ocean', 'themeOcean', 'Okean'], ['amethyst', 'themeAmethyst', 'Ametist'], ['sunset', 'themeSunset', 'Shafaq'], ['jade', 'themeJade', 'Zumrad'], ['ruby', 'themeRuby', 'Yoqut'], ['rose', 'themeRose', 'Atirgul'], ['gold', 'themeGold', 'Oltin'], ['lapis', 'themeLapis', 'Lojuvard'], ['graphite', 'themeGraphite', 'Grafit']];
+  // Taxta ko'rinishlari: 'auto' — sayt mavzusiga mos; qolganlari style.css :root[data-board] (script.js BOARD_STYLES)
+  const BOARDS = [['auto', 'boardAuto', 'Mavzuga mos'], ['marble', 'boardMarble', "Marmar"], ['wood', 'boardWood', "Yog'och"], ['tournament', 'boardTournament', "Turnir"], ['rishton', 'boardRishton', "Rishton"], ['atlas', 'boardAtlas', "Atlas"], ['teahouse', 'boardTeahouse', "Choyxona"], ['desert', 'boardDesert', "Cho'l"], ['night', 'boardNight', "Tun"], ['paper', 'boardPaper', "Qog'oz"], ['ice', 'boardIce', "Muz"]];
   // Faqat erkin litsenziyali to'plamlar (board.js PIECE_SETS); mualliflari /mualliflar sahifasida
   const PIECES = [['karvon', 'Karvon'], ['classic', 'Klassik'], ['atlas', 'Atlas'], ['rishton', 'Rishton'], ['wood', "Yog'och"], ['royal', 'Shohona'], ['neon', 'Neon'], ['geo', 'Geometrik'], ['cute', 'Bolajon'], ['pixel', 'Piksel']];
   // Namuna pozitsiya (Italyan o'yini): oxirgi yurish Bc4, tanlangan ot g1 va uning yurishlari
@@ -31,6 +33,7 @@
     if (!Array.isArray(merged.quickClock)) merged.quickClock = DEFAULTS.quickClock;
     // Olib tashlangan mavzu (masalan, eski "emerald") — standart Firuza
     if (!THEMES.some(t => t[0] === merged.siteTheme)) merged.siteTheme = DEFAULTS.siteTheme;
+    if (!BOARDS.some(b => b[0] === merged.boardStyle)) merged.boardStyle = DEFAULTS.boardStyle;
     return merged;
   };
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -41,6 +44,7 @@
   // --- Qo'llash (oldindan ko'rish ham, saqlangan qiymatlar ham shu yerdan) ---
   function applyAll(s) {
     if (typeof window.applySiteTheme === 'function') window.applySiteTheme(s.siteTheme);
+    if (typeof window.applyBoardStyle === 'function') window.applyBoardStyle(s.boardStyle);
     if (typeof window.applyCoords === 'function') window.applyCoords(s.showCoords !== false);
     if (typeof window.applySoundToggle === 'function') window.applySoundToggle(s.soundEnabled !== false);
     if (typeof window.setSoundVolume === 'function') window.setSoundVolume(typeof s.volume === 'number' ? s.volume : 0.8);
@@ -137,6 +141,9 @@
             <h3>${esc(tx('setThemeTitle', 'Sayt rangi'))}</h3>
             <div class="set-themes">${THEMES.map(([id, key, fb]) => `
               <button class="set-theme t-${id}${d.siteTheme === id ? ' active' : ''}" data-theme-pick="${id}"><i></i><span>${esc(tx(key, fb))}</span></button>`).join('')}</div>
+            <h3 class="mt">${esc(tx('setBoardTitle', 'Taxta'))}</h3>
+            <div class="set-boards">${BOARDS.map(([id, key, fb]) => `
+              <button class="set-board-opt bd-${id}${d.boardStyle === id ? ' active' : ''}" data-board-pick="${id}"><span class="bd-sw"><i class="l"></i><i class="d"></i><i class="d"></i><i class="l"></i></span><span>${esc(tx(key, fb))}</span></button>`).join('')}</div>
             <h3 class="mt">${esc(tx('setPiecesTitle', "Donalar to'plami"))}</h3>
             <div class="set-pieces">${PIECES.map(([id, name]) => `
               <button class="set-piece${d.pieceSet === id ? ' active' : ''}" data-piece-set="${id}">
@@ -346,6 +353,7 @@
     el.querySelectorAll('[data-section]').forEach(b => b.addEventListener('click', () => { st.section = b.dataset.section; render(); }));
     el.querySelectorAll('[data-bool]').forEach(i => i.addEventListener('change', () => change({ [i.dataset.bool]: i.checked })));
     el.querySelectorAll('[data-theme-pick]').forEach(b => b.addEventListener('click', () => change({ siteTheme: b.dataset.themePick })));
+    el.querySelectorAll('[data-board-pick]').forEach(b => b.addEventListener('click', () => change({ boardStyle: b.dataset.boardPick })));
     el.querySelectorAll('[data-piece-set]').forEach(b => b.addEventListener('click', () => change({ pieceSet: b.dataset.pieceSet })));
     el.querySelectorAll('[data-clock]').forEach(b => b.addEventListener('click', () => change({ quickClock: b.dataset.clock.split(',').map(Number) })));
     el.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {

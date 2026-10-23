@@ -41,6 +41,8 @@
         if (["turquoise", "ocean", "amethyst", "sunset", "jade", "ruby", "rose", "gold", "lapis", "graphite"].indexOf(cdTheme) < 0)
           cdTheme = "turquoise";
         document.documentElement.setAttribute("data-theme", cdTheme);
+        if (["marble", "wood", "tournament", "rishton", "atlas", "teahouse", "desert", "night", "paper", "ice"].indexOf(cdSettings.boardStyle) >= 0)
+          document.documentElement.setAttribute("data-board", cdSettings.boardStyle);
         if (cdSettings.showCoords === false)
           document.documentElement.classList.add("hide-coords");
         if (localStorage.getItem("justChessSidebar") === "collapsed")

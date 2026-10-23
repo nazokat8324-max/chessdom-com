@@ -15559,3 +15559,80 @@ body.auth-locked {
   .gd-card { flex-direction: column; align-items: stretch; gap: 14px; }
   .gd-board { width: 100%; height: auto; aspect-ratio: 1; max-width: 320px; margin: 0 auto; }
 }
+
+/* ===== 🟫 Taxta ko'rinishlari (Sozlamalar → Taxta; <html data-board>; standart "Mavzuga mos" — atribut yo'q, ranglar sayt mavzusidan).
+   O'zgaruvchilar: --bd-light/--bd-dark (rang) va --bd-light-img/--bd-dark-img (o'zimiz chizgan SVG naqsh); berilmasa — mavzuning --board-light/--board-dark.
+   :root[data-board] mavzu bloklaridan KEYIN turishi shart (bir xil ustuvorlik — keyingisi yutadi). .bd-<id> — tanlov tugmasidagi namuna. ===== */
+:root .white-1e1d7, .set-sq.l, .tea-mini i.l, .gd-board i.l, .auth-board .sq.l:not(.hl) { background-color: var(--bd-light, var(--board-light)); background-image: var(--bd-light-img, none); background-size: 100% 100%; color: var(--bd-dark, var(--board-dark)); }
+:root .black-3c85d, .set-sq.d, .tea-mini i.d, .gd-board i.d, .auth-board .sq.d:not(.hl) { background-color: var(--bd-dark, var(--board-dark)); background-image: var(--bd-dark-img, none); background-size: 100% 100%; color: var(--bd-light, var(--board-light)); }
+:root[data-board="marble"], .bd-marble {
+  --bd-light: #ebe8e1;
+  --bd-dark: #7d8c82;
+  --bd-light-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M-5%2032%20C20%2024%2035%2046%2060%2037%20S88%2055%20105%2047%27%20fill%3D%27none%27%20stroke%3D%27%23c4c0b6%27%20stroke-width%3D%271.4%27%20opacity%3D%27.8%27%2F%3E%3Cpath%20d%3D%27M8%20105%20C24%2080%2044%2086%2055%2060%20S82%2028%2096%20-5%27%20fill%3D%27none%27%20stroke%3D%27%23d3d0c8%27%20stroke-width%3D%27.9%27%2F%3E%3C%2Fsvg%3E");
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M-5%2062%20C18%2054%2038%2072%2062%2060%20S90%2074%20105%2066%27%20fill%3D%27none%27%20stroke%3D%27%23a3b1a8%27%20stroke-width%3D%271.4%27%20opacity%3D%27.85%27%2F%3E%3Cpath%20d%3D%27M30%20105%20C38%2078%2030%2052%2052%2034%20S70%2010%2066%20-5%27%20fill%3D%27none%27%20stroke%3D%27%2368776d%27%20stroke-width%3D%271%27%2F%3E%3C%2Fsvg%3E");
+}
+:root[data-board="wood"], .bd-wood {
+  --bd-light: #e6c792;
+  --bd-dark: #a36e3e;
+  --bd-light-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M0%2012%20Q25%2015%2050%2012%20T100%2012%27%20fill%3D%27none%27%20stroke%3D%27%23cfa66d%27%20stroke-width%3D%271%27%20opacity%3D%270.85%27%2F%3E%3Cpath%20d%3D%27M0%2030%20Q25%2027%2050%2030%20T100%2030%27%20fill%3D%27none%27%20stroke%3D%27%23cfa66d%27%20stroke-width%3D%271%27%20opacity%3D%270.85%27%2F%3E%3Cpath%20d%3D%27M0%2047%20Q25%2050%2050%2047%20T100%2047%27%20fill%3D%27none%27%20stroke%3D%27%23cfa66d%27%20stroke-width%3D%271%27%20opacity%3D%270.85%27%2F%3E%3Cpath%20d%3D%27M0%2063%20Q25%2060%2050%2063%20T100%2063%27%20fill%3D%27none%27%20stroke%3D%27%23cfa66d%27%20stroke-width%3D%271%27%20opacity%3D%270.85%27%2F%3E%3Cpath%20d%3D%27M0%2080%20Q25%2083%2050%2080%20T100%2080%27%20fill%3D%27none%27%20stroke%3D%27%23cfa66d%27%20stroke-width%3D%271%27%20opacity%3D%270.85%27%2F%3E%3Cpath%20d%3D%27M0%2094%20Q25%2091%2050%2094%20T100%2094%27%20fill%3D%27none%27%20stroke%3D%27%23cfa66d%27%20stroke-width%3D%271%27%20opacity%3D%270.85%27%2F%3E%3C%2Fsvg%3E");
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M0%208%20Q25%205%2050%208%20T100%208%27%20fill%3D%27none%27%20stroke%3D%27%2386552c%27%20stroke-width%3D%271.2%27%20opacity%3D%270.8%27%2F%3E%3Cpath%20d%3D%27M0%2024%20Q25%2027%2050%2024%20T100%2024%27%20fill%3D%27none%27%20stroke%3D%27%2386552c%27%20stroke-width%3D%271.2%27%20opacity%3D%270.8%27%2F%3E%3Cpath%20d%3D%27M0%2041%20Q25%2038%2050%2041%20T100%2041%27%20fill%3D%27none%27%20stroke%3D%27%2386552c%27%20stroke-width%3D%271.2%27%20opacity%3D%270.8%27%2F%3E%3Cpath%20d%3D%27M0%2057%20Q25%2060%2050%2057%20T100%2057%27%20fill%3D%27none%27%20stroke%3D%27%2386552c%27%20stroke-width%3D%271.2%27%20opacity%3D%270.8%27%2F%3E%3Cpath%20d%3D%27M0%2074%20Q25%2071%2050%2074%20T100%2074%27%20fill%3D%27none%27%20stroke%3D%27%2386552c%27%20stroke-width%3D%271.2%27%20opacity%3D%270.8%27%2F%3E%3Cpath%20d%3D%27M0%2090%20Q25%2093%2050%2090%20T100%2090%27%20fill%3D%27none%27%20stroke%3D%27%2386552c%27%20stroke-width%3D%271.2%27%20opacity%3D%270.8%27%2F%3E%3C%2Fsvg%3E");
+}
+:root[data-board="tournament"], .bd-tournament {
+  --bd-light: #f0ead6;
+  --bd-dark: #5e8c61;
+  --bd-light-img: none;
+  --bd-dark-img: none;
+}
+:root[data-board="rishton"], .bd-rishton {
+  --bd-light: #f6f7fb;
+  --bd-dark: #1f5aa6;
+  --bd-light-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Ccircle%20cx%3D%270%27%20cy%3D%270%27%20r%3D%2710%27%20fill%3D%27%231f5aa6%27%20opacity%3D%270.28%27%2F%3E%3Ccircle%20cx%3D%27100%27%20cy%3D%270%27%20r%3D%2710%27%20fill%3D%27%231f5aa6%27%20opacity%3D%270.28%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%27100%27%20r%3D%2710%27%20fill%3D%27%231f5aa6%27%20opacity%3D%270.28%27%2F%3E%3Ccircle%20cx%3D%27100%27%20cy%3D%27100%27%20r%3D%2710%27%20fill%3D%27%231f5aa6%27%20opacity%3D%270.28%27%2F%3E%3C%2Fsvg%3E");
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cg%20fill%3D%27%23ffffff%27%20opacity%3D%27.88%27%3E%3Cellipse%20cx%3D%2750%27%20cy%3D%2729%27%20rx%3D%277%27%20ry%3D%2714%27%20transform%3D%27rotate(0%2050%2050)%27%2F%3E%3Cellipse%20cx%3D%2750%27%20cy%3D%2729%27%20rx%3D%277%27%20ry%3D%2714%27%20transform%3D%27rotate(90%2050%2050)%27%2F%3E%3Cellipse%20cx%3D%2750%27%20cy%3D%2729%27%20rx%3D%277%27%20ry%3D%2714%27%20transform%3D%27rotate(180%2050%2050)%27%2F%3E%3Cellipse%20cx%3D%2750%27%20cy%3D%2729%27%20rx%3D%277%27%20ry%3D%2714%27%20transform%3D%27rotate(270%2050%2050)%27%2F%3E%3C%2Fg%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%277%27%20fill%3D%27%23f2b632%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%270%27%20r%3D%2710%27%20fill%3D%27%237fc4e8%27%20opacity%3D%270.9%27%2F%3E%3Ccircle%20cx%3D%27100%27%20cy%3D%270%27%20r%3D%2710%27%20fill%3D%27%237fc4e8%27%20opacity%3D%270.9%27%2F%3E%3Ccircle%20cx%3D%270%27%20cy%3D%27100%27%20r%3D%2710%27%20fill%3D%27%237fc4e8%27%20opacity%3D%270.9%27%2F%3E%3Ccircle%20cx%3D%27100%27%20cy%3D%27100%27%20r%3D%2710%27%20fill%3D%27%237fc4e8%27%20opacity%3D%270.9%27%2F%3E%3C%2Fsvg%3E");
+}
+:root[data-board="atlas"], .bd-atlas {
+  --bd-light: #f5ecd9;
+  --bd-dark: #8c2f5a;
+  --bd-light-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpolyline%20points%3D%270%2C55%2012.5%2C45%2025%2C55%2037.5%2C45%2050%2C55%2062.5%2C45%2075%2C55%2087.5%2C45%20100%2C55%27%20fill%3D%27none%27%20stroke%3D%27%23c9a0b4%27%20stroke-width%3D%272%27%20opacity%3D%27.45%27%20stroke-linejoin%3D%27round%27%2F%3E%3C%2Fsvg%3E");
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpolyline%20points%3D%270%2C25%2012.5%2C15%2025%2C25%2037.5%2C15%2050%2C25%2062.5%2C15%2075%2C25%2087.5%2C15%20100%2C25%27%20fill%3D%27none%27%20stroke%3D%27%23f2b632%27%20stroke-width%3D%274%27%20stroke-linejoin%3D%27round%27%2F%3E%3Cpolyline%20points%3D%270%2C55%2012.5%2C45%2025%2C55%2037.5%2C45%2050%2C55%2062.5%2C45%2075%2C55%2087.5%2C45%20100%2C55%27%20fill%3D%27none%27%20stroke%3D%27%234aa3df%27%20stroke-width%3D%274%27%20stroke-linejoin%3D%27round%27%2F%3E%3Cpolyline%20points%3D%270%2C85%2012.5%2C75%2025%2C85%2037.5%2C75%2050%2C85%2062.5%2C75%2075%2C85%2087.5%2C75%20100%2C85%27%20fill%3D%27none%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%273%27%20stroke-linejoin%3D%27round%27%2F%3E%3C%2Fsvg%3E");
+}
+:root[data-board="teahouse"], .bd-teahouse {
+  --bd-light: #e9d3a8;
+  --bd-dark: #8b4a2b;
+  --bd-light-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M50%2022%20L78%2050%20L50%2078%20L22%2050Z%27%20fill%3D%27none%27%20stroke%3D%27%23c9a46a%27%20stroke-width%3D%272.5%27%20opacity%3D%27.6%27%2F%3E%3C%2Fsvg%3E");
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M50%206%20L94%2050%20L50%2094%20L6%2050Z%27%20fill%3D%27none%27%20stroke%3D%27%23c9874f%27%20stroke-width%3D%273%27%20opacity%3D%27.6%27%2F%3E%3Ccircle%20cx%3D%2750%27%20cy%3D%2750%27%20r%3D%277%27%20fill%3D%27%23d9a73c%27%20opacity%3D%27.75%27%2F%3E%3C%2Fsvg%3E");
+}
+:root[data-board="desert"], .bd-desert {
+  --bd-light: #f2dcae;
+  --bd-dark: #c99a5b;
+  --bd-light-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M0%2040%20Q25%2030%2050%2040%20T100%2040%27%20fill%3D%27none%27%20stroke%3D%27%23e2c48c%27%20stroke-width%3D%272%27%20opacity%3D%270.9%27%2F%3E%3Cpath%20d%3D%27M0%2075%20Q25%2066%2050%2075%20T100%2075%27%20fill%3D%27none%27%20stroke%3D%27%23e6ca95%27%20stroke-width%3D%271.5%27%20opacity%3D%270.8%27%2F%3E%3C%2Fsvg%3E");
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M0%2035%20Q25%2025%2050%2035%20T100%2035%27%20fill%3D%27none%27%20stroke%3D%27%23b5844a%27%20stroke-width%3D%272.2%27%20opacity%3D%270.9%27%2F%3E%3Cpath%20d%3D%27M0%2072%20Q25%2063%2050%2072%20T100%2072%27%20fill%3D%27none%27%20stroke%3D%27%23d8ad72%27%20stroke-width%3D%271.6%27%20opacity%3D%270.8%27%2F%3E%3C%2Fsvg%3E");
+}
+:root[data-board="night"], .bd-night {
+  --bd-light: #9aa8c9;
+  --bd-dark: #46557a;
+  --bd-light-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Ccircle%20cx%3D%2722%27%20cy%3D%2730%27%20r%3D%271.6%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.9%27%2F%3E%3Ccircle%20cx%3D%2770%27%20cy%3D%2764%27%20r%3D%271.2%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.7%27%2F%3E%3Ccircle%20cx%3D%2780%27%20cy%3D%2718%27%20r%3D%271%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.6%27%2F%3E%3C%2Fsvg%3E");
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Ccircle%20cx%3D%2718%27%20cy%3D%2770%27%20r%3D%271.8%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.95%27%2F%3E%3Ccircle%20cx%3D%2762%27%20cy%3D%2726%27%20r%3D%271.3%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.8%27%2F%3E%3Ccircle%20cx%3D%2784%27%20cy%3D%2782%27%20r%3D%271%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.6%27%2F%3E%3Ccircle%20cx%3D%2740%27%20cy%3D%2748%27%20r%3D%270.9%27%20fill%3D%27%23ffffff%27%20opacity%3D%270.5%27%2F%3E%3C%2Fsvg%3E");
+}
+:root[data-board="paper"], .bd-paper {
+  --bd-light: #fbfaf5;
+  --bd-dark: #e4e2da;
+  --bd-light-img: none;
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M-100%20100%20L0%200%20M-86%20100%20L14%200%20M-72%20100%20L28%200%20M-58%20100%20L42%200%20M-44%20100%20L56%200%20M-30%20100%20L70%200%20M-16%20100%20L84%200%20M-2%20100%20L98%200%20M12%20100%20L112%200%20M26%20100%20L126%200%20M40%20100%20L140%200%20M54%20100%20L154%200%20M68%20100%20L168%200%20M82%20100%20L182%200%20M96%20100%20L196%200%20%27%20stroke%3D%27%235f5f58%27%20stroke-width%3D%272.2%27%2F%3E%3C%2Fsvg%3E");
+}
+:root[data-board="ice"], .bd-ice {
+  --bd-light: #eef7fc;
+  --bd-dark: #9cc9e2;
+  --bd-light-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M8%2092%20L58%2018%20M40%2098%20L92%2030%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%273%27%20opacity%3D%27.9%27%2F%3E%3Cpath%20d%3D%27M62%2096%20L96%2050%27%20stroke%3D%27%23cfe6f3%27%20stroke-width%3D%272%27%2F%3E%3C%2Fsvg%3E");
+  --bd-dark-img: url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%20preserveAspectRatio%3D%27none%27%3E%3Cpath%20d%3D%27M6%2070%20L50%208%20M30%2098%20L88%2022%27%20stroke%3D%27%23ffffff%27%20stroke-width%3D%272.5%27%20opacity%3D%27.45%27%2F%3E%3Cpath%20d%3D%27M60%2094%20L94%2058%27%20stroke%3D%27%23d9eef8%27%20stroke-width%3D%272%27%20opacity%3D%27.6%27%2F%3E%3C%2Fsvg%3E");
+}
+/* "Mavzuga mos" namunasi: taxta o'zgaruvchilari bekor — mavzu ranglari ko'rinadi (tanlangan taxtadan qat'i nazar) */
+.bd-auto { --bd-light: initial; --bd-dark: initial; --bd-light-img: initial; --bd-dark-img: initial; }
+/* Qog'oz: koordinatalar oq fonda ko'rinsin */
+:root[data-board="paper"] .white-1e1d7 { color: #55554f; }
+:root[data-board="paper"] .black-3c85d { color: #2b2b27; }
+.set-boards { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 8px; margin-top: 8px; }
+.set-board-opt { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 4px; border-radius: 12px; border: 1px solid var(--cd-border-strong); background: rgba(255, 255, 255, 0.02); color: #d9e4de; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.set-board-opt.active { color: #fff; border-color: var(--accent); background: rgba(var(--accent-rgb), 0.16); }
+.bd-sw { display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); width: 40px; height: 40px; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); }
+.bd-sw i.l { background-color: var(--bd-light, var(--board-light)); background-image: var(--bd-light-img, none); background-size: 100% 100%; }
+.bd-sw i.d { background-color: var(--bd-dark, var(--board-dark)); background-image: var(--bd-dark-img, none); background-size: 100% 100%; }

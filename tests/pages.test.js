@@ -122,6 +122,26 @@ test("Xochli ♔/♚ matn belgilari sayt kodida yo'q (o'rniga kingIcon rasm)", (
   }
 });
 
+test("Taxta ko'rinishlari: 10 ta + 'Mavzuga mos', barcha ro'yxatlar, CSS va 6 tildagi nomlar bir xil", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const read = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  const list = (src, re) => JSON.parse(src.match(re)[1].replace(/'/g, '"'));
+  const styles = list(read('script.js'), /window\.BOARD_STYLES = (\[[^\]]*\])/);
+  assert.equal(styles.length, 10);
+  assert.deepEqual(list(read('index.html'), /(\["marble"[^\]]*\])\.indexOf\(cdSettings\.boardStyle\)/), styles, 'index.html <head>');
+  const settings = [...read('settings.js').match(/const BOARDS = \[(.*)\];/)[1].matchAll(/\['(\w+)', '(\w+)'/g)];
+  assert.deepEqual(settings.map((m) => m[1]), ['auto', ...styles], 'settings.js BOARDS');
+  assert.match(read('settings.js'), /boardStyle: 'auto'/, "standart — mavzuga mos");
+  const css = read('style.css');
+  const langs = read('languages.js');
+  for (const [, id, key] of settings) {
+    if (id !== 'auto') assert.ok(css.includes(`:root[data-board="${id}"], .bd-${id} {`), id + ' CSS');
+    assert.equal((langs.match(new RegExp('\\b' + key + ':', 'g')) || []).length, 6, key + ' 6 tilda');
+  }
+  assert.ok(css.includes('.bd-auto {'), "'Mavzuga mos' namunasi");
+});
+
 test('PWA: manifest, service worker, ikonkalar, VAPID kaliti', async () => {
   const mf = await (await get('/manifest.json')).json();
   assert.equal(mf.display, 'standalone');

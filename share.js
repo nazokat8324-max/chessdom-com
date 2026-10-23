@@ -33,7 +33,7 @@
   function pieceImages() {
     const codes = ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP', 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP'];
     return Promise.all(codes.map(code => {
-      const url = window.pieceUrl ? window.pieceUrl(code) : 'img/chesspieces/wikipedia/' + code + '.png';
+      const url = window.pieceUrl ? window.pieceUrl(code) : 'img/chesspieces/karvon/' + code + '.svg';
       if (imgCache[url]) return imgCache[url].then(img => [code, img]);
       imgCache[url] = new Promise((resolve, reject) => { const img = new Image(); img.onload = () => resolve(img); img.onerror = reject; img.src = url; });
       return imgCache[url].then(img => [code, img]);

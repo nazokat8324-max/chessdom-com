@@ -123,7 +123,7 @@
       // Faqat bashorat rejimida (predictions.js): surilgan yurish taxmin sifatida yuboriladi, doska o'zgarmaydi
       onDragStart: (source, piece) => !!(window.livePredict && !st.ended && window.livePredict.canDrag(piece, st.chess)),
       onDrop: (from, to) => { if (window.livePredict && from !== to) window.livePredict.drop(from, to, st.chess); return 'snapback'; },
-      pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png')
+      pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/karvon/' + p + '.svg')
     });
     setClock(data.clockState);
     if (data.status !== 'active') st.ended = { winner: null, reason: 'over' };

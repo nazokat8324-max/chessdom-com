@@ -209,7 +209,7 @@
     st.board = Chessboard('replayBoard', {
       position: st.fens[st.fens.length - 1], draggable: false,
       orientation: g.color === 'b' ? 'black' : 'white',
-      pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/wikipedia/' + p + '.png')
+      pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/karvon/' + p + '.svg')
     });
     document.addEventListener('keydown', onKey);
     document.dispatchEvent(new CustomEvent('replay:open', { detail: { game: g, sans: st.sans.slice() } }));

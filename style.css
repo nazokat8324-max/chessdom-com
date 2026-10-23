@@ -8961,15 +8961,16 @@ html.hide-last-move #chessBoard .sq-last {
 }
 .set-pieces {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-top: 8px;
 }
 .set-piece {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 8px;
+  padding: 6px 2px;
   border-radius: 12px;
   border: 1px solid var(--cd-border-strong);
   background: var(--board-light, #eeeed2);
@@ -8979,12 +8980,12 @@ html.hide-last-move #chessBoard .sq-last {
   font-weight: 800;
   cursor: pointer;
 }
-.set-piece img {
-  width: 30px;
-  height: 30px;
+.set-piece-imgs {
+  display: flex;
 }
-.set-piece span {
-  margin-left: auto;
+.set-piece img {
+  width: 28px;
+  height: 28px;
 }
 .set-piece.active {
   outline: 3px solid var(--accent);
@@ -9231,7 +9232,9 @@ html.hide-last-move #chessBoard .sq-last {
   .set-themes { gap: 6px; }
   .set-theme { padding: 8px 2px; font-size: 11px; }
   .set-theme i { width: 28px; height: 28px; }
-  .set-pieces { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .set-pieces { gap: 6px; }
+  .set-piece { font-size: 11px; }
+  .set-piece img { width: 24px; height: 24px; }
   .set-clocks { grid-template-columns: 1fr; }
   .set-clock-group { flex-direction: row; align-items: center; }
   .set-clock-group > span { width: 70px; }

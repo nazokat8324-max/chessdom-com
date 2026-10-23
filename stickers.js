@@ -16,7 +16,7 @@
     ['luck', 'wR', 'stkLuck', 'Omad!', 'purple'], ['oops', 'bP', 'stkOops', 'Ups...', 'orange']
   ];
   const EMOJIS = '😀 😂 🤣 😊 😍 😘 😎 🤩 🤔 😏 😅 😬 😢 😭 😡 😱 🥳 😴 🙈 🫡 👋 🙏 👍 👎 👏 💪 🤝 🔥 ❤️ 💔 💯 🎉 🏆 👑 ⚡ ⏱️ ♟️ ✅ ❌ 👀'.split(' ');
-  const pieceSrc = (code) => (window.pieceUrl ? window.pieceUrl(code) : 'img/chesspieces/wikipedia/' + code + '.png');
+  const pieceSrc = (code) => (window.pieceUrl ? window.pieceUrl(code) : 'img/chesspieces/karvon/' + code + '.svg');
 
   function id(msg) {
     const m = /^\[sticker:([a-z0-9_-]{1,32})\]$/.exec(String(msg || '').trim());

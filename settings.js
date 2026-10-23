@@ -12,7 +12,7 @@
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français']];
   const THEMES = [['turquoise', 'themeTurquoise', 'Firuza'], ['ocean', 'themeOcean', 'Okean'], ['amethyst', 'themeAmethyst', 'Ametist'], ['sunset', 'themeSunset', 'Shafaq'], ['jade', 'themeJade', 'Zumrad'], ['ruby', 'themeRuby', 'Yoqut'], ['rose', 'themeRose', 'Atirgul'], ['gold', 'themeGold', 'Oltin'], ['lapis', 'themeLapis', 'Lojuvard'], ['graphite', 'themeGraphite', 'Grafit']];
   // Faqat erkin litsenziyali to'plamlar (board.js PIECE_SETS); mualliflari /mualliflar sahifasida
-  const PIECES = [['karvon', 'Karvon'], ['wikipedia', 'Klassik'], ['cburnett', 'Cburnett'], ['merida', 'Merida']];
+  const PIECES = [['karvon', 'Karvon'], ['classic', 'Klassik'], ['atlas', 'Atlas'], ['rishton', 'Rishton'], ['wood', "Yog'och"], ['royal', 'Shohona'], ['neon', 'Neon'], ['geo', 'Geometrik'], ['cute', 'Bolajon'], ['pixel', 'Piksel']];
   // Namuna pozitsiya (Italyan o'yini): oxirgi yurish Bc4, tanlangan ot g1 va uning yurishlari
   const PREVIEW_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR';
 
@@ -140,7 +140,7 @@
             <h3 class="mt">${esc(tx('setPiecesTitle', "Donalar to'plami"))}</h3>
             <div class="set-pieces">${PIECES.map(([id, name]) => `
               <button class="set-piece${d.pieceSet === id ? ' active' : ''}" data-piece-set="${id}">
-                <img src="${esc(window.pieceUrl ? window.pieceUrl('wN', id) : '')}" alt=""><img src="${esc(window.pieceUrl ? window.pieceUrl('bQ', id) : '')}" alt=""><span>${esc(name)}</span>
+                <span class="set-piece-imgs"><img src="${esc(window.pieceUrl ? window.pieceUrl('wN', id) : '')}" alt=""><img src="${esc(window.pieceUrl ? window.pieceUrl('bK', id) : '')}" alt=""></span><span>${esc(name)}</span>
               </button>`).join('')}</div>
           </div>
           <div class="set-preview-wrap">

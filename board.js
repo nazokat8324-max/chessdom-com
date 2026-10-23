@@ -952,16 +952,13 @@ function onSnapEnd() {
 }
 
 // --- Donalar to'plami (Sozlamalar → Taxta) ---
-// Hammasi saytning o'zida (img/chesspieces/<to'plam>/): wikipedia (PNG), cburnett va merida (SVG) — GPLv2+,
-// mualliflari /mualliflar sahifasida. 2026-10-22 da alpha (faqat shaxsiy foydalanish), california va staunty
-// (CC BY-NC — tijorat taqiqlangan) olib tashlangan; saqlangan eski tanlov wikipedia ga qaytadi.
-window.PIECE_SETS = ['wikipedia', 'karvon', 'cburnett', 'merida'];
-window.currentPieceSet = 'karvon'; // standart — o'zimizning to'plam
+// Hammasi o'zimiz chizgan SVG (tools/make-pieces.js → img/chesspieces/<to'plam>/), mualliflik huquqi loyihaniki.
+// 2026-10-23 da begona to'plamlar (wikipedia, cburnett, merida) olib tashlangan; saqlangan eski tanlov karvon ga qaytadi.
+window.PIECE_SETS = ['karvon', 'classic', 'atlas', 'rishton', 'wood', 'royal', 'neon', 'geo', 'cute', 'pixel'];
+window.currentPieceSet = 'karvon'; // standart
 window.pieceUrl = function(code, set) {
   const s = set || window.currentPieceSet;
-  if (s === 'wikipedia') return 'img/chesspieces/wikipedia/' + code + '.png';
-  if (!window.PIECE_SETS.includes(s)) return 'img/chesspieces/karvon/' + code + '.svg';
-  return 'img/chesspieces/' + s + '/' + code + '.svg';
+  return 'img/chesspieces/' + (window.PIECE_SETS.includes(s) ? s : 'karvon') + '/' + code + '.svg';
 };
 
 // Taxta afzalliklari: nuqtalar, oxirgi yurish, avtomatik farzin, taslimdan oldin so'rash

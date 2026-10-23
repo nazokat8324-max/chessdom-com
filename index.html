@@ -38,7 +38,7 @@
           localStorage.getItem("justChessSettings") || "{}",
         );
         var cdTheme = cdSettings.siteTheme;
-        if (["turquoise", "ocean", "amethyst", "sunset"].indexOf(cdTheme) < 0)
+        if (["turquoise", "ocean", "amethyst", "sunset", "jade", "ruby", "rose", "gold", "lapis", "graphite"].indexOf(cdTheme) < 0)
           cdTheme = "turquoise";
         document.documentElement.setAttribute("data-theme", cdTheme);
         if (cdSettings.showCoords === false)

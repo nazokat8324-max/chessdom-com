@@ -3483,6 +3483,126 @@
   --cd-accent-hover: #f8c072;
   --cd-accent-soft: rgba(240, 160, 60, 0.14);
 }
+:root[data-theme="jade"] {
+  --accent: #2fcf7f;
+  --accent-rgb: 47, 207, 127;
+  --accent-light: #52d993;
+  --accent-dark: #22b56b;
+  --accent-hover: #6ee2a6;
+  --accent-deep: #178a50;
+  --cd-bg: #0a130f;
+  --cd-bg-2: #0d1813;
+  --cd-sidebar: #0c1611;
+  --cd-surface: #111d17;
+  --cd-surface-2: #16241d;
+  --cd-surface-3: #1d2d25;
+  --cd-border-strong: #23362c;
+  --cd-hero: #12271c;
+  --cd-hero-2: #0c1812;
+  --cd-accent: #2fcf7f;
+  --cd-accent-hover: #6ee2a6;
+  --cd-accent-soft: rgba(47, 207, 127, 0.14);
+}
+:root[data-theme="ruby"] {
+  --accent: #f0566a;
+  --accent-rgb: 240, 86, 106;
+  --accent-light: #f3727f;
+  --accent-dark: #d9404f;
+  --accent-hover: #f68a95;
+  --accent-deep: #a82c3a;
+  --cd-bg: #140b0d;
+  --cd-bg-2: #1a0f12;
+  --cd-sidebar: #170d10;
+  --cd-surface: #1e1316;
+  --cd-surface-2: #26181c;
+  --cd-surface-3: #301e23;
+  --cd-border-strong: #3a242a;
+  --cd-hero: #2b1419;
+  --cd-hero-2: #190c0f;
+  --cd-accent: #f0566a;
+  --cd-accent-hover: #f68a95;
+  --cd-accent-soft: rgba(240, 86, 106, 0.14);
+}
+:root[data-theme="rose"] {
+  --accent: #f272b6;
+  --accent-rgb: 242, 114, 182;
+  --accent-light: #f58cc4;
+  --accent-dark: #dc5a9e;
+  --accent-hover: #f8a3cf;
+  --accent-deep: #b03f7a;
+  --cd-bg: #140b11;
+  --cd-bg-2: #1a0f16;
+  --cd-sidebar: #170d13;
+  --cd-surface: #1e131a;
+  --cd-surface-2: #261822;
+  --cd-surface-3: #301e2b;
+  --cd-border-strong: #3a2434;
+  --cd-hero: #2b1424;
+  --cd-hero-2: #190c15;
+  --cd-accent: #f272b6;
+  --cd-accent-hover: #f8a3cf;
+  --cd-accent-soft: rgba(242, 114, 182, 0.14);
+}
+:root[data-theme="gold"] {
+  --accent: #d9ad35;
+  --accent-rgb: 217, 173, 53;
+  --accent-light: #e2bd55;
+  --accent-dark: #bf9422;
+  --accent-hover: #e9ca70;
+  --accent-deep: #94711a;
+  --cd-bg: #12110a;
+  --cd-bg-2: #17150d;
+  --cd-sidebar: #15130c;
+  --cd-surface: #1c1a11;
+  --cd-surface-2: #232016;
+  --cd-surface-3: #2c281c;
+  --cd-border-strong: #363122;
+  --cd-hero: #282312;
+  --cd-hero-2: #17140b;
+  --cd-accent: #d9ad35;
+  --cd-accent-hover: #e9ca70;
+  --cd-accent-soft: rgba(217, 173, 53, 0.14);
+}
+:root[data-theme="lapis"] {
+  --accent: #6b7dff;
+  --accent-rgb: 107, 125, 255;
+  --accent-light: #8291ff;
+  --accent-dark: #5466e8;
+  --accent-hover: #98a5ff;
+  --accent-deep: #3b48b8;
+  --cd-bg: #0b0c17;
+  --cd-bg-2: #0f111d;
+  --cd-sidebar: #0d0f1b;
+  --cd-surface: #141725;
+  --cd-surface-2: #191d2e;
+  --cd-surface-3: #212639;
+  --cd-border-strong: #282e46;
+  --cd-hero: #171c3a;
+  --cd-hero-2: #0e1022;
+  --cd-accent: #6b7dff;
+  --cd-accent-hover: #98a5ff;
+  --cd-accent-soft: rgba(107, 125, 255, 0.14);
+}
+:root[data-theme="graphite"] {
+  --accent: #a3afbd;
+  --accent-rgb: 163, 175, 189;
+  --accent-light: #b5bfcb;
+  --accent-dark: #8995a4;
+  --accent-hover: #c2cbd5;
+  --accent-deep: #677283;
+  --cd-bg: #0d0e10;
+  --cd-bg-2: #111214;
+  --cd-sidebar: #0f1012;
+  --cd-surface: #16171a;
+  --cd-surface-2: #1c1e21;
+  --cd-surface-3: #24262a;
+  --cd-border-strong: #2c2f34;
+  --cd-hero: #1d1f23;
+  --cd-hero-2: #111214;
+  --cd-accent: #a3afbd;
+  --cd-accent-hover: #c2cbd5;
+  --cd-accent-soft: rgba(163, 175, 189, 0.14);
+}
 
 /* Shaxmat taxtasi ranglari ham sayt mavzusiga mos (chessboard.js katak klasslari) */
 :root,
@@ -3501,6 +3621,30 @@
 :root[data-theme="sunset"] {
   --board-light: #f0d9b5;
   --board-dark: #b58863;
+}
+:root[data-theme="jade"] {
+  --board-light: #e6f2e6;
+  --board-dark: #5d9c74;
+}
+:root[data-theme="ruby"] {
+  --board-light: #f3e2e2;
+  --board-dark: #b06a72;
+}
+:root[data-theme="rose"] {
+  --board-light: #f5e4ee;
+  --board-dark: #b77a9c;
+}
+:root[data-theme="gold"] {
+  --board-light: #f2ebd0;
+  --board-dark: #a8945a;
+}
+:root[data-theme="lapis"] {
+  --board-light: #e5e8f5;
+  --board-dark: #6f78b8;
+}
+:root[data-theme="graphite"] {
+  --board-light: #e8e9eb;
+  --board-dark: #8b9199;
 }
 :root .white-1e1d7 {
   background-color: var(--board-light);
@@ -8767,7 +8911,7 @@ html.hide-last-move #chessBoard .sq-last {
 }
 .set-themes {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
   margin-top: 8px;
 }
@@ -8795,6 +8939,12 @@ html.hide-last-move #chessBoard .sq-last {
 .set-theme.t-ocean i { background: linear-gradient(135deg, #63b3ff, #2b6fd6); }
 .set-theme.t-amethyst i { background: linear-gradient(135deg, #c19bff, #7c4ddb); }
 .set-theme.t-sunset i { background: linear-gradient(135deg, #ffbf6b, #e07b2a); }
+.set-theme.t-jade i { background: linear-gradient(135deg, #6cf0ad, #139b57); }
+.set-theme.t-ruby i { background: linear-gradient(135deg, #ff8a99, #c62f45); }
+.set-theme.t-rose i { background: linear-gradient(135deg, #ffa6d6, #d34a92); }
+.set-theme.t-gold i { background: linear-gradient(135deg, #ffe48a, #c79a1e); }
+.set-theme.t-lapis i { background: linear-gradient(135deg, #a3afff, #3d4fd6); }
+.set-theme.t-graphite i { background: linear-gradient(135deg, #eef1f4, #7a8390); }
 .set-theme.active {
   color: #fff;
   border-color: var(--accent);
@@ -9064,7 +9214,9 @@ html.hide-last-move #chessBoard .sq-last {
 @media (max-width: 600px) {
   .set-head h1 { font-size: 28px; }
   .set-langs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .set-themes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .set-themes { gap: 6px; }
+  .set-theme { padding: 8px 2px; font-size: 11px; }
+  .set-theme i { width: 28px; height: 28px; }
   .set-pieces { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .set-clocks { grid-template-columns: 1fr; }
   .set-clock-group { flex-direction: row; align-items: center; }

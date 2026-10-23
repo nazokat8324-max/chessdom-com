@@ -69,6 +69,25 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
   assert.ok(!/alpha|california|staunty/i.test(fs.readFileSync(path.join(root, 'board.js'), 'utf8').match(/PIECE_SETS = \[[^\]]*\]/)[0]), "NC/shaxsiy litsenziyali to'plamlar yo'q");
 });
 
+test("Sayt rang mavzulari: 10 ta, barcha ro'yxatlar, CSS va 6 tildagi nomlar bir xil", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const read = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  const list = (src, re) => JSON.parse(src.match(re)[1].replace(/'/g, '"'));
+  const site = list(read('script.js'), /window\.SITE_THEMES = (\[[^\]]*\])/);
+  assert.equal(site.length, 10);
+  assert.deepEqual(list(read('index.html'), /(\["turquoise"[^\]]*\])\.indexOf\(cdTheme\)/), site, "index.html <head> ro'yxati");
+  const settings = [...read('settings.js').match(/const THEMES = \[(.*)\];/)[1].matchAll(/\['(\w+)', '(\w+)'/g)];
+  assert.deepEqual(settings.map((m) => m[1]), site, "settings.js ro'yxati");
+  const css = read('style.css');
+  const langs = read('languages.js');
+  for (const [, id, key] of settings) {
+    assert.ok(css.includes(`:root[data-theme="${id}"] {\n  --accent:`) || css.includes(`:root[data-theme="${id}"] {\r\n  --accent:`) || id === 'turquoise', id + ' ranglari');
+    assert.ok(css.includes(`.set-theme.t-${id} i`), id + ' namunasi');
+    assert.equal((langs.match(new RegExp('\\b' + key + ':', 'g')) || []).length, 6, key + ' 6 tilda');
+  }
+});
+
 test('PWA: manifest, service worker, ikonkalar, VAPID kaliti', async () => {
   const mf = await (await get('/manifest.json')).json();
   assert.equal(mf.display, 'standalone');

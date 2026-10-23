@@ -1797,7 +1797,7 @@ window.populateSettingsCountries = function() {
 };
 
 // --- Sayt rangi va koordinatalar (Sozlamalar → Dizayn) ---
-window.SITE_THEMES = ['turquoise', 'ocean', 'amethyst', 'sunset'];
+window.SITE_THEMES = ['turquoise', 'ocean', 'amethyst', 'sunset', 'jade', 'ruby', 'rose', 'gold', 'lapis', 'graphite'];
 
 window.applySiteTheme = function(theme) {
   const name = window.SITE_THEMES.includes(theme) ? theme : 'turquoise';

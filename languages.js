@@ -2864,6 +2864,13 @@ const translationsExtra = {
     soundDoira: "Doira",
     soundRetro: "Retro",
     soundSoft: "Yumshoq",
+    localPlayBtn: "Bir qurilmada",
+    localStarted: "Bir qurilmada o'yin: navbat bilan yuring. Soat birinchi yurishdan keyin yuradi.",
+    localBusy: "Avval joriy o'yinni tugating",
+    localDrawConfirm: "Ikkala o'yinchi durrangga rozimi?",
+    localAutoFlip: "Avto-aylantirish",
+    localOn: "yoqilgan",
+    localOff: "o'chiq",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -4263,6 +4270,13 @@ const translationsExtra = {
     soundDoira: "Doira drum",
     soundRetro: "Retro",
     soundSoft: "Soft",
+    localPlayBtn: "Pass & play",
+    localStarted: "Pass & play: take turns on this device. The clock starts after the first move.",
+    localBusy: "Finish the current game first",
+    localDrawConfirm: "Do both players agree to a draw?",
+    localAutoFlip: "Auto-flip",
+    localOn: "on",
+    localOff: "off",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -5662,6 +5676,13 @@ const translationsExtra = {
     soundDoira: "Дойра",
     soundRetro: "Ретро",
     soundSoft: "Мягкий",
+    localPlayBtn: "На одном устройстве",
+    localStarted: "Игра на одном устройстве: ходите по очереди. Часы пойдут после первого хода.",
+    localBusy: "Сначала завершите текущую партию",
+    localDrawConfirm: "Оба игрока согласны на ничью?",
+    localAutoFlip: "Автоповорот",
+    localOn: "вкл",
+    localOff: "выкл",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -7061,6 +7082,13 @@ const translationsExtra = {
     soundDoira: "Doira",
     soundRetro: "Retro",
     soundSoft: "Suave",
+    localPlayBtn: "En un dispositivo",
+    localStarted: "En un dispositivo: jugad por turnos. El reloj arranca tras la primera jugada.",
+    localBusy: "Termina primero la partida actual",
+    localDrawConfirm: "¿Ambos jugadores aceptan tablas?",
+    localAutoFlip: "Giro automático",
+    localOn: "sí",
+    localOff: "no",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -8460,6 +8488,13 @@ const translationsExtra = {
     soundDoira: "Doira-Trommel",
     soundRetro: "Retro",
     soundSoft: "Sanft",
+    localPlayBtn: "Auf einem Gerät",
+    localStarted: "Auf einem Gerät: abwechselnd ziehen. Die Uhr läuft nach dem ersten Zug.",
+    localBusy: "Beende zuerst die laufende Partie",
+    localDrawConfirm: "Sind beide Spieler mit Remis einverstanden?",
+    localAutoFlip: "Auto-Drehen",
+    localOn: "an",
+    localOff: "aus",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -9859,6 +9894,13 @@ const translationsExtra = {
     soundDoira: "Doira",
     soundRetro: "Rétro",
     soundSoft: "Doux",
+    localPlayBtn: "Sur un appareil",
+    localStarted: "Sur un appareil : jouez à tour de rôle. La pendule démarre après le premier coup.",
+    localBusy: "Terminez d'abord la partie en cours",
+    localDrawConfirm: "Les deux joueurs acceptent-ils la nulle ?",
+    localAutoFlip: "Rotation auto",
+    localOn: "oui",
+    localOff: "non",
     searchNoResults: "Aucun résultat"
   }
 };

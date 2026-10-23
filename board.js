@@ -237,8 +237,11 @@ window.finishGame = function(winnerColor, message, toastType) {
     : tx('opponentLocal', 'Oq va Qora');
   if (whiteTimerElement) whiteTimerElement.classList.remove('warning');
   if (blackTimerElement) blackTimerElement.classList.remove('warning');
-  saveGameHistory(result, opponentName, "Online o'yin");
-  recordResult(result);
+  // Bir qurilmada o'ynalgan o'yin (local.js) — statistikaga yozilmaydi
+  if (!window.localGameMode) {
+    saveGameHistory(result, opponentName, "Online o'yin");
+    recordResult(result);
+  }
   updateTimersDisplay();
   if (message) showToast(message, toastType || 'info', 5000);
   // Doska va panellar "Yangi o'yin" bosilguncha o'yinchi tomonida qoladi
@@ -618,6 +621,7 @@ window.updatePlayerInfo = function(color, name, rating, provisional) {
   const ratingEl = document.getElementById(`${color}PlayerRating`);
   // '⏳' — raqib hali topilmagan
   const waiting = rating === '⏳';
+  const noRating = waiting || rating === '';
   const barEl = document.querySelector(`#gameView .${color}-player`);
   if (barEl) barEl.classList.toggle('pg-waiting', waiting);
   if (waiting) name = tx('gpWaitingOpponent', 'Raqib kutilmoqda…');
@@ -636,12 +640,12 @@ window.updatePlayerInfo = function(color, name, rating, provisional) {
     if (isPlayer) nameEl.dataset.username = name; else delete nameEl.dataset.username;
   }
   if (ratingEl) {
-    ratingEl.dataset.rating = waiting ? '' : (rating || 1500);
-    ratingEl.textContent = waiting ? '' : String(rating || 1500) + (provisional ? '?' : '');
+    ratingEl.dataset.rating = noRating ? '' : (rating || 1500);
+    ratingEl.textContent = noRating ? '' : String(rating || 1500) + (provisional ? '?' : '');
     ratingEl.title = provisional && !waiting ? tx('provisionalHint', "Taxminiy reyting: dastlabki 15 o'yinda tezroq o'zgaradi") : '';
   }
   const rankEl = document.getElementById(`${color}PlayerRank`);
-  if (rankEl) rankEl.innerHTML = waiting || typeof window.rankBadge !== 'function' ? '' : window.rankBadge(rating || 1500);
+  if (rankEl) rankEl.innerHTML = noRating || typeof window.rankBadge !== 'function' ? '' : window.rankBadge(rating || 1500);
 };
 
 // --- Bosib yurish: tanlangan dona, yurish mumkin bo'lgan kataklar (nuqta / olish doirasi), oxirgi yurish ---

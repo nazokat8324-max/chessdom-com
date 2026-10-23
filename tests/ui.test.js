@@ -104,6 +104,37 @@ test("Kun o'yini kartasi: mini-taxtaning bo'sh qatorlari ham siqilmaydi (64 kata
   assert.deepEqual(p.errors, []);
 });
 
+test("Bir qurilmada ikki kishi: navbat bilan yuriladi, taxta buriladi, mat — natija statistikaga yozilmaydi", opts, async () => {
+  const u = await srv.register('Local');
+  const p = await page(u);
+  await p.goto(srv.base + '/oyin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#btnLocalGame', { timeout: 10000 });
+  await sleep(600);
+  await p.click('#btnLocalGame');
+  await sleep(400);
+  const start = await p.evaluate(() => ({ local: window.localGameMode, mode: document.getElementById('gameView').className, wins: (window.stats || {}).wins || 0, rating: document.getElementById('whitePlayerRating').textContent }));
+  assert.equal(start.local, true);
+  assert.match(start.mode, /pg-mode-in/);
+  assert.equal(start.rating, '', "reyting ko'rsatilmaydi");
+  const moves = [['e2', 'e4'], ['e7', 'e5'], ['f1', 'c4'], ['b8', 'c6'], ['d1', 'h5'], ['g8', 'f6']];
+  for (const [f, t] of moves) {
+    assert.ok(await p.evaluate((a, b) => { const m = window.executeMove(a, b); if (m && board) board.position(game.fen()); return !!m; }, f, t), f + t);
+    await sleep(320);
+  }
+  assert.equal(await p.evaluate(() => board.orientation()), 'white', 'navbat oqda — taxta oq tomondan');
+  await p.evaluate(() => { window.executeMove('e7', 'e5'); }); // noto'g'ri navbat — rad
+  assert.equal(await p.evaluate(() => game.history().length), 6);
+  await p.evaluate(() => { window.executeMove('h5', 'f7'); if (board) board.position(game.fen()); });
+  await sleep(500);
+  const end = await p.evaluate(() => ({ over: document.getElementById('gameView').className, winner: (window.lastGameEnd || {}).winner, wins: (window.stats || {}).wins || 0, ticking: document.getElementById('whiteTimer').textContent }));
+  assert.match(end.over, /pg-mode-over/);
+  assert.equal(end.winner, 'w');
+  assert.equal(end.wins, start.wins, "statistika o'zgarmadi");
+  await p.evaluate(() => window.resetToPreGame());
+  assert.equal(await p.evaluate(() => window.localGameMode), false);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

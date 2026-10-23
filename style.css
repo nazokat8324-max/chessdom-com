@@ -3655,6 +3655,22 @@
   color: var(--board-light);
 }
 
+/* Shoh belgisi rasm sifatida (window.kingIcon) — matn qatorida */
+.king-ic {
+  width: 1.2em;
+  height: 1.2em;
+  vertical-align: -0.25em;
+}
+.lb-chip .king-ic {
+  width: 17px;
+  height: 17px;
+}
+.player-avatar .king-ic {
+  width: 78%;
+  height: 78%;
+  vertical-align: middle;
+}
+
 /* Koordinatalar o'chirilganda doskadagi a–h / 1–8 belgilari yashiriladi (chessboard.js) */
 .hide-coords .notation-322f9 {
   display: none;

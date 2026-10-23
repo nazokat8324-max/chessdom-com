@@ -6,7 +6,7 @@
     first_win: '🏆', wins_10: '🥉', wins_50: '🥈', wins_100: '🥇',
     games_10: '♟️', games_100: '🎯', games_500: '🏛️',
     streak_5: '🔥', streak_10: '☄️', mate_10: '⚔️',
-    rank_gold: '♝', rank_platinum: '♜', rank_diamond: '♛', rank_master: '♚',
+    rank_gold: '♝', rank_platinum: '♜', rank_diamond: '♛', rank_master: '★',
     chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', tournament_win: '👑', sportsman: '🎖️', oracle: '🔮', mentor: '🎓', invite_3: '📣', invite_10: '🌟'
   };
   const ACH_TEXT = {
@@ -112,8 +112,8 @@
     const modes = [['rapid', '⏱️ Rapid'], ['blitz', '⚡ Blitz'], ['bullet', '🔥 Bullet'], ['chess960', '🎲 Chess960']];
     el.innerHTML = `
       <div class="ex-card"><span>🔥 ${esc(tx('exLongestStreak', "Eng uzun g'alaba seriyasi"))}</span><b>${x.longestStreak}</b><small>${esc(tx('exCurrentStreak', 'Hozirgi: {{n}}', { n: x.currentStreak }))}</small></div>
-      <div class="ex-card"><span>♔ ${esc(tx('exAsWhite', 'Oq bilan'))}</span><b>${pct(x.byColor.w)}%</b><small>${wdl(x.byColor.w)}</small></div>
-      <div class="ex-card"><span>♚ ${esc(tx('exAsBlack', 'Qora bilan'))}</span><b>${pct(x.byColor.b)}%</b><small>${wdl(x.byColor.b)}</small></div>
+      <div class="ex-card"><span>${window.kingIcon('w')} ${esc(tx('exAsWhite', 'Oq bilan'))}</span><b>${pct(x.byColor.w)}%</b><small>${wdl(x.byColor.w)}</small></div>
+      <div class="ex-card"><span>${window.kingIcon('b')} ${esc(tx('exAsBlack', 'Qora bilan'))}</span><b>${pct(x.byColor.b)}%</b><small>${wdl(x.byColor.b)}</small></div>
       <div class="ex-card"><span>⏳ ${esc(tx('exAvgLength', "O'rtacha o'yin"))}</span><b>${x.avgMoves}</b><small>${esc(tx('exMovesUnit', 'yurish'))}</small></div>
       <div class="ex-card wide"><span>📈 ${esc(tx('exBest', 'Eng yuqori reyting'))}</span><div class="ex-best">${modes.map(([m, l]) => `<em>${l} <b>${x.best[m] || 1500}</b></em>`).join('')}</div></div>
       <div class="ex-card wide"><span>🏆 ${esc(tx('exWinsBy', "G'alabalar"))}</span><small class="ex-line">${reasonLine(x.winsBy)}</small><span>💔 ${esc(tx('exLossesBy', "Mag'lubiyatlar"))}</span><small class="ex-line">${reasonLine(x.lossesBy)}</small></div>

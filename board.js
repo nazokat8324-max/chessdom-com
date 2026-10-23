@@ -623,7 +623,7 @@ window.updatePlayerInfo = function(color, name, rating, provisional) {
   if (waiting) name = tx('gpWaitingOpponent', 'Raqib kutilmoqda…');
   
   if (avatarEl) {
-    avatarEl.textContent = color === 'white' ? '♔' : '♚';
+    avatarEl.innerHTML = window.kingIcon(color);
     const knownPlayer = !!name && [window.currentUser && window.currentUser.username, window.currentOpponent && window.currentOpponent.username].includes(name);
     if (knownPlayer && typeof window.avatarOverlay === 'function') avatarEl.insertAdjacentHTML('beforeend', window.avatarOverlay(name, window.myAvatarVersion(name)));
   }

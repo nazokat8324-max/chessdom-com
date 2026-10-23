@@ -50,7 +50,7 @@
       <div class="gh-filters">
         ${chips('mode', [['all', '🏆 ' + tx('lbModeAll', 'Umumiy')], ['rapid', '⏱️ Rapid'], ['blitz', '⚡ Blitz'], ['bullet', '🔥 Bullet'], ['chess960', '🎲 Chess960']], st.mode)}
         ${chips('result', [['all', tx('ghAllResults', 'Barchasi')], ['win', resultLabel.win], ['draw', resultLabel.draw], ['loss', resultLabel.loss]], st.result)}
-        ${chips('color', [['all', '♔♚'], ['w', '♔ ' + tx('whiteText', 'Oq')], ['b', '♚ ' + tx('blackText', 'Qora')]], st.color)}
+        ${chips('color', [['all', window.kingIcon('w') + window.kingIcon('b')], ['w', window.kingIcon('w') + ' ' + tx('whiteText', 'Oq')], ['b', window.kingIcon('b') + ' ' + tx('blackText', 'Qora')]], st.color)}
         <form class="lb-search gh-search" id="ghSearch"><span>🔍</span><input id="ghQuery" type="search" placeholder="${esc(tx('ghOpponent', 'Raqib nomi'))}" value="${esc(st.q)}" autocomplete="off"></form>
       </div>
       <div class="gh-summary"><span class="w">${esc(resultLabel.win)} <b>${sum.win || 0}</b></span><span class="d">${esc(resultLabel.draw)} <b>${sum.draw || 0}</b></span><span class="l">${esc(resultLabel.loss)} <b>${sum.loss || 0}</b></span></div>

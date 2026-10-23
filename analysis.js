@@ -252,7 +252,7 @@
     }
     const side = (c) => `
       <div class="an-side">
-        <div class="an-side-head">${c === 'w' ? '♔' : '♚'} <b>${r.accuracy[c]}%</b><small>${esc(tx('anAccuracy', 'Aniqlik'))}</small></div>
+        <div class="an-side-head">${window.kingIcon(c)} <b>${r.accuracy[c]}%</b><small>${esc(tx('anAccuracy', 'Aniqlik'))}</small></div>
         <div class="an-counts">
           <span class="an-inaccuracy">?! ${r.counts[c].inaccuracy}</span>
           <span class="an-mistake">? ${r.counts[c].mistake}</span>

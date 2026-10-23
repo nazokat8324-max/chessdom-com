@@ -110,6 +110,18 @@ test("Sayt rang mavzulari: 10 ta, barcha ro'yxatlar, CSS va 6 tildagi nomlar bir
   }
 });
 
+test("Xochli ♔/♚ matn belgilari sayt kodida yo'q (o'rniga kingIcon rasm)", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const root = path.join(__dirname, '..');
+  for (const f of fs.readdirSync(root).filter((n) => /\.(js|html|css)$/.test(n))) {
+    fs.readFileSync(path.join(root, f), 'utf8').split(/\r?\n/).forEach((line, i) => {
+      // Izoh qatorlari mumkin, ko'rinadigan kodda — yo'q
+      if (/[♔♚]/.test(line) && !/^\s*(\/\/|\*|\/\*)/.test(line)) assert.fail(f + ':' + (i + 1) + ' — ' + line.trim().slice(0, 80));
+    });
+  }
+});
+
 test('PWA: manifest, service worker, ikonkalar, VAPID kaliti', async () => {
   const mf = await (await get('/manifest.json')).json();
   assert.equal(mf.display, 'standalone');

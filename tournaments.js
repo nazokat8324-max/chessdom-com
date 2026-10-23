@@ -202,11 +202,11 @@
     return `<div class="sw-rounds">${roundNos.map(n => `<button class="sw-round${n === st.round ? ' active' : ''}" data-round="${n}">${esc(tx('swRoundN', '{{n}}-tur', { n }))}</button>`).join('')}</div>
       <div class="ar-games">${list.map(p => p.black ? `
         <div class="ar-game">
-          <span class="${p.result === '1-0' || p.result === '+-' ? 'won' : ''}">♔ ${player(p.white)}</span>
+          <span class="${p.result === '1-0' || p.result === '+-' ? 'won' : ''}">${window.kingIcon('w')} ${player(p.white)}</span>
           <b>${p.result ? esc(resText(p.result)) : (p.roomId
             ? `<button class="sw-watch" data-watch="${esc(p.roomId)}">👁 ${esc(tx('lvWatch', 'Tomosha'))}</button>`
             : `<em class="ar-tag playing">${esc(tx('arTagPlaying', "o'ynamoqda"))}</em>`)}</b>
-          <span class="${p.result === '0-1' || p.result === '-+' ? 'won' : ''}">${player(p.black)} ♚</span>
+          <span class="${p.result === '0-1' || p.result === '-+' ? 'won' : ''}">${player(p.black)} ${window.kingIcon('b')}</span>
         </div>` : `
         <div class="ar-game bye"><span>${player(p.white)}</span><b>bye</b><span>+1</span></div>`).join('')}</div>`;
   }

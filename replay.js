@@ -51,7 +51,7 @@
   function anSummary(r) {
     const side = (c) => `
       <div class="an-side">
-        <div class="an-side-head">${c === 'w' ? '♔' : '♚'} <b>${r.accuracy[c]}%</b><small>${esc(tx('anAccuracy', 'Aniqlik'))}</small></div>
+        <div class="an-side-head">${window.kingIcon(c)} <b>${r.accuracy[c]}%</b><small>${esc(tx('anAccuracy', 'Aniqlik'))}</small></div>
         <div class="an-counts"><span class="an-inaccuracy">?! ${r.counts[c].inaccuracy}</span><span class="an-mistake">? ${r.counts[c].mistake}</span><span class="an-blunder">?? ${r.counts[c].blunder}</span></div>
       </div>`;
     return `<div class="an-summary">${side('w')}${side('b')}</div><div class="an-ply" id="rpPlyInfo"></div>`;
@@ -163,9 +163,9 @@
       <div class="rp-card">
         <button class="rp-x" data-close="1">✕</button>
         <div class="rp-board-col">
-          <div class="rp-player">♚ ${g.color ? `<b class="player-link" data-username="${esc(black)}">${esc(black)}</b>` : '<b>—</b>'}</div>
+          <div class="rp-player">${window.kingIcon('b')} ${g.color ? `<b class="player-link" data-username="${esc(black)}">${esc(black)}</b>` : '<b>—</b>'}</div>
           <div class="rp-board-wrap"><div id="replayBoard"></div><div class="pg-evalbar rp-evalbar" id="rpEvalBar"><div class="an-fill"></div><span class="an-label"></span></div></div>
-          <div class="rp-player">♔ ${g.color ? `<b class="player-link" data-username="${esc(white)}">${esc(white)}</b>` : '<b>—</b>'}</div>
+          <div class="rp-player">${window.kingIcon('w')} ${g.color ? `<b class="player-link" data-username="${esc(white)}">${esc(white)}</b>` : '<b>—</b>'}</div>
           <div class="rp-controls">
             <button data-nav="first" title="Home">⏮</button><button data-nav="prev" title="←">◀</button>
             <span id="replayCounter"></span>

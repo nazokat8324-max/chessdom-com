@@ -1796,6 +1796,13 @@ window.populateSettingsCountries = function() {
   country.value = keep || saved.country || "uz";
 };
 
+// Oq/qora shoh belgisi: ♔/♚ matn belgilari ko'p shriftlarda xochli chiqadi — o'rniga tanlangan to'plamning shoh rasmi
+window.kingIcon = function(color) {
+  const code = color === 'b' || color === 'black' ? 'bK' : 'wK';
+  const src = window.pieceUrl ? window.pieceUrl(code) : 'img/chesspieces/karvon/' + code + '.svg';
+  return '<img class="king-ic" src="' + src + '" alt="">';
+};
+
 // --- Sayt rangi va koordinatalar (Sozlamalar → Dizayn) ---
 window.SITE_THEMES = ['turquoise', 'ocean', 'amethyst', 'sunset', 'jade', 'ruby', 'rose', 'gold', 'lapis', 'graphite'];
 

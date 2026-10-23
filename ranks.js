@@ -1,4 +1,4 @@
-// Reyting darajalari: nom yonidagi kichik nishon — shaxmat donasi o'z rangida (♙ → ♟ → ♞ → ♝ → ♜ → ♛ → ♚ → 👑). Chegaralar server.js dagi RANK_STEPS bilan bir xil.
+// Reyting darajalari: nom yonidagi kichik nishon — shaxmat donasi o'z rangida (♙ → ♟ → ♞ → ♝ → ♜ → ♛ → ★ → 👑; xochli ♚ ishlatilmaydi). Chegaralar server.js dagi RANK_STEPS bilan bir xil.
 // rankBadge(rating) — faqat belgi (title'da nom va oraliq), rankBadge(rating, true) — belgi + nom.
 (function () {
   const RANKS = [
@@ -8,7 +8,7 @@
     { min: 1600, key: 'gold', icon: '♝︎', i18n: 'rkGold', fb: 'Oltin' },
     { min: 1800, key: 'platinum', icon: '♜︎', i18n: 'rkPlatinum', fb: 'Platina' },
     { min: 2000, key: 'diamond', icon: '♛︎', i18n: 'rkDiamond', fb: 'Olmos' },
-    { min: 2200, key: 'master', icon: '♚︎', i18n: 'rkMaster', fb: 'Usta' },
+    { min: 2200, key: 'master', icon: '★', i18n: 'rkMaster', fb: 'Usta' },
     { min: 2400, key: 'grandmaster', icon: '👑', i18n: 'rkGrandmaster', fb: 'Grossmeyster' }
   ];
   window.RANKS = RANKS;

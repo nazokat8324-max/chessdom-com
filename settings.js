@@ -12,7 +12,7 @@
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français']];
   const THEMES = [['turquoise', 'themeTurquoise', 'Firuza'], ['ocean', 'themeOcean', 'Okean'], ['amethyst', 'themeAmethyst', 'Ametist'], ['sunset', 'themeSunset', 'Shafaq'], ['jade', 'themeJade', 'Zumrad'], ['ruby', 'themeRuby', 'Yoqut'], ['rose', 'themeRose', 'Atirgul'], ['gold', 'themeGold', 'Oltin'], ['lapis', 'themeLapis', 'Lojuvard'], ['graphite', 'themeGraphite', 'Grafit']];
   // Faqat erkin litsenziyali to'plamlar (board.js PIECE_SETS); mualliflari /mualliflar sahifasida
-  const PIECES = [['wikipedia', 'Klassik'], ['cburnett', 'Cburnett'], ['merida', 'Merida']];
+  const PIECES = [['wikipedia', 'Klassik'], ['karvon', 'Karvon'], ['cburnett', 'Cburnett'], ['merida', 'Merida']];
   // Namuna pozitsiya (Italyan o'yini): oxirgi yurish Bc4, tanlangan ot g1 va uning yurishlari
   const PREVIEW_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR';
 

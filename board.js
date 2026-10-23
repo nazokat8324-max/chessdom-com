@@ -955,7 +955,7 @@ function onSnapEnd() {
 // Hammasi saytning o'zida (img/chesspieces/<to'plam>/): wikipedia (PNG), cburnett va merida (SVG) — GPLv2+,
 // mualliflari /mualliflar sahifasida. 2026-10-22 da alpha (faqat shaxsiy foydalanish), california va staunty
 // (CC BY-NC — tijorat taqiqlangan) olib tashlangan; saqlangan eski tanlov wikipedia ga qaytadi.
-window.PIECE_SETS = ['wikipedia', 'cburnett', 'merida'];
+window.PIECE_SETS = ['wikipedia', 'karvon', 'cburnett', 'merida'];
 window.currentPieceSet = 'wikipedia';
 window.pieceUrl = function(code, set) {
   const s = set || window.currentPieceSet;

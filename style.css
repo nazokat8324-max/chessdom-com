@@ -3808,6 +3808,15 @@ sidebar {
     font-size: 18px;
   }
 }
+/* Tor yon menyu (200px, ≤1024px): toj yashiriladi, harflar kichikroq */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .logo-area .chessdom-text {
+    font-size: 15px;
+  }
+  .logo-area .cd-crown {
+    display: none;
+  }
+}
 .menu-item {
   color: #a9b6b0;
   border-radius: 12px;
@@ -8952,7 +8961,7 @@ html.hide-last-move #chessBoard .sq-last {
 }
 .set-pieces {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
   margin-top: 8px;
 }
@@ -9198,6 +9207,11 @@ html.hide-last-move #chessBoard .sq-last {
   pointer-events: auto;
 }
 
+/* Kichik noutbukda 10 ta rang tugmasi siqilmasin — namuna taxta pastga tushadi */
+@media (max-width: 1200px) {
+  .set-board-grid { grid-template-columns: 1fr; }
+  .set-preview-wrap { max-width: 300px; }
+}
 @media (max-width: 900px) {
   .set-layout { grid-template-columns: 1fr; }
   .set-nav {

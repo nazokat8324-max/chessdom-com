@@ -61,7 +61,7 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
     assert.ok(!fs.readFileSync(path.join(root, f), 'utf8').includes('lichess1.org'), f + " lichess serveridan resurs olmasin");
   }
   for (const s of ['move', 'capture', 'check', 'game-end']) assert.equal((await get('/assets/sounds/' + s + '.wav')).status, 200, s);
-  for (const set of ['cburnett', 'merida']) assert.equal((await get('/img/chesspieces/' + set + '/wK.svg')).status, 200, set);
+  for (const set of ['karvon', 'cburnett', 'merida']) for (const c of ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP', 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP']) assert.equal((await get('/img/chesspieces/' + set + '/' + c + '.svg')).status, 200, set + ' ' + c);
   global.window = {};
   require(path.join(root, 'legal-content.js'));
   const credits = JSON.stringify(window.LEGAL_CREDITS);

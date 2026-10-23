@@ -13,7 +13,7 @@
     ['win3', 3, '🏆', (g) => g.result === 'win'],
     ['win5', 5, '👑', (g) => g.result === 'win'],
     ['mate', 1, '⚔️', (g) => g.result === 'win' && g.reason === 'checkmate'],
-    ['black', 2, '♚', (g) => g.result === 'win' && g.color === 'b'],
+    ['black', 2, '🖤', (g) => g.result === 'win' && g.color === 'b'],
     ['c960', 2, '🎲', (g) => g.variant === 'chess960'],
     ['tea', 2, '🍵', (g) => !!g.tea],
     ['rated', 3, '⭐', (g) => !!g.rated],

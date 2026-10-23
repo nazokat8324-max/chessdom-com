@@ -15326,3 +15326,37 @@ body.auth-locked {
     padding-top: 64px;
   }
 }
+
+/* ===== 👤 Mehmon rejimi (guest.js) ===== */
+.auth-guest { margin-top: 18px; text-align: center; }
+.auth-guest[hidden] { display: none; }
+.auth-or { display: flex; align-items: center; gap: 10px; color: #7f8f8a; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.auth-or::before, .auth-or::after { content: ''; flex: 1; height: 1px; background: var(--cd-border-strong, #223439); }
+.auth-guest-btn { width: 100%; padding: 13px 16px; border-radius: 12px; border: 1px solid rgba(var(--accent-rgb), 0.45); background: rgba(var(--accent-rgb), 0.08); color: #fff; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; transition: background 0.15s; }
+.auth-guest-btn:hover { background: rgba(var(--accent-rgb), 0.16); }
+.auth-guest-btn:disabled { opacity: 0.6; cursor: wait; }
+.auth-guest-hint { margin: 8px 0 0; font-size: 12px; color: #8a9a95; line-height: 1.45; }
+.auth-gate-close { position: absolute; top: 22px; left: 22px; z-index: 2; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--cd-border-strong, #223439); background: rgba(255, 255, 255, 0.04); color: #d9e4de; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.auth-gate-close[hidden] { display: none; }
+.guest-banner { display: flex; align-items: center; gap: 14px; margin: 0 0 18px; padding: 14px 18px; border-radius: 16px; border: 1px solid rgba(var(--accent-rgb), 0.35); background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-rgb), 0.04)); }
+#homeView.active-view { flex-wrap: wrap; align-content: flex-start; }
+.guest-banner { flex: 0 0 100%; box-sizing: border-box; }
+.guest-banner[hidden] { display: none; }
+.guest-banner-ico { font-size: 28px; }
+.guest-banner-body { flex: 1; min-width: 0; }
+.guest-banner-body b { color: #fff; font-size: 15px; }
+.guest-banner-body b span { color: var(--accent); font-weight: 600; }
+.guest-banner-body p { margin: 4px 0 0; font-size: 13px; color: #a9b6b0; line-height: 1.45; }
+.guest-signup-btn { flex-shrink: 0; padding: 10px 16px; border-radius: 10px; border: none; background: var(--accent); color: #fff; font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; white-space: nowrap; }
+.guest-signup-btn:hover { background: var(--accent-hover); }
+.guest-over-box { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0; padding: 10px 12px; border-radius: 12px; border: 1px dashed rgba(var(--accent-rgb), 0.5); background: rgba(var(--accent-rgb), 0.07); font-size: 13px; color: #d9e4de; }
+.guest-over-box[hidden] { display: none; }
+.guest-prompt { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 10050; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 32px); padding: 12px 14px; border-radius: 14px; background: var(--cd-surface-2, #162327); border: 1px solid rgba(var(--accent-rgb), 0.45); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45); color: #fff; font-size: 14px; font-weight: 600; }
+.guest-prompt[hidden] { display: none; }
+.guest-prompt-x { border: none; background: none; color: #8a9a95; font-size: 16px; cursor: pointer; }
+@media (max-width: 768px) {
+  .guest-banner { flex-wrap: wrap; padding: 12px 14px; }
+  .guest-banner .guest-signup-btn { width: 100%; }
+  .guest-prompt { bottom: 84px; flex-wrap: wrap; }
+  .auth-gate-close { top: 14px; left: 14px; }
+}

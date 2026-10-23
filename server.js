@@ -154,6 +154,7 @@ const tooMany = { success: false, message: "Juda ko'p urinish. Biroz kutib, qayt
 const loginLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 10, skipSuccessfulRequests: true, skip: () => TEST_MODE, message: tooMany });
 const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 10, skip: () => TEST_MODE, message: tooMany });
 const resetLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 5, skip: () => TEST_MODE, message: tooMany });
+const guestLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, skip: () => TEST_MODE, message: tooMany });
 
 // --- 🐞 Xatolarni kuzatish (tashqi xizmatsiz): console.error, ushlanmagan xatolar, Express va brauzer xatolari → error_log.
 // Bir xil xato (fingerprint: matn raqamlarsiz + birinchi stack qatori) bitta qatorda sanaladi. Yangi xato — adminlarga bildirishnoma.
@@ -286,6 +287,7 @@ function otherColor(color) { return color === 'w' ? 'b' : 'w'; }
 // opts.variant: 'standard' | 'chess960' (Chess960 — alohida 'chess960' reytingi), opts.startFen — 960 boshlang'ich pozitsiyasi
 function createGameRoom(white, black, clock, rated, opts) {
   for (const p of [white, black]) if (p && p.userId && typeof teaStand === 'function') teaStand(p.userId);
+  if (isGuest(white && white.userId) || isGuest(black && black.userId)) rated = false;
   const variant = opts && opts.variant === 'chess960' ? 'chess960' : 'standard';
   // CHESS960_TEST_FEN — faqat lokal sinov uchun (doim bir xil pozitsiya)
   const startFen = variant === 'chess960' ? (opts.startFen || process.env.CHESS960_TEST_FEN || Chess960.randomStartFen()) : null;
@@ -575,7 +577,7 @@ async function sendChallenge(socket, data, opts) {
   const mode = clockMode(clock);
   const id = uuidv4();
   const variant = data.variant === 'chess960' ? 'chess960' : 'standard';
-  const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, variant, rated: data.rated !== false };
+  const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, variant, rated: data.rated !== false && !isGuest(fromId) && !isGuest(target.id) };
   const fromMode = variant === 'chess960' ? 'chess960' : mode;
   c.timer = setTimeout(() => {
     if (!dropChallenge(id)) return;
@@ -663,7 +665,7 @@ async function teaSit(socket, data) {
   const i = matchmakingQueue.findIndex(q => q.userId === userId);
   if (i !== -1) matchmakingQueue.splice(i, 1);
   const seat = {
-    id: uuidv4(), userId, username: u.username, socketId: socket.id, clock, variant, rated: !(data && data.rated === false),
+    id: uuidv4(), userId, username: u.username, socketId: socket.id, clock, variant, rated: !(data && data.rated === false) && !isGuest(userId),
     rating: Number(u.ratings_by_mode && u.ratings_by_mode[mode]) || u.rating || 1500, country: u.country || null,
     avatarVersion: u.avatar_version || null, createdAt: Date.now()
   };
@@ -844,6 +846,16 @@ async function computeWar(season) {
   return { season, endsAt: warSeasonEnd(season), regions, clubs, ruler: clubs[0] && clubs[0].territories ? clubs[0] : null };
 }
 // O'tgan mavsum hukmdorini bir marta yozib, klub a'zolariga xabar beriladi
+// 👤 Muddati o'tgan (ro'yxatdan o'tmagan) mehmon akkauntlari o'chiriladi (JWT 7 kun — tokenlari allaqachon yaroqsiz)
+async function cleanupGuests(cutoffIso) {
+  try {
+    const ids = await db.deleteExpiredGuests(cutoffIso || new Date(Date.now() - GUEST_TTL_MS).toISOString());
+    for (const id of ids) { guestUsers.delete(id); deletedUsers.add(id); }
+    if (ids.length) console.log('Mehmon akkauntlari tozalandi:', ids.length);
+    return ids;
+  } catch (err) { console.error('Mehmonlarni tozalash xatoligi:', err); return []; }
+}
+
 async function closeWarSeasons() {
   try {
     const prev = warPrevSeason(warSeasonKey());
@@ -1255,6 +1267,15 @@ function blockedPair(a, b) { return blocks.has(a + '|' + b) || blocks.has(b + '|
 // --- Hisobni bloklash (ban): userId -> { until, reason }. Har so'rovda bazaga murojaat qilmaslik uchun xotirada ---
 const bans = new Map();
 const deletedUsers = new Set(); // o'chirilgan akkauntlar (eski JWT bilan kira olmasin)
+// 👤 Mehmonlar (users.is_guest) — xotirada; reytingsiz o'ynaydi, chat/do'stlik/klub va boshqa "yozuvchi" amallar yopiq
+const guestUsers = new Set();
+const isGuest = (userId) => !!userId && guestUsers.has(userId);
+const GUEST_TTL_MS = 8 * 24 * 60 * 60 * 1000; // JWT 7 kun — undan keyin mehmon akkaunti o'chiriladi
+const GUEST_PREFIX = { uz: 'Mehmon', en: 'Guest', ru: 'Гость', es: 'Invitado', de: 'Gast', fr: 'Invite' };
+const GUEST_NAME_RE = new RegExp('^(' + Object.values(GUEST_PREFIX).join('|') + ')-', 'i');
+// Mehmonga ruxsat etilgan yozuvchi so'rovlar (qolganlari 403 "ro'yxatdan o'ting")
+const GUEST_ALLOWED = new Set(['/api/matchmaking/join', '/api/matchmaking/leave', '/api/auth/logout', '/api/users/me/country', '/api/notifications/read', '/api/notifications/clear']);
+const GUEST_ONLY_MSG = "Bu imkoniyat uchun ro'yxatdan o'ting!";
 function activeBan(userId) {
   const b = bans.get(userId);
   if (!b) return null;
@@ -1281,6 +1302,10 @@ function authMiddleware(req, res, next) {
     const ban = activeBan(decoded.userId);
     if (ban) return res.status(403).json({ success: false, banned: true, message: banMessage(ban) });
     req.user = decoded;
+    if (isGuest(decoded.userId)) {
+      req.user.guest = true;
+      if (req.method !== 'GET' && !GUEST_ALLOWED.has(req.path)) return res.status(403).json({ success: false, guest: true, message: GUEST_ONLY_MSG });
+    }
     next();
   } catch (err) { return res.status(401).json({ success: false, message: 'Invalid or expired token' }); }
 }
@@ -1371,6 +1396,26 @@ async function start() {
     res.json({ success: true });
   });
   if (TEST_MODE) app.get('/api/test/throw', () => { throw new Error('Test uchun xato'); });
+  if (TEST_MODE) app.post('/api/test/cleanup-guests', async (req, res) => res.json({ success: true, ids: await cleanupGuests(new Date(Date.now() + 60000).toISOString()) }));
+
+  // 👤 Ro'yxatdan o'tmasdan o'ynash: vaqtinchalik akkaunt (nom — tilga qarab "Mehmon-xxxxx"), JWT 7 kun
+  app.post('/api/auth/guest', guestLimiter, async (req, res) => {
+    try {
+      const prefix = GUEST_PREFIX[req.body && req.body.lang] || GUEST_PREFIX.en;
+      let username = null;
+      for (let i = 0; i < 6 && !username; i++) {
+        const name = prefix + '-' + crypto.randomBytes(4).toString('hex').slice(0, 5);
+        if (!(await db.usernameTaken(name))) username = name;
+      }
+      if (!username) return res.status(500).json({ success: false, message: 'Server xatoligi!' });
+      const passwordHash = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 8);
+      const user = await db.createUser({ username, email: username.toLowerCase() + '@guest.local', passwordHash });
+      await db.markGuest(user.id);
+      guestUsers.add(user.id);
+      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+      res.json({ success: true, user: { id: user.id, username: user.username, rating: user.rating, stats: user.stats, statsByMode: user.statsByMode, guest: true }, token });
+    } catch (err) { console.error('Mehmon xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
 
   app.post('/api/auth/register', registerLimiter, [
     body('username').isLength({ min: 3, max: 30 }).withMessage('Username must be 3-30 characters')
@@ -1383,10 +1428,24 @@ async function start() {
       const errors = validationResult(req);
       if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
       const { username, email, password } = req.body;
+      if (GUEST_NAME_RE.test(username)) return res.status(400).json({ success: false, message: 'Bu nom band qilingan!' });
       if (await db.usernameTaken(username)) return res.status(409).json({ success: false, message: 'Bu nomli foydalanuvchi mavjud!' });
       if (await db.getUserByEmail(email)) return res.status(409).json({ success: false, message: 'Bu email boshqa akkauntga biriktirilgan!' });
       const passwordHash = await bcrypt.hash(password, 10);
-      const user = await db.createUser({ username, email, passwordHash });
+      // Mehmon tokeni bilan kelsa — o'sha akkaunt (o'ynagan o'yinlari bilan) oddiy akkauntga aylanadi
+      let guestId = null;
+      const auth = req.headers.authorization;
+      if (auth && auth.startsWith('Bearer ')) { try { const d = jwt.verify(auth.slice(7), JWT_SECRET); if (isGuest(d.userId)) guestId = d.userId; } catch (e) {} }
+      let user;
+      if (guestId) {
+        const claimed = await db.claimGuest(guestId, { username, email, passwordHash });
+        if (claimed) {
+          guestUsers.delete(guestId);
+          user = { id: claimed.id, username: claimed.username, email: claimed.email, rating: claimed.rating, stats: claimed.stats, statsByMode: claimed.stats_by_mode };
+          invalidateCache('leaderboard');
+        }
+      }
+      if (!user) user = await db.createUser({ username, email, passwordHash });
       // 🔗 Taklif havolasi orqali kelgan bo'lsa — kim taklif qilgani yoziladi, taklif qiluvchiga xabar va yutuq
       if (req.body.inviteCode) {
         try {
@@ -1831,7 +1890,8 @@ async function start() {
       playerSocket.data.username = username;
       const clock = normalizeClock(req.body.initialTime, req.body.increment);
       const variant = req.body.variant === 'chess960' ? 'chess960' : 'standard';
-      const rated = req.body.rated !== false;
+      const guest = isGuest(req.user.userId);
+      const rated = !guest && req.body.rated !== false;
       pruneMatchmakingQueue();
       if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
       const user = await db.getUserById(req.user.userId);
@@ -1842,10 +1902,10 @@ async function start() {
         await db.updateUserCountry(req.user.userId, country);
       }
       const mmMode = variant === 'chess960' ? 'chess960' : clockMode(clock);
-      const me = { userId: req.user.userId, username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId, clock, rated, variant,
+      const me = { userId: req.user.userId, username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId, clock, rated, variant, guest,
         provisional: db.isProvisional(user, mmMode, false) };
       // Faqat bir xil vaqt nazorati, reyting turi va variantni tanlagan o'yinchi bilan juftlanadi
-      const waitingIndex = matchmakingQueue.findIndex(u => u.clock.initial === clock.initial && u.clock.increment === clock.increment && u.rated === rated && (u.variant || 'standard') === variant && !blockedPair(u.userId, req.user.userId));
+      const waitingIndex = matchmakingQueue.findIndex(u => u.clock.initial === clock.initial && u.clock.increment === clock.increment && (u.rated === rated || guest || u.guest) && (u.variant || 'standard') === variant && !blockedPair(u.userId, req.user.userId));
       if (waitingIndex === -1) {
         matchmakingQueue.push(me);
         return res.json({ success: true, matched: false, position: matchmakingQueue.length });
@@ -1860,7 +1920,7 @@ async function start() {
       for (const [player, opponent, color] of [[waiting, me, 'w'], [me, waiting, 'b']]) {
         const s = io.sockets.sockets.get(player.socketId);
         if (s) s.join(roomId);
-        io.to(player.socketId).emit('match-found', { roomId, color, opponent: opponentInfo(opponent), clock, rated, mode: room.mode, ...variantInfo(room) });
+        io.to(player.socketId).emit('match-found', { roomId, color, opponent: opponentInfo(opponent), clock, rated: room.rated, mode: room.mode, ...variantInfo(room) });
       }
       scheduleRoomTimer(roomId, room);
       res.json({ success: true, matched: true, roomId, color: 'b', opponent: opponentInfo(waiting) });
@@ -2788,7 +2848,7 @@ async function start() {
     socket.on('game-chat', (data) => {
       const room = data && rooms.get(data.roomId);
       const player = room && findPlayer(room, socket.id);
-      if (!player || !player.userId) return;
+      if (!player || !player.userId || isGuest(player.userId)) return;
       const message = cleanChat(typeof data.message === 'string' ? data.message.trim().slice(0, 200) : '');
       if (!message || mutedUntil(player.userId)) return;
       const now = Date.now();
@@ -2834,6 +2894,7 @@ async function start() {
     // O'yinga chaqirish
     socket.on('predict-result', async (data, ack) => {
       const reply = (r) => { if (typeof ack === 'function') ack(r); };
+      if (isGuest(socket.data.userId)) return reply({ ok: false, reason: 'guest' });
       try {
         const uid = socket.data.userId;
         const roomId = data && typeof data.roomId === 'string' ? data.roomId : null;
@@ -2855,6 +2916,7 @@ async function start() {
     });
     socket.on('predict-move', (data, ack) => {
       const reply = (r) => { if (typeof ack === 'function') ack(r); };
+      if (isGuest(socket.data.userId)) return reply({ ok: false, reason: 'guest' });
       const uid = socket.data.userId;
       const roomId = data && typeof data.roomId === 'string' ? data.roomId : null;
       const room = roomId && rooms.get(roomId);
@@ -2873,6 +2935,7 @@ async function start() {
     socket.on('page-visibility', (data) => { socket.data.hidden = !!(data && data.hidden); });
     socket.on('rate-opponent', async (data, ack) => {
       const reply = (r) => { if (typeof ack === 'function') ack(r); };
+      if (isGuest(socket.data.userId)) return reply({ ok: false, reason: 'guest' });
       try {
         const uid = socket.data.userId;
         const room = data && rooms.get(data.roomId);
@@ -2903,7 +2966,7 @@ async function start() {
         if (!inviter) return reply({ ok: false, reason: 'not_found' });
         if (inviter.id === me) return reply({ ok: false, reason: 'self' });
         if (blockedPair(me, inviter.id)) return reply({ ok: false, reason: 'blocked' });
-        const friendsNow = await db.makeFriends(me, inviter.id);
+        const friendsNow = isGuest(me) ? false : await db.makeFriends(me, inviter.id);
         const base = { ok: true, inviter: inviter.username, friendsNow };
         if (!userSocket(inviter.id)) {
           notify(inviter.id, 'invite_waiting', { from: socket.data.username }, 'invw:' + me);
@@ -2958,7 +3021,7 @@ async function start() {
     socket.on('watch-chat', (data) => {
       const roomId = data && typeof data.roomId === 'string' ? data.roomId : null;
       const room = roomId && rooms.get(roomId);
-      if (!room || !socket.data.userId || !socket.rooms.has('watch_' + roomId)) return;
+      if (!room || !socket.data.userId || isGuest(socket.data.userId) || !socket.rooms.has('watch_' + roomId)) return;
       if (room.players.some(p => p.userId === socket.data.userId)) return;
       const message = cleanChat(typeof data.message === 'string' ? data.message.trim().slice(0, 200) : '');
       if (!message || mutedUntil(socket.data.userId)) return;
@@ -2976,7 +3039,7 @@ async function start() {
     });
     socket.on('join-chat-room', (roomId) => { if (isPublicSocketRoom(roomId)) socket.join(roomId); });
     socket.on('send-chat-message', (data) => {
-      if (!socket.data.userId || !data) return;
+      if (!socket.data.userId || !data || isGuest(socket.data.userId)) return;
       const message = typeof data.message === 'string' ? data.message.slice(0, 1000) : '';
       if (!message) return;
       const payload = { senderId: socket.data.userId, senderName: socket.data.username, message, createdAt: new Date().toISOString() };
@@ -3023,7 +3086,8 @@ async function start() {
     });
   });
 
-  setInterval(() => { closeWarSeasons(); closeSportMonths(); closePredictionMonths(); }, 60 * 60 * 1000);
+  setInterval(() => { closeWarSeasons(); closeSportMonths(); closePredictionMonths(); cleanupGuests(); }, 60 * 60 * 1000);
+  setTimeout(cleanupGuests, 60 * 1000);
   setTimeout(() => { closeSportMonths(); closePredictionMonths(); }, 30 * 1000);
   // Davom etayotgan o'yinlardagi o'yinchilarning internet kechikishi (RTT, silliqlangan) — soat kompensatsiyasi uchun
   setInterval(() => {
@@ -3050,6 +3114,7 @@ async function start() {
     for (const b of await db.loadAllBlocks()) blocks.add(b.userId + '|' + b.blockedId);
     for (const b of await db.loadBans()) bans.set(b.id, { until: b.until, reason: b.reason || '' });
     for (const id of await db.loadDeletedAccountIds()) deletedUsers.add(id);
+    for (const id of await db.listGuestIds()) guestUsers.add(id);
     await initPush();
     for (const m of await db.loadMutes()) if (m.until) mutes.set(m.id, m.until);
     setChatFilter(await db.listChatFilter());

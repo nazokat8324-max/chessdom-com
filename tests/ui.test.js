@@ -40,6 +40,33 @@ test('Kirmagan foydalanuvchiga kirish sahifasi chiqadi', opts, async () => {
   assert.deepEqual(p.errors, []);
 });
 
+test("Mehmon: ro'yxatdan o'tmasdan o'ynash → reytingsiz qidiruv, eslatma, ro'yxatdan o'tganda o'sha akkaunt saqlanadi", opts, async () => {
+  const p = await page(null);
+  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await sleep(500);
+  await p.click('#authGuestBtn');
+  await p.waitForFunction(() => window.isSearchingOpponent === true, { timeout: 8000 });
+  const st = await p.evaluate(() => ({ guest: window.currentUser.guest, name: window.currentUser.username, rated: document.getElementById('ratedToggle').checked, ratedLocked: document.getElementById('ratedToggle').disabled, locked: document.body.classList.contains('auth-locked') }));
+  assert.equal(st.guest, true);
+  assert.match(st.name, /^Mehmon-/);
+  assert.deepEqual([st.rated, st.ratedLocked, st.locked], [false, true, false]);
+  await p.evaluate(() => { if (window.cancelSearch) window.cancelSearch(); window.switchView('home'); });
+  await sleep(400);
+  assert.equal(await p.evaluate(() => document.getElementById('guestBanner').hidden), false, "bosh sahifada mehmon eslatmasi");
+  const id = await p.evaluate(() => window.currentUser.id);
+  await p.evaluate(() => document.querySelector('#guestBanner .guest-signup-btn').click());
+  await sleep(300);
+  assert.deepEqual(await p.evaluate(() => [document.getElementById('authGateClose').hidden, document.getElementById('authGuestBox').hidden]), [false, true]);
+  const name = 'Mg' + Date.now() % 1000000;
+  await p.type('#signupUsername', name);
+  await p.type('#signupPassword', 'secret1');
+  await p.click('#signupSubmitBtn');
+  await p.waitForFunction((n) => window.currentUser && window.currentUser.username === n, { timeout: 8000 }, name);
+  const after = await p.evaluate(() => ({ id: window.currentUser.id, guest: !!window.currentUser.guest, banner: document.getElementById('guestBanner').hidden, ratedLocked: document.getElementById('ratedToggle').disabled }));
+  assert.deepEqual(after, { id, guest: false, banner: true, ratedLocked: false });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

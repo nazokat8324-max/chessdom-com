@@ -469,6 +469,7 @@
 
       <!-- 1. BOSH SAHIFA (DASHBOARD) -->
       <div id="homeView" class="view-section active-view">
+        <div class="guest-banner" id="guestBanner" hidden></div>
         <div class="dashboard-grid">
           <!-- Chap panel: O'yinni boshlash va Streak -->
           <div class="dash-card">
@@ -1914,6 +1915,7 @@
 
       <!-- O'ng tomon: forma -->
       <section class="auth-panel">
+        <button type="button" class="auth-gate-close" id="authGateClose" onclick="window.hideAuthGate()" hidden data-i18n="authBackToSite">← Saytga qaytish</button>
         <button
           type="button"
           class="auth-gate-lang"
@@ -2123,6 +2125,11 @@
                 data-i18n="goToLoginLink"
                 >Kirish</a
               >
+            </div>
+            <div class="auth-guest" id="authGuestBox">
+              <div class="auth-or"><span data-i18n="authOr">yoki</span></div>
+              <button type="button" class="auth-guest-btn" id="authGuestBtn" onclick="window.playAsGuest()">👤 <span data-i18n="authGuestBtn">Ro'yxatdan o'tmasdan o'ynash</span></button>
+              <p class="auth-guest-hint" data-i18n="authGuestHint">Mehmon sifatida darhol o'ynang. Keyin ro'yxatdan o'tsangiz, o'yinlaringiz saqlanib qoladi.</p>
             </div>
           </form>
 
@@ -2460,6 +2467,7 @@
     <script src="mentor.js"></script>
     <script src="pwa.js"></script>
     <script src="invite.js"></script>
+    <script src="guest.js"></script>
     <script src="share.js"></script>
     <script src="router.js"></script>
     <script src="rating-chart.js"></script>

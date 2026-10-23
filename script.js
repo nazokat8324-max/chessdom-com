@@ -70,6 +70,8 @@ const SERVER_MESSAGE_KEYS = {
   "Havola noto'g'ri yoki eskirgan!": 'srvResetBad',
   "Parol yangilandi! Endi kirishingiz mumkin.": 'srvResetOk',
   "Bu email boshqa akkauntga biriktirilgan!": 'srvEmailTaken',
+  "Bu imkoniyat uchun ro'yxatdan o'ting!": 'srvGuestOnly',
+  "Bu nom band qilingan!": 'srvNameReserved',
   "Turnirga qo'shilish yopilgan!": 'srvSwissClosed',
   "Siz boshqa turnirda ishtirok etyapsiz!": 'srvSwissBusy',
   "Turnir to'la!": 'srvTournamentFull',
@@ -1278,7 +1280,8 @@ window.handleSignupModal = async function() {
     // Email ixtiyoriy — kiritilmasa server talab qilgani uchun username asosida yaratiladi
     const response = await fetch('/api/auth/register', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      // Mehmon ro'yxatdan o'tsa — o'sha akkaunt o'yinlari bilan saqlanadi (server mehmon tokenini taniydi)
+      headers: { 'Content-Type': 'application/json', ...(window.currentUser && window.currentUser.guest && window.authToken ? { Authorization: 'Bearer ' + window.authToken } : {}) },
       body: JSON.stringify({ username, email: signupEmail || username.toLowerCase() + '@justchess.local', password, inviteCode: window.getPendingInviteCode ? window.getPendingInviteCode() : undefined })
     });
     const data = await response.json();

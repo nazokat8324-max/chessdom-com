@@ -761,6 +761,9 @@ async function initDatabase() {
 
   // 🔗 Taklif havolasi: har o'yinchining doimiy kodi (/?invite=<kod>) va kim taklif qilgani (faqat ro'yxatdan o'tishda yoziladi)
   for (const col of ['invite_code', 'invited_by', 'invited_at']) { try { await dbExec(`ALTER TABLE users ADD COLUMN ${col} TEXT DEFAULT NULL`); } catch (e) {} }
+  // 👤 Mehmon (ro'yxatdan o'tmagan) akkauntlar — reytingsiz o'ynaydi, ro'yxatdan o'tsa oddiy akkauntga aylanadi
+  try { await dbExec('ALTER TABLE users ADD COLUMN is_guest INTEGER DEFAULT 0'); } catch (e) {}
+  try { await dbExec('CREATE INDEX IF NOT EXISTS idx_users_guest ON users (is_guest)'); } catch (e) {}
   for (const sql of ['CREATE UNIQUE INDEX IF NOT EXISTS idx_users_invite_code ON users (invite_code)', 'CREATE INDEX IF NOT EXISTS idx_users_invited_by ON users (invited_by)']) { try { await dbExec(sql); } catch (e) {} }
   // ✈️ Telegram bot: o'yinchi ↔ Telegram chat (bir chatga bitta akkaunt)
   await dbExec(`
@@ -920,6 +923,33 @@ async function migrateHistoryToTable() {
 // Akkauntni butunlay o'chirish. users qatori o'chirilganda bog'liq jadvallar (o'yinlar, xabarlar, do'stlar,
 // bildirishnomalar, izohlar...) FK ON DELETE CASCADE / SET NULL orqali tozalanadi. Raqiblarning tarixida
 // o'yinchi nomi anonim yorliq bilan almashtiriladi (bu nomni keyin boshqa odam olishi mumkin).
+// --- 👤 Mehmon akkauntlari ---
+async function markGuest(userId) {
+  await dbRun('UPDATE users SET is_guest = 1 WHERE id = ?', [userId]);
+}
+async function listGuestIds() {
+  return (await dbAll('SELECT id FROM users WHERE is_guest = 1')).map((r) => r.id);
+}
+// Mehmon ro'yxatdan o'tdi: o'sha akkaunt (o'yinlari bilan) oddiy akkauntga aylanadi; raqiblar tarixidagi eski nom ham yangilanadi
+async function claimGuest(userId, { username, email, passwordHash }) {
+  const old = await dbGet('SELECT username FROM users WHERE id = ? AND is_guest = 1', [userId]);
+  if (!old) return null;
+  await dbRun('UPDATE users SET username = ?, email = ?, password_hash = ?, is_guest = 0 WHERE id = ?', [username, email, passwordHash, userId]);
+  const rows = await dbAll('SELECT id, data FROM user_games WHERE opponent = ?', [old.username]);
+  for (const r of rows) {
+    const data = parseJson(r.data) || {};
+    data.opponent = username;
+    await dbRun('UPDATE user_games SET opponent = ?, data = ? WHERE id = ?', [username, JSON.stringify(data), r.id]);
+  }
+  return getUserById(userId);
+}
+// Ro'yxatdan o'tmagan eski mehmonlar o'chiriladi (bog'liq jadvallar FK ON DELETE bilan tozalanadi)
+async function deleteExpiredGuests(cutoffIso) {
+  const rows = await dbAll('SELECT id FROM users WHERE is_guest = 1 AND created_at < ?', [cutoffIso]);
+  for (const r of rows) await dbRun('DELETE FROM users WHERE id = ?', [r.id]);
+  return rows.map((r) => r.id);
+}
+
 async function deleteUserAccount(userId) {
   const user = await dbGet('SELECT id, username FROM users WHERE id = ?', [userId]);
   if (!user) return null;
@@ -1211,7 +1241,7 @@ async function touchUserLastActive(userId) {
 }
 
 async function getLeaderboard() {
-  const rows = await dbAll('SELECT username, rating, ratings_by_mode, stats, stats_by_mode, country, club_country, club_code, avatar_version FROM users ORDER BY rating DESC LIMIT 300');
+  const rows = await dbAll('SELECT username, rating, ratings_by_mode, stats, stats_by_mode, country, club_country, club_code, avatar_version FROM users WHERE COALESCE(is_guest, 0) = 0 ORDER BY rating DESC LIMIT 300');
   return rows.map(u => ({
     username: u.username,
     country: u.country || null,
@@ -1231,7 +1261,7 @@ async function getDailyWinners(period) {
   const span = period === 'week' ? 7 : 1;
   const cutoff = Date.now() - span * 24 * 60 * 60 * 1000;
   const users = await dbAll(`SELECT u.username, u.rating, u.country, u.avatar_version, COUNT(*) as "games", SUM(CASE WHEN g.result = 'win' THEN 1 ELSE 0 END) as "wins"
-    FROM user_games g JOIN users u ON u.id = g.user_id WHERE g.played_at >= ? GROUP BY u.id, u.username, u.rating, u.country, u.avatar_version`, [new Date(cutoff).toISOString()]);
+    FROM user_games g JOIN users u ON u.id = g.user_id WHERE g.played_at >= ? AND COALESCE(u.is_guest, 0) = 0 GROUP BY u.id, u.username, u.rating, u.country, u.avatar_version`, [new Date(cutoff).toISOString()]);
   const winners = users.map(u => {
     const games = Number(u.games) || 0, wins = Number(u.wins) || 0;
     return {
@@ -2433,6 +2463,10 @@ module.exports = {
   getAvatarByUsername,
   getUserByEmail,
   usernameTaken,
+  markGuest,
+  listGuestIds,
+  claimGuest,
+  deleteExpiredGuests,
   updateUserEmail,
   updateUserPassword,
   createPasswordReset,

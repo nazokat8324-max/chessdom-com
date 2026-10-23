@@ -52,6 +52,8 @@
         const rank = window.rankByKey ? window.rankByKey(d.rank) : null;
         return { icon: rank ? rank.icon : '⭐', text: tx('nfRankUp', 'Yangi daraja! {{mode}}: {{rank}} ({{rating}})', { mode: modeName(d.mode), rank: rank ? rank.label : d.rank, rating: d.rating }), go: () => window.openProfileModal && window.openProfileModal() };
       }
+      case 'game_of_day':
+        return { icon: '🌟', text: tx('gdNotif', "{{opponent}} bilan o'yiningiz Kun o'yini bo'ldi!", { opponent: d.opponent || '' }), go: () => window.switchView && window.switchView('live') };
       case 'caravan_city': {
         const city = window.Caravan ? window.Caravan.cityName(d.city, window.currentLang || 'en') : d.city;
         return { icon: '🐪', text: tx('cvArrived', '🐪 Karvoningiz {{city}}ga yetib keldi!', { city }).replace(/^🐪\s*/, ''), go: () => window.switchView && window.switchView('caravan') };

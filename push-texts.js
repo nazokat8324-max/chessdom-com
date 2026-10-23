@@ -20,6 +20,7 @@ const T = {
   student_game: L("Shogirdingiz {{student}} o'ynadi — izoh qoldiring", 'Your student {{student}} played — leave a note', 'Ваш ученик {{student}} сыграл — прокомментируйте', 'Tu alumno {{student}} jugó: deja una nota', 'Dein Schüler {{student}} hat gespielt — schreib eine Notiz', 'Votre élève {{student}} a joué — laissez une note'),
   prediction_won: L("Bashoratingiz to'g'ri chiqdi! +{{points}} 🔮", 'Your prediction was right! +{{points}} 🔮', 'Прогноз сбылся! +{{points}} 🔮', '¡Acertaste! +{{points}} 🔮', 'Richtig getippt! +{{points}} 🔮', 'Bon pronostic ! +{{points}} 🔮'),
   achievement: L('Yangi yutuq! 🏅', 'New achievement! 🏅', 'Новое достижение! 🏅', '¡Nuevo logro! 🏅', 'Neuer Erfolg! 🏅', 'Nouveau succès ! 🏅'),
+  game_of_day: L("🌟 {{opponent}} bilan o'yiningiz Kun o'yini bo'ldi!", '🌟 Your game against {{opponent}} is the Game of the Day!', '🌟 Ваша партия с {{opponent}} — партия дня!', '🌟 ¡Tu partida contra {{opponent}} es la partida del día!', '🌟 Deine Partie gegen {{opponent}} ist die Partie des Tages!', '🌟 Votre partie contre {{opponent}} est la partie du jour !'),
   caravan_city: L("🐪 Karvoningiz {{city}}ga yetib keldi!", '🐪 Your caravan has reached {{city}}!', '🐪 Ваш караван прибыл в {{city}}!', '🐪 ¡Tu caravana ha llegado a {{city}}!', '🐪 Deine Karawane hat {{city}} erreicht!', '🐪 Votre caravane est arrivée à {{city}} !'),
   rank_up: L('Yangi daraja! Reytingingiz {{rating}} ⭐', 'New rank! Your rating is {{rating}} ⭐', 'Новый уровень! Рейтинг {{rating}} ⭐', '¡Nuevo rango! Tu rating es {{rating}} ⭐', 'Neuer Rang! Deine Wertung: {{rating}} ⭐', 'Nouveau rang ! Classement {{rating}} ⭐'),
   invite_joined: L("{{from}} taklifingiz bilan ChessCaravan'ga qo'shildi 🎉", '{{from}} joined ChessCaravan with your invite 🎉', '{{from}} присоединился к ChessCaravan по вашему приглашению 🎉', '{{from}} se unió a ChessCaravan con tu invitación 🎉', '{{from}} ist ChessCaravan über deine Einladung beigetreten 🎉', '{{from}} a rejoint ChessCaravan grâce à votre invitation 🎉'),
@@ -60,6 +61,7 @@ function pushMessage(type, data, lang, ownName) {
     case 'mentor_note': url = '/tarix?u=' + encodeURIComponent(d.owner || ''); break;
     case 'student_game': url = '/tarix?u=' + encodeURIComponent(d.student || ''); break;
     case 'prediction_won': url = '/jonli'; break;
+    case 'game_of_day': url = '/jonli'; break;
     case 'caravan_city': url = '/karvon'; vars = { ...d, city: Caravan.cityName(d.city, l) }; break;
     case 'server_error': url = '/admin'; break;
   }

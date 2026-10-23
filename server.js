@@ -866,6 +866,50 @@ async function cleanupGuests(cutoffIso) {
   } catch (err) { console.error('Mehmonlarni tozalash xatoligi:', err); return []; }
 }
 
+// --- ⭐ Kun o'yini: kechagi (Toshkent vaqti) eng qiziqarli o'yin; kun davomida o'zgarmaydi (game_of_day jadvali) ---
+const GOD_REASON = { checkmate: 40, stalemate: 25, resign: 20, timeout: 12, agreement: 10, threefold: 10, fifty: 8, insufficient: 8, abandon: -100 };
+// Baho: uzunlik (120 yarim yurishgacha) + tugash sababi + o'yinchilar kuchi + Chess960 qiziqarliligi
+function godScore(c) {
+  return Math.min(Number(c.moveCount) || 0, 120) + (GOD_REASON[c.reason] || 0)
+    + Math.round(((Number(c.rating) || 1500) + (Number(c.oppRating) || 1500)) / 100) + (c.variant === 'chess960' ? 8 : 0);
+}
+function tashkentDayStart(t) {
+  const d = new Date((t || Date.now()) + WAR_TZ_MS);
+  return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - WAR_TZ_MS;
+}
+const dayKeyOf = (startMs) => new Date(startMs + WAR_TZ_MS).toISOString().slice(0, 10);
+async function pickGameOfDay(now) {
+  const start = tashkentDayStart(now);
+  const day = dayKeyOf(start);
+  let row = await db.getGameOfDay(day);
+  if (!row) {
+    const recent = new Set(await db.recentGameOfDayIds(dayKeyOf(start - 30 * 864e5)));
+    const pick = async (days) => (await db.gameOfDayCandidates(new Date(start - days * 864e5).toISOString(), new Date(start).toISOString())).filter((c) => !recent.has(c.id));
+    let list = await pick(1);
+    if (!list.length) list = await pick(7);
+    if (!list.length) return null;
+    list.sort((a, b) => godScore(b) - godScore(a));
+    const best = list[0];
+    await db.setGameOfDay(day, best.userId, best.id, godScore(best));
+    row = await db.getGameOfDay(day);
+    if (row && row.gameId === best.id) {
+      notify(best.userId, 'game_of_day', { day, opponent: best.opponent });
+      notify(best.oppId, 'game_of_day', { day, opponent: best.username });
+    }
+  }
+  if (!row) return null;
+  const white = await db.getUserById(row.userId);
+  const g = white && await db.getUserGameById(row.userId, row.gameId);
+  if (!g) return null;
+  const black = await db.getUserByUsername(g.opponent);
+  const side = (u, name) => ({ name: u ? u.username : name, rating: u ? u.rating || 1500 : null, country: u ? u.country || null : null });
+  return {
+    day, id: g.id, white: side(white), black: side(black, g.opponent),
+    result: g.result === 'win' ? '1-0' : g.result === 'loss' ? '0-1' : '1/2-1/2', reason: g.reason || null,
+    variant: g.variant || 'standard', startFen: g.startFen || null, clock: g.clock || null, playedAt: g.timestamp || null, moves: g.moves || []
+  };
+}
+
 async function closeWarSeasons() {
   try {
     const prev = warPrevSeason(warSeasonKey());
@@ -2315,6 +2359,16 @@ async function start() {
   });
 
   // --- Profil qo'shimchalari: yutuqlar, kuzatuvchilar, kengaytirilgan statistika ---
+  // ⭐ Kun o'yini (Jonli o'yinlar sahifasida) — kesh 60 s, kun almashganda yangi kalit
+  app.get('/api/game-of-day', apiLimiter, async (req, res) => {
+    try {
+      const day = dayKeyOf(tashkentDayStart());
+      res.json({ success: true, game: await cached('god:' + day, 60000, () => pickGameOfDay()) });
+    } catch (err) { console.error("Kun o'yini xatoligi:", err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  // Test uchun: berilgan vaqtdagi kunning o'yini (keshsiz)
+  if (TEST_MODE) app.get('/api/test/game-of-day', async (req, res) => res.json({ success: true, game: await pickGameOfDay(Number(req.query.now) || Date.now()) }));
+
   // 🐪 Karvon yo'li: eng uzoqqa yurgan karvonlar (mehmonlarsiz) va har shahardagi karvonlar soni
   app.get('/api/caravan', apiLimiter, async (req, res) => {
     try {

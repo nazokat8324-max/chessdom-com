@@ -699,6 +699,16 @@ async function initDatabase() {
       data TEXT NOT NULL
     )
   `);
+  // ⭐ Kun o'yini: har kun (Toshkent vaqti) uchun tanlangan o'yin — oq o'yinchining user_games yozuvi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS game_of_day (
+      day TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      game_id TEXT NOT NULL,
+      score INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL
+    )
+  `);
   // Ko'chirishdan oldingi asl JSON (xavfsizlik uchun; oddiy so'rovlarda o'qilmaydi, keyinchalik o'chirsa bo'ladi)
   await dbExec(`
     CREATE TABLE IF NOT EXISTS user_history_archive (
@@ -874,6 +884,25 @@ async function getUserHistory(userId, opts) {
   const rows = await dbAll(`SELECT ${cols} FROM user_games WHERE ${where.join(' AND ')} ORDER BY played_at ASC, seq ASC`, params);
   return rows.map(r => rowToGame(r, o.withMoves));
 }
+// --- ⭐ Kun o'yini ---
+// Nomzodlar: oq o'yinchi yozuvi (har o'yin bir marta), kamida 20 yarim yurish, ikkala o'yinchi ham mehmon emas
+async function gameOfDayCandidates(fromIso, toIso) {
+  return dbAll(`SELECT g.id, g.user_id as "userId", g.result, g.opponent, g.reason, g.variant, g.move_count as "moveCount",
+      u.username, u.rating, o.id as "oppId", o.rating as "oppRating"
+    FROM user_games g JOIN users u ON u.id = g.user_id JOIN users o ON o.username = g.opponent
+    WHERE g.color = 'w' AND g.played_at >= ? AND g.played_at < ? AND g.move_count >= 20
+      AND COALESCE(u.is_guest, 0) = 0 AND COALESCE(o.is_guest, 0) = 0`, [fromIso, toIso]);
+}
+async function getGameOfDay(day) {
+  return dbGet('SELECT day, user_id as "userId", game_id as "gameId" FROM game_of_day WHERE day = ?', [day]);
+}
+async function recentGameOfDayIds(sinceDay) {
+  return (await dbAll('SELECT game_id as "gameId" FROM game_of_day WHERE day >= ?', [sinceDay])).map((r) => r.gameId);
+}
+async function setGameOfDay(day, userId, gameId, score) {
+  await dbRun('INSERT INTO game_of_day (day, user_id, game_id, score, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (day) DO NOTHING', [day, userId, gameId, score, new Date().toISOString()]);
+}
+
 async function getUserGameById(userId, gameId) {
   const row = await dbGet(`SELECT ${USER_GAME_COLS} FROM user_games WHERE user_id = ? AND id = ?`, [userId, gameId]);
   return row ? rowToGame(row, true) : null;
@@ -2471,6 +2500,10 @@ module.exports = {
   usernameTaken,
   markGuest,
   listGuestIds,
+  gameOfDayCandidates,
+  getGameOfDay,
+  recentGameOfDayIds,
+  setGameOfDay,
   caravanRows,
   claimGuest,
   deleteExpiredGuests,

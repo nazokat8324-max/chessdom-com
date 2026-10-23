@@ -2839,6 +2839,11 @@ const translationsExtra = {
     clOpenTable: "Jadvalni ochish",
     clAllLeagues: "Ligalar sahifasi",
     clInviteFriends: "🔗 Do'stlarni taklif qilish",
+    gdTitle: "Kun o'yini",
+    gdMoves: "{{n}} yurish",
+    gdReplay: "Qayta ko'rish",
+    gdHint: "Har kuni kechagi eng qiziqarli o'yin tanlanadi — keyingisi sizniki bo'lishi mumkin!",
+    gdNotif: "{{opponent}} bilan o'yiningiz Kun o'yini bo'ldi!",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -4213,6 +4218,11 @@ const translationsExtra = {
     clOpenTable: "Open the table",
     clAllLeagues: "Leagues page",
     clInviteFriends: "🔗 Invite friends",
+    gdTitle: "Game of the Day",
+    gdMoves: "{{n}} moves",
+    gdReplay: "Replay",
+    gdHint: "Every day we pick yesterday's most exciting game — the next one could be yours!",
+    gdNotif: "Your game against {{opponent}} is the Game of the Day!",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -5587,6 +5597,11 @@ const translationsExtra = {
     clOpenTable: "Открыть таблицу",
     clAllLeagues: "Страница лиг",
     clInviteFriends: "🔗 Пригласить друзей",
+    gdTitle: "Партия дня",
+    gdMoves: "ходов: {{n}}",
+    gdReplay: "Смотреть",
+    gdHint: "Каждый день выбирается самая интересная партия вчерашнего дня — следующей может стать ваша!",
+    gdNotif: "Ваша партия с {{opponent}} — партия дня!",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -6961,6 +6976,11 @@ const translationsExtra = {
     clOpenTable: "Ver la tabla",
     clAllLeagues: "Página de ligas",
     clInviteFriends: "🔗 Invitar amigos",
+    gdTitle: "Partida del día",
+    gdMoves: "{{n}} jugadas",
+    gdReplay: "Ver partida",
+    gdHint: "Cada día elegimos la partida más emocionante de ayer: ¡la próxima puede ser la tuya!",
+    gdNotif: "¡Tu partida contra {{opponent}} es la partida del día!",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -8335,6 +8355,11 @@ const translationsExtra = {
     clOpenTable: "Tabelle öffnen",
     clAllLeagues: "Ligaseite",
     clInviteFriends: "🔗 Freunde einladen",
+    gdTitle: "Partie des Tages",
+    gdMoves: "{{n}} Züge",
+    gdReplay: "Nachspielen",
+    gdHint: "Jeden Tag wählen wir die spannendste Partie von gestern — die nächste könnte deine sein!",
+    gdNotif: "Deine Partie gegen {{opponent}} ist die Partie des Tages!",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -9709,6 +9734,11 @@ const translationsExtra = {
     clOpenTable: "Voir le classement",
     clAllLeagues: "Page des ligues",
     clInviteFriends: "🔗 Inviter des amis",
+    gdTitle: "Partie du jour",
+    gdMoves: "{{n}} coups",
+    gdReplay: "Revoir",
+    gdHint: "Chaque jour, nous choisissons la partie la plus passionnante d'hier — la prochaine pourrait être la vôtre !",
+    gdNotif: "Votre partie contre {{opponent}} est la partie du jour !",
     searchNoResults: "Aucun résultat"
   }
 };

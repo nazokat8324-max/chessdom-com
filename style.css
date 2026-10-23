@@ -15525,3 +15525,37 @@ body.auth-locked {
   .cl-cta { flex-direction: column; align-items: stretch; }
   .club-chat-container.cl-chat { height: 60vh; }
 }
+
+/* ===== ⭐ Kun o'yini (gameday.js, Jonli o'yinlar sahifasi tepasida) ===== */
+.gd-wrap { margin-bottom: 16px; }
+.gd-wrap[hidden] { display: none; }
+.gd-card { display: flex; gap: 20px; align-items: center; padding: 16px; border-radius: 18px; border: 1px solid rgba(217, 167, 60, 0.35);
+  background: radial-gradient(circle at 0% 0%, rgba(217, 167, 60, 0.14), transparent 55%), var(--cd-surface, #111c1f); }
+.gd-board { flex-shrink: 0; display: grid; grid-template-columns: repeat(8, 1fr); width: 176px; height: 176px; border-radius: 10px; overflow: hidden; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4); }
+.gd-board i { position: relative; display: block; }
+.gd-board i.l { background: var(--board-light, #e3f1f1); }
+.gd-board i.d { background: var(--board-dark, #4f9ea4); }
+.gd-board i.lm::after { content: ''; position: absolute; inset: 0; background: rgba(255, 214, 70, 0.45); }
+.gd-board img { position: relative; z-index: 1; width: 100%; height: 100%; display: block; }
+.gd-info { flex: 1; min-width: 0; }
+.gd-kicker { color: #f0c869; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
+.gd-kicker span { margin-left: 6px; color: #8a9a95; font-weight: 600; text-transform: none; letter-spacing: 0; }
+.gd-players { display: flex; flex-direction: column; gap: 4px; margin: 10px 0 6px; }
+.gd-player { display: flex; align-items: center; gap: 6px; color: #d9e4de; font-size: 15px; min-width: 0; }
+.gd-player b { color: #fff; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gd-player small { color: #8a9a95; }
+.gd-player.won b { color: #f0c869; }
+.gd-player .king-ic { width: 20px; height: 20px; }
+.gd-flag { width: 18px; border-radius: 2px; }
+.gd-crown { font-size: 14px; }
+.gd-result { align-self: flex-start; margin-left: 26px; padding: 1px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.07); color: #fff; font-weight: 800; font-size: 13px; }
+.gd-detail { color: #a9b6b0; font-size: 13px; }
+.gd-opening { margin-top: 3px; color: #c9bb98; font-size: 13px; }
+.gd-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.gd-btn { padding: 9px 14px; border-radius: 10px; border: none; background: var(--accent); color: #fff; font: inherit; font-weight: 800; font-size: 13px; cursor: pointer; }
+.gd-btn.ghost { background: transparent; border: 1px solid var(--cd-border-strong, #223439); color: #d9e4de; }
+.gd-hint { margin: 10px 0 0; color: #7f8f8a; font-size: 12px; }
+@media (max-width: 600px) {
+  .gd-card { flex-direction: column; align-items: stretch; gap: 14px; }
+  .gd-board { width: 100%; height: auto; aspect-ratio: 1; max-width: 320px; margin: 0 auto; }
+}

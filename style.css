@@ -15408,8 +15408,6 @@ body.auth-locked {
 .cv-empty { margin: 0; color: #8a9a95; }
 .cv-chip { margin-top: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(217, 167, 60, 0.35); background: rgba(217, 167, 60, 0.1); color: #f0c869; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .profile-caravan[hidden] { display: none; }
-.hw-cv-bar { display: block; height: 5px; margin-top: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
-.hw-cv-bar i { display: block; height: 100%; background: linear-gradient(90deg, #d9a73c, var(--accent)); }
 @media (max-width: 900px) {
   .cv-hero { grid-template-columns: 1fr; padding: 20px; }
   .cv-hero h1 { font-size: 26px; }

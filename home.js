@@ -27,9 +27,7 @@
       window.TOURNAMENTS_ENABLED ? getJson('/api/swiss', true) : null,
       getJson('/api/leagues/my-games', true),
       getJson('/api/messages/unread', true),
-      getJson('/api/games/live', false),
-      // Karvon kartasi uchun statistika serverdan yangilansin (boshqa qurilmada o'ynalgan bo'lishi mumkin)
-      typeof window.refreshCurrentUserRatings === 'function' ? window.refreshCurrentUserRatings() : null
+      getJson('/api/games/live', false)
     ]);
     if (ov && ov.success) {
       st.offset = new Date(ov.serverNow).getTime() - Date.now();
@@ -91,23 +89,11 @@
     </button>`;
   }
 
-  // 🐪 Karvon yo'li: hozirgi shahar va keyingisigacha qadamlar
-  function caravanCard() {
-    if (!window.Caravan || !window.currentUser) return '';
-    const pr = window.Caravan.progress(window.Caravan.pointsOf(window.currentUser.stats));
-    const city = (k) => window.Caravan.cityName(k, window.currentLang || 'en');
-    return `<button class="hw-card hw-mini hw-caravan" data-go="caravan">
-      <span class="hw-icon">${pr.city.icon}</span>
-      <span class="hw-text"><b>🐪 ${esc(tx('cvTitle', "Karvon yo'li"))}: ${esc(city(pr.city.key))}</b><small>${esc(pr.next ? tx('cvToNext', '{{city}}gacha {{n}} qadam qoldi', { city: city(pr.next.key), n: pr.left }) : tx('cvFinished', "Siz Ipak yo'lining oxiriga yetdingiz! 🎉"))}</small>
-      <span class="hw-cv-bar"><i style="width:${pr.pct}%"></i></span></span>
-    </button>`;
-  }
-
   function render() {
     const el = document.getElementById('homeWidgets');
     if (!el) return;
     if (!window.currentUser) { el.innerHTML = ''; return; }
-    el.innerHTML = tournamentCard() + caravanCard() + leagueCard() + messagesCard() + liveCard();
+    el.innerHTML = tournamentCard() + leagueCard() + messagesCard() + liveCard();
     el.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', (e) => {
       if (e.target.closest('[data-join]')) return;
       e.stopPropagation();

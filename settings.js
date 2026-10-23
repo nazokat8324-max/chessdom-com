@@ -3,7 +3,7 @@
 // localStorage: justChessSettings; serverda: davlat (users.country) va maxfiylik (users.privacy).
 (function () {
   const DEFAULTS = {
-    country: 'uz', language: 'en', soundEnabled: true, volume: 0.8,
+    country: 'uz', language: 'en', soundEnabled: true, volume: 0.8, soundPack: 'wood',
     siteTheme: 'turquoise', boardStyle: 'auto', showCoords: true, pieceSet: 'karvon',
     showHints: true, showLastMove: true, autoQueen: false, confirmResign: true,
     quickClock: [300, 0], quickRated: true, vibration: true
@@ -11,6 +11,8 @@
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français']];
   const THEMES = [['turquoise', 'themeTurquoise', 'Firuza'], ['ocean', 'themeOcean', 'Okean'], ['amethyst', 'themeAmethyst', 'Ametist'], ['sunset', 'themeSunset', 'Shafaq'], ['jade', 'themeJade', 'Zumrad'], ['ruby', 'themeRuby', 'Yoqut'], ['rose', 'themeRose', 'Atirgul'], ['gold', 'themeGold', 'Oltin'], ['lapis', 'themeLapis', 'Lojuvard'], ['graphite', 'themeGraphite', 'Grafit']];
+  // Ovoz to'plamlari (sound.js SOUND_PACKS, tools/make-sounds.js)
+  const SOUND_PACKS = [['wood', 'soundWood', "Yog'och", '🌳'], ['teahouse', 'soundTeahouse', "Choyxona", '🍵'], ['marble', 'soundMarble', "Marmar", '🏛️'], ['doira', 'soundDoira', "Doira", '🥁'], ['retro', 'soundRetro', "Retro", '👾'], ['soft', 'soundSoft', "Yumshoq", '🤫']];
   // Taxta ko'rinishlari: 'auto' — sayt mavzusiga mos; qolganlari style.css :root[data-board] (script.js BOARD_STYLES)
   const BOARDS = [['auto', 'boardAuto', 'Mavzuga mos'], ['marble', 'boardMarble', "Marmar"], ['wood', 'boardWood', "Yog'och"], ['tournament', 'boardTournament', "Turnir"], ['rishton', 'boardRishton', "Rishton"], ['atlas', 'boardAtlas', "Atlas"], ['teahouse', 'boardTeahouse', "Choyxona"], ['desert', 'boardDesert', "Cho'l"], ['night', 'boardNight', "Tun"], ['paper', 'boardPaper', "Qog'oz"], ['ice', 'boardIce', "Muz"]];
   // Faqat erkin litsenziyali to'plamlar (board.js PIECE_SETS); mualliflari /mualliflar sahifasida
@@ -34,6 +36,7 @@
     // Olib tashlangan mavzu (masalan, eski "emerald") — standart Firuza
     if (!THEMES.some(t => t[0] === merged.siteTheme)) merged.siteTheme = DEFAULTS.siteTheme;
     if (!BOARDS.some(b => b[0] === merged.boardStyle)) merged.boardStyle = DEFAULTS.boardStyle;
+    if (!SOUND_PACKS.some(p => p[0] === merged.soundPack)) merged.soundPack = DEFAULTS.soundPack;
     return merged;
   };
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -48,6 +51,7 @@
     if (typeof window.applyCoords === 'function') window.applyCoords(s.showCoords !== false);
     if (typeof window.applySoundToggle === 'function') window.applySoundToggle(s.soundEnabled !== false);
     if (typeof window.setSoundVolume === 'function') window.setSoundVolume(typeof s.volume === 'number' ? s.volume : 0.8);
+    if (typeof window.applySoundPack === 'function') window.applySoundPack(s.soundPack);
     if (typeof window.applyPieceSet === 'function') window.applyPieceSet(s.pieceSet);
     if (typeof window.applyBoardPrefs === 'function') window.applyBoardPrefs({ showHints: s.showHints, showLastMove: s.showLastMove, autoQueen: s.autoQueen, confirmResign: s.confirmResign });
   }
@@ -189,6 +193,10 @@
     return `
       <div class="set-card">
         ${toggle('soundEnabled', tx('setSound', 'Ovoz'), tx('setSoundHint', "Yurish, olish, shax va o'yin yakuni ovozlari"))}
+        <div class="set-row set-packs-row${d.soundEnabled ? '' : ' disabled'}">
+          <div><b>${esc(tx('setSoundPack', "Ovoz to'plami"))}</b><small>${esc(tx('setSoundPackHint', "Bosing — eshitib ko'ring"))}</small></div>
+          <div class="set-packs">${SOUND_PACKS.map(([id, key, fb, ic]) => `<button type="button" class="set-pack${d.soundPack === id ? ' active' : ''}" data-sound-pack="${id}"><span>${ic}</span>${esc(tx(key, fb))}</button>`).join('')}</div>
+        </div>
         <div class="set-row set-volume${d.soundEnabled ? '' : ' disabled'}">
           <span><b>${esc(tx('setVolume', 'Ovoz balandligi'))}</b></span>
           <div class="set-range"><input type="range" id="setVolume" min="0" max="100" value="${Math.round(d.volume * 100)}"><output id="setVolumeVal">${Math.round(d.volume * 100)}%</output></div>
@@ -376,6 +384,10 @@
       window.settingsDirty = isDirty();
       el.querySelector('.set-bar').classList.toggle('show', isDirty());
     });
+    el.querySelectorAll('[data-sound-pack]').forEach(b => b.addEventListener('click', () => {
+      change({ soundPack: b.dataset.soundPack });
+      if (typeof playSound === 'function') { playSound('move'); setTimeout(() => playSound('capture'), 380); setTimeout(() => playSound('check'), 800); }
+    }));
     el.querySelectorAll('[data-test-sound]').forEach(b => b.addEventListener('click', () => { if (typeof playSound === 'function') playSound('move'); setTimeout(() => typeof playSound === 'function' && playSound('capture'), 350); }));
     el.querySelectorAll('[data-notif]').forEach(b => b.addEventListener('click', async () => { try { await Notification.requestPermission(); } catch (e) {} render(); }));
     el.querySelectorAll('[data-privacy]').forEach(b => b.addEventListener('click', () => {

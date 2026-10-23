@@ -1,11 +1,21 @@
 // Ovozlar saytning o'zida: tools/make-sounds.js bilan sintez qilingan (mualliflik huquqi loyihaniki).
 // 2026-10-22 gacha lichess.org "standard" ovozlari ishlatilardi — ular lichess litsenziyasida "non-free".
-const sounds = {
-  move: new Howl({ src: ['assets/sounds/move.wav'] }),
-  capture: new Howl({ src: ['assets/sounds/capture.wav'] }),
-  check: new Howl({ src: ['assets/sounds/check.wav'] }),
-  gameEnd: new Howl({ src: ['assets/sounds/game-end.wav'] })
-};
+// To'plamlar: assets/sounds/<to'plam>/ (tools/make-sounds.js PACKS bilan bir xil); standart — yog'och
+window.SOUND_PACKS = ['wood', 'teahouse', 'marble', 'doira', 'retro', 'soft'];
+const SOUND_FILES = { move: 'move', capture: 'capture', check: 'check', gameEnd: 'game-end' };
+const sounds = {};
+window.currentSoundPack = null;
+function loadSoundPack(pack) {
+  const name = window.SOUND_PACKS.includes(pack) ? pack : 'wood';
+  if (name === window.currentSoundPack) return name;
+  for (const [key, file] of Object.entries(SOUND_FILES)) {
+    if (sounds[key]) sounds[key].unload();
+    sounds[key] = new Howl({ src: ['assets/sounds/' + name + '/' + file + '.wav'] });
+  }
+  window.currentSoundPack = name;
+  return name;
+}
+window.applySoundPack = loadSoundPack;
 
 function playSound(type) {
   if (Howler.ctx && Howler.ctx.state === 'suspended') {
@@ -32,6 +42,7 @@ window.setSoundVolume = function(volume) {
 window.applySavedSound = function() {
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem('justChessSettings') || '{}'); } catch (e) {}
+  loadSoundPack(saved.soundPack);
   window.applySoundToggle(saved.soundEnabled !== false);
   window.setSoundVolume(typeof saved.volume === 'number' ? saved.volume : 0.8);
 };

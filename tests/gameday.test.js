@@ -21,7 +21,10 @@ test("Kun o'yini: uzun o'yin tanlanadi va o'zgarmaydi, ikkala o'yinchiga bildiri
   closeAll(a, b);
 
   assert.equal((await srv.api(null, '/api/game-of-day')).game, null, "bugungi o'yinlar ertaga tanlanadi");
-  const tomorrow = Date.now() + 86400000;
+  // Ertangi Toshkent kunining 02:00 si (yarim tunga yaqin ishga tushganda ham kun chegarasidan o'tib ketmasin)
+  const tz = 5 * 3600000;
+  const local = new Date(Date.now() + tz);
+  const tomorrow = Date.UTC(local.getUTCFullYear(), local.getUTCMonth(), local.getUTCDate() + 1) - tz + 2 * 3600000;
   const r = await srv.api(null, '/api/test/game-of-day?now=' + tomorrow);
   const g = r.game;
   assert.ok(g, JSON.stringify(r));

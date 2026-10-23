@@ -15636,3 +15636,24 @@ body.auth-locked {
 .bd-sw { display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); width: 40px; height: 40px; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); }
 .bd-sw i.l { background-color: var(--bd-light, var(--board-light)); background-image: var(--bd-light-img, none); background-size: 100% 100%; }
 .bd-sw i.d { background-color: var(--bd-dark, var(--board-dark)); background-image: var(--bd-dark-img, none); background-size: 100% 100%; }
+
+/* ===== 🔊 Ovoz to'plamlari (Sozlamalar → Ovoz) ===== */
+.set-packs-row { flex-wrap: wrap; align-items: flex-start; }
+.set-packs-row > div:first-child { min-width: 160px; }
+.set-packs-row small { display: block; color: #8a9a95; font-size: 12px; margin-top: 2px; }
+.set-packs-row.disabled { opacity: 0.5; pointer-events: none; }
+.set-packs { flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; min-width: 240px; }
+.set-pack { display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 12px; border: 1px solid var(--cd-border-strong); background: rgba(255, 255, 255, 0.02); color: #d9e4de; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.set-pack span { font-size: 18px; }
+.set-pack.active { color: #fff; border-color: var(--accent); background: rgba(var(--accent-rgb), 0.16); }
+@media (max-width: 600px) {
+  .set-packs-row { flex-direction: column; align-items: stretch; gap: 10px; }
+  .set-packs { grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; width: 100%; }
+}
+
+/* Ovoz balandligi qatori telefonda kartani kengaytirmasin (input range ning standart minimal kengligi) */
+.set-range, .set-range input { min-width: 0; }
+@media (max-width: 600px) {
+  .set-volume { flex-wrap: wrap; }
+  .set-volume .set-range { flex: 1 1 100%; order: 3; }
+}

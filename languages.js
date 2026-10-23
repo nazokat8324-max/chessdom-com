@@ -2856,6 +2856,14 @@ const translationsExtra = {
     boardPaper: "Qog'oz",
     boardIce: "Muz",
     setBoardTitle: "Taxta",
+    setSoundPack: "Ovoz to'plami",
+    setSoundPackHint: "Bosing — eshitib ko'ring",
+    soundWood: "Yog'och",
+    soundTeahouse: "Choyxona",
+    soundMarble: "Marmar",
+    soundDoira: "Doira",
+    soundRetro: "Retro",
+    soundSoft: "Yumshoq",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -4247,6 +4255,14 @@ const translationsExtra = {
     boardPaper: "Paper",
     boardIce: "Ice",
     setBoardTitle: "Board",
+    setSoundPack: "Sound set",
+    setSoundPackHint: "Tap to hear it",
+    soundWood: "Wood",
+    soundTeahouse: "Teahouse",
+    soundMarble: "Marble",
+    soundDoira: "Doira drum",
+    soundRetro: "Retro",
+    soundSoft: "Soft",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -5638,6 +5654,14 @@ const translationsExtra = {
     boardPaper: "Бумага",
     boardIce: "Лёд",
     setBoardTitle: "Доска",
+    setSoundPack: "Набор звуков",
+    setSoundPackHint: "Нажмите, чтобы послушать",
+    soundWood: "Дерево",
+    soundTeahouse: "Чайхана",
+    soundMarble: "Мрамор",
+    soundDoira: "Дойра",
+    soundRetro: "Ретро",
+    soundSoft: "Мягкий",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -7029,6 +7053,14 @@ const translationsExtra = {
     boardPaper: "Papel",
     boardIce: "Hielo",
     setBoardTitle: "Tablero",
+    setSoundPack: "Juego de sonidos",
+    setSoundPackHint: "Toca para escucharlo",
+    soundWood: "Madera",
+    soundTeahouse: "Casa de té",
+    soundMarble: "Mármol",
+    soundDoira: "Doira",
+    soundRetro: "Retro",
+    soundSoft: "Suave",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -8420,6 +8452,14 @@ const translationsExtra = {
     boardPaper: "Papier",
     boardIce: "Eis",
     setBoardTitle: "Brett",
+    setSoundPack: "Soundpaket",
+    setSoundPackHint: "Tippen zum Anhören",
+    soundWood: "Holz",
+    soundTeahouse: "Teehaus",
+    soundMarble: "Marmor",
+    soundDoira: "Doira-Trommel",
+    soundRetro: "Retro",
+    soundSoft: "Sanft",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -9811,6 +9851,14 @@ const translationsExtra = {
     boardPaper: "Papier",
     boardIce: "Glace",
     setBoardTitle: "Échiquier",
+    setSoundPack: "Jeu de sons",
+    setSoundPackHint: "Touchez pour écouter",
+    soundWood: "Bois",
+    soundTeahouse: "Maison de thé",
+    soundMarble: "Marbre",
+    soundDoira: "Doira",
+    soundRetro: "Rétro",
+    soundSoft: "Doux",
     searchNoResults: "Aucun résultat"
   }
 };

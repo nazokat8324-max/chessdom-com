@@ -60,7 +60,13 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
   for (const f of files.concat(['index.html', 'style.css'])) {
     assert.ok(!fs.readFileSync(path.join(root, f), 'utf8').includes('lichess1.org'), f + " lichess serveridan resurs olmasin");
   }
-  for (const s of ['move', 'capture', 'check', 'game-end']) assert.equal((await get('/assets/sounds/' + s + '.wav')).status, 200, s);
+  // Ovoz to'plamlari: tools/make-sounds.js PACKS = sound.js SOUND_PACKS = settings.js SOUND_PACKS; har birida 4 ta ovoz
+  const { execFileSync: run } = require('child_process');
+  const packs = JSON.parse(run(process.execPath, ['-e', 'process.stdout.write(JSON.stringify(require(process.argv[1]).PACKS))', path.join(root, 'tools/make-sounds.js')]).toString());
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'sound.js'), 'utf8').match(/window\.SOUND_PACKS = (\[[^\]]*\])/)[1].replace(/'/g, '"')), packs, 'sound.js');
+  assert.deepEqual([...fs.readFileSync(path.join(root, 'settings.js'), 'utf8').match(/const SOUND_PACKS = \[(.*)\];/)[1].matchAll(/\['(\w+)'/g)].map((m) => m[1]), packs, 'settings.js');
+  assert.equal(packs[0], 'wood');
+  for (const pk of packs) for (const s of ['move', 'capture', 'check', 'game-end']) assert.equal((await get('/assets/sounds/' + pk + '/' + s + '.wav')).status, 200, pk + '/' + s);
   global.window = {};
   require(path.join(root, 'legal-content.js'));
   const credits = JSON.stringify(window.LEGAL_CREDITS);

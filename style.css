@@ -15413,3 +15413,115 @@ body.auth-locked {
   .cv-hero h1 { font-size: 26px; }
   .cv-grid { grid-template-columns: 1fr; }
 }
+
+/* ===== 🛡️ Klublar: yangi ko'rinish (clubs.js) ===== */
+.cl-list { display: block; }
+.cl-mine { display: flex; align-items: center; gap: 14px; width: 100%; margin: 0 0 18px; padding: 14px 16px; border-radius: 16px; border: 1px solid rgba(var(--accent-rgb), 0.4);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.04)); color: #fff; font: inherit; text-align: left; cursor: pointer; box-sizing: border-box; }
+.cl-mine img { width: 64px; height: 42px; object-fit: cover; border-radius: 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35); }
+.cl-mine div { flex: 1; min-width: 0; }
+.cl-mine small { display: block; color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; }
+.cl-mine b { display: block; font-size: 17px; }
+.cl-mine span { color: #a9b6b0; font-size: 13px; }
+.cl-mine-go { font-size: 22px; color: var(--accent) !important; }
+.cl-mine.none { cursor: default; border-style: dashed; }
+.cl-mine.none p { margin: 3px 0 0; color: #a9b6b0; font-size: 13px; line-height: 1.45; }
+.cl-mine-ico { font-size: 30px; }
+.cl-section { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin: 6px 2px 10px; }
+.cl-section h3 { margin: 0; font-size: 15px; color: #fff; }
+.cl-section span { color: #7f8f8a; font-size: 12px; }
+.cl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 22px; }
+.cl-grid.small { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 8px; }
+.cl-tile { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 8px 12px; border-radius: 14px; border: 1px solid var(--cd-border-strong, #223439);
+  background: var(--cd-surface, #111c1f); color: #fff; font: inherit; cursor: pointer; transition: transform 0.12s, border-color 0.12s, background 0.12s; }
+.cl-tile:hover { transform: translateY(-2px); border-color: rgba(var(--accent-rgb), 0.55); background: var(--cd-surface-2, #162327); }
+.cl-tile img { width: 48px; height: 32px; object-fit: cover; border-radius: 4px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35); }
+.cl-tile-name { font-size: 13px; font-weight: 700; text-align: center; line-height: 1.25; }
+.cl-tile-count { font-size: 12px; color: var(--accent); font-weight: 700; }
+.cl-tile.mine { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.cl-grid.small .cl-tile { flex-direction: row; justify-content: flex-start; padding: 8px 10px; gap: 8px; }
+.cl-grid.small .cl-tile img { width: 26px; height: 18px; border-radius: 3px; }
+.cl-grid.small .cl-tile-name { flex: 1; font-size: 12px; font-weight: 600; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cl-grid.small .cl-tile-count { display: none; }
+.cl-tile.empty { opacity: 0.75; }
+.cl-empty { padding: 30px; text-align: center; color: #8a9a95; }
+
+#clubDetailView.active-view { display: block; }
+.cl-detail { max-width: 1100px; margin: 0 auto; padding: 16px 20px 40px; box-sizing: border-box; }
+.cl-hero { position: relative; overflow: hidden; padding: 18px 22px 22px; border-radius: 20px; border: 1px solid var(--cd-border-strong, #223439); background: var(--cd-surface, #111c1f); }
+.cl-hero-bg { position: absolute; inset: -40px; width: calc(100% + 80px); height: calc(100% + 80px); object-fit: cover; filter: blur(34px) saturate(1.2); opacity: 0.32; pointer-events: none; }
+.cl-hero::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10, 18, 20, 0.15), rgba(10, 18, 20, 0.6)); pointer-events: none; }
+.cl-back, .cl-hero-main { position: relative; z-index: 1; }
+.cl-back { padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(0, 0, 0, 0.3); color: #e6efea; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.cl-hero-main { display: flex; align-items: center; gap: 16px; margin-top: 14px; }
+.cl-hero-flag { width: 84px; height: 56px; object-fit: cover; border-radius: 8px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45); border: 1px solid rgba(255, 255, 255, 0.2); }
+.cl-hero-text { flex: 1; min-width: 0; }
+.cl-hero-text h1 { margin: 0; font-size: 24px; color: #fff; line-height: 1.2; }
+.cl-hero-meta { margin-top: 4px; color: #cfdcd6; font-size: 13px; }
+.cl-join { flex-shrink: 0; padding: 11px 18px; border-radius: 12px; border: none; background: var(--accent); color: #fff; font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; }
+.cl-join:hover { background: var(--accent-hover); }
+.cl-join.leave { background: rgba(231, 76, 60, 0.15); color: #ff9b91; border: 1px solid rgba(231, 76, 60, 0.4); }
+.cl-join.small { padding: 9px 14px; font-size: 13px; }
+.cl-ghost { padding: 9px 14px; border-radius: 12px; border: 1px solid var(--cd-border-strong, #223439); background: transparent; color: #d9e4de; font: inherit; font-weight: 700; font-size: 13px; cursor: pointer; }
+.cl-tabs { display: flex; gap: 6px; margin: 16px 0; padding: 5px; border-radius: 14px; background: var(--cd-surface, #111c1f); border: 1px solid var(--cd-border-strong, #223439); overflow-x: auto; }
+.cl-tab { flex: 1; min-width: max-content; padding: 10px 14px; border-radius: 10px; border: none; background: transparent; color: #a9b6b0; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+.cl-tab small { margin-left: 4px; padding: 1px 7px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); font-size: 11px; }
+.cl-tab.active { background: rgba(var(--accent-rgb), 0.18); color: #fff; }
+.cl-overview { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.cl-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.cl-col .cs-root { margin: 0; grid-template-columns: minmax(0, 1fr); max-width: none; }
+.cl-card { padding: 16px 18px; border-radius: 16px; background: var(--cd-surface, #111c1f); border: 1px solid var(--cd-border-strong, #223439); }
+.cl-card h3 { margin: 0 0 10px; font-size: 15px; color: #fff; }
+.cl-card h3 small { color: #7f8f8a; font-weight: 600; }
+.cl-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.cl-card-head h3 { margin: 0; }
+.cl-link { border: none; background: none; color: var(--accent); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+.cl-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.cl-stat { padding: 12px 8px; border-radius: 14px; background: var(--cd-surface, #111c1f); border: 1px solid var(--cd-border-strong, #223439); text-align: center; }
+.cl-stat b { display: block; font-size: 22px; color: #fff; }
+.cl-stat span { font-size: 11px; color: #8a9a95; }
+.cl-cta { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1px dashed rgba(var(--accent-rgb), 0.5); background: rgba(var(--accent-rgb), 0.06); color: #d9e4de; font-size: 13px; line-height: 1.45; }
+.cl-cta span { flex: 1; }
+.cl-members { list-style: none; margin: 0; padding: 0; }
+.cl-mrow { display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+.cl-mrow:last-child { border-bottom: none; }
+.cl-pos { width: 22px; text-align: center; color: #7f8f8a; font-weight: 800; font-size: 13px; }
+.cl-pos.p1 { color: #f1c40f; } .cl-pos.p2 { color: #c7ced4; } .cl-pos.p3 { color: #e08a3c; }
+.cl-av { position: relative; display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; overflow: hidden; background: var(--accent); color: #fff; font-weight: 800; }
+.cl-av .av-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.cl-mname { flex: 1; min-width: 0; }
+.cl-mname b { color: #fff; font-size: 14px; cursor: pointer; margin-right: 6px; }
+.cl-mname small { display: block; color: #7f8f8a; font-size: 11px; margin-top: 2px; }
+.cl-mrating { color: var(--accent); font-weight: 800; font-size: 15px; }
+.cl-sort { display: flex; gap: 4px; padding: 3px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
+.cl-sort button { padding: 6px 10px; border-radius: 8px; border: none; background: transparent; color: #a9b6b0; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+.cl-sort button.active { background: rgba(var(--accent-rgb), 0.2); color: #fff; }
+.cl-about { margin: 0; color: #b9c5bf; font-size: 13px; line-height: 1.6; }
+.cl-muted { margin: 0; color: #8a9a95; font-size: 13px; line-height: 1.5; }
+.cl-loading { padding: 30px; text-align: center; color: #8a9a95; }
+.cl-league { max-width: 620px; margin: 0 auto; text-align: center; padding: 26px 22px; }
+.cl-league-ico { font-size: 40px; margin-bottom: 6px; }
+.cl-league h3 { font-size: 18px; }
+.cl-league-row { display: flex; flex-direction: column; gap: 6px; margin: 14px auto 0; max-width: 380px; text-align: left; color: #d9e4de; font-size: 13px; font-weight: 600; }
+.cl-bar { display: block; height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.cl-bar i { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.cl-league-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+.club-chat-container.cl-chat { width: 100%; max-width: none; height: min(64vh, 620px); margin: 0; }
+.cl-chat .club-chat-header > .control-btn { display: none; }
+@media (max-width: 900px) {
+  .cl-overview { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .cl-detail { padding: 10px 10px 30px; }
+  .cl-hero { padding: 14px; }
+  .cl-hero-main { flex-wrap: wrap; gap: 12px; }
+  .cl-hero-flag { width: 64px; height: 42px; }
+  .cl-hero-text h1 { font-size: 19px; }
+  .cl-join:not(.small) { width: 100%; }
+  .cl-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cl-tab { padding: 9px 10px; font-size: 13px; }
+  .cl-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cl-grid.small { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cl-cta { flex-direction: column; align-items: stretch; }
+  .club-chat-container.cl-chat { height: 60vh; }
+}

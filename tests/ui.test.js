@@ -67,6 +67,29 @@ test("Mehmon: ro'yxatdan o'tmasdan o'ynash → reytingsiz qidiruv, eslatma, ro'y
   assert.deepEqual(p.errors, []);
 });
 
+test("Klublar: mening klubim kartasi, faol klublar tepada, klub sahifasidagi 4 tab, chat ichida, eski manzillar", opts, async () => {
+  const u = await srv.register('Club');
+  await srv.api(u, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
+  const login = await srv.api(null, '/api/auth/login', 'POST', { username: u.name, password: u.password });
+  const p = await page({ token: login.token, user: login.user });
+  await p.goto(srv.base + '/klublar', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('.cl-mine[data-club="Uzbekistan"]', { timeout: 10000 });
+  assert.equal(await p.evaluate(() => document.querySelector('.cl-grid .cl-tile').dataset.club), 'Uzbekistan', "faol klub birinchi");
+  await p.click('.cl-mine');
+  await p.waitForSelector('.cl-tabs .cl-tab.active[data-cl-tab="overview"]');
+  await p.waitForSelector('.cl-stats');
+  for (const [tab, q] of [['members', 'tab=reyting'], ['league', 'tab=turnirlar'], ['chat', 'tab=chat']]) {
+    await p.evaluate((t) => document.querySelector(`.cl-tabs [data-cl-tab="${t}"]`).click(), tab);
+    await sleep(400);
+    assert.ok((await p.evaluate(() => location.search)).includes(q), tab);
+  }
+  assert.ok(await p.evaluate(() => !!document.querySelector('#clPane .club-chat-container #clubChatMessageInput')), "chat klub sahifasi ichida");
+  await p.goto(srv.base + '/klublar?club=Uzbekistan&tab=tarix', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('.cl-sort button.active');
+  assert.deepEqual(await p.evaluate(() => [document.querySelector('.cl-tab.active').dataset.clTab, document.querySelector('.cl-sort .active').dataset.clSort]), ['members', 'newest']);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);
@@ -200,9 +223,9 @@ test("Telefon yon holatda: oyna tugmasiga yetiladi, menyu ekranga sig'adi; klubl
   assert.ok(menu.left >= 0 && menu.right <= menu.vw && menu.sw <= menu.vw, JSON.stringify(menu));
   // Tik holatda klublar — ikki ustun
   const p2 = await page(u, { width: 375, height: 667, isMobile: true, hasTouch: true });
-  await p2.goto(srv.base + '/klublar', { waitUntil: 'networkidle2' });
-  await sleep(900);
-  const cols = await p2.evaluate(() => getComputedStyle(document.getElementById('clubsListContainer')).gridTemplateColumns.split(' ').length);
+  await p2.goto(srv.base + '/klublar', { waitUntil: 'domcontentloaded' });
+  await p2.waitForSelector('.cl-grid.small .cl-tile', { timeout: 10000 });
+  const cols = await p2.evaluate(() => getComputedStyle(document.querySelector('.cl-grid.small')).gridTemplateColumns.split(' ').length);
   assert.equal(cols, 2);
   assert.deepEqual([...p.errors, ...p2.errors], []);
 });

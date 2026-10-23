@@ -699,6 +699,16 @@ async function initDatabase() {
       data TEXT NOT NULL
     )
   `);
+  // 🎯 Haftalik vazifalar: uchala vazifa bajarilgan haftalar (nishon)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS quest_weeks (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      week TEXT NOT NULL,
+      completed_at TEXT NOT NULL,
+      UNIQUE (user_id, week)
+    )
+  `);
   // ⭐ Kun o'yini: har kun (Toshkent vaqti) uchun tanlangan o'yin — oq o'yinchining user_games yozuvi
   await dbExec(`
     CREATE TABLE IF NOT EXISTS game_of_day (
@@ -884,6 +894,19 @@ async function getUserHistory(userId, opts) {
   const rows = await dbAll(`SELECT ${cols} FROM user_games WHERE ${where.join(' AND ')} ORDER BY played_at ASC, seq ASC`, params);
   return rows.map(r => rowToGame(r, o.withMoves));
 }
+// --- 🎯 Haftalik vazifalar ---
+async function addQuestWeek(userId, week) {
+  const r = await dbRun('INSERT INTO quest_weeks (id, user_id, week, completed_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, week) DO NOTHING', [uuidv4(), userId, week, new Date().toISOString()]);
+  return !!(r && (r.changes || r.rowCount));
+}
+async function countQuestWeeks(userId) {
+  const r = await dbGet('SELECT COUNT(*) as "n" FROM quest_weeks WHERE user_id = ?', [userId]);
+  return Number(r && r.n) || 0;
+}
+async function hasQuestWeek(userId, week) {
+  return !!(await dbGet('SELECT id FROM quest_weeks WHERE user_id = ? AND week = ?', [userId, week]));
+}
+
 // --- ⭐ Kun o'yini ---
 // Nomzodlar: oq o'yinchi yozuvi (har o'yin bir marta), kamida 20 yarim yurish, ikkala o'yinchi ham mehmon emas
 async function gameOfDayCandidates(fromIso, toIso) {
@@ -2501,6 +2524,9 @@ module.exports = {
   markGuest,
   listGuestIds,
   gameOfDayCandidates,
+  addQuestWeek,
+  countQuestWeeks,
+  hasQuestWeek,
   getGameOfDay,
   recentGameOfDayIds,
   setGameOfDay,

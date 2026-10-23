@@ -52,6 +52,8 @@
         const rank = window.rankByKey ? window.rankByKey(d.rank) : null;
         return { icon: rank ? rank.icon : '⭐', text: tx('nfRankUp', 'Yangi daraja! {{mode}}: {{rank}} ({{rating}})', { mode: modeName(d.mode), rank: rank ? rank.label : d.rank, rating: d.rating }), go: () => window.openProfileModal && window.openProfileModal() };
       }
+      case 'quests_done':
+        return { icon: '🎯', text: tx('qNotif', 'Haftalik vazifalar bajarildi! Nishonlar: {{total}}', { total: d.total || 1 }), go: () => window.switchView && window.switchView('caravan') };
       case 'game_of_day':
         return { icon: '🌟', text: tx('gdNotif', "{{opponent}} bilan o'yiningiz Kun o'yini bo'ldi!", { opponent: d.opponent || '' }), go: () => window.switchView && window.switchView('live') };
       case 'caravan_city': {

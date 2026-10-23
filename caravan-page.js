@@ -52,11 +52,27 @@
       : `<p class="cv-empty">${esc(tx('cvNoLeaders', "Hali hech kim yo'lga chiqmagan — birinchi bo'ling!"))}</p>`}</div>`;
   }
 
+  // 🎯 Haftalik vazifalar (GET /api/quests; quests.js — vazifalar ro'yxati). Mehmonga ko'rsatilmaydi
+  function questsHtml() {
+    const q = st.quests;
+    if (!q || !window.currentUser || window.currentUser.guest) return '';
+    const left = Math.max(0, new Date(q.endsAt).getTime() - Date.now());
+    const days = Math.floor(left / 864e5), hours = Math.floor((left % 864e5) / 36e5);
+    return `<div class="cv-card cv-quests${q.completed ? ' done' : ''}">
+      <div class="cv-q-head"><h2>🎯 ${esc(tx('qTitle', 'Haftalik vazifalar'))}</h2>
+        <span>${esc(q.completed ? tx('qAllDone', "Bu hafta bajarildi! ✓") : tx('qEndsIn', '{{d}} kun {{h}} soat qoldi', { d: days, h: hours }))} · 🎖️ ${esc(q.badges)}</span></div>
+      <div class="cv-q-list">${q.quests.map((x) => `<div class="cv-q${x.done ? ' ok' : ''}"><span class="cv-q-ico">${x.done ? '✅' : x.icon}</span>
+        <span class="cv-q-text"><b>${esc(tx('q_' + x.id, x.id, { n: x.need }))}</b><span class="cv-q-bar"><i style="width:${Math.round((x.have / x.need) * 100)}%"></i></span></span>
+        <span class="cv-q-n">${esc(x.have)}/${esc(x.need)}</span></div>`).join('')}</div>
+      <p class="cv-q-hint">${esc(tx('qHint', "Uchala vazifani bajaring — haftalik 🎖️ nishon olasiz. Har dushanba yangi vazifalar."))}</p>
+    </div>`;
+  }
+
   function render() {
     const root = document.getElementById('caravanRoot');
     if (!root || !window.Caravan) return;
     const pr = window.Caravan.progress(myPoints());
-    root.innerHTML = heroHtml(pr) + `<div class="cv-grid">${routeHtml(pr, st.data && st.data.perCity)}${leadersHtml(st.data)}</div>`;
+    root.innerHTML = heroHtml(pr) + questsHtml() + `<div class="cv-grid">${routeHtml(pr, st.data && st.data.perCity)}${leadersHtml(st.data)}</div>`;
     const play = root.querySelector('[data-cv-play]');
     if (play) play.addEventListener('click', () => { if (typeof window.quickPlayOnline === 'function') window.quickPlayOnline(); else window.switchView('game'); });
   }
@@ -66,21 +82,26 @@
     try {
       // O'z statistikam serverdan yangilansin (boshqa qurilmada o'ynagan bo'lishi mumkin)
       if (window.currentUser && typeof window.refreshCurrentUserRatings === 'function') await window.refreshCurrentUserRatings();
-      const d = await fetch('/api/caravan').then((r) => r.json());
+      const [d, q] = await Promise.all([
+        fetch('/api/caravan').then((r) => r.json()),
+        window.authToken && !(window.currentUser && window.currentUser.guest)
+          ? fetch('/api/quests', { headers: { Authorization: 'Bearer ' + window.authToken } }).then((r) => r.json()).catch(() => null) : null
+      ]);
       if (d && d.success) st.data = d;
+      if (q && q.success) st.quests = q;
     } catch (e) {}
     const v = document.getElementById('caravanView');
     if (v && v.classList.contains('active-view')) render();
   };
 
   // Profil: "🐪 Karvon: Samarqand · 186 qadam" (bosilsa — Karvon yo'li sahifasi)
-  window.renderProfileCaravan = function (points) {
+  window.renderProfileCaravan = function (points, questBadges) {
     const el = document.getElementById('profileCaravan');
     if (!el) return;
     if (points == null || !window.Caravan) { el.hidden = true; return; }
     const pr = window.Caravan.progress(points);
     el.hidden = false;
-    el.innerHTML = `<button type="button" class="cv-chip">${pr.city.icon} ${esc(tx('cvProfile', 'Karvon: {{city}} · {{n}} qadam', { city: name(pr.city.key), n: points }))}</button>`;
+    el.innerHTML = `<button type="button" class="cv-chip">${pr.city.icon} ${esc(tx('cvProfile', 'Karvon: {{city}} · {{n}} qadam', { city: name(pr.city.key), n: points }))}${questBadges ? ` · 🎖️ ${esc(questBadges)}` : ''}</button>`;
     el.querySelector('button').onclick = () => { if (typeof window.closeProfileModal === 'function') window.closeProfileModal(); window.switchView('caravan'); };
   };
 

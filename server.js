@@ -13,6 +13,7 @@ const fs = require('fs');
 const { Chess } = require('chess.js');
 const Chess960 = require('./chess960');
 const Caravan = require('./caravan');
+const Quests = require('./quests');
 
 const db = require('./database');
 const league = require('./league');
@@ -475,7 +476,7 @@ async function endGame(roomId, room, winnerColor, reason) {
         const result = scoreFor(p.color, winnerColor);
         const ratingMode = ratingModeOf(room);
         const statsData = await db.updateUserStats(p.userId, result, opp.username, "Online o'yin", moves, ratingMode,
-          { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}), ...(room.leagueGameId ? { league: true } : {}) });
+          { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}), ...(room.leagueGameId ? { league: true } : {}), ...(room.tea ? { tea: true } : {}), ...(room.rated ? { rated: true } : {}) });
         let ratingData = null;
         if (room.rated && oppUser) {
           const modeBefore = before[p.color] && before[p.color].ratings_by_mode ? before[p.color].ratings_by_mode[ratingMode] : null;
@@ -485,6 +486,7 @@ async function endGame(roomId, room, winnerColor, reason) {
             notify(p.userId, 'rank_up', { mode: ratingMode, rank: rankOf(modeAfter), rating: modeAfter });
           }
         }
+        if (!isGuest(p.userId)) questProgress(p.userId).catch((err) => console.error('Vazifalar xatoligi:', err));
         // 🐪 Karvon yo'li: qadamlar statistikadan; yangi shaharga yetgan bo'lsa — bildirishnoma (mehmonga emas)
         let caravan = null;
         if (statsData && statsData.stats) {
@@ -633,6 +635,7 @@ function startDirectGame(a, b, clock, rated, variant, flags) {
     { socketId: black.socket.id, userId: black.user.id, username: black.user.username },
     clock, rated, { variant }
   );
+  if (flags && flags.tea) room.tea = true;
   rooms.set(roomId, room);
   const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null, provisional: db.isProvisional(u, ratingModeOf(room), false) });
   for (const [side, color, opp] of [[white, 'w', black], [black, 'b', white]]) {
@@ -950,6 +953,30 @@ async function openingStats(userId) {
   const openings = [...fams.values()].sort((a, b) => b.games - a.games || a.name.localeCompare(b.name)).slice(0, 15)
     .map(({ ecos, lines, ...f }) => ({ ...f, eco: top(ecos), line: top(lines) }));
   return { analysed: games.length, unknown, openings };
+}
+
+// --- 🎯 Haftalik vazifalar (quests.js): progress shu haftaning o'yinlaridan; uchalasi bajarilsa — nishon (quest_weeks) ---
+async function questProgress(userId, now) {
+  const t = now || Date.now();
+  const from = new Date(Quests.weekStart(t)).toISOString();
+  const to = new Date(Quests.weekStart(t) + 7 * 864e5).toISOString();
+  const games = (await db.getUserHistory(userId, { from, to })).map((g) => ({ ...g, mode: clockModeOfLabel(g.clock) }));
+  const list = Quests.progress(games, t);
+  const week = Quests.weekKey(t);
+  let completed = await db.hasQuestWeek(userId, week);
+  if (!completed && list.every((q) => q.done)) {
+    completed = true;
+    if (await db.addQuestWeek(userId, week)) {
+      const total = await db.countQuestWeeks(userId);
+      notify(userId, 'quests_done', { total });
+    }
+  }
+  return { week, endsAt: to, quests: list, completed, badges: await db.countQuestWeeks(userId) };
+}
+// "3+2" → rejim (clockMode bilan bir xil qoida)
+function clockModeOfLabel(label) {
+  const m = /^(\d+(?:\.\d+)?)\+(\d+)$/.exec(String(label || ''));
+  return m ? clockMode({ initial: Math.round(Number(m[1]) * 60), increment: Number(m[2]) }) : null;
 }
 
 async function closeWarSeasons() {
@@ -2401,6 +2428,13 @@ async function start() {
   });
 
   // --- Profil qo'shimchalari: yutuqlar, kuzatuvchilar, kengaytirilgan statistika ---
+  // 🎯 Haftalik vazifalar (Karvon yo'li sahifasida)
+  app.get('/api/quests', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, ...(await questProgress(req.user.userId)) }); }
+    catch (err) { console.error('Vazifalar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  if (TEST_MODE) app.get('/api/test/quests', authMiddleware, async (req, res) => res.json({ success: true, ...(await questProgress(req.user.userId, Number(req.query.now) || Date.now())) }));
+
   // ⭐ Kun o'yini (Jonli o'yinlar sahifasida) — kesh 60 s, kun almashganda yangi kalit
   app.get('/api/game-of-day', apiLimiter, async (req, res) => {
     try {
@@ -2449,6 +2483,7 @@ async function start() {
         rivals: await rivalsOf(u.id),
         sportsmanship: await db.sportSummary(u.id),
         caravan: isGuest(u.id) ? null : Caravan.pointsOf(u.stats),
+        questBadges: await db.countQuestWeeks(u.id),
         predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)
       });

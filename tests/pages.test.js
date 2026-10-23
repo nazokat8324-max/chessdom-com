@@ -76,6 +76,15 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
   assert.deepEqual([...settingsSrc.match(/const PIECES = \[(.*)\];/)[1].matchAll(/\['(\w+)'/g)].map((m) => m[1]), sets, "settings.js PIECES");
   for (const set of sets) for (const c of ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP', 'bK', 'bQ', 'bR', 'bB', 'bN', 'bP']) assert.equal((await get('/img/chesspieces/' + set + '/' + c + '.svg')).status, 200, set + ' ' + c);
   assert.deepEqual(fs.readdirSync(path.join(root, 'img/chesspieces')).sort(), [...sets].sort(), "img/chesspieces da faqat o'z to'plamlarimiz");
+  // Har to'plamning o'z shakllari: bir xil dona (masalan, oq ot) ikki to'plamda bir xil chizilmasin — faqat rang/naqsh farqi yetmaydi
+  for (const c of ['wK', 'wQ', 'wR', 'wB', 'wN', 'wP']) {
+    const seen = new Map();
+    for (const set of sets) {
+      const shape = [...fs.readFileSync(path.join(root, 'img/chesspieces', set, c + '.svg'), 'utf8').matchAll(/ d="([^"]+)"/g)].map((m) => m[1]).join('|');
+      assert.ok(!seen.has(shape), `${c}: ${set} shakli ${seen.get(shape)} bilan bir xil`);
+      seen.set(shape, set);
+    }
+  }
   for (const old of ['wikipedia/wK.png', 'cburnett/wK.svg', 'merida/wK.svg']) assert.equal((await get('/img/chesspieces/' + old)).status, 404, old);
   assert.ok(!/Burnett|Merida/.test(credits), "begona dona to'plamlari mualliflar ro'yxatida yo'q");
   assert.match(settingsSrc, /pieceSet: 'karvon'/);

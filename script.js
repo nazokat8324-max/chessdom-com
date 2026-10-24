@@ -616,7 +616,7 @@ window.switchView = function(viewName) {
         window.playAnimation("championsView", "fadeIn");
       }
     }
-    const navEl = document.getElementById("navChampions");
+    const navEl = document.getElementById("navLeagues"); // Chempionlar — Ligalar bo'limi ichida
     if (navEl) navEl.classList.add("active");
   } else if (viewName === "tea") {
     const teaEl = document.getElementById("teaView");

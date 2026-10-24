@@ -12,7 +12,7 @@
   const BASE_TITLE = 'ChessCaravan';
   // Har bo'limning yon menyudagi tugmasi (ba'zi bo'limlar o'zi belgilamaydi)
   const NAV = { home: 'navHome', game: 'navPlay', tea: 'navTea', leaderboard: 'navLeaderboard', tournaments: 'navTournaments', live: 'navLive', messages: 'navMessages',
-    clubs: 'navClubs', leagues: 'navLeagues', war: 'navWar', caravan: 'navCaravan', champions: 'navChampions', settings: 'navSettings', admin: 'navAdmin' };
+    clubs: 'navClubs', leagues: 'navLeagues', war: 'navWar', caravan: 'navCaravan', champions: 'navLeagues', admin: 'navAdmin' };
   let popping = false; // popstate paytida tarixga yangi yozuv qo'shilmaydi
 
   // Bo'lim ichidagi sahifa (klub, turnir): /klublar?club=Uzbekistan&tab=chat, /turnirlar?t=<id>

@@ -15725,3 +15725,19 @@ body.auth-locked {
 
 /* Toastlar bosishni ushlamasin — o'yin sahifasida panel tugmalari (⇅ 🔊 🎙️) ustiga tushadi (2026-10-24) */
 .toast-container, .toast { pointer-events: none; }
+
+/* ===== Ixcham chap menyu (2026-10-24): ⚙️ Sozlamalar — 🔔 yonida, ⭐ Chempionlar — Ligalar ichida tab ===== */
+.nf-wrap { display: flex; align-items: center; gap: 8px; }
+.tb-settings { display: inline-flex; align-items: center; justify-content: center; color: inherit; }
+body:has(#settingsView.active-view) .tb-settings { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.16); }
+.lg-tabs { display: inline-flex; gap: 4px; padding: 4px; margin-bottom: 16px; border-radius: 12px; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); }
+.lg-tab { padding: 8px 16px; border: none; border-radius: 9px; background: transparent; color: var(--cd-muted, #a9b6b0); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; touch-action: manipulation; }
+.lg-tab:hover { color: #fff; }
+.lg-tab.active { background: rgba(var(--accent-rgb), 0.2); color: #fff; }
+@media (max-width: 768px) {
+  .nf-wrap { gap: 6px; }
+  .nf-wrap .nf-bell { width: 36px; height: 36px; font-size: 16px; }
+  .lg-tabs { display: flex; }
+  .lg-tab { flex: 1; }
+}
+html.landscape-phone .nf-wrap { flex-direction: column-reverse; }

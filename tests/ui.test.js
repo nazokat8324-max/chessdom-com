@@ -198,6 +198,30 @@ test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajari
   assert.deepEqual(p.errors, []);
 });
 
+test("Ixcham menyu: ⚙️ Sozlamalar 🔔 yonida, ⭐ Chempionlar — Ligalar ichida tab", opts, async () => {
+  const u = await srv.register('Menu');
+  for (const vp of [null, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const p = await page(u, vp);
+    await p.goto(srv.base + '/', { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('#topSettingsBtn', { visible: true, timeout: 10000 });
+    await sleep(500);
+    assert.equal(await p.evaluate(() => !!document.querySelector('#navChampions, #navSettings')), false);
+    if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/menu-' + (vp ? 'phone' : 'pc') + '.png' });
+    await p.click('#topSettingsBtn');
+    await sleep(400);
+    assert.equal(await p.evaluate(() => location.pathname + '|' + document.getElementById('settingsView').classList.contains('active-view')), '/sozlamalar|true');
+    await p.goto(srv.base + '/ligalar', { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('#leaguesView .lg-tab', { visible: true, timeout: 10000 });
+    await sleep(400);
+    await p.click('#leaguesView .lg-tab:nth-child(2)');
+    await sleep(500);
+    const st = await p.evaluate(() => ({ path: location.pathname, on: document.getElementById('championsView').classList.contains('active-view'), nav: document.getElementById('navLeagues').classList.contains('active') }));
+    assert.deepEqual(st, { path: '/chempionlar', on: true, nav: true });
+    if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/champions-' + (vp ? 'phone' : 'pc') + '.png' });
+    assert.deepEqual(p.errors, []);
+  }
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

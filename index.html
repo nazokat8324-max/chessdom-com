@@ -403,22 +403,6 @@
           </a>
           <a
             class="menu-item"
-            id="navChampions"
-            onclick="switchView('champions')"
-          >
-            <span class="icon">⭐</span>
-            <span id="mChampions">Chempionlar</span>
-          </a>
-          <a
-            class="menu-item"
-            id="navSettings"
-            onclick="switchView('settings')"
-          >
-            <span class="icon">⚙️</span>
-            <span id="mSettings">Sozlamalar</span>
-          </a>
-          <a
-            class="menu-item"
             id="navAdmin"
             style="display: none"
             onclick="switchView('admin')"
@@ -461,6 +445,17 @@
         >
         <!-- 🔔 Bildirishnomalar markazi (notifications.js) -->
         <div class="nf-wrap">
+          <button
+            type="button"
+            class="nf-bell tb-settings"
+            id="topSettingsBtn"
+            onclick="switchView('settings')"
+            aria-label="Sozlamalar"
+            data-i18n-title="mSettings"
+            title="Sozlamalar"
+          >
+            ⚙️
+          </button>
           <button
             type="button"
             class="nf-bell"
@@ -1336,11 +1331,19 @@
 
       <!-- 11. LIGALAR (leagues.js) -->
       <div id="leaguesView" class="view-section lg-view">
+        <div class="lg-tabs" role="tablist">
+          <button type="button" class="lg-tab active" onclick="switchView('leagues')">🏆 <span data-i18n="mLeagues">Ligalar</span></button>
+          <button type="button" class="lg-tab" onclick="switchView('champions')">⭐ <span data-i18n="mChampions">Chempionlar</span></button>
+        </div>
         <div class="lg-page" id="leaguesRoot"></div>
       </div>
 
       <!-- 12. CHEMPIONLAR LIGASI (leagues.js) -->
       <div id="championsView" class="view-section lg-view">
+        <div class="lg-tabs" role="tablist">
+          <button type="button" class="lg-tab" onclick="switchView('leagues')">🏆 <span data-i18n="mLeagues">Ligalar</span></button>
+          <button type="button" class="lg-tab active" onclick="switchView('champions')">⭐ <span data-i18n="mChampions">Chempionlar</span></button>
+        </div>
         <div class="lg-page" id="championsRoot"></div>
       </div>
 

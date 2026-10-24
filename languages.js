@@ -10216,6 +10216,7 @@ function updateUI() {
   // HTML'dagi data-i18n (matn) va data-i18n-placeholder (placeholder) atributli elementlar
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
   document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); el.setAttribute('aria-label', el.title); });
 
   const mHome = document.getElementById("mHome"); if (mHome) mHome.textContent = t('mHome');
   const mPlay = document.getElementById("mPlay"); if (mPlay) mPlay.textContent = t('mPlay');

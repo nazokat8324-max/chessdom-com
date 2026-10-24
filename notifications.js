@@ -56,6 +56,10 @@
         return { icon: '🎯', text: tx('qNotif', 'Haftalik vazifalar bajarildi! Nishonlar: {{total}}', { total: d.total || 1 }), go: () => window.switchView && window.switchView('caravan') };
       case 'game_of_day':
         return { icon: '🌟', text: tx('gdNotif', "{{opponent}} bilan o'yiningiz Kun o'yini bo'ldi!", { opponent: d.opponent || '' }), go: () => window.switchView && window.switchView('live') };
+      case 'holiday_badge': {
+        const name = window.Holidays ? window.Holidays.name(d.holiday, window.currentLang || 'en') : d.holiday;
+        return { icon: window.Holidays ? window.Holidays.icon(d.holiday) : '🎊', text: tx('nfHolidayBadge', 'Bayram nishoni olindi: {{name}} {{year}}!', { name, year: d.year }), go: () => window.openProfileSection && window.openProfileSection('badge', window.currentUser && window.currentUser.username) };
+      }
       case 'duel_end':
         return { icon: '⚔️', text: tx('nfDuelEnd', '{{opponent}} bilan bahs tugadi: {{me}} – {{opp}}', { opponent: d.opponent, me: window.formatDuelPoints ? window.formatDuelPoints(d.me) : d.me, opp: window.formatDuelPoints ? window.formatDuelPoints(d.opp) : d.opp }), go: () => window.openProfileModal && window.openProfileModal() };
       case 'caravan_city': {

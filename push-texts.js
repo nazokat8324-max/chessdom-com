@@ -3,6 +3,7 @@
 // pushMessage(type, data, lang, ownName) → { title, body, url, category } — tur ro'yxatda bo'lmasa umumiy matn.
 // Telegram bot ham shu matnlardan foydalanadi; botning o'z javoblari — botText(key, lang, vars).
 const Caravan = require('./caravan');
+const Holidays = require('./holidays');
 const L = (uz, en, ru, es, de, fr) => ({ uz, en, ru, es, de, fr });
 const T = {
   challenge: L("{{from}} sizni o'yinga chaqirdi ({{clock}})", '{{from}} challenged you to a game ({{clock}})', '{{from}} вызывает вас на партию ({{clock}})', '{{from}} te desafía a una partida ({{clock}})', '{{from}} fordert dich zu einer Partie heraus ({{clock}})', '{{from}} vous défie ({{clock}})'),
@@ -18,6 +19,7 @@ const T = {
   achievement: L('Yangi yutuq! 🏅', 'New achievement! 🏅', 'Новое достижение! 🏅', '¡Nuevo logro! 🏅', 'Neuer Erfolg! 🏅', 'Nouveau succès ! 🏅'),
   quests_done: L("🎯 Haftalik vazifalar bajarildi! Nishonlar: {{total}}", '🎯 Weekly quests complete! Badges: {{total}}', '🎯 Недельные задания выполнены! Значков: {{total}}', '🎯 ¡Misiones semanales completadas! Insignias: {{total}}', '🎯 Wochenaufgaben erledigt! Abzeichen: {{total}}', '🎯 Quêtes de la semaine terminées ! Badges : {{total}}'),
   game_of_day: L("🌟 {{opponent}} bilan o'yiningiz Kun o'yini bo'ldi!", '🌟 Your game against {{opponent}} is the Game of the Day!', '🌟 Ваша партия с {{opponent}} — партия дня!', '🌟 ¡Tu partida contra {{opponent}} es la partida del día!', '🌟 Deine Partie gegen {{opponent}} ist die Partie des Tages!', '🌟 Votre partie contre {{opponent}} est la partie du jour !'),
+  holiday_badge: L("{{icon}} Bayram nishoni: {{name}} {{year}}!", '{{icon}} Holiday badge: {{name}} {{year}}!', '{{icon}} Праздничный значок: {{name}} {{year}}!', '{{icon}} Insignia festiva: {{name}} {{year}}!', '{{icon}} Feiertagsabzeichen: {{name}} {{year}}!', '{{icon}} Badge de fête : {{name}} {{year}} !'),
   duel_end: L("⚔️ {{opponent}} bilan bahs tugadi: {{me}} – {{opp}}", '⚔️ Your match with {{opponent}} is over: {{me}} – {{opp}}', '⚔️ Матч с {{opponent}} завершён: {{me}} – {{opp}}', '⚔️ Tu duelo con {{opponent}} terminó: {{me}} – {{opp}}', '⚔️ Dein Match gegen {{opponent}} ist vorbei: {{me}} – {{opp}}', '⚔️ Votre duel contre {{opponent}} est terminé : {{me}} – {{opp}}'),
   caravan_city: L("🐪 Karvoningiz {{city}}ga yetib keldi!", '🐪 Your caravan has reached {{city}}!', '🐪 Ваш караван прибыл в {{city}}!', '🐪 ¡Tu caravana ha llegado a {{city}}!', '🐪 Deine Karawane hat {{city}} erreicht!', '🐪 Votre caravane est arrivée à {{city}} !'),
   rank_up: L('Yangi daraja! Reytingingiz {{rating}} ⭐', 'New rank! Your rating is {{rating}} ⭐', 'Новый уровень! Рейтинг {{rating}} ⭐', '¡Nuevo rango! Tu rating es {{rating}} ⭐', 'Neuer Rang! Deine Wertung: {{rating}} ⭐', 'Nouveau rang ! Classement {{rating}} ⭐'),
@@ -59,6 +61,7 @@ function pushMessage(type, data, lang, ownName) {
     case 'game_of_day': url = '/jonli'; break;
     case 'quests_done': url = '/karvon'; break;
     case 'duel_end': url = prof(ownName); break;
+    case 'holiday_badge': url = prof(ownName); vars = { ...d, name: Holidays.name(d.holiday, l), icon: Holidays.icon(d.holiday) }; break;
     case 'caravan_city': url = '/karvon'; vars = { ...d, city: Caravan.cityName(d.city, l) }; break;
     case 'server_error': url = '/admin'; break;
   }

@@ -675,6 +675,17 @@ async function initDatabase() {
       UNIQUE (user_id, week)
     )
   `);
+  // 🌸 Bayram nishonlari (holidays.js): bayram kunlarida NEED ta o'yin — yiliga bir marta
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS holiday_badges (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      holiday TEXT NOT NULL,
+      year INTEGER NOT NULL,
+      earned_at TEXT NOT NULL,
+      UNIQUE (user_id, holiday, year)
+    )
+  `);
   // ⚔️ Bahs: do'st bilan 3/5/7 o'yinlik seriya (hisob yarim ochkolarda: g'alaba 2, durrang 1)
   await dbExec(`
     CREATE TABLE IF NOT EXISTS duels (
@@ -892,6 +903,19 @@ async function getUserHistory(userId, opts) {
 async function addQuestWeek(userId, week) {
   const r = await dbRun('INSERT INTO quest_weeks (id, user_id, week, completed_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, week) DO NOTHING', [uuidv4(), userId, week, new Date().toISOString()]);
   return !!(r && (r.changes || r.rowCount));
+}
+// --- 🌸 Bayram nishonlari ---
+async function addHolidayBadge(userId, holiday, year) {
+  const r = await dbRun('INSERT INTO holiday_badges (id, user_id, holiday, year, earned_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (user_id, holiday, year) DO NOTHING',
+    [uuidv4(), userId, holiday, year, new Date().toISOString()]);
+  return !!(r && (r.changes || r.rowCount));
+}
+async function hasHolidayBadge(userId, holiday, year) {
+  return !!(await dbGet('SELECT id FROM holiday_badges WHERE user_id = ? AND holiday = ? AND year = ?', [userId, holiday, year]));
+}
+async function listHolidayBadges(userId) {
+  const rows = await dbAll('SELECT holiday as "holiday", year as "year" FROM holiday_badges WHERE user_id = ? ORDER BY earned_at DESC', [userId]);
+  return rows.map((r) => ({ holiday: r.holiday, year: Number(r.year) }));
 }
 // --- ⚔️ Bahslar ---
 async function createDuel(d) {
@@ -2439,6 +2463,9 @@ module.exports = {
   setPushPrefs,
   setProfileBanner,
   listQuestWeeks,
+  addHolidayBadge,
+  hasHolidayBadge,
+  listHolidayBadges,
   gameOfDayFor,
   createDuel,
   updateDuel,

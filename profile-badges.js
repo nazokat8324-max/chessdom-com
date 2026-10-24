@@ -25,6 +25,7 @@
     const weeks = b.questWeeks || [], god = b.gameOfDay || [];
     const sport = (d && d.sportsmanship && d.sportsmanship.awards) || [], oracle = (d && d.predictions && d.predictions.awards) || [];
     const duels = (d && d.duels && d.duels.won) || 0;
+    const hol = b.holidays || [];
     return [
       { icon: '🎯', title: tx('nbQuest', 'Haftalik vazifalar'), how: tx('nbQuestHow', "Haftaning uchala vazifasini bajaring (Karvon yo'li sahifasi)"), n: weeks.length,
         chips: weeks.map((w) => tx('nbWeekOf', '{{date}} haftasi', { date: dayName(w) })) },
@@ -32,6 +33,8 @@
         stamps: window.Caravan ? window.Caravan.CITIES.map((c, i) => ({ icon: c.icon, name: window.Caravan.cityName(c.key, lang()), on: i <= cities })).slice(1) : [] },
       { icon: '⭐', title: tx('gdTitle', "Kun o'yini"), how: tx('nbGodHow', "Qiziqarli o'yin o'ynang — har kuni kechagi eng yaxshi o'yin tanlanadi"), n: god.length,
         chips: god.map((g) => dayName(g.day) + (g.opponent ? ' · ' + g.opponent : '')) },
+      { icon: '🌸', title: tx('nbHoliday', 'Bayram nishonlari'), how: tx('nbHolidayHow', "Bayram kunlarida (Navro'z, Yangi yil, hayitlar...) 3 ta o'yin o'ynang"), n: hol.length,
+        chips: hol.map((h) => (window.Holidays ? window.Holidays.icon(h.holiday) + ' ' + window.Holidays.name(h.holiday, lang()) : h.holiday) + ' ' + h.year) },
       { icon: '🤺', title: tx('nbDuel', 'Yutilgan bahslar'), how: tx('nbDuelHow', "Do'stingizni 3, 5 yoki 7 o'yinlik bahsga chaqirib yuting"), n: duels, chips: [] },
       { icon: '🤝', title: tx('nbSport', "Oyning odobli o'yinchisi"), how: tx('nbSportHow', "Oy davomida eng ko'p 👍 odob bahosini oling"), n: sport.length, chips: sport.map(monthName) },
       { icon: '🔮', title: tx('nbOracle', 'Oyning bashoratchisi'), how: tx('nbOracleHow', "Jonli o'yinlarda natijani to'g'ri taxmin qilib, oyda eng ko'p ochko to'plang"), n: oracle.length, chips: oracle.map(monthName) }

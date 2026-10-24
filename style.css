@@ -15627,3 +15627,24 @@ html.landscape-phone .nf-wrap { flex-direction: column-reverse; }
 @media (max-width: 600px) {
   .ps-head h1 { font-size: 24px; }
 }
+
+/* ===== 🌸 Bayramlar (holidays.js, holidays-ui.js) ===== */
+.hd-wrap { display: grid; gap: 12px; margin-bottom: 14px; }
+.cv-holiday { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.cv-holiday.on { border-color: rgba(246, 196, 69, 0.55); background: linear-gradient(135deg, rgba(246, 196, 69, 0.14), rgba(var(--accent-rgb), 0.06)); }
+.cv-holiday .hd-ico { font-size: 40px; line-height: 1; }
+.cv-holiday .hd-main { flex: 1; min-width: 200px; }
+.cv-holiday h2 { margin: 0 0 4px; font-size: 18px; }
+.cv-holiday p { margin: 0 0 8px; font-size: 13px; color: var(--cd-muted, #a9b6b0); }
+.cv-holiday:not(.on) p { margin: 0; }
+.hd-bar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; margin-bottom: 4px; }
+.hd-bar i { display: block; height: 100%; background: linear-gradient(90deg, #f6c445, var(--accent)); border-radius: inherit; }
+.cv-holiday small { font-size: 12px; color: var(--cd-muted, #a9b6b0); }
+.hd-play { padding: 10px 16px; border: none; border-radius: 12px; font: inherit; font-weight: 800; color: #fff; background: var(--accent); cursor: pointer; }
+/* Taxta "Mavzuga mos" (data-board yo'q) bo'lsa — bayram ranglari */
+:root[data-holiday="navruz"]:not([data-board]) { --bd-light: #f3f0d8; --bd-dark: #5c9b4a; }
+:root[data-holiday="newyear"]:not([data-board]) { --bd-light: #eaf2fb; --bd-dark: #2f6f9f; }
+:root[data-holiday="independence"]:not([data-board]) { --bd-light: #f2f7fb; --bd-dark: #2a9bc1; }
+:root[data-holiday="chessday"]:not([data-board]) { --bd-light: #f0e3c8; --bd-dark: #8a6a43; }
+:root[data-holiday="ramazon"]:not([data-board]) { --bd-light: #e9eef3; --bd-dark: #2f5d62; }
+:root[data-holiday="qurbon"]:not([data-board]) { --bd-light: #f1ead9; --bd-dark: #8c6d3f; }

@@ -332,7 +332,7 @@ test("Nishonlar: profilda tugma, 6 tur, olinganlari ajralib turadi", opts, async
   assert.equal(await p.evaluate(() => document.getElementById('profBadgeCount').textContent), '0');
   await p.click('#profBadgeBtn');
   await p.waitForSelector('#profBadgePanel:not([hidden]) .nb-item', { timeout: 5000 });
-  assert.equal(await p.evaluate(() => document.querySelectorAll('#profBadges .nb-item').length), 6);
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#profBadges .nb-item').length), 7);
   assert.equal(await p.evaluate(() => document.querySelectorAll('#profBadges .nb-item.earned').length), 0);
   // Nishonlar bilan (sahifada chizish): 2 hafta, Samarqandgacha karvon, 1 oylik mukofot
   await p.evaluate(() => window.renderProfileBadges({ caravan: 190, badges: { questWeeks: ['2026-10-19', '2026-10-12'], gameOfDay: [{ day: '2026-10-20', opponent: 'Ali' }] }, sportsmanship: { awards: ['2026-09'] }, predictions: { awards: [] }, duels: { won: 2 } }));
@@ -375,6 +375,40 @@ test("Profil bo'limlari alohida sahifada: manzil, havola orqali ochish, ← Orqa
   assert.equal(await p2.evaluate(() => location.pathname + location.search), '/profil?u=' + encodeURIComponent(u.name) + '&b=nishonlar');
   if (process.env.UI_SHOTS) await p2.screenshot({ path: process.env.UI_SHOTS + '/sect-badge-pc.png' });
   assert.deepEqual(p2.errors, []);
+});
+
+test("Bayramlar: tabrik, taxta bayram rangida, Karvon yo'lida vazifa kartasi; oddiy kunda — keyingi bayram", opts, async () => {
+  const u = await srv.register('Holi');
+  // Oddiy kun: Karvon yo'lida "Keyingi bayram"
+  const p0 = await page(u);
+  await p0.goto(srv.base + '/karvon', { waitUntil: 'domcontentloaded' });
+  await p0.waitForSelector('#caravanRoot .cv-holiday', { timeout: 15000 });
+  assert.match(await p0.evaluate(() => document.querySelector('#caravanRoot .cv-holiday h2').textContent), /Keyingi bayram/);
+  // Bayram kuni (server javobi soxta): Navro'z, 1/3
+  const p = await page(u);
+  await p.setRequestInterception(true);
+  p.on('request', (r) => {
+    if (r.url().endsWith('/api/holiday')) {
+      return r.respond({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, active: [{ key: 'navruz', icon: '🌷', year: 2027, need: 3, endsAt: new Date(Date.now() + 2 * 864e5).toISOString(), mine: { key: 'navruz', have: 1, done: false } }], next: null }) });
+    }
+    r.continue();
+  });
+  await p.goto(srv.base + '/karvon', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#caravanRoot .cv-holiday.on', { timeout: 15000 });
+  const st = await p.evaluate(() => ({
+    attr: document.documentElement.getAttribute('data-holiday'),
+    dark: getComputedStyle(document.documentElement).getPropertyValue('--bd-dark').trim(),
+    title: document.querySelector('.cv-holiday.on h2').textContent,
+    prog: document.querySelector('.cv-holiday.on small').textContent
+  }));
+  assert.equal(st.attr, 'navruz');
+  assert.equal(st.dark, '#5c9b4a', "taxta 'Mavzuga mos' — Navro'z rangi");
+  assert.match(st.title, /Navro'z muborak/);
+  assert.match(st.prog, /^1\/3/);
+  await p.waitForFunction(() => [...document.querySelectorAll('.toast')].some((t) => /muborak/.test(t.textContent)), { timeout: 8000 });
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/holiday.png' });
+  assert.deepEqual(p.errors, []);
+  assert.deepEqual(p0.errors, []);
 });
 
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {

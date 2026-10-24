@@ -17,6 +17,9 @@ const Shatranj = require('./shatranj');
 const VARIANTS = ['standard', 'chess960', 'shatranj'];
 const normVariant = (v) => (VARIANTS.includes(v) ? v : 'standard');
 const Caravan = require('./caravan');
+const Holidays = require('./holidays');
+// Faqat testlar: HOLIDAY_FORCE=navruz — bayram hozir davom etayotgandek
+const HOLIDAY_FORCE = process.env.NODE_ENV === 'test' ? process.env.HOLIDAY_FORCE || null : null;
 const Quests = require('./quests');
 
 const db = require('./database');
@@ -495,6 +498,7 @@ async function endGame(roomId, room, winnerColor, reason) {
           }
         }
         if (!isGuest(p.userId)) questProgress(p.userId).catch((err) => console.error('Vazifalar xatoligi:', err));
+        if (!isGuest(p.userId)) holidayProgress(p.userId).catch((err) => console.error('Bayram vazifasi xatoligi:', err));
         // 🐪 Karvon yo'li: qadamlar statistikadan; yangi shaharga yetgan bo'lsa — bildirishnoma (mehmonga emas)
         let caravan = null;
         if (statsData && statsData.stats) {
@@ -876,7 +880,7 @@ async function sendPush(userId, type, data, tag, opts) {
   if (!subs.length) return 0;
   const prefs = await db.getPushPrefs(userId);
   let ownName = null;
-  if (['achievement', 'rank_up'].includes(type)) { const u = await db.getUserById(userId); ownName = u && u.username; }
+  if (['achievement', 'rank_up', 'duel_end', 'holiday_badge'].includes(type)) { const u = await db.getUserById(userId); ownName = u && u.username; }
   let sent = 0;
   for (const sub of subs) {
     const m = pushMessage(type, data, sub.lang, ownName);
@@ -1037,6 +1041,21 @@ async function questProgress(userId, now) {
   }
   return { week, endsAt: to, quests: list, completed, badges: await db.countQuestWeeks(userId) };
 }
+// 🌸 Bayram vazifasi: davom etayotgan har bayram uchun shu kunlardagi o'yinlar soni; NEED ga yetsa — nishon va bildirishnoma
+async function holidayProgress(userId, now) {
+  const out = [];
+  for (const h of Holidays.active(now, HOLIDAY_FORCE)) {
+    const games = (await db.getUserHistory(userId, { from: new Date(h.start).toISOString(), to: new Date(h.end).toISOString() })).filter((g) => g.reason !== 'aborted');
+    let done = await db.hasHolidayBadge(userId, h.key, h.year);
+    if (!done && games.length >= h.need) {
+      done = true;
+      if (await db.addHolidayBadge(userId, h.key, h.year)) notify(userId, 'holiday_badge', { holiday: h.key, year: h.year });
+    }
+    out.push({ key: h.key, have: games.length, done });
+  }
+  return out;
+}
+
 // "3+2" → rejim (clockMode bilan bir xil qoida)
 function clockModeOfLabel(label) {
   const m = /^(\d+(?:\.\d+)?)\+(\d+)$/.exec(String(label || ''));
@@ -2510,6 +2529,21 @@ async function start() {
     } catch (err) { console.error('Debyutlar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  // 🌸 Bayram: davom etayotganlari (kirgan bo'lsa — o'z progressi) va keyingisi
+  app.get('/api/holiday', apiLimiter, async (req, res) => {
+    try {
+      const viewer = optionalUserId(req);
+      const act = Holidays.active(Date.now(), HOLIDAY_FORCE);
+      const mine = viewer && !isGuest(viewer) && act.length ? await holidayProgress(viewer) : [];
+      const nx = Holidays.next(Date.now());
+      res.json({
+        success: true,
+        active: act.map((h) => ({ key: h.key, icon: h.icon, year: h.year, need: h.need, endsAt: new Date(h.end).toISOString(), mine: mine.find((m) => m.key === h.key) || null })),
+        next: nx ? { key: nx.key, icon: nx.icon, year: nx.year, need: nx.need, startsAt: new Date(nx.start).toISOString() } : null
+      });
+    } catch (err) { console.error('Bayram xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.get('/api/users/:username/extras', apiLimiter, async (req, res) => {
     try {
       const u = await db.getUserByUsername(String(req.params.username));
@@ -2528,7 +2562,7 @@ async function start() {
         banner: isGuest(u.id) ? null : bannerOf(u),
         questBadges: await db.countQuestWeeks(u.id),
         duels: await db.duelSummary(u.id),
-        badges: { questWeeks: await db.listQuestWeeks(u.id), gameOfDay: await db.gameOfDayFor(u.id, u.username) },
+        badges: { questWeeks: await db.listQuestWeeks(u.id), gameOfDay: await db.gameOfDayFor(u.id, u.username), holidays: await db.listHolidayBadges(u.id) },
         predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)
       });

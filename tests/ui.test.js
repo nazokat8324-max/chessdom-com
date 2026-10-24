@@ -7,11 +7,13 @@ const { startServer, sleep } = require('./helpers');
 const CHROME = [process.env.CHROME_PATH, 'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
   '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser',
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'].find((p) => p && fs.existsSync(p));
-const opts = { skip: CHROME ? false : 'Chrome topilmadi (CHROME_PATH)' };
+// `npm run test:quick` — brauzer testlarisiz (Chrome og'ir; to'liq to'plam GitHub Actions'da har push'da ishlaydi)
+const QUICK = process.env.npm_lifecycle_event === 'test:quick';
+const opts = { skip: QUICK ? 'test:quick — brauzer testlari o\'tkazildi' : CHROME ? false : 'Chrome topilmadi (CHROME_PATH)' };
 
 let srv, browser;
 before(async () => {
-  if (!CHROME) return;
+  if (!CHROME || QUICK) return;
   srv = await startServer();
   browser = await require('puppeteer-core').launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox'] });
 });

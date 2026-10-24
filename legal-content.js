@@ -482,7 +482,7 @@ window.LEGAL_CREDITS = {
     ['chessboard.js 1.0.0', 'https://chessboardjs.com', 'Chris Oakman', 'MIT', 'https://opensource.org/license/mit'],
     ['Socket.IO 4.7.2', 'https://socket.io', 'Guillermo Rauch & contributors', 'MIT', 'https://opensource.org/license/mit'],
     ['howler.js 2.2.4', 'https://howlerjs.com', 'James Simpson (GoldFire Studios)', 'MIT', 'https://opensource.org/license/mit'],
-    ['Chart.js', 'https://www.chartjs.org', 'Chart.js contributors', 'MIT', 'https://opensource.org/license/mit'],
+    ['Chart.js 4.6.1', 'https://www.chartjs.org', 'Chart.js contributors', 'MIT', 'https://opensource.org/license/mit'],
     ['canvas-confetti 1.9.3', 'https://github.com/catdad/canvas-confetti', 'Kiril Vatev', 'ISC', 'https://opensource.org/license/isc-license-txt'],
     ['i18next 23.11.5', 'https://www.i18next.com', 'Jan Mühlemann & contributors', 'MIT', 'https://opensource.org/license/mit'],
     ['animate.css 4.1.1', 'https://animate.style', 'Daniel Eden & contributors', 'MIT', 'https://opensource.org/license/mit'],

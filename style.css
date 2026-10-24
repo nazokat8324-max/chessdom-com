@@ -15712,3 +15712,7 @@ body.auth-locked {
 .pg-variant-seg button.active { background: rgba(var(--accent-rgb), 0.2); color: #fff; }
 .pg-variant-box .rated-sublabel { margin-top: 6px; }
 .profile-rating-card.mode-shatranj .profile-mode-icon { filter: saturate(1.1); }
+
+/* Raqib-do'stlar — profilda "Ma'lumotlar" ostida o'z bo'limida (2026-10-24); bo'sh bo'lsa joy egallamasin */
+#profileModal .profile-section:has(> .profile-rivals[hidden]) { display: none; }
+#profileModal .profile-section > .profile-rivals { margin-top: 0; }

@@ -929,6 +929,17 @@ async function duelSummary(userId) {
   return out;
 }
 
+// 🎖️ Nishonlar: bajarilgan haftalar (yangidan eskiga) va Kun o'yini bo'lgan o'yinlar (oq — user_id, qora — raqib nomi bo'yicha)
+async function listQuestWeeks(userId) {
+  const rows = await dbAll('SELECT week FROM quest_weeks WHERE user_id = ? ORDER BY week DESC', [userId]);
+  return rows.map((r) => r.week);
+}
+async function gameOfDayFor(userId, username) {
+  return dbAll(`SELECT g.day as "day", CASE WHEN g.user_id = ? THEN ug.opponent ELSE u.username END as "opponent"
+    FROM game_of_day g JOIN user_games ug ON ug.id = g.game_id AND ug.user_id = g.user_id JOIN users u ON u.id = g.user_id
+    WHERE g.user_id = ? OR ug.opponent = ? ORDER BY g.day DESC LIMIT 60`, [userId, userId, username]);
+}
+
 async function countQuestWeeks(userId) {
   const r = await dbGet('SELECT COUNT(*) as "n" FROM quest_weeks WHERE user_id = ?', [userId]);
   return Number(r && r.n) || 0;
@@ -2427,6 +2438,8 @@ module.exports = {
   getPushPrefs,
   setPushPrefs,
   setProfileBanner,
+  listQuestWeeks,
+  gameOfDayFor,
   createDuel,
   updateDuel,
   stopStaleDuels,

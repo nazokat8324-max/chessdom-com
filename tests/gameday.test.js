@@ -37,6 +37,10 @@ test("Kun o'yini: uzun o'yin tanlanadi va o'zgarmaydi, ikkala o'yinchiga bildiri
   for (const u of [a, b]) {
     const n = await srv.api(u, '/api/notifications');
     assert.ok(n.notifications.some((x) => x.type === 'game_of_day'), u.name + ' bildirishnoma');
+    // 🎖️ Nishonlar: oq ham, qora ham
+    const ex = await srv.api(null, '/api/users/' + u.name + '/extras');
+    assert.equal(ex.badges.gameOfDay.length, 1, u.name + ' Kun o\'yini nishoni');
+    assert.equal(ex.badges.gameOfDay[0].opponent, u === a ? b.name : a.name);
   }
   // Keyingi kun: bu o'yin qayta tanlanmaydi (oxirgi 30 kunda tanlanganlar chiqarib tashlanadi), boshqa o'yin yo'q
   assert.equal((await srv.api(null, '/api/test/game-of-day?now=' + (tomorrow + 86400000))).game, null);

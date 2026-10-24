@@ -57,7 +57,7 @@
   }
 
   window.toggleProfilePanel = function (name, force) {
-    const panels = { ach: ['profAchPanel', 'profAchBtn'], ext: ['profExtPanel', 'profExtBtn'], open: ['profOpenPanel', 'profOpenBtn'] };
+    const panels = { ach: ['profAchPanel', 'profAchBtn'], ext: ['profExtPanel', 'profExtBtn'], open: ['profOpenPanel', 'profOpenBtn'], badge: ['profBadgePanel', 'profBadgeBtn'] };
     Object.entries(panels).forEach(([key, [panelId, btnId]]) => {
       const panel = document.getElementById(panelId), btn = document.getElementById(btnId);
       if (!panel) return;
@@ -94,6 +94,7 @@
       !!(st.data && window.currentUser && !window.currentUser.guest && window.currentUser.username === st.username));
     if (window.renderProfilePredict) window.renderProfilePredict(st.data && st.data.predictions);
     if (window.renderProfileDuels) window.renderProfileDuels(st.data && st.data.duels);
+    if (window.renderProfileBadges) window.renderProfileBadges(st.data);
     const banner = document.getElementById('profileCheater');
     if (banner) banner.hidden = !(st.data && st.data.cheater);
   }

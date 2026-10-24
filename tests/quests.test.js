@@ -65,5 +65,6 @@ test("API: joriy haftaning 3 ta vazifasi, o'yin progressni oshiradi, mehmonga yo
   const expect = Quests.progress([{ result: 'win', reason: 'resign', color: g.white === a ? 'w' : 'b', rated: true, mode: 'blitz', moveCount: 2 }]);
   assert.deepEqual(after1.quests.map((q) => q.have), expect.map((q) => q.have));
   assert.equal(typeof after1.badges, 'number');
+  assert.deepEqual((await srv.api(null, '/api/users/' + a.name + '/extras')).badges.questWeeks, [], "🎖️ nishonlar: hali bajarilgan hafta yo'q");
   assert.ok(new Date(after1.endsAt) > new Date());
 });

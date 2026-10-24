@@ -2528,6 +2528,7 @@ async function start() {
         banner: isGuest(u.id) ? null : bannerOf(u),
         questBadges: await db.countQuestWeeks(u.id),
         duels: await db.duelSummary(u.id),
+        badges: { questWeeks: await db.listQuestWeeks(u.id), gameOfDay: await db.gameOfDayFor(u.id, u.username) },
         predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)
       });

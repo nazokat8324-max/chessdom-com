@@ -323,6 +323,25 @@ test("O'yin hikoyasi: tahlildan keyin oynada bosqichlar, bosilsa taxtada o'sha p
   assert.deepEqual(p.errors, []);
 });
 
+test("Nishonlar: profilda tugma, 6 tur, olinganlari ajralib turadi", opts, async () => {
+  const u = await srv.register('Badge');
+  const p = await page(u);
+  await p.goto(srv.base + '/?profile=' + u.name, { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#profBadgeBtn', { visible: true, timeout: 15000 });
+  await p.waitForFunction(() => document.getElementById('profBadgeCount').textContent !== '', { timeout: 15000 });
+  assert.equal(await p.evaluate(() => document.getElementById('profBadgeCount').textContent), '0');
+  await p.click('#profBadgeBtn');
+  await p.waitForSelector('#profBadgePanel:not([hidden]) .nb-item', { timeout: 5000 });
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#profBadges .nb-item').length), 6);
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#profBadges .nb-item.earned').length), 0);
+  // Nishonlar bilan (sahifada chizish): 2 hafta, Samarqandgacha karvon, 1 oylik mukofot
+  await p.evaluate(() => window.renderProfileBadges({ caravan: 190, badges: { questWeeks: ['2026-10-19', '2026-10-12'], gameOfDay: [{ day: '2026-10-20', opponent: 'Ali' }] }, sportsmanship: { awards: ['2026-09'] }, predictions: { awards: [] }, duels: { won: 2 } }));
+  const st = await p.evaluate(() => ({ earned: document.querySelectorAll('#profBadges .nb-item.earned').length, count: document.getElementById('profBadgeCount').textContent, stamps: document.querySelectorAll('#profBadges .nb-stamp.on').length }));
+  assert.deepEqual(st, { earned: 5, count: String(2 + 5 + 1 + 2 + 1), stamps: 5 });
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/badges.png' });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

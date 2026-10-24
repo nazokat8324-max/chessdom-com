@@ -2546,6 +2546,7 @@
     <script src="voice.js"></script>
     <script src="duels.js"></script>
     <script src="gamestory.js"></script>
+    <script src="profile-badges.js"></script>
     <script src="myopenings.js"></script>
     <script src="clubs.js"></script>
     <script src="gameday.js"></script>
@@ -3037,6 +3038,10 @@
                 📖 <span data-i18n="opTitle">Debyutlarim</span
                 ><i class="pt-arrow">▾</i>
               </button>
+              <!-- profile-badges.js — barcha nishonlar bir joyda -->
+              <button type="button" class="profile-games-btn profile-toggle" id="profBadgeBtn" onclick="window.toggleProfilePanel('badge')">
+                🎖️ <span data-i18n="nbTitle">Nishonlar</span> <small class="ach-count" id="profBadgeCount"></small><i class="pt-arrow">▾</i>
+              </button>
               <!-- wrapped.js — oy yakuni hikoyasi -->
               <button
                 type="button"
@@ -3055,6 +3060,9 @@
             </div>
             <div class="profile-panel" id="profExtPanel" hidden>
               <div class="ex-grid" id="profExtStats"></div>
+            </div>
+            <div class="profile-panel" id="profBadgePanel" hidden>
+              <div class="nb-grid" id="profBadges"></div>
             </div>
             <!-- myopenings.js — o'yinchining debyutlari -->
             <div class="profile-panel" id="profOpenPanel" hidden>

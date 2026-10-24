@@ -10,7 +10,7 @@ window.LEGAL_TEXT = {
         ["Qanday ma'lumotlarni saqlaymiz", [
           ["Hisob: foydalanuvchi nomi, email (ixtiyoriy), parol — faqat shifrlangan ko'rinishda (bcrypt xesh), davlat, profil rasmi, profilga o'zingiz yozgan ma'lumotlar.",
            "O'yinlar: yurishlar, natijalar, reyting tarixi, statistika, yutuqlar, bashoratlar va odob baholari.",
-           "Muloqot: shaxsiy xabarlar, klub va o'yin chatlari, tomoshabinlar chati, o'yinlarga izohlar, shikoyatlar.",
+           "Muloqot: shaxsiy xabarlar, klub va o'yin chatlari, tomoshabinlar chati, shikoyatlar.",
            "Texnik: IP manzil (faqat so'rovlar sonini cheklash uchun, server xotirasida vaqtincha), internet kechikishi, o'yin paytida sahifadan chiqishlar va yurish vaqtlari (halol o'yin tekshiruvi uchun).",
            "Brauzeringizda (localStorage): kirish tokeni, sozlamalar va til. Biz cookie, reklama yoki kuzatuv (analitika) skriptlaridan foydalanmaymiz."]
         ]],
@@ -88,7 +88,7 @@ window.LEGAL_TEXT = {
         ['What we store', [
           ['Account: username, email (optional), password — only as an encrypted bcrypt hash, country, profile picture and anything you add to your profile.',
            'Games: moves, results, rating history, statistics, achievements, predictions and sportsmanship votes.',
-           'Communication: private messages, club and game chats, spectator chat, game notes and reports.',
+           'Communication: private messages, club and game chats, spectator chat and reports.',
            'Technical: IP address (only to rate-limit requests, kept temporarily in server memory), connection latency, leaving the page during a game and move times (for fair-play checks).',
            'In your browser (localStorage): your login token, settings and language. We do not use cookies, ads or tracking (analytics) scripts.']
         ]],
@@ -166,7 +166,7 @@ window.LEGAL_TEXT = {
         ['Какие данные мы храним', [
           ['Аккаунт: имя пользователя, email (необязательно), пароль — только в зашифрованном виде (хеш bcrypt), страна, фото профиля и сведения, которые вы добавили в профиль.',
            'Партии: ходы, результаты, история рейтинга, статистика, достижения, прогнозы и оценки вежливости.',
-           'Общение: личные сообщения, чаты клубов и партий, чат зрителей, комментарии к партиям, жалобы.',
+           'Общение: личные сообщения, чаты клубов и партий, чат зрителей, жалобы.',
            'Технические данные: IP-адрес (только для ограничения числа запросов, временно в памяти сервера), задержка соединения, уходы со страницы во время партии и время ходов (для проверки честной игры).',
            'В вашем браузере (localStorage): токен входа, настройки и язык. Мы не используем cookie, рекламу и скрипты слежения (аналитику).']
         ]],
@@ -244,7 +244,7 @@ window.LEGAL_TEXT = {
         ['Qué datos guardamos', [
           ['Cuenta: nombre de usuario, email (opcional), contraseña — solo como hash cifrado bcrypt, país, foto de perfil y lo que añadas a tu perfil.',
            'Partidas: jugadas, resultados, historial de rating, estadísticas, logros, predicciones y votos de deportividad.',
-           'Comunicación: mensajes privados, chats de club y de partida, chat de espectadores, notas de partidas y denuncias.',
+           'Comunicación: mensajes privados, chats de club y de partida, chat de espectadores y denuncias.',
            'Técnicos: dirección IP (solo para limitar peticiones, temporalmente en la memoria del servidor), latencia, salidas de la página durante la partida y tiempos de jugada (para el control de juego limpio).',
            'En tu navegador (localStorage): token de sesión, ajustes e idioma. No usamos cookies, publicidad ni scripts de seguimiento (analítica).']
         ]],
@@ -322,7 +322,7 @@ window.LEGAL_TEXT = {
         ['Welche Daten wir speichern', [
           ['Konto: Benutzername, E-Mail (optional), Passwort — nur als verschlüsselter bcrypt-Hash, Land, Profilbild und deine Profilangaben.',
            'Partien: Züge, Ergebnisse, Wertungsverlauf, Statistiken, Erfolge, Tipps und Fairness-Bewertungen.',
-           'Kommunikation: private Nachrichten, Klub- und Partie-Chats, Zuschauer-Chat, Partie-Notizen und Meldungen.',
+           'Kommunikation: private Nachrichten, Klub- und Partie-Chats, Zuschauer-Chat und Meldungen.',
            'Technisch: IP-Adresse (nur zur Begrenzung von Anfragen, vorübergehend im Serverspeicher), Verbindungslatenz, Verlassen der Seite während einer Partie und Zugzeiten (für Fair-Play-Prüfungen).',
            'In deinem Browser (localStorage): Anmelde-Token, Einstellungen und Sprache. Wir nutzen keine Cookies, keine Werbung und keine Tracking- bzw. Analyse-Skripte.']
         ]],
@@ -400,7 +400,7 @@ window.LEGAL_TEXT = {
         ['Données conservées', [
           ["Compte : nom d'utilisateur, email (facultatif), mot de passe — uniquement sous forme de hachage bcrypt, pays, photo de profil et ce que vous ajoutez à votre profil.",
            'Parties : coups, résultats, historique du classement, statistiques, succès, pronostics et votes de fair-play.',
-           'Communication : messages privés, chats de club et de partie, chat des spectateurs, notes de parties et signalements.',
+           'Communication : messages privés, chats de club et de partie, chat des spectateurs et signalements.',
            'Données techniques : adresse IP (uniquement pour limiter les requêtes, temporairement en mémoire du serveur), latence, sorties de la page pendant une partie et temps de jeu (pour le contrôle du fair-play).',
            "Dans votre navigateur (localStorage) : jeton de connexion, réglages et langue. Nous n'utilisons ni cookies, ni publicité, ni scripts de suivi (analytique)."]
         ]],

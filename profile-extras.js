@@ -7,7 +7,7 @@
     games_10: '♟️', games_100: '🎯', games_500: '🏛️',
     streak_5: '🔥', streak_10: '☄️', mate_10: '⚔️',
     rank_gold: '♝', rank_platinum: '♜', rank_diamond: '♛', rank_master: '★',
-    chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', tournament_win: '👑', sportsman: '🎖️', oracle: '🔮', mentor: '🎓', invite_3: '📣', invite_10: '🌟', duel_win: '🤺'
+    chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', tournament_win: '👑', sportsman: '🎖️', oracle: '🔮', invite_3: '📣', invite_10: '🌟', duel_win: '🤺'
   };
   const ACH_TEXT = {
     first_win: ["Birinchi g'alaba", "Birinchi g'alabangizni qozoning"],
@@ -32,7 +32,6 @@
     tournament_win: ["Turnir g'olibi", 'Swiss turnirida birinchi o\'rinni egallang'],
     sportsman: ["Oyning odobli o'yinchisi", "Oy davomida eng ko'p 👍 odob bahosini oling"],
     oracle: ["Oyning bashoratchisi", "Oy davomida bashorat o'yinida eng ko'p ochko to'plang"],
-    mentor: ['Ustoz', "Shogirdingiz reytingini 100 ga oshiring"],
     invite_3: ['Taklifchi', "Havolangiz orqali 3 ta do'stingizni saytga olib keling"],
     invite_10: ['ChessCaravan elchisi', "Havolangiz orqali 10 ta do'stingizni saytga olib keling"],
     duel_win: ["Bahs g'olibi", "Do'stingiz bilan 3, 5 yoki 7 o'yinlik bahsda g'alaba qozoning"]
@@ -77,7 +76,6 @@
     st.username = username;
     st.data = null;
     renderAll();
-    if (window.loadProfileMentor) window.loadProfileMentor(username);
     const headers = window.authToken ? { Authorization: 'Bearer ' + window.authToken } : {};
     const d = await fetch('/api/users/' + encodeURIComponent(username) + '/extras', { headers }).then(r => r.json()).catch(() => null);
     if (st.username !== username) return;

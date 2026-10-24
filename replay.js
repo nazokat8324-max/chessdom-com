@@ -1,6 +1,6 @@
 // O'yinni qayta ko'rish: profildagi "Oxirgi o'yinlar" qatori bosilsa ochiladi.
 // Server: GET /api/users/:username/games/:gameId/replay (yurishlar SAN ko'rinishida, o'yinchining rangi, natija).
-// Ustoz izohlari (mentor.js) uchun: #rpNotes joyi, document hodisalari replay:open / replay:ply / replay:close, window.replayGo(ply).
+// Kengaytmalar uchun: document hodisalari replay:open / replay:ply / replay:close, window.replayGo(ply).
 (function () {
   const st = { game: null, sans: [], moves: [], fens: [], ply: 0, board: null, analysis: null, anToken: 0 };
 
@@ -189,7 +189,6 @@
           <p class="rp-opening" id="rpOpening" hidden></p>
           ${st.moves.length >= 2 && (!window.variantAnalysable || window.variantAnalysable(g.variant)) ? `<div class="rp-analysis" id="rpAnalysis">${anButton()}</div>` : ''}
           <div class="rp-moves">${moves || `<p class="rp-meta">${esc(tx('lvNoMoves', 'Hali yurish qilinmadi'))}</p>`}</div>
-          <div class="rp-notes" id="rpNotes" hidden></div>
           <button class="rp-pgn" data-pgn="1">📄 ${esc(tx('rpDownloadPgn', 'PGN yuklab olish'))}</button>
           ${st.sans.length && typeof window.openGameShare === 'function' ? `<button class="rp-pgn" data-share-game="1">📤 ${esc(tx('shTitle', "O'yinni ulashish"))}</button>` : ''}
         </div>

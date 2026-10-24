@@ -38,7 +38,7 @@ async function sendNotification(userId, type, data, opts) {
   const link = await deps.db.getTelegramLink(userId);
   if (!link) return false;
   let ownName = null;
-  if (['mentor_request', 'achievement', 'rank_up'].includes(type)) { const u = await deps.db.getUserById(userId); ownName = u && u.username; }
+  if (['achievement', 'rank_up'].includes(type)) { const u = await deps.db.getUserById(userId); ownName = u && u.username; }
   const m = pushMessage(type, data, link.lang, ownName);
   if (!force) {
     const prefs = await deps.db.getPushPrefs(userId);

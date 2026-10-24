@@ -14,10 +14,6 @@ const T = {
   follow_playing: L("{{name}} o'yin boshladi — tomosha qiling", '{{name}} started a game — watch it', '{{name}} начал партию — смотрите', '{{name}} empezó una partida: mírala', '{{name}} hat eine Partie begonnen — schau zu', '{{name}} a commencé une partie — regardez'),
   league_ready: L("Liga o'yini: {{opponent}} sizni kutmoqda", 'League game: {{opponent}} is waiting for you', 'Матч лиги: {{opponent}} ждёт вас', 'Partida de liga: {{opponent}} te espera', 'Ligapartie: {{opponent}} wartet auf dich', 'Match de ligue : {{opponent}} vous attend'),
   tournament_soon: L('«{{name}}» turniri 1 daqiqadan keyin boshlanadi', 'The “{{name}}” tournament starts in 1 minute', 'Турнир «{{name}}» начнётся через минуту', 'El torneo «{{name}}» empieza en 1 minuto', 'Das Turnier „{{name}}“ beginnt in 1 Minute', 'Le tournoi « {{name}} » commence dans 1 minute'),
-  mentor_request: L("{{from}}: ustoz-shogird taklifi 🎓", '{{from}}: mentorship request 🎓', '{{from}}: предложение наставничества 🎓', '{{from}}: solicitud de mentoría 🎓', '{{from}}: Mentor-Anfrage 🎓', '{{from}} : demande de mentorat 🎓'),
-  mentor_accepted: L("{{from}} bilan ustoz-shogirdlik boshlandi 🎓", 'Mentorship with {{from}} has started 🎓', 'Наставничество с {{from}} началось 🎓', 'Comenzó la mentoría con {{from}} 🎓', 'Mentorschaft mit {{from}} gestartet 🎓', 'Mentorat avec {{from}} commencé 🎓'),
-  mentor_note: L("{{from}} o'yinga izoh qoldirdi 💬", '{{from}} left a note on a game 💬', '{{from}} прокомментировал партию 💬', '{{from}} dejó una nota en una partida 💬', '{{from}} hat eine Partie kommentiert 💬', '{{from}} a commenté une partie 💬'),
-  student_game: L("Shogirdingiz {{student}} o'ynadi — izoh qoldiring", 'Your student {{student}} played — leave a note', 'Ваш ученик {{student}} сыграл — прокомментируйте', 'Tu alumno {{student}} jugó: deja una nota', 'Dein Schüler {{student}} hat gespielt — schreib eine Notiz', 'Votre élève {{student}} a joué — laissez une note'),
   prediction_won: L("Bashoratingiz to'g'ri chiqdi! +{{points}} 🔮", 'Your prediction was right! +{{points}} 🔮', 'Прогноз сбылся! +{{points}} 🔮', '¡Acertaste! +{{points}} 🔮', 'Richtig getippt! +{{points}} 🔮', 'Bon pronostic ! +{{points}} 🔮'),
   achievement: L('Yangi yutuq! 🏅', 'New achievement! 🏅', 'Новое достижение! 🏅', '¡Nuevo logro! 🏅', 'Neuer Erfolg! 🏅', 'Nouveau succès ! 🏅'),
   quests_done: L("🎯 Haftalik vazifalar bajarildi! Nishonlar: {{total}}", '🎯 Weekly quests complete! Badges: {{total}}', '🎯 Недельные задания выполнены! Значков: {{total}}', '🎯 ¡Misiones semanales completadas! Insignias: {{total}}', '🎯 Wochenaufgaben erledigt! Abzeichen: {{total}}', '🎯 Quêtes de la semaine terminées ! Badges : {{total}}'),
@@ -36,8 +32,7 @@ const STICKER = L('🎨 Stiker', '🎨 Sticker', '🎨 Стикер', '🎨 Stic
 const CATEGORY = {
   challenge: 'challenge', message: 'message',
   invite_waiting: 'challenge',
-  friend_request: 'social', friend_accepted: 'social', invite_joined: 'social', rival_online: 'social', follow_playing: 'social',
-  mentor_request: 'social', mentor_accepted: 'social', mentor_note: 'social', student_game: 'social'
+  friend_request: 'social', friend_accepted: 'social', invite_joined: 'social', rival_online: 'social', follow_playing: 'social'
 };
 const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr'];
 
@@ -55,13 +50,11 @@ function pushMessage(type, data, lang, ownName) {
       vars = { ...d, preview: d.preview === '🎨' ? STICKER[l] : d.preview };
       url = '/xabarlar';
       break;
-    case 'friend_request': case 'friend_accepted': case 'mentor_accepted': case 'invite_joined': case 'invite_waiting': url = prof(d.from); break;
+    case 'friend_request': case 'friend_accepted': case 'invite_joined': case 'invite_waiting': url = prof(d.from); break;
     case 'rival_online': case 'follow_playing': url = type === 'follow_playing' ? '/jonli' : prof(d.name); break;
     case 'league_ready': url = '/ligalar'; break;
     case 'tournament_soon': url = '/turnirlar'; break;
-    case 'mentor_request': case 'achievement': case 'rank_up': url = prof(ownName); break;
-    case 'mentor_note': url = '/tarix?u=' + encodeURIComponent(d.owner || ''); break;
-    case 'student_game': url = '/tarix?u=' + encodeURIComponent(d.student || ''); break;
+    case 'achievement': case 'rank_up': url = prof(ownName); break;
     case 'prediction_won': url = '/jonli'; break;
     case 'game_of_day': url = '/jonli'; break;
     case 'quests_done': url = '/karvon'; break;

@@ -182,7 +182,7 @@
       : on ? `<span class="set-status granted">${esc(tx('setNotifOn', 'Yoqilgan ✓'))}</span><button type="button" class="set-mini" data-push-off>${esc(tx('pwaPushOff', "O'chirish"))}</button>`
         : `<button type="button" class="set-mini accent" data-push-on>${esc(tx('setNotifEnable', 'Yoqish'))}</button>`;
     const CATS = [['challenge', '⚔️', 'pwaCatChallenge', "O'yinga chaqiruvlar"], ['message', '💬', 'pwaCatMessage', 'Shaxsiy xabarlar'],
-      ['social', '🤝', 'pwaCatSocial', "Do'stlar, raqiblar, ustoz-shogird"], ['events', '🏆', 'pwaCatEvents', 'Liga, yutuqlar, bashoratlar va boshqalar']];
+      ['social', '🤝', 'pwaCatSocial', "Do'stlar, raqiblar, kuzatilayotganlar"], ['events', '🏆', 'pwaCatEvents', 'Liga, yutuqlar, bashoratlar va boshqalar']];
     el.innerHTML = head + `<div class="set-row"><span><b>${esc(tx('pwaPushThisDevice', 'Shu qurilmada'))}</b>${on && devices > 1 ? `<small>${esc(tx('pwaPushDevices', '{{n}} ta qurilmada yoqilgan', { n: devices }))}</small>` : ''}</span><span class="pwa-status">${status}</span></div>`
       + (on && prefs ? CATS.map(([k, ic, key, fb]) => `<label class="set-row set-toggle"><span><b>${ic} ${esc(tx(key, fb))}</b></span><input type="checkbox" data-push-cat="${k}" ${prefs[k] ? 'checked' : ''}><i class="set-switch"></i></label>`).join('')
         + `<div class="set-row"><span><small>${esc(tx('pwaPushSavedNow', "Bu sozlamalar darhol saqlanadi. Sayt ochiq va ko'rinib turganda push yuborilmaydi."))}</small></span><button type="button" class="set-mini" data-push-test>🔔 ${esc(tx('pwaPushTest', 'Sinab ko\'rish'))}</button></div>` : '')

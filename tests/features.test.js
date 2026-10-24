@@ -1,4 +1,4 @@
-// ChessCaravan'ning o'ziga xos imkoniyatlari: Choyxona, Raqib-do'st, Bayroqlar bellashuvi, Bashorat, Odob reytingi, Ustoz-shogird, Oy yakuni
+// ChessCaravan'ning o'ziga xos imkoniyatlari: Choyxona, Raqib-do'st, Bayroqlar bellashuvi, Bashorat, Odob reytingi, Oy yakuni
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const path = require('path');
@@ -99,30 +99,6 @@ test("Odob reytingi: o'yindan keyin bir marta baho", async () => {
   const ex = await srv.api(null, '/api/users/' + b.name + '/extras');
   assert.equal(ex.sportsmanship.up, 1);
   assert.equal(ex.sportsmanship.percent, 100);
-});
-
-test("Ustoz-shogird: shartlar, so'rov, qabul, izoh", async () => {
-  const m = await srv.register('Mm'), s = await srv.register('Ms'), weak = await srv.register('Mw');
-  // Ustoz bo'lish uchun reyting 1700+ va 20+ o'yin kerak — bazada o'rnatamiz
-  await sql("UPDATE users SET ratings_by_mode = ?, stats = ? WHERE id = ?", [JSON.stringify({ rapid: 1500, blitz: 1850, bullet: 1500 }), JSON.stringify({ wins: 25, losses: 0, draws: 0 }), m.id]);
-  assert.equal((await srv.api(s, '/api/mentor/request', 'POST', { username: weak.name, as: 'student' })).reason, 'mentor_weak');
-  const req = await srv.api(m, '/api/mentor/request', 'POST', { username: s.name, as: 'mentor' });
-  assert.equal(req.success, true);
-  assert.equal((await srv.api(m, '/api/mentor/request', 'POST', { username: s.name, as: 'mentor' })).reason, 'pending');
-  assert.equal((await srv.api(s, '/api/mentor/respond', 'POST', { id: req.id, accept: true })).status, 'active');
-  const prof = await srv.api(null, '/api/mentor/' + m.name);
-  assert.equal(prof.students[0].username, s.name);
-  // Shogirdning o'yiniga ustoz izohi
-  const g = await startGame(srv, s, weak);
-  await play(g, ['e2e4', 'e7e5']);
-  await finish(g, 'white-resigns');
-  closeAll(s, weak);
-  const gameId = (await srv.api(null, '/api/users/' + s.name + '/history')).games[0].id;
-  assert.equal((await srv.api(m, `/api/notes/${s.name}/${gameId}`, 'POST', { ply: 1, text: 'Yaxshi boshlanish' })).success, true);
-  assert.equal((await srv.api(weak, `/api/notes/${s.name}/${gameId}`, 'POST', { ply: 1, text: 'men ham' })).status, 403);
-  const notes = await srv.api(null, `/api/notes/${s.name}/${gameId}`);
-  assert.equal(notes.notes.length, 1);
-  assert.ok((await srv.api(m, '/api/notifications')).notifications.some((n) => n.type === 'student_game'));
 });
 
 test('Oy yakuni: oy statistikasi', async () => {

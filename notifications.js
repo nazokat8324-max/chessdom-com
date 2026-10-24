@@ -82,28 +82,6 @@
         return { icon: '⚔️', text: tx('nfRivalOnline', "Raqib-do'stingiz {{name}} onlayn! Hisob {{w}}–{{d}}–{{l}} — jang qilasizmi?", { name: d.name, w: d.win, d: d.draw, l: d.loss }), go: () => window.openChallengeDialog ? window.openChallengeDialog(d.name) : (window.openPlayerProfile && window.openPlayerProfile(d.name)) };
       case 'war_ruler':
         return { icon: '👑', text: tx('nfWarRuler', '{{club}} klubi {{season}} mavsumida Bayroqlar bellashuvi chempioni bo\'ldi — {{n}} hudud!', { club: clubName({ club: d.club, code: d.code }), season: d.season, n: d.territories }), go: () => switchView('war') };
-      case 'mentor_request':
-        return { icon: '🎓', text: d.as === 'mentor' ? tx('nfMentorOffer', "{{name}} sizga ustoz bo'lishni taklif qilmoqda", { name: d.from }) : tx('nfMentorAsk', "{{name}} ustozi bo'lishingizni so'ramoqda", { name: d.from }), go: () => window.openProfileModal && window.openProfileModal() };
-      case 'mentor_accepted':
-        return { icon: '🎓', text: d.as === 'student' ? tx('nfMentorNewStudent', "{{name}} endi sizning shogirdingiz", { name: d.from }) : tx('nfMentorNewMentor', "{{name}} endi sizning ustozingiz", { name: d.from }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
-      case 'mentor_ended':
-        return { icon: '🎓', text: tx('nfMentorEnded', "{{name}} bilan ustoz-shogirdlik tugadi", { name: d.from }), go: null };
-      case 'mentor_note':
-        return {
-          icon: '💬',
-          text: (d.count || 1) > 1 ? tx('nfMentorNotes', "{{name}} o'yinga {{count}} ta izoh qoldirdi", { name: d.from, count: d.count }) : tx('nfMentorNote', "{{name}} o'yinga izoh qoldirdi ({{owner}} — {{opponent}})", { name: d.from, owner: d.owner, opponent: d.opponent || '?' }),
-          go: () => window.openReplay && window.openReplay(d.owner, d.gameId)
-        };
-      case 'student_game': {
-        const res = { win: tx('wrWins', "G'alaba"), loss: tx('wrLosses', "Mag'lubiyat"), draw: tx('wrDraws', 'Durrang') }[d.result] || '';
-        return {
-          icon: '📜',
-          text: (d.count || 1) > 1 ? tx('nfStudentGames', "Shogirdingiz {{name}} {{count}} ta o'yin o'ynadi — izoh qoldiring", { name: d.student, count: d.count }) : tx('nfStudentGame', "Shogirdingiz {{name}}: {{result}} ({{opponent}} bilan) — izoh qoldiring", { name: d.student, result: res, opponent: d.opponent || '?' }),
-          go: () => window.openGameHistory && window.openGameHistory(d.student)
-        };
-      }
-      case 'mentor_milestone':
-        return { icon: '🎓', text: tx('nfMentorMilestone', "Shogirdingiz {{name}} reytingi +{{gain}} ga o'sdi! Sizga «Ustoz» nishoni", { name: d.student, gain: d.gain }), go: () => window.openProfileModal && window.openProfileModal() };
       case 'prediction_won':
         return {
           icon: '🔮',

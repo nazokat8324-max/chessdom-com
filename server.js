@@ -18,6 +18,8 @@ const VARIANTS = ['standard', 'chess960', 'shatranj'];
 const normVariant = (v) => (VARIANTS.includes(v) ? v : 'standard');
 const Caravan = require('./caravan');
 const Holidays = require('./holidays');
+const teamchess = require('./teamchess');
+let teamChess = null; // 🤝 2 ga 2 (start() da init)
 // Faqat testlar: HOLIDAY_FORCE=navruz — bayram hozir davom etayotgandek
 const HOLIDAY_FORCE = process.env.NODE_ENV === 'test' ? process.env.HOLIDAY_FORCE || null : null;
 const Quests = require('./quests');
@@ -55,7 +57,7 @@ app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram|teamchess)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -143,7 +145,7 @@ app.get(['/maxfiylik', '/shartlar', '/mualliflar', '/privacy', '/terms', '/credi
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon', 'profil']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon', 'profil', 'jamoa']);
 // Nomi o'zgargan bo'limlar: eski manzil → yangisi (301)
 const ROUTE_ALIASES = { urush: 'bayroqlar', dostlar: 'xabarlar', chat: 'xabarlar' };
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
@@ -2815,7 +2817,9 @@ async function start() {
     catch (err) { console.error('Club leaderboard xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  teamChess = teamchess.init({ io, cleanChat, mutedUntil });
   io.on('connection', (socket) => {
+    teamChess.attach(socket);
     // Ochiq sahifalar yangi deployni sezishi uchun
     socket.emit('app-version', APP_VERSION);
     console.log('Yangi o\'yinchi ulandi:', socket.id);
@@ -3169,6 +3173,7 @@ async function start() {
         }
       }
       league.socketGone(socket.id);
+      teamChess.socketGone(socket);
       teaStand(null, socket.id);
       pruneMatchmakingQueue();
       for (const [roomId, room] of rooms.entries()) {

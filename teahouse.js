@@ -111,6 +111,7 @@
           <span class="tea-kicker">🍵 ${esc(tx('teaKicker', 'Faqat ChessCaravan da'))}</span>
           <h1>${esc(tx('teaTitle', 'Choyxona'))}</h1>
           <p>${esc(tx('teaLead', "Bo'sh stulga o'tiring — kimdir qarshingizga o'tirishi bilan o'yin boshlanadi. Band stollarni bosib, o'yinni tomosha qiling."))}</p>
+          <button type="button" class="tea-team-btn" onclick="window.openTeamChess()">🤝 ${esc(tx('tmTeaBtn', "2 ga 2 stol — do'stlar bilan jamoa bo'lib"))}</button>
         </div>
         <div class="tea-stats">
           <div><b>${st.online}</b><small>${esc(tx('teaOnline', 'onlayn'))}</small></div>

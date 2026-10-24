@@ -411,6 +411,46 @@ test("Bayramlar: tabrik, taxta bayram rangida, Karvon yo'lida vazifa kartasi; od
   assert.deepEqual(p0.errors, []);
 });
 
+test("2 ga 2: stol ro'yxati, o'rinda o'tirish, o'z navbatida sudrab yurish, jamoa chati va maslahat", opts, async () => {
+  const em = (s, ev, data) => new Promise((r) => s.emit(ev, data, r));
+  const bots = {};
+  for (const n of ['TmW1', 'TmB1', 'TmB2']) { const u = await srv.register(n); bots[n] = { u, s: await srv.connect(u) }; }
+  const { code } = await em(bots.TmW1.s, 'team-create', { initial: 600, increment: 5 });
+  await em(bots.TmB1.s, 'team-sit', { code, seat: 'b1' });
+  await em(bots.TmB2.s, 'team-sit', { code, seat: 'b2' });
+  const me = await srv.register('TmMe');
+  const p = await page(me);
+  // Ro'yxatda stol bor
+  await p.goto(srv.base + '/jamoa', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector(`#tmList [data-join="${code}"]`, { timeout: 15000 });
+  await p.click(`#tmList [data-join="${code}"]`);
+  await p.waitForSelector('#tmSeats [data-sit="w2"]', { timeout: 8000 });
+  assert.equal(await p.evaluate(() => location.pathname + location.search), '/jamoa?t=' + code);
+  await p.click('#tmSeats [data-sit="w2"]');
+  await p.waitForFunction(() => document.getElementById('tmSeats').offsetParent === null && /yuradi/.test(document.getElementById('tmStatus').textContent), { timeout: 8000 });
+  // w1 va b1 yuradi → endi navbat menda (oqning 2-yurishi)
+  await em(bots.TmW1.s, 'team-move', { code, from: 'e2', to: 'e4' });
+  await em(bots.TmB1.s, 'team-move', { code, from: 'e7', to: 'e5' });
+  await p.waitForFunction(() => document.getElementById('tmStatus').classList.contains('mine'), { timeout: 8000 });
+  // Jamoadosh maslahati — kataklar belgilanadi
+  await em(bots.TmW1.s, 'team-suggest', { code, from: 'g1', to: 'f3' });
+  await p.waitForSelector('#teamBoard [data-square="f3"].tm-hint', { timeout: 5000 });
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/team.png' });
+  // Sichqoncha bilan sudrab yurish: g1 → f3
+  const box = async (sq) => { const b = await (await p.$(`#teamBoard [data-square="${sq}"]`)).boundingBox(); return { x: b.x + b.width / 2, y: b.y + b.height / 2 }; };
+  const a = await box('g1'), b = await box('f3');
+  await p.mouse.move(a.x, a.y); await p.mouse.down(); await p.mouse.move(b.x, b.y, { steps: 8 }); await p.mouse.up();
+  await p.waitForFunction(() => /Nf3/.test(document.getElementById('tmMoves').textContent), { timeout: 8000 });
+  // Jamoa chati: w1 oladi
+  const got = new Promise((r) => bots.TmW1.s.once('team-chat', r));
+  await p.type('#tmChatInput', 'Salom jamoa');
+  await p.click('#tmChatForm button');
+  assert.equal((await got).message, 'Salom jamoa');
+  await p.waitForFunction(() => /Salom jamoa/.test(document.getElementById('tmChatList').textContent), { timeout: 5000 });
+  Object.values(bots).forEach((x) => x.s.disconnect());
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

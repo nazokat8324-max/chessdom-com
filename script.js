@@ -622,6 +622,10 @@ window.switchView = function(viewName) {
     const navEl = document.getElementById("navTea");
     if (navEl) navEl.classList.add("active");
     if (typeof window.renderTeaView === "function") window.renderTeaView();
+  } else if (viewName === "team") {
+    const tmEl = document.getElementById("teamView");
+    if (tmEl) tmEl.classList.add("active-view");
+    if (typeof window.updateTeamView === "function") window.updateTeamView();
   } else if (viewName === "profsec") {
     const psEl = document.getElementById("profsecView");
     if (psEl) psEl.classList.add("active-view");

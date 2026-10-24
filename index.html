@@ -906,6 +906,9 @@
                 >
                   👥 <span data-i18n="localPlayBtn">Bir qurilmada</span>
                 </button>
+                <button type="button" class="control-btn" id="btnTeamGame" onclick="window.openTeamChess()">
+                  🤝 <span data-i18n="tmShort">2 ga 2</span>
+                </button>
               </div>
               <div class="pg-friends" id="pgFriends" hidden></div>
             </div>
@@ -1592,6 +1595,11 @@
       <!-- CHOYXONA — stollar lobbisi (teahouse.js) -->
       <div id="teaView" class="view-section">
         <div class="tea-page" id="teaRoot"></div>
+      </div>
+
+      <!-- 🤝 2 ga 2 — maslahatli shaxmat (teamchess-page.js): /jamoa, /jamoa?t=KOD -->
+      <div id="teamView" class="view-section set-view">
+        <div class="set-page tm-page" id="teamRoot"></div>
       </div>
 
       <!-- 🐪 KARVON YO'LI (caravan-page.js) -->
@@ -2570,6 +2578,7 @@
     <script src="profile-badges.js"></script>
     <script src="profile-sections.js"></script>
     <script src="holidays-ui.js"></script>
+    <script src="teamchess-page.js"></script>
     <script src="myopenings.js"></script>
     <script src="clubs.js"></script>
     <script src="gameday.js"></script>

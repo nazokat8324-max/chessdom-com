@@ -44,7 +44,8 @@
   window.replayGo = (ply) => go(ply);
 
   // --- Tahlil (analysis.js dagi umumiy dvigatel bilan) ---
-  const anButton = () => `<button class="rp-pgn rp-an-btn" data-analyze="1">🔍 ${esc(tx('anStart', "O'yinni tahlil qilish"))}</button>`;
+  const storyBtn = () => `<button class="rp-pgn rp-story-btn" data-story="1">📖 ${esc(tx('stTitle', "O'yin hikoyasi"))}</button>`;
+  const anButton = () => `<button class="rp-pgn rp-an-btn" data-analyze="1">🔍 ${esc(tx('anStart', "O'yinni tahlil qilish"))}</button>${storyBtn()}`;
   const anProgress = (done, total) => `
     <div class="an-progress-text">🔍 ${esc(tx('anRunning', 'Tahlil qilinmoqda… {{done}}/{{total}}', { done, total }))}</div>
     <div class="an-progress"><span style="width:${total ? Math.round(done / total * 100) : 0}%"></span></div>`;
@@ -54,7 +55,7 @@
         <div class="an-side-head">${window.kingIcon(c)} <b>${r.accuracy[c]}%</b><small>${esc(tx('anAccuracy', 'Aniqlik'))}</small></div>
         <div class="an-counts"><span class="an-inaccuracy">?! ${r.counts[c].inaccuracy}</span><span class="an-mistake">? ${r.counts[c].mistake}</span><span class="an-blunder">?? ${r.counts[c].blunder}</span></div>
       </div>`;
-    return `<div class="an-summary">${side('w')}${side('b')}</div><div class="an-ply" id="rpPlyInfo"></div>`;
+    return `<div class="an-summary">${side('w')}${side('b')}</div><div class="an-ply" id="rpPlyInfo"></div>${storyBtn()}`;
   }
 
   async function analyze() {
@@ -83,6 +84,16 @@
     const card = document.querySelector('#replayModal .rp-card');
     if (card) card.classList.add('analysed');
     go(st.ply);
+    if (st.storyAfter) { st.storyAfter = false; openStory(); }
+  }
+
+  // 📖 O'yin hikoyasi (gamestory.js) — tahlil bo'lmasa avval tahlil
+  function openStory() {
+    if (!st.analysis) { st.storyAfter = true; analyze(); return; }
+    const g = st.game;
+    const white = g.color === 'b' ? g.opponent : g.player, black = g.color === 'b' ? g.player : g.opponent;
+    const result = !g.color ? '*' : g.result === 'draw' ? '1/2-1/2' : ((g.result === 'win') === (g.color !== 'b') ? '1-0' : '0-1');
+    if (typeof window.openGameStory === 'function') window.openGameStory({ moves: st.moves, analysis: st.analysis, white, black, result, reason: g.reason, variant: g.variant, onPly: (p) => go(p) });
   }
 
   function showEval() {
@@ -143,7 +154,7 @@
       const m = chess.move(san);
       if (!m) break;
       st.sans.push(m.san);
-      st.moves.push({ from: m.from, to: m.to, promotion: m.promotion, color: m.color, san: m.san });
+      st.moves.push({ from: m.from, to: m.to, promotion: m.promotion, color: m.color, san: m.san, piece: m.piece, captured: m.captured });
       st.fens.push(chess.fen());
     }
     st.game = g;
@@ -191,6 +202,7 @@
       const ply = e.target.closest('[data-ply]');
       if (ply) return go(Number(ply.dataset.ply));
       if (e.target.closest('[data-analyze]')) return analyze();
+      if (e.target.closest('[data-story]')) return openStory();
       if (e.target.closest('[data-share-game]')) {
         const white = g.color === 'b' ? g.opponent : g.player, black = g.color === 'b' ? g.player : g.opponent;
         const result = !g.color ? '*' : g.result === 'draw' ? '1/2-1/2' : ((g.result === 'win') === (g.color !== 'b') ? '1-0' : '0-1');

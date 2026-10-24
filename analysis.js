@@ -119,6 +119,7 @@
     } catch (err) {
       if (token !== st.token) return;
       st.running = false;
+      window.storyAfterAnalysis = false;
       renderBox();
       window.analysisFailed(err);
       return;
@@ -132,6 +133,8 @@
     renderBox();
     if (typeof window.refreshMoveList === 'function') window.refreshMoveList();
     window.onAnalysisPly(typeof window.getViewPly === 'function' && window.getViewPly() !== null ? window.getViewPly() : moves.length);
+    // 📖 Hikoya so'ralgan bo'lsa (gamestory.js openPanelStory) — tahlil tugagach ochiladi
+    if (window.storyAfterAnalysis) { window.storyAfterAnalysis = false; if (typeof window.openPanelStory === 'function') window.openPanelStory(); }
   };
 
   // Dvigatel yuklanmadi / boshqa tahlil ketmoqda
@@ -247,6 +250,7 @@
     if (!r) {
       box.innerHTML = `
         <button type="button" class="start-game-btn an-start" onclick="window.startGameAnalysis()">🔍 ${esc(tx('anStart', "O'yinni tahlil qilish"))}</button>
+        <button type="button" class="control-btn an-story" onclick="window.openPanelStory()">📖 ${esc(tx('stTitle', "O'yin hikoyasi"))}</button>
         <div class="an-muted an-hint">${esc(tx('anHint', 'Stockfish brauzeringizda ishlaydi — taxminan 20–60 soniya'))}</div>`;
       return;
     }
@@ -262,7 +266,8 @@
     box.innerHTML = `
       <div class="an-summary">${side('w')}${side('b')}</div>
       <div class="an-legend"><span class="an-inaccuracy">?! ${esc(tx('anInaccuracy', 'Noaniqlik'))}</span><span class="an-mistake">? ${esc(tx('anMistake', 'Xato'))}</span><span class="an-blunder">?? ${esc(tx('anBlunder', "Qo'pol xato"))}</span></div>
-      <div class="an-ply" id="anPlyInfo"></div>`;
+      <div class="an-ply" id="anPlyInfo"></div>
+      <button type="button" class="control-btn an-story" onclick="window.openPanelStory()">📖 ${esc(tx('stTitle', "O'yin hikoyasi"))}</button>`;
   }
 
   // Panel rejimi o'zgarganda (board.js setGamePanelMode)

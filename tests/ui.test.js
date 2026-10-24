@@ -288,6 +288,41 @@ test("Bahs: chaqiruvda tanlanadi, o'yin panelida hisob, keyingi o'yin tugmasi, p
   assert.deepEqual(p.errors, []);
 });
 
+test("O'yin hikoyasi: tahlildan keyin oynada bosqichlar, bosilsa taxtada o'sha pozitsiya", opts, async () => {
+  const u = await srv.register('Story');
+  const p = await page(u);
+  await p.goto(srv.base + '/oyin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#btnLocalGame', { visible: true, timeout: 10000 });
+  await sleep(600);
+  await p.click('#btnLocalGame');
+  await sleep(300);
+  await p.evaluate(() => { for (const [f, t] of [['e2', 'e4'], ['e7', 'e5'], ['f1', 'c4'], ['b8', 'c6'], ['d1', 'h5'], ['g8', 'f6'], ['h5', 'f7']]) window.executeMove(f, t); });
+  await sleep(600);
+  // Tahlil qutisida hikoya tugmasi (dvigatelsiz: tahlil natijasini o'zimiz beramiz)
+  await p.waitForSelector('#pgAnalysisBox .an-story', { visible: true, timeout: 8000 });
+  await p.evaluate(() => {
+    const ev = (cp) => ({ cp, mate: null });
+    const h = game.history({ verbose: true });
+    window.gameAnalysis = {
+      evals: [ev(20), ev(30), ev(25), ev(40), ev(35), ev(60), { cp: 10000, mate: null, terminal: true }, { cp: 10000, mate: null, terminal: true }],
+      moves: h.map((m, i) => ({ san: m.san, color: m.color, cls: i === 5 ? 'blunder' : null, loss: i === 5 ? 48 : 1, bestSan: i === 5 ? 'g6' : null })),
+      accuracy: { w: 96, b: 41 }
+    };
+  });
+  await p.click('#pgAnalysisBox .an-story');
+  await p.waitForSelector('#storyModal .st-ch', { visible: true, timeout: 5000 });
+  const st = await p.evaluate(() => ({ title: document.querySelector('#storyModal .st-title').textContent, n: document.querySelectorAll('#storyModal .st-ch').length, text: document.querySelector('#storyModal .st-list').textContent }));
+  assert.ok(st.n >= 4);
+  assert.match(st.text, /Nf6/);
+  assert.match(st.text, /g6/);
+  assert.match(st.text, /Qxf7#/);
+  await p.click('#storyModal [data-st-ply="6"]');
+  await sleep(300);
+  assert.equal(await p.evaluate(() => window.getViewPly()), 6);
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/story.png' });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

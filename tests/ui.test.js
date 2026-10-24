@@ -342,6 +342,41 @@ test("Nishonlar: profilda tugma, 6 tur, olinganlari ajralib turadi", opts, async
   assert.deepEqual(p.errors, []);
 });
 
+test("Profil bo'limlari alohida sahifada: manzil, havola orqali ochish, ← Orqaga profilga qaytaradi", opts, async () => {
+  const u = await srv.register('Sect');
+  for (const vp of [null, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const p = await page(u, vp);
+    await p.goto(srv.base + '/?profile=' + u.name, { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('#profAchBtn', { visible: true, timeout: 15000 });
+    await sleep(800);
+    await p.click('#profAchBtn');
+    await p.waitForSelector('#profsecView.active-view #profAchPanel:not([hidden])', { timeout: 8000 });
+    await p.waitForSelector('#profAchievements .ach-item', { timeout: 8000 });
+    await sleep(200);
+    const st = await p.evaluate(() => ({ url: location.pathname + location.search, modal: document.getElementById('profileModal').style.display, others: ['profExtPanel', 'profOpenPanel', 'profBadgePanel'].map((id) => document.getElementById(id).hidden) }));
+    assert.equal(st.url, '/profil?u=' + encodeURIComponent(u.name) + '&b=yutuqlar');
+    assert.notEqual(st.modal, 'flex', 'profil oynasi yopiladi');
+    assert.deepEqual(st.others, [true, true, true]);
+    if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/sect-ach-' + (vp ? 'phone' : 'pc') + '.png' });
+    await p.click('#psHead [data-ps-back]');
+    await p.waitForFunction(() => document.getElementById('profileModal').style.display === 'flex', { timeout: 8000 });
+    // Barcha o'yinlar ham — ← Orqaga bilan
+    await p.evaluate(() => window.openGameHistory(window.currentProfileUser()));
+    await p.waitForSelector('#historyRoot [data-gh-back]', { visible: true, timeout: 8000 });
+    await p.click('#historyRoot [data-gh-back]');
+    await p.waitForFunction(() => document.getElementById('profileModal').style.display === 'flex', { timeout: 8000 });
+    assert.deepEqual(p.errors, []);
+  }
+  // Havola orqali to'g'ridan-to'g'ri: debyutlar sahifasi
+  const p2 = await page(u);
+  await p2.goto(srv.base + '/profil?u=' + encodeURIComponent(u.name) + '&b=nishonlar', { waitUntil: 'domcontentloaded' });
+  await p2.waitForSelector('#profsecView.active-view #profBadgePanel:not([hidden]) .nb-item', { timeout: 15000 });
+  assert.match(await p2.evaluate(() => document.querySelector('#psHead h1').textContent), /Nishonlar/);
+  assert.equal(await p2.evaluate(() => location.pathname + location.search), '/profil?u=' + encodeURIComponent(u.name) + '&b=nishonlar');
+  if (process.env.UI_SHOTS) await p2.screenshot({ path: process.env.UI_SHOTS + '/sect-badge-pc.png' });
+  assert.deepEqual(p2.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

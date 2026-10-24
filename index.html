@@ -1282,6 +1282,26 @@
         <div class="set-page gh-page" id="historyRoot"></div>
       </div>
 
+      <!-- Profil bo'limlari alohida sahifada (profile-sections.js): /profil?u=ism&b=yutuqlar|statistika|debyutlar|nishonlar -->
+      <div id="profsecView" class="view-section set-view">
+        <div class="set-page ps-page" id="profsecRoot">
+          <header class="set-head ps-head" id="psHead"></header>
+          <div class="profile-panel" id="profAchPanel" hidden>
+            <div class="ach-grid" id="profAchievements"></div>
+          </div>
+          <div class="profile-panel" id="profExtPanel" hidden>
+            <div class="ex-grid" id="profExtStats"></div>
+          </div>
+          <div class="profile-panel" id="profBadgePanel" hidden>
+            <div class="nb-grid" id="profBadges"></div>
+          </div>
+          <!-- myopenings.js — o'yinchining debyutlari -->
+          <div class="profile-panel" id="profOpenPanel" hidden>
+            <div class="op-root" id="profOpenings"></div>
+          </div>
+        </div>
+      </div>
+
       <!-- 8. TURNIRLAR -->
       <!-- 8. TURNIRLAR: Swiss turnirlari (tournaments.js) -->
       <div id="tournamentsView" class="view-section ar-view">
@@ -2547,6 +2567,7 @@
     <script src="duels.js"></script>
     <script src="gamestory.js"></script>
     <script src="profile-badges.js"></script>
+    <script src="profile-sections.js"></script>
     <script src="myopenings.js"></script>
     <script src="clubs.js"></script>
     <script src="gameday.js"></script>
@@ -3018,7 +3039,7 @@
               >
                 🏅 <span data-i18n="achTitle">Yutuqlar</span>
                 <small class="ach-count" id="profAchCount"></small
-                ><i class="pt-arrow">▾</i>
+                ><i class="pt-arrow">›</i>
               </button>
               <button
                 type="button"
@@ -3027,7 +3048,7 @@
                 onclick="window.toggleProfilePanel('ext')"
               >
                 📊 <span data-i18n="exTitle">Batafsil statistika</span
-                ><i class="pt-arrow">▾</i>
+                ><i class="pt-arrow">›</i>
               </button>
               <button
                 type="button"
@@ -3036,11 +3057,11 @@
                 onclick="window.toggleProfilePanel('open')"
               >
                 📖 <span data-i18n="opTitle">Debyutlarim</span
-                ><i class="pt-arrow">▾</i>
+                ><i class="pt-arrow">›</i>
               </button>
               <!-- profile-badges.js — barcha nishonlar bir joyda -->
               <button type="button" class="profile-games-btn profile-toggle" id="profBadgeBtn" onclick="window.toggleProfilePanel('badge')">
-                🎖️ <span data-i18n="nbTitle">Nishonlar</span> <small class="ach-count" id="profBadgeCount"></small><i class="pt-arrow">▾</i>
+                🎖️ <span data-i18n="nbTitle">Nishonlar</span> <small class="ach-count" id="profBadgeCount"></small><i class="pt-arrow">›</i>
               </button>
               <!-- wrapped.js — oy yakuni hikoyasi -->
               <button
@@ -3054,19 +3075,6 @@
               >
                 🎁 <span data-i18n="wrButton">Oy yakuni</span>
               </button>
-            </div>
-            <div class="profile-panel" id="profAchPanel" hidden>
-              <div class="ach-grid" id="profAchievements"></div>
-            </div>
-            <div class="profile-panel" id="profExtPanel" hidden>
-              <div class="ex-grid" id="profExtStats"></div>
-            </div>
-            <div class="profile-panel" id="profBadgePanel" hidden>
-              <div class="nb-grid" id="profBadges"></div>
-            </div>
-            <!-- myopenings.js — o'yinchining debyutlari -->
-            <div class="profile-panel" id="profOpenPanel" hidden>
-              <div class="op-root" id="profOpenings"></div>
             </div>
           </section>
 

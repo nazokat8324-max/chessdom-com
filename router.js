@@ -5,7 +5,7 @@
   const ROUTES = {
     home: '/', game: '/oyin', leaderboard: '/reyting', tournaments: '/turnirlar', live: '/jonli',
     messages: '/xabarlar', clubs: '/klublar', leagues: '/ligalar', champions: '/chempionlar',
-    settings: '/sozlamalar', admin: '/admin', history: '/tarix', war: '/bayroqlar', tea: '/choyxona', caravan: '/karvon'
+    settings: '/sozlamalar', admin: '/admin', history: '/tarix', war: '/bayroqlar', tea: '/choyxona', caravan: '/karvon', profsec: '/profil'
   };
   const BY_PATH = {};
   Object.entries(ROUTES).forEach(([view, p]) => { BY_PATH[p] = view; });

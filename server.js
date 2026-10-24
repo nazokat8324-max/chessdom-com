@@ -140,7 +140,7 @@ app.get(['/maxfiylik', '/shartlar', '/mualliflar', '/privacy', '/terms', '/credi
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon', 'profil']);
 // Nomi o'zgargan bo'limlar: eski manzil → yangisi (301)
 const ROUTE_ALIASES = { urush: 'bayroqlar', dostlar: 'xabarlar', chat: 'xabarlar' };
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {

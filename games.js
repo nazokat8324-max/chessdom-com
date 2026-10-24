@@ -41,6 +41,7 @@
     const sum = d ? d.summary : { win: 0, draw: 0, loss: 0 };
     el.innerHTML = `
       <header class="set-head gh-head">
+        <button type="button" class="ps-back" data-gh-back>← ${esc(tx('clubDetailBack', 'Orqaga'))}</button>
         <div><h1>📜 ${esc(tx('ghTitle', "O'yinlar tarixi"))}</h1><p><b class="player-link" data-username="${esc(st.user || '')}">${esc(st.user || '')}</b>${d ? ' · ' + esc(tx('ghTotal', "{{n}} ta o'yin", { n: d.total })) : ''}</p></div>
         <div class="gh-actions">
           ${d && d.total ? `<a class="set-mini accent" href="/api/users/${encodeURIComponent(st.user)}/pgn?${query()}" download>⬇ PGN (${d.total})</a>` : ''}
@@ -63,6 +64,8 @@
     el.querySelectorAll('[data-f]').forEach(b => b.addEventListener('click', () => { st[b.dataset.f] = b.dataset.v; st.page = 1; load(); }));
     el.querySelectorAll('[data-page]').forEach(b => b.addEventListener('click', () => { st.page = Number(b.dataset.page); load(); }));
     el.querySelectorAll('[data-replay]').forEach(b => b.addEventListener('click', () => window.openReplay && window.openReplay(st.user, b.dataset.replay)));
+    const back = el.querySelector('[data-gh-back]');
+    if (back) back.addEventListener('click', () => { if (typeof window.backToProfile === 'function') window.backToProfile(st.user); });
     const imp = el.querySelector('[data-import]');
     if (imp) imp.addEventListener('click', () => window.openPgnImport());
     const form = el.querySelector('#ghSearch');
@@ -83,6 +86,7 @@
   };
   window.openGameHistory = function (username) {
     st.pendingUser = username || (window.currentUser && window.currentUser.username);
+    if (typeof window.rememberProfileReturn === 'function') window.rememberProfileReturn();
     if (typeof window.closeProfileModal === 'function') window.closeProfileModal();
     switchView('history');
   };

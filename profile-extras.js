@@ -56,18 +56,15 @@
     return name || (window.currentUser && window.currentUser.username) || null;
   }
 
-  window.toggleProfilePanel = function (name, force) {
-    const panels = { ach: ['profAchPanel', 'profAchBtn'], ext: ['profExtPanel', 'profExtBtn'], open: ['profOpenPanel', 'profOpenBtn'], badge: ['profBadgePanel', 'profBadgeBtn'] };
-    Object.entries(panels).forEach(([key, [panelId, btnId]]) => {
-      const panel = document.getElementById(panelId), btn = document.getElementById(btnId);
-      if (!panel) return;
-      const open = key === name ? (typeof force === 'boolean' ? force : panel.hidden) : false;
-      panel.hidden = !open;
-      if (btn) btn.classList.toggle('active', open);
-      if (open) setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 30);
-      if (open && !st.username) { const who = viewedUsername(); if (who) { st.username = who; load(who); } }
-      if (open && key === 'open' && typeof window.loadProfileOpenings === 'function') window.loadProfileOpenings(viewedUsername());
-    });
+  // Yutuqlar / Batafsil statistika / Debyutlarim / Nishonlar — alohida sahifada (profile-sections.js, /profil?u=&b=)
+  window.toggleProfilePanel = function (name) {
+    if (!name || typeof window.openProfileSection !== 'function') return;
+    window.openProfileSection(name, viewedUsername());
+  };
+  // Bo'lim sahifasi to'g'ridan-to'g'ri ochilganda (havola) — o'yinchining qo'shimchalari yuklanadi
+  window.loadProfileExtras = function (username) {
+    if (!username) return;
+    if (st.username === username && st.data) renderAll(); else load(username);
   };
 
   async function load(username) {

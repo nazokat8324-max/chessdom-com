@@ -222,6 +222,31 @@ test("Ixcham menyu: ⚙️ Sozlamalar 🔔 yonida, ⭐ Chempionlar — Ligalar i
   }
 });
 
+test("Shahar naqshlari: o'z profilida tanlanadi, qulflanganlari bosilmaydi", opts, async () => {
+  const u = await srv.register('Banner');
+  for (const vp of [null, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const p = await page(u, vp);
+    await p.goto(srv.base + '/?profile=' + u.name, { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('#profileCaravan .bn-edit', { visible: true, timeout: 15000 });
+    await p.click('#profileCaravan .bn-edit');
+    await p.waitForSelector('#bnPicker .bn-opt', { visible: true });
+    const st = await p.evaluate(() => ({ all: document.querySelectorAll('#bnPicker .bn-opt').length, locked: document.querySelectorAll('#bnPicker .bn-opt.locked').length }));
+    assert.deepEqual(st, { all: 13, locked: 11 }, "naqshsiz + 12 shahar, yangi o'yinchida faqat Sian ochiq");
+    if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/bn-picker-' + (vp ? 'phone' : 'pc') + '.png' });
+    await p.click('#bnPicker .bn-opt[data-bn="xian"]');
+    await sleep(600);
+    assert.equal(await p.evaluate(() => document.querySelector('#profileModal .profile-sidebar-card').classList.contains('has-banner')), true);
+    if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/bn-profile-' + (vp ? 'phone' : 'pc') + '.png' });
+    assert.deepEqual(p.errors, []);
+  }
+  // Boshqa o'yinchi profilida naqsh ko'rinadi, tanlash tugmasi yo'q
+  const v = await srv.register('Viewer');
+  const p2 = await page(v);
+  await p2.goto(srv.base + '/?profile=' + u.name, { waitUntil: 'domcontentloaded' });
+  await p2.waitForSelector('#profileModal .profile-sidebar-card.has-banner', { timeout: 15000 });
+  assert.equal(await p2.evaluate(() => !!document.querySelector('#profileCaravan .bn-edit')), false);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

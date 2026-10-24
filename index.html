@@ -7,12 +7,25 @@
     <!-- 📲 PWA (pwa.js, sw.js): o'rnatiladigan ilova va push-bildirishnomalar -->
     <link rel="manifest" href="/manifest.json" />
     <meta name="theme-color" content="#0b1114" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="64x64" href="/assets/icons/favicon-64.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="/assets/icons/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="64x64"
+      href="/assets/icons/favicon-64.png"
+    />
     <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="apple-mobile-web-app-title" content="ChessCaravan" />
     <link rel="stylesheet" href="style.css" />
     <link
@@ -38,11 +51,40 @@
           localStorage.getItem("justChessSettings") || "{}",
         );
         var cdTheme = cdSettings.siteTheme;
-        if (["turquoise", "ocean", "amethyst", "sunset", "jade", "ruby", "rose", "gold", "lapis", "graphite"].indexOf(cdTheme) < 0)
+        if (
+          [
+            "turquoise",
+            "ocean",
+            "amethyst",
+            "sunset",
+            "jade",
+            "ruby",
+            "rose",
+            "gold",
+            "lapis",
+            "graphite",
+          ].indexOf(cdTheme) < 0
+        )
           cdTheme = "turquoise";
         document.documentElement.setAttribute("data-theme", cdTheme);
-        if (["marble", "wood", "tournament", "rishton", "atlas", "teahouse", "desert", "night", "paper", "ice"].indexOf(cdSettings.boardStyle) >= 0)
-          document.documentElement.setAttribute("data-board", cdSettings.boardStyle);
+        if (
+          [
+            "marble",
+            "wood",
+            "tournament",
+            "rishton",
+            "atlas",
+            "teahouse",
+            "desert",
+            "night",
+            "paper",
+            "ice",
+          ].indexOf(cdSettings.boardStyle) >= 0
+        )
+          document.documentElement.setAttribute(
+            "data-board",
+            cdSettings.boardStyle,
+          );
         if (cdSettings.showCoords === false)
           document.documentElement.classList.add("hide-coords");
         if (localStorage.getItem("justChessSidebar") === "collapsed")
@@ -94,18 +136,12 @@
             </svg>
           </div>
           <div class="chessdom-text">
-            <span class="cd-letter">C</span
-            ><span class="cd-letter">h</span
-            ><span class="cd-letter">e</span
-            ><span class="cd-letter">s</span
-            ><span class="cd-letter">s</span
-            ><span class="cd-letter">C</span
-            ><span class="cd-letter">a</span
-            ><span class="cd-letter">r</span
-            ><span class="cd-letter">a</span
-            ><span class="cd-letter">v</span
-            ><span class="cd-letter">a</span
-            ><span class="cd-letter">n</span>
+            <span class="cd-letter">C</span><span class="cd-letter">h</span
+            ><span class="cd-letter">e</span><span class="cd-letter">s</span
+            ><span class="cd-letter">s</span><span class="cd-letter">C</span
+            ><span class="cd-letter">a</span><span class="cd-letter">r</span
+            ><span class="cd-letter">a</span><span class="cd-letter">v</span
+            ><span class="cd-letter">a</span><span class="cd-letter">n</span>
           </div>
           <div class="logo-shimmer"></div>
           <div class="logo-tooltip">
@@ -351,7 +387,11 @@
             onclick="switchView('game')"
             ><span class="icon">🎮</span> <span id="mPlay">O'yin</span></a
           >
-          <a class="menu-item mobile-main" id="navTea" onclick="switchView('tea')">
+          <a
+            class="menu-item mobile-main"
+            id="navTea"
+            onclick="switchView('tea')"
+          >
             <span class="icon">🍵</span>
             <span data-i18n="teaTitle">Choyxona</span>
           </a>
@@ -488,8 +528,20 @@
               ⚡ Play Online (Matchmaking)
             </button>
             <div id="pwaInstallSlot"></div>
-            <button type="button" class="tea-home-btn" onclick="switchView('tea')">🍵 <span data-i18n="teaHomeBtn">Choyxonaga kirish</span></button>
-            <button type="button" class="tea-home-btn inv-home-btn" onclick="window.openInviteDialog()">🔗 <span data-i18n="invHomeBtn">Do'stni taklif qilish</span></button>
+            <button
+              type="button"
+              class="tea-home-btn"
+              onclick="switchView('tea')"
+            >
+              🍵 <span data-i18n="teaHomeBtn">Choyxonaga kirish</span>
+            </button>
+            <button
+              type="button"
+              class="tea-home-btn inv-home-btn"
+              onclick="window.openInviteDialog()"
+            >
+              🔗 <span data-i18n="invHomeBtn">Do'stni taklif qilish</span>
+            </button>
             <div class="home-widgets" id="homeWidgets"></div>
           </div>
           <!-- O'rtada: sayt bilan tanishtiruv ("ChessCaravan haqida" sahifasini ochadi) -->
@@ -543,8 +595,12 @@
             </div>
             <!-- Davr: 24 soat / 7 kun (script.js renderTopPlayersList) -->
             <div class="tw-seg" id="twSeg">
-              <button type="button" data-period="day" data-i18n="twDay">24 soat</button>
-              <button type="button" data-period="week" data-i18n="twWeek">7 kun</button>
+              <button type="button" data-period="day" data-i18n="twDay">
+                24 soat
+              </button>
+              <button type="button" data-period="week" data-i18n="twWeek">
+                7 kun
+              </button>
             </div>
             <div id="topPlayersContainer" class="tw-list"></div>
           </div>
@@ -560,7 +616,13 @@
         <div class="game-layout">
           <div class="board-section">
             <div class="player-bar black-player">
-              <div class="player-avatar" id="blackPlayerAvatar"><img class="king-ic" src="img/chesspieces/karvon/bK.svg" alt=""></div>
+              <div class="player-avatar" id="blackPlayerAvatar">
+                <img
+                  class="king-ic"
+                  src="img/chesspieces/karvon/bK.svg"
+                  alt=""
+                />
+              </div>
               <div class="player-info">
                 <div class="pg-name-row">
                   <span class="player-name" id="blackPlayerName">Qora</span>
@@ -608,7 +670,13 @@
               </div>
             </div>
             <div class="player-bar white-player">
-              <div class="player-avatar" id="whitePlayerAvatar"><img class="king-ic" src="img/chesspieces/karvon/wK.svg" alt=""></div>
+              <div class="player-avatar" id="whitePlayerAvatar">
+                <img
+                  class="king-ic"
+                  src="img/chesspieces/karvon/wK.svg"
+                  alt=""
+                />
+              </div>
               <div class="player-info">
                 <div class="pg-name-row">
                   <span class="player-name" id="whitePlayerName">Oq</span>
@@ -766,11 +834,36 @@
 
               <div class="pg-variant-box">
                 <div class="pg-variant-seg" id="variantSeg">
-                  <button type="button" class="active" data-variant="standard" onclick="window.pickVariant(this)">♟ <span data-i18n="chStandard">Standart</span></button>
-                  <button type="button" data-variant="chess960" onclick="window.pickVariant(this)">🎲 960</button>
-                  <button type="button" data-variant="shatranj" onclick="window.pickVariant(this)">🏺 <span data-i18n="variantShatranj">Shatranj</span></button>
+                  <button
+                    type="button"
+                    class="active"
+                    data-variant="standard"
+                    onclick="window.pickVariant(this)"
+                  >
+                    ♟ <span data-i18n="chStandard">Standart</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-variant="chess960"
+                    onclick="window.pickVariant(this)"
+                  >
+                    🎲 960
+                  </button>
+                  <button
+                    type="button"
+                    data-variant="shatranj"
+                    onclick="window.pickVariant(this)"
+                  >
+                    🏺 <span data-i18n="variantShatranj">Shatranj</span>
+                  </button>
                 </div>
-                <div class="rated-sublabel" id="variantHint" data-i18n="gpStandardHint">Odatiy shaxmat</div>
+                <div
+                  class="rated-sublabel"
+                  id="variantHint"
+                  data-i18n="gpStandardHint"
+                >
+                  Odatiy shaxmat
+                </div>
               </div>
 
               <button
@@ -866,7 +959,12 @@
                 <button class="control-btn" onclick="exportPGN()" id="btnPgn">
                   📄 <span id="btnPgnText">PGN</span>
                 </button>
-                <button class="control-btn pg-share" onclick="window.openGameShare(window.currentGameShareData())" id="btnShareGame" hidden>
+                <button
+                  class="control-btn pg-share"
+                  onclick="window.openGameShare(window.currentGameShareData())"
+                  id="btnShareGame"
+                  hidden
+                >
                   📤 <span data-i18n="shShareBtn">Ulashish</span>
                 </button>
               </div>
@@ -1332,8 +1430,20 @@
       <!-- 11. LIGALAR (leagues.js) -->
       <div id="leaguesView" class="view-section lg-view">
         <div class="lg-tabs" role="tablist">
-          <button type="button" class="lg-tab active" onclick="switchView('leagues')">🏆 <span data-i18n="mLeagues">Ligalar</span></button>
-          <button type="button" class="lg-tab" onclick="switchView('champions')">⭐ <span data-i18n="mChampions">Chempionlar</span></button>
+          <button
+            type="button"
+            class="lg-tab active"
+            onclick="switchView('leagues')"
+          >
+            🏆 <span data-i18n="mLeagues">Ligalar</span>
+          </button>
+          <button
+            type="button"
+            class="lg-tab"
+            onclick="switchView('champions')"
+          >
+            ⭐ <span data-i18n="mChampions">Chempionlar</span>
+          </button>
         </div>
         <div class="lg-page" id="leaguesRoot"></div>
       </div>
@@ -1341,8 +1451,16 @@
       <!-- 12. CHEMPIONLAR LIGASI (leagues.js) -->
       <div id="championsView" class="view-section lg-view">
         <div class="lg-tabs" role="tablist">
-          <button type="button" class="lg-tab" onclick="switchView('leagues')">🏆 <span data-i18n="mLeagues">Ligalar</span></button>
-          <button type="button" class="lg-tab active" onclick="switchView('champions')">⭐ <span data-i18n="mChampions">Chempionlar</span></button>
+          <button type="button" class="lg-tab" onclick="switchView('leagues')">
+            🏆 <span data-i18n="mLeagues">Ligalar</span>
+          </button>
+          <button
+            type="button"
+            class="lg-tab active"
+            onclick="switchView('champions')"
+          >
+            ⭐ <span data-i18n="mChampions">Chempionlar</span>
+          </button>
         </div>
         <div class="lg-page" id="championsRoot"></div>
       </div>
@@ -1475,7 +1593,6 @@
       <div id="settingsView" class="view-section set-view">
         <div class="set-page" id="settingsRoot"></div>
       </div>
-
     </div>
     <!-- /.main-wrapper -->
 
@@ -1830,7 +1947,16 @@
 
       <!-- O'ng tomon: forma -->
       <section class="auth-panel">
-        <button type="button" class="auth-gate-close" id="authGateClose" onclick="window.hideAuthGate()" hidden data-i18n="authBackToSite">← Saytga qaytish</button>
+        <button
+          type="button"
+          class="auth-gate-close"
+          id="authGateClose"
+          onclick="window.hideAuthGate()"
+          hidden
+          data-i18n="authBackToSite"
+        >
+          ← Saytga qaytish
+        </button>
         <button
           type="button"
           class="auth-gate-lang"
@@ -2025,10 +2151,24 @@
               Ro'yxatdan o'tish
             </button>
             <p class="auth-legal">
-              <span data-i18n="authLegalPrefix">Ro'yxatdan o'tish orqali siz</span>
-              <a href="/shartlar" target="_blank" rel="noopener" data-i18n="legalTerms">Foydalanish shartlari</a>
+              <span data-i18n="authLegalPrefix"
+                >Ro'yxatdan o'tish orqali siz</span
+              >
+              <a
+                href="/shartlar"
+                target="_blank"
+                rel="noopener"
+                data-i18n="legalTerms"
+                >Foydalanish shartlari</a
+              >
               <span data-i18n="authLegalAnd">va</span>
-              <a href="/maxfiylik" target="_blank" rel="noopener" data-i18n="legalPrivacy">Maxfiylik siyosati</a><span data-i18n="authLegalSuffix">ga rozilik bildirasiz</span>
+              <a
+                href="/maxfiylik"
+                target="_blank"
+                rel="noopener"
+                data-i18n="legalPrivacy"
+                >Maxfiylik siyosati</a
+              ><span data-i18n="authLegalSuffix">ga rozilik bildirasiz</span>
             </p>
             <div class="auth-switch">
               <span class="auth-switch-text" data-i18n="authHaveAccount"
@@ -2043,8 +2183,21 @@
             </div>
             <div class="auth-guest" id="authGuestBox">
               <div class="auth-or"><span data-i18n="authOr">yoki</span></div>
-              <button type="button" class="auth-guest-btn" id="authGuestBtn" onclick="window.playAsGuest()">👤 <span data-i18n="authGuestBtn">Ro'yxatdan o'tmasdan o'ynash</span></button>
-              <p class="auth-guest-hint" data-i18n="authGuestHint">Mehmon sifatida darhol o'ynang. Keyin ro'yxatdan o'tsangiz, o'yinlaringiz saqlanib qoladi.</p>
+              <button
+                type="button"
+                class="auth-guest-btn"
+                id="authGuestBtn"
+                onclick="window.playAsGuest()"
+              >
+                👤
+                <span data-i18n="authGuestBtn"
+                  >Ro'yxatdan o'tmasdan o'ynash</span
+                >
+              </button>
+              <p class="auth-guest-hint" data-i18n="authGuestHint">
+                Mehmon sifatida darhol o'ynang. Keyin ro'yxatdan o'tsangiz,
+                o'yinlaringiz saqlanib qoladi.
+              </p>
             </div>
           </form>
 
@@ -2389,6 +2542,7 @@
     <script src="caravan.js"></script>
     <script src="quests.js"></script>
     <script src="caravan-page.js"></script>
+    <script src="banners.js"></script>
     <script src="local.js"></script>
     <script src="voice.js"></script>
     <script src="myopenings.js"></script>
@@ -2448,7 +2602,12 @@
             <div class="profile-sport" id="profileSport" hidden></div>
             <div class="profile-caravan" id="profileCaravan" hidden></div>
             <div class="profile-sport" id="profilePredict" hidden></div>
-            <div class="profile-cheater" id="profileCheater" hidden>⚠️ <span data-i18n="fpCheaterBanner">Fair-play qoidalarini buzgan</span></div>
+            <div class="profile-cheater" id="profileCheater" hidden>
+              ⚠️
+              <span data-i18n="fpCheaterBanner"
+                >Fair-play qoidalarini buzgan</span
+              >
+            </div>
             <p class="profile-handle" id="profileModalHandle"></p>
             <p class="profile-presence" id="profilePresence" hidden></p>
             <p
@@ -2545,7 +2704,9 @@
               type="button"
               style="display: none"
               onclick="window.toggleFollow()"
-            >☆ <span data-i18n="flFollow">Kuzatish</span></button>
+            >
+              ☆ <span data-i18n="flFollow">Kuzatish</span>
+            </button>
             <button
               class="profile-friend-btn"
               id="profileFriendBtn"
@@ -2744,13 +2905,21 @@
                   >0 o'yin</span
                 >
               </div>
-              <div class="stat-card editable-card rating-readonly profile-rating-card mode-shatranj">
+              <div
+                class="stat-card editable-card rating-readonly profile-rating-card mode-shatranj"
+              >
                 <div class="profile-rating-top">
                   <span class="profile-mode-icon">🏺</span>
-                  <span class="stat-title" data-i18n="profShatranjRating">SHATRANJ REYTING</span>
+                  <span class="stat-title" data-i18n="profShatranjRating"
+                    >SHATRANJ REYTING</span
+                  >
                 </div>
-                <span class="stat-value editable-text" id="statShatranj">1500</span>
-                <span class="profile-mode-games" id="statShatranjGames">0 o'yin</span>
+                <span class="stat-value editable-text" id="statShatranj"
+                  >1500</span
+                >
+                <span class="profile-mode-games" id="statShatranjGames"
+                  >0 o'yin</span
+                >
               </div>
             </div>
           </section>
@@ -2816,16 +2985,69 @@
           </section>
 
           <section class="profile-section">
-            <h3 class="profile-section-title" data-i18n="profMoreTitle">O'yinlar va yutuqlar</h3>
+            <h3 class="profile-section-title" data-i18n="profMoreTitle">
+              O'yinlar va yutuqlar
+            </h3>
             <div class="profile-games-actions">
-              <button type="button" class="profile-games-btn" onclick="window.openGameHistory(window.currentProfileUser && window.currentProfileUser())">📜 <span data-i18n="ghAllGames">Barcha o'yinlar</span></button>
-              <button type="button" class="profile-games-btn" onclick="window.openPgnImport()">📥 <span data-i18n="ghImport">PGN yuklash</span></button>
+              <button
+                type="button"
+                class="profile-games-btn"
+                onclick="
+                  window.openGameHistory(
+                    window.currentProfileUser && window.currentProfileUser(),
+                  )
+                "
+              >
+                📜 <span data-i18n="ghAllGames">Barcha o'yinlar</span>
+              </button>
+              <button
+                type="button"
+                class="profile-games-btn"
+                onclick="window.openPgnImport()"
+              >
+                📥 <span data-i18n="ghImport">PGN yuklash</span>
+              </button>
               <!-- Bosilganda shu yerda (profil ichida) ochiladi / yopiladi — profile-extras.js toggleProfilePanel -->
-              <button type="button" class="profile-games-btn profile-toggle" id="profAchBtn" onclick="window.toggleProfilePanel('ach')">🏅 <span data-i18n="achTitle">Yutuqlar</span> <small class="ach-count" id="profAchCount"></small><i class="pt-arrow">▾</i></button>
-              <button type="button" class="profile-games-btn profile-toggle" id="profExtBtn" onclick="window.toggleProfilePanel('ext')">📊 <span data-i18n="exTitle">Batafsil statistika</span><i class="pt-arrow">▾</i></button>
-              <button type="button" class="profile-games-btn profile-toggle" id="profOpenBtn" onclick="window.toggleProfilePanel('open')">📖 <span data-i18n="opTitle">Debyutlarim</span><i class="pt-arrow">▾</i></button>
+              <button
+                type="button"
+                class="profile-games-btn profile-toggle"
+                id="profAchBtn"
+                onclick="window.toggleProfilePanel('ach')"
+              >
+                🏅 <span data-i18n="achTitle">Yutuqlar</span>
+                <small class="ach-count" id="profAchCount"></small
+                ><i class="pt-arrow">▾</i>
+              </button>
+              <button
+                type="button"
+                class="profile-games-btn profile-toggle"
+                id="profExtBtn"
+                onclick="window.toggleProfilePanel('ext')"
+              >
+                📊 <span data-i18n="exTitle">Batafsil statistika</span
+                ><i class="pt-arrow">▾</i>
+              </button>
+              <button
+                type="button"
+                class="profile-games-btn profile-toggle"
+                id="profOpenBtn"
+                onclick="window.toggleProfilePanel('open')"
+              >
+                📖 <span data-i18n="opTitle">Debyutlarim</span
+                ><i class="pt-arrow">▾</i>
+              </button>
               <!-- wrapped.js — oy yakuni hikoyasi -->
-              <button type="button" class="profile-games-btn profile-wrapped-btn" onclick="window.openWrapped(window.currentProfileUser && window.currentProfileUser())">🎁 <span data-i18n="wrButton">Oy yakuni</span></button>
+              <button
+                type="button"
+                class="profile-games-btn profile-wrapped-btn"
+                onclick="
+                  window.openWrapped(
+                    window.currentProfileUser && window.currentProfileUser(),
+                  )
+                "
+              >
+                🎁 <span data-i18n="wrButton">Oy yakuni</span>
+              </button>
             </div>
             <div class="profile-panel" id="profAchPanel" hidden>
               <div class="ach-grid" id="profAchievements"></div>
@@ -2885,7 +3107,9 @@
 
           <!-- mentor.js — ustoz va shogird -->
           <section class="profile-section" id="profileMentorSection" hidden>
-            <h3 class="profile-section-title" data-i18n="mtTitle">Ustoz va shogird</h3>
+            <h3 class="profile-section-title" data-i18n="mtTitle">
+              Ustoz va shogird
+            </h3>
             <div id="profileMentor"></div>
           </section>
         </main>

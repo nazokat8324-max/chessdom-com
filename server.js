@@ -842,6 +842,12 @@ const WAR_TZ_MS = 5 * 3600 * 1000;
 function warSeasonKey(t) { return new Date((t || Date.now()) + WAR_TZ_MS).toISOString().slice(0, 7); }
 function warSeasonEnd(season) { const [y, m] = season.split('-').map(Number); return new Date(Date.UTC(y, m, 1) - WAR_TZ_MS).toISOString(); }
 function warPrevSeason(season) { const [y, m] = season.split('-').map(Number); const d = new Date(Date.UTC(y, m - 2, 1)); return d.toISOString().slice(0, 7); }
+// 🧵 Profil naqshi — faqat hali ham ochiq bo'lsa (karvon shu shaharga yetgan)
+function bannerOf(u) {
+  const i = Caravan.CITIES.findIndex((c) => c.key === u.profile_banner);
+  return i >= 0 && i <= Caravan.cityIndex(Caravan.pointsOf(u.stats)) ? u.profile_banner : null;
+}
+
 async function computeWar(season) {
   const totals = await db.warTotals(season);
   const byCode = new Map(totals.map(t => [t.code, t]));
@@ -1999,6 +2005,22 @@ async function start() {
     catch (err) { console.error('Turnir bekor qilish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  // 🧵 Shahar naqshi: faqat karvon yetib borgan shaharniki ('' — olib tashlash)
+  app.post('/api/users/me/banner', authMiddleware, async (req, res) => {
+    try {
+      const key = String((req.body && req.body.key) || '');
+      const u = await db.getUserById(req.user.userId);
+      if (!u) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      if (key) {
+        const i = Caravan.CITIES.findIndex((c) => c.key === key);
+        if (i < 0) return res.status(400).json({ success: false, message: "Noto'g'ri naqsh!" });
+        if (i > Caravan.cityIndex(Caravan.pointsOf(u.stats))) return res.status(403).json({ success: false, message: 'Bu naqsh hali ochilmagan!' });
+      }
+      await db.setProfileBanner(u.id, key);
+      res.json({ success: true, banner: key || null });
+    } catch (err) { console.error('Naqsh xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.post('/api/users/me/country', authMiddleware, async (req, res) => {
     try {
       const { country } = req.body;
@@ -2489,6 +2511,7 @@ async function start() {
         rivals: await rivalsOf(u.id),
         sportsmanship: await db.sportSummary(u.id),
         caravan: isGuest(u.id) ? null : Caravan.pointsOf(u.stats),
+        banner: isGuest(u.id) ? null : bannerOf(u),
         questBadges: await db.countQuestWeeks(u.id),
         predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)

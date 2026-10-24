@@ -39,8 +39,9 @@
       const right = state === 'here' ? `<span class="cv-tag here">🐪 ${esc(tx('cvHere', 'Siz shu yerdasiz'))}</span>`
         : state === 'passed' ? `<span class="cv-tag ok">✓ ${esc(tx('cvPassed', "O'tildi"))}</span>`
           : `<span class="cv-tag">${esc(tx('cvSteps', '{{n}} qadam', { n: c.at }))}</span>`;
+      const sw = window.cityBannerUrl ? `<span class="cv-sw${state === 'ahead' ? ' locked' : ''}" title="🧵 ${esc(tx('bnTitle', 'Shahar naqshlari'))}" style="background-image:${esc(window.cityBannerUrl(c.key))}"></span>` : '';
       return `<li class="cv-stop ${state}"><span class="cv-dot">${c.icon}</span>
-        <span class="cv-stop-name"><b>${esc(name(c.key))}</b>${n ? `<small>👥 ${esc(tx('cvTravellers', '{{n}} karvon', { n }))}</small>` : ''}</span>${right}</li>`;
+        <span class="cv-stop-name"><b>${esc(name(c.key))}</b>${n ? `<small>👥 ${esc(tx('cvTravellers', '{{n}} karvon', { n }))}</small>` : ''}</span>${sw}${right}</li>`;
     }).join('')}</ol></div>`;
   }
 
@@ -112,7 +113,7 @@
       const r = origApply.apply(this, arguments);
       try {
         if (data && data.caravan && data.caravan.arrived && !(window.currentUser && window.currentUser.guest)) {
-          setTimeout(() => { if (typeof window.showToast === 'function') window.showToast(tx('cvArrived', '🐪 Karvoningiz {{city}}ga yetib keldi!', { city: name(data.caravan.city) }), 'success', 6000); }, 1800);
+          setTimeout(() => { if (typeof window.showToast === 'function') window.showToast(tx('cvArrived', '🐪 Karvoningiz {{city}}ga yetib keldi!', { city: name(data.caravan.city) }) + ' ' + tx('bnUnlocked', '🧵 Yangi profil naqshi ochildi!'), 'success', 6000); }, 1800);
         }
       } catch (e) {}
       return r;

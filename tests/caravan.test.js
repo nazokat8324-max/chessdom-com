@@ -37,6 +37,15 @@ test("5 ta g'alaba → Dunxuan: game-ended.caravan, bildirishnoma, profil va yet
   assert.equal(cv.leaders[0].username, a.name);
   assert.equal(cv.leaders[0].city, 'dunhuang');
   assert.equal(cv.perCity.length, Caravan.CITIES.length);
+  // 🧵 Shahar naqshi: faqat yetib borilgan shaharniki
+  assert.equal((await srv.api(a, '/api/users/me/banner', 'POST', { key: 'dunhuang' })).banner, 'dunhuang');
+  assert.equal((await srv.api(null, '/api/users/' + a.name + '/extras')).banner, 'dunhuang');
+  assert.equal((await srv.api(b, '/api/users/me/banner', 'POST', { key: 'dunhuang' })).status, 403, "b hali Dunxuanga yetmagan");
+  assert.equal((await srv.api(b, '/api/users/me/banner', 'POST', { key: 'atlantis' })).status, 400);
+  assert.equal((await srv.api(null, '/api/users/me/banner', 'POST', { key: 'xian' })).status, 401);
+  assert.equal((await srv.api(b, '/api/users/me/banner', 'POST', { key: 'xian' })).banner, 'xian');
+  assert.equal((await srv.api(b, '/api/users/me/banner', 'POST', { key: '' })).banner, null);
+  assert.equal((await srv.api(null, '/api/users/' + b.name + '/extras')).banner, null);
   closeAll(a, b);
 });
 

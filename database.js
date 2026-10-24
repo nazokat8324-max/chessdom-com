@@ -755,6 +755,8 @@ async function initDatabase() {
   `);
   for (const sql of ['CREATE UNIQUE INDEX IF NOT EXISTS idx_push_endpoint ON push_subscriptions (endpoint)', 'CREATE INDEX IF NOT EXISTS idx_push_user ON push_subscriptions (user_id)']) { try { await dbExec(sql); } catch (e) {} }
   try { await dbExec('ALTER TABLE users ADD COLUMN push_prefs TEXT DEFAULT NULL'); } catch (e) {}
+  // 🧵 Shahar naqshi (Karvon yo'li shahri kaliti; banners.js)
+  try { await dbExec('ALTER TABLE users ADD COLUMN profile_banner TEXT DEFAULT NULL'); } catch (e) {}
   // O'chirilgan akkauntlar (FK siz): eski tokenlar bilan kirib bo'lmasligi uchun
   await dbExec(`
     CREATE TABLE IF NOT EXISTS deleted_accounts (
@@ -1078,6 +1080,10 @@ async function usernameTaken(username) {
   const rows = await dbAll('SELECT username FROM users');
   const low = name.toLowerCase();
   return rows.some((r) => String(r.username).toLowerCase() === low);
+}
+
+async function setProfileBanner(userId, key) {
+  await dbRun('UPDATE users SET profile_banner = ? WHERE id = ?', [key || null, userId]);
 }
 
 async function getUserById(id) {
@@ -2464,6 +2470,7 @@ module.exports = {
   touchPushSubscription,
   getPushPrefs,
   setPushPrefs,
+  setProfileBanner,
   loadDeletedAccountIds,
   getUserHistory,
   getUserGameById,

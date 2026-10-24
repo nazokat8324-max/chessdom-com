@@ -91,6 +91,8 @@
     if (window.renderProfileRivals) window.renderProfileRivals(st.username, st.data && st.data.rivals);
     if (window.renderProfileSport) window.renderProfileSport(st.data && st.data.sportsmanship);
     if (window.renderProfileCaravan) window.renderProfileCaravan(st.data ? st.data.caravan : null, st.data ? st.data.questBadges : 0);
+    if (window.renderProfileBanner) window.renderProfileBanner(st.data && st.data.banner, st.data ? st.data.caravan : null,
+      !!(st.data && window.currentUser && !window.currentUser.guest && window.currentUser.username === st.username));
     if (window.renderProfilePredict) window.renderProfilePredict(st.data && st.data.predictions);
     const banner = document.getElementById('profileCheater');
     if (banner) banner.hidden = !(st.data && st.data.cheater);
@@ -176,6 +178,11 @@
         return r;
       };
     }
+    // Profil havola orqali (/?profile=ism) o'ralishdan oldin ochilgan bo'lsa — qo'shimchalarni shu yerda yuklaymiz
+    setTimeout(() => {
+      const modal = document.getElementById('profileModal');
+      if (!st.username && modal && modal.style.display !== 'none') { const who = viewedUsername(); if (who) load(who); }
+    }, 0);
   });
   window.refreshProfileExtras = renderAll;
 })();

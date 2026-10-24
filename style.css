@@ -15741,3 +15741,47 @@ body:has(#settingsView.active-view) .tb-settings { border-color: var(--accent); 
   .lg-tab { flex: 1; }
 }
 html.landscape-phone .nf-wrap { flex-direction: column-reverse; }
+
+/* ===== 🧵 Shahar naqshlari (banners.js) ===== */
+#profileModal .profile-sidebar-card.has-banner { isolation: isolate; }
+#profileModal .profile-sidebar-card.has-banner::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 0; height: 210px; z-index: -1; pointer-events: none;
+  background-image: var(--pf-banner); background-size: var(--pf-banner-size, 48px); background-repeat: repeat;
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 35%, transparent);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.95) 35%, transparent);
+  opacity: 0.85;
+}
+.profile-caravan .bn-edit {
+  display: block; margin: 6px auto 0; padding: 4px 12px; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 700;
+  color: var(--accent-light, #7ee8ee); background: rgba(var(--accent-rgb), 0.1); border: 1px dashed rgba(var(--accent-rgb), 0.45); cursor: pointer;
+}
+.profile-caravan .bn-edit:hover { background: rgba(var(--accent-rgb), 0.2); }
+.bn-card { width: min(560px, 100%); text-align: left; }
+.bn-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.bn-head h3 { margin: 0; font-size: 18px; }
+.bn-x { width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--cd-border-strong); background: transparent; color: inherit; cursor: pointer; }
+.bn-sub { margin: 6px 0 14px; font-size: 13px; color: var(--cd-muted, #a9b6b0); }
+.bn-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.bn-opt { display: flex; flex-direction: column; gap: 4px; padding: 8px; border-radius: 14px; border: 2px solid transparent; background: var(--cd-surface-2, rgba(255, 255, 255, 0.04)); color: inherit; font: inherit; text-align: left; cursor: pointer; touch-action: manipulation; }
+.bn-opt:hover:not(.locked) { border-color: rgba(var(--accent-rgb), 0.5); }
+.bn-opt.active { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.12); }
+.bn-opt b { font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bn-opt small { font-size: 11px; color: var(--cd-muted, #a9b6b0); }
+.bn-sw { position: relative; display: block; height: 56px; border-radius: 10px; background-repeat: repeat; border: 1px solid rgba(255, 255, 255, 0.08); }
+.bn-none .bn-sw { background: repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.04) 0 8px, transparent 8px 16px); }
+.bn-opt.locked { cursor: default; }
+.bn-opt.locked .bn-sw { filter: grayscale(1) brightness(0.45); }
+.bn-sw i { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-style: normal; font-size: 20px; filter: none; }
+.cv-sw { flex: 0 0 auto; width: 34px; height: 22px; border-radius: 6px; background-size: 24px; border: 1px solid rgba(255, 255, 255, 0.12); }
+.cv-sw.locked { filter: grayscale(1) brightness(0.5); }
+@media (max-width: 520px) {
+  .bn-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cv-sw { display: none; }
+}
+.bn-overlay[hidden] { display: none; }
+/* Och naqshlarda (Istanbul) ham "Orqaga" tugmasi o'qilsin */
+#profileModal .profile-sidebar-card.has-banner .profile-close-btn { background: rgba(8, 14, 16, 0.6); color: #fff; backdrop-filter: blur(4px); }
+#profileModal .profile-sidebar-card.has-banner::before {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22)), var(--pf-banner);
+  background-size: auto, var(--pf-banner-size, 48px);
+}

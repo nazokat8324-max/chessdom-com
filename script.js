@@ -95,6 +95,8 @@ const SERVER_MESSAGE_KEYS = {
   "Siz allaqachon boshqa klubga a'zosiz!": 'srvAlreadyInOtherClub',
   "Klub chatiga faqat klub a'zolari yozishi mumkin!": 'srvClubChatMembersOnly',
   "Noto'g'ri davlat kodi!": 'srvBadCountry',
+  "Noto'g'ri naqsh!": 'srvBadBanner',
+  "Bu naqsh hali ochilmagan!": 'srvBannerLocked',
   "Faqat kapitan rollarni boshqara oladi!": 'srvOnlyCaptain',
   "O'yinchi bu klub a'zosi emas!": 'srvNotClubMember',
   "Faqat kapitan va moderatorlar yangilik yoza oladi!": 'srvOnlyStaffNews',

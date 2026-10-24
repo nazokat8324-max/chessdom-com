@@ -19,6 +19,7 @@ const normVariant = (v) => (VARIANTS.includes(v) ? v : 'standard');
 const Caravan = require('./caravan');
 const Holidays = require('./holidays');
 const teamchess = require('./teamchess');
+const FairplayEngine = require('./fairplay-engine');
 let teamChess = null; // 🤝 2 ga 2 (start() da init)
 // Faqat testlar: HOLIDAY_FORCE=navruz — bayram hozir davom etayotgandek
 const HOLIDAY_FORCE = process.env.NODE_ENV === 'test' ? process.env.HOLIDAY_FORCE || null : null;
@@ -57,7 +58,7 @@ app.use(express.json({ limit: '10mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram|teamchess)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram|teamchess|fairplay-engine|fairplay-worker)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -525,6 +526,11 @@ async function endGame(roomId, room, winnerColor, reason) {
   if (recorded) {
     invalidateCache('leaderboard', 'daily:day', 'daily:week');
     recordFairplay(room, winnerColor).catch(err => console.error('Fair-play xatoligi:', err.message));
+    if (fairplayAnalyzer && room.rated && room.variant === 'standard' && warBefore) {
+      const mode = ratingModeOf(room);
+      fairplayAnalyzer.enqueue({ ref: 'room:' + roomId, mode, moves, players: players.map((p) => ({ userId: p.userId, color: p.color,
+        rating: warBefore[p.color] ? (warBefore[p.color].ratings_by_mode && warBefore[p.color].ratings_by_mode[mode]) || warBefore[p.color].rating : null })) });
+    }
     for (const p of players) checkAchievements(p.userId);
   }
   // Liga o'yini bo'lsa — natija bahs hisobiga yoziladi
@@ -1339,6 +1345,39 @@ async function recordFairplay(room, winnerColor) {
   }
 }
 
+// 🕵️ Dvigatelga moslik (fairplay-engine.js): reytingli standart o'yinlar navbat bilan, alohida oqimda tahlil qilinadi.
+// FAIRPLAY_ENGINE=0 — o'chiq; FAIRPLAY_DEPTH — chuqurlik (standart 9).
+const fairplayAnalyzer = process.env.FAIRPLAY_ENGINE === '0' ? null : FairplayEngine.createAnalyzer({
+  depth: Number(process.env.FAIRPLAY_DEPTH) || 9,
+  onResult: async (job, metrics) => {
+    for (const p of job.players) {
+      const m = metrics[p.color];
+      if (!p.userId || !m || m.moves < FairplayEngine.MIN_MOVES) continue;
+      const suspicious = FairplayEngine.isEngineLike(m, p.rating);
+      await db.addFairplayEngine({ userId: p.userId, ref: job.ref, mode: job.mode, moves: m.moves, match: m.match, acpl: m.acpl, rating: p.rating, suspicious });
+      if (!suspicious) continue;
+      const u = await db.getUserById(p.userId);
+      if (u && !u.fairplay_flag && FairplayEngine.shouldFlag(await db.recentFairplayEngine(p.userId, 10))) {
+        await db.setFairplayFlag(p.userId, 'flagged');
+        for (const a of await db.adminIds()) notify(a, 'fairplay_flag', { name: u.username, engine: true });
+      }
+    }
+  }
+});
+// O'yinchining oxirgi reytingli standart o'yinlari (shikoyat yoki admin so'rovi bilan)
+async function analyzeRecentGames(userId, limit) {
+  if (!fairplayAnalyzer) return 0;
+  const u = await db.getUserById(userId);
+  if (!u) return 0;
+  const games = (await db.getUserHistory(userId, { withMoves: true })).filter((g) => g.rated && (!g.variant || g.variant === 'standard') && g.reason !== 'aborted' && g.moves && g.moves.length).slice(-(limit || 10));
+  let n = 0;
+  for (const g of games) {
+    const mode = clockModeOfLabel(g.clock);
+    if (fairplayAnalyzer.enqueue({ ref: 'ug:' + g.id, mode, moves: g.moves, players: [{ userId, color: g.color, rating: (u.ratings_by_mode && u.ratings_by_mode[mode]) || u.rating }] })) n++;
+  }
+  return n;
+}
+
 function emitWatchCount(roomId) {
   const count = (io.sockets.adapter.rooms.get('watch_' + roomId) || new Set()).size;
   io.to('watch_' + roomId).emit('watch-count', { roomId, count });
@@ -1930,7 +1969,10 @@ async function start() {
       if (!REPORT_REASONS.includes(reason)) return res.status(400).json({ success: false, message: 'Sababni tanlang!' });
       const target = await db.getUserByUsername(String(username || ''));
       if (!target || target.id === req.user.userId) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
-      res.json(await db.createReport(req.user.userId, target.id, reason, details));
+      const created = await db.createReport(req.user.userId, target.id, reason, details);
+      // Aldashga shikoyat — o'yinchining oxirgi o'yinlari dvigatel bilan tekshiriladi
+      if (reason === 'cheating') analyzeRecentGames(target.id, 5).catch((err) => console.error('Fair-play tahlil xatoligi:', err.message));
+      res.json(created);
     } catch (err) { console.error('Report xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -2741,8 +2783,18 @@ async function start() {
   app.get('/api/admin/fairplay', adminMiddleware, async (req, res) => {
     try {
       const list = await db.fairplayOverview();
-      for (const u of list) u.recent = await db.recentFairplay(u.id, 10);
-      res.json({ success: true, users: list });
+      for (const u of list) { u.recent = await db.recentFairplay(u.id, 10); u.recentEngine = await db.recentFairplayEngine(u.id, 10); }
+      res.json({ success: true, users: list, queue: fairplayAnalyzer ? fairplayAnalyzer.size() : 0, engineEnabled: !!fairplayAnalyzer });
+    } catch (err) { console.error('Fair-play xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  // Admin: o'yinchining oxirgi 10 ta reytingli o'yinini dvigatel bilan tekshirish
+  app.post('/api/admin/fairplay/:id/analyze', adminMiddleware, async (req, res) => {
+    try {
+      const target = await db.getUserById(req.params.id);
+      if (!target) return res.status(404).json({ success: false, message: 'Foydalanuvchi topilmadi!' });
+      const queued = await analyzeRecentGames(target.id, 10);
+      auditLog(req, 'fairplay_analyze', { type: 'user', id: target.id, name: target.username }, { queued });
+      res.json({ success: true, queued });
     } catch (err) { console.error('Fair-play xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   // action: cheater (qoidabuzar + raqiblariga reyting qaytariladi), clear (shubha olib tashlanadi)

@@ -2996,6 +2996,12 @@ const translationsExtra = {
     tmStarted: "O'yin boshlandi! Siz — {{seat}}",
     tmSuggest: "{{name}} maslahati: {{san}}",
     tmSuggestSent: "Maslahat yuborildi: {{san}}",
+    fpEngineIntro: "Reytingli o'yinlar Stockfish bilan tekshiriladi: yurishlarning dvigatelning eng yaxshi yurishi bilan mosligi va o'rtacha yo'qotish (ACPL). Debyut, majburiy yurishlar va hal bo'lgan pozitsiyalar sanalmaydi. 2000 dan past o'yinchida moslik ≥ 70% va ACPL ≤ 15 (2000+ da ≥ 85% va ≤ 8) — dvigatelga o'xshash; oxirgi 10 tahlilda 3 ta shunday o'yin — avtomatik belgilanadi. Aldashga shikoyat kelsa, oxirgi 5 o'yin darhol tekshiriladi.",
+    fpQueue: "Navbatda {{n}} ta o'yin",
+    fpEngineStats: "Dvigatel tahlili: {{g}} o'yin · o'rtacha moslik {{m}}% · ACPL {{a}} · dvigatelga o'xshash: {{s}}",
+    fpAnalyze: "Oxirgi 10 o'yinni tekshirish",
+    fpQueued: "{{n}} ta o'yin tahlil navbatiga qo'yildi — bir necha daqiqadan keyin yangilang",
+    audFairplayAnalyze: "O'yinlarini dvigatel bilan tekshirdi",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -4527,6 +4533,12 @@ const translationsExtra = {
     tmStarted: "The game has started! You are {{seat}}",
     tmSuggest: "{{name}} suggests: {{san}}",
     tmSuggestSent: "Suggestion sent: {{san}}",
+    fpEngineIntro: "Rated games are checked with Stockfish: how often moves match the engine’s best move and the average centipawn loss (ACPL). Opening, forced moves and decided positions are skipped. Below 2000: match ≥ 70% and ACPL ≤ 15 (2000+: ≥ 85% and ≤ 8) counts as engine-like; 3 such games in the last 10 analysed flag the player automatically. A cheating report triggers an immediate check of the last 5 games.",
+    fpQueue: "{{n}} games in queue",
+    fpEngineStats: "Engine analysis: {{g}} games · avg match {{m}}% · ACPL {{a}} · engine-like: {{s}}",
+    fpAnalyze: "Check last 10 games",
+    fpQueued: "{{n}} games queued for analysis — refresh in a few minutes",
+    audFairplayAnalyze: "Ran an engine check on games",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -6058,6 +6070,12 @@ const translationsExtra = {
     tmStarted: "Партия началась! Вы — {{seat}}",
     tmSuggest: "{{name}} предлагает: {{san}}",
     tmSuggestSent: "Совет отправлен: {{san}}",
+    fpEngineIntro: "Рейтинговые партии проверяются Stockfish: доля совпадений с лучшим ходом движка и средняя потеря (ACPL). Дебют, вынужденные ходы и решённые позиции не учитываются. Ниже 2000: совпадение ≥ 70% и ACPL ≤ 15 (2000+: ≥ 85% и ≤ 8) — похоже на движок; 3 таких партии из последних 10 — автоматическая отметка. Жалоба на читерство запускает проверку последних 5 партий.",
+    fpQueue: "В очереди {{n}} партий",
+    fpEngineStats: "Анализ движком: {{g}} партий · среднее совпадение {{m}}% · ACPL {{a}} · похоже на движок: {{s}}",
+    fpAnalyze: "Проверить последние 10 партий",
+    fpQueued: "{{n}} партий поставлено в очередь — обновите через несколько минут",
+    audFairplayAnalyze: "Проверил партии движком",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -7589,6 +7607,12 @@ const translationsExtra = {
     tmStarted: "¡Empezó la partida! Eres {{seat}}",
     tmSuggest: "{{name}} sugiere: {{san}}",
     tmSuggestSent: "Sugerencia enviada: {{san}}",
+    fpEngineIntro: "Las partidas puntuables se revisan con Stockfish: coincidencia con la mejor jugada del motor y pérdida media (ACPL). Se omiten apertura, jugadas forzadas y posiciones decididas. Bajo 2000: coincidencia ≥ 70 % y ACPL ≤ 15 (2000+: ≥ 85 % y ≤ 8) parece motor; 3 de las últimas 10 marcan al jugador automáticamente. Una denuncia por trampa revisa al instante las últimas 5.",
+    fpQueue: "{{n}} partidas en cola",
+    fpEngineStats: "Análisis del motor: {{g}} partidas · coincidencia media {{m}} % · ACPL {{a}} · tipo motor: {{s}}",
+    fpAnalyze: "Revisar últimas 10 partidas",
+    fpQueued: "{{n}} partidas en cola de análisis: actualiza en unos minutos",
+    audFairplayAnalyze: "Revisó partidas con el motor",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -9120,6 +9144,12 @@ const translationsExtra = {
     tmStarted: "Die Partie hat begonnen! Du bist {{seat}}",
     tmSuggest: "{{name}} schlägt vor: {{san}}",
     tmSuggestSent: "Vorschlag gesendet: {{san}}",
+    fpEngineIntro: "Gewertete Partien werden mit Stockfish geprüft: Übereinstimmung mit dem besten Engine-Zug und durchschnittlicher Verlust (ACPL). Eröffnung, erzwungene Züge und entschiedene Stellungen zählen nicht. Unter 2000: ≥ 70 % und ACPL ≤ 15 (2000+: ≥ 85 % und ≤ 8) gilt als engine-artig; 3 davon in den letzten 10 markieren automatisch. Eine Betrugsmeldung prüft sofort die letzten 5 Partien.",
+    fpQueue: "{{n}} Partien in der Warteschlange",
+    fpEngineStats: "Engine-Analyse: {{g}} Partien · Ø Übereinstimmung {{m}} % · ACPL {{a}} · engine-artig: {{s}}",
+    fpAnalyze: "Letzte 10 Partien prüfen",
+    fpQueued: "{{n}} Partien zur Analyse eingereiht — in ein paar Minuten aktualisieren",
+    audFairplayAnalyze: "Partien mit Engine geprüft",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -10651,6 +10681,12 @@ const translationsExtra = {
     tmStarted: "La partie commence ! Vous êtes {{seat}}",
     tmSuggest: "{{name}} propose : {{san}}",
     tmSuggestSent: "Suggestion envoyée : {{san}}",
+    fpEngineIntro: "Les parties classées sont vérifiées avec Stockfish : taux de coïncidence avec le meilleur coup du moteur et perte moyenne (ACPL). Ouverture, coups forcés et positions décidées sont ignorés. Sous 2000 : ≥ 70 % et ACPL ≤ 15 (2000+ : ≥ 85 % et ≤ 8) ressemble au moteur ; 3 sur les 10 dernières signalent automatiquement. Un signalement de triche lance l’analyse des 5 dernières parties.",
+    fpQueue: "{{n}} parties en file",
+    fpEngineStats: "Analyse moteur : {{g}} parties · coïncidence moy. {{m}} % · ACPL {{a}} · type moteur : {{s}}",
+    fpAnalyze: "Vérifier les 10 dernières parties",
+    fpQueued: "{{n}} parties en file d’analyse — actualisez dans quelques minutes",
+    audFairplayAnalyze: "A vérifié les parties au moteur",
     searchNoResults: "Aucun résultat"
   }
 };

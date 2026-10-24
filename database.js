@@ -675,6 +675,23 @@ async function initDatabase() {
       UNIQUE (user_id, week)
     )
   `);
+  // 🕵️ Fair-play: dvigatelga moslik tahlili (fairplay-engine.js) — har o'yinchi, har o'yin bir marta
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS fairplay_engine (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      game_ref TEXT NOT NULL,
+      mode TEXT,
+      moves INTEGER DEFAULT 0,
+      match_rate REAL DEFAULT 0,
+      acpl INTEGER DEFAULT 0,
+      rating INTEGER,
+      suspicious INTEGER DEFAULT 0,
+      created_at TEXT NOT NULL,
+      UNIQUE (user_id, game_ref)
+    )
+  `);
+  try { await dbExec('CREATE INDEX IF NOT EXISTS idx_fp_engine_user ON fairplay_engine (user_id, created_at)'); } catch (e) {}
   // 🌸 Bayram nishonlari (holidays.js): bayram kunlarida NEED ta o'yin — yiliga bir marta
   await dbExec(`
     CREATE TABLE IF NOT EXISTS holiday_badges (
@@ -1565,6 +1582,15 @@ async function addFairplayGame(row) {
 async function recentFairplay(userId, limit) {
   return dbAll(`SELECT moves, blurs, avg_ms as "avgMs", cv, result, suspicious, created_at as "createdAt" FROM fairplay_games WHERE user_id = ? ORDER BY created_at DESC LIMIT ${Number(limit) || 20}`, [userId]);
 }
+async function addFairplayEngine(r) {
+  await dbRun(`INSERT INTO fairplay_engine (id, user_id, game_ref, mode, moves, match_rate, acpl, rating, suspicious, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (user_id, game_ref) DO NOTHING`,
+    [uuidv4(), r.userId, r.ref, r.mode || null, r.moves, r.match, r.acpl, r.rating == null ? null : Math.round(r.rating), r.suspicious ? 1 : 0, new Date().toISOString()]);
+}
+async function recentFairplayEngine(userId, limit) {
+  return dbAll(`SELECT game_ref as "ref", moves, match_rate as "match", acpl, rating, suspicious, created_at as "createdAt" FROM fairplay_engine
+    WHERE user_id = ? ORDER BY created_at DESC LIMIT ${Number(limit) || 10}`, [userId]);
+}
 async function setFairplayFlag(userId, flag) {
   await dbRun('UPDATE users SET fairplay_flag = ? WHERE id = ?', [flag || null, userId]);
 }
@@ -1573,16 +1599,21 @@ async function fairplayOverview() {
   const rows = await dbAll(`SELECT user_id as "userId", COUNT(*) as "games", SUM(suspicious) as "sus", SUM(blurs) as "blurs", SUM(moves) as "moves",
     SUM(CASE WHEN result = 'win' THEN 1 ELSE 0 END) as "wins" FROM fairplay_games GROUP BY user_id`);
   const flagged = await dbAll("SELECT id FROM users WHERE fairplay_flag IS NOT NULL");
-  const ids = new Set(rows.filter(r => Number(r.sus) > 0).map(r => r.userId).concat(flagged.map(f => f.id)));
+  // Dvigatelga moslik: tahlil qilingan o'yinlar, o'rtacha moslik va yo'qotish, shubhalilar soni
+  const eng = await dbAll(`SELECT user_id as "userId", COUNT(*) as "games", AVG(match_rate) as "match", AVG(acpl) as "acpl", SUM(suspicious) as "sus"
+    FROM fairplay_engine GROUP BY user_id`);
+  const ids = new Set(rows.filter(r => Number(r.sus) > 0).map(r => r.userId).concat(flagged.map(f => f.id)).concat(eng.filter(e => Number(e.sus) > 0).map(e => e.userId)));
   const out = [];
   for (const id of ids) {
     const u = await dbGet('SELECT id, username, rating, fairplay_flag as "flag", banned_until as "bannedUntil" FROM users WHERE id = ?', [id]);
     if (!u) continue;
     const r = rows.find(x => x.userId === id) || {};
+    const e = eng.find(x => x.userId === id);
     out.push({ ...u, games: Number(r.games) || 0, suspicious: Number(r.sus) || 0, blurRate: Number(r.moves) ? Math.round(Number(r.blurs) / Number(r.moves) * 100) : 0,
-      winRate: Number(r.games) ? Math.round(Number(r.wins) / Number(r.games) * 100) : 0 });
+      winRate: Number(r.games) ? Math.round(Number(r.wins) / Number(r.games) * 100) : 0,
+      engine: e ? { games: Number(e.games) || 0, match: Math.round(Number(e.match) * 100), acpl: Math.round(Number(e.acpl)), suspicious: Number(e.sus) || 0 } : null });
   }
-  return out.sort((a, b) => (b.flag === 'flagged') - (a.flag === 'flagged') || b.suspicious - a.suspicious);
+  return out.sort((a, b) => (b.flag === 'flagged') - (a.flag === 'flagged') || ((b.engine && b.engine.suspicious) || 0) - ((a.engine && a.engine.suspicious) || 0) || b.suspicious - a.suspicious);
 }
 // Qoidabuzarga yutqazganlarning reytingini qaytarish (faqat hali qaytarilmaganlar)
 async function refundAgainst(cheaterId) {
@@ -2480,6 +2511,8 @@ module.exports = {
   addFairplayGame,
   recentFairplay,
   setFairplayFlag,
+  addFairplayEngine,
+  recentFairplayEngine,
   fairplayOverview,
   refundAgainst,
   setMute,

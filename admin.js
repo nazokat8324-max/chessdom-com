@@ -24,7 +24,7 @@
     if (st.tab === 'reports') { const d = await api('/api/admin/reports?status=' + st.reportStatus); st.reports = d && d.success ? d.reports : []; }
     if (st.tab === 'users') { const d = await api('/api/admin/users?q=' + encodeURIComponent(st.query)); st.users = d && d.success ? d.users : []; }
     if (st.tab === 'tournaments') { const d = await api('/api/admin/tournaments'); st.tournaments = d && d.success ? d.tournaments : []; }
-    if (st.tab === 'fairplay') { const d = await api('/api/admin/fairplay'); st.fairplay = d && d.success ? d.users : []; }
+    if (st.tab === 'fairplay') { const d = await api('/api/admin/fairplay'); st.fairplay = d && d.success ? d.users : []; st.fairplayQueue = d && d.queue; }
     if (st.tab === 'errors') {
       const e = st.errors;
       const d = await api('/api/admin/errors?status=' + e.status + '&source=' + e.source);
@@ -93,6 +93,7 @@
     report_resolve: ['⚠️', () => tx('audReportResolve', "Shikoyatni ko'rib chiqdi")],
     fairplay_cheater: ['⛔', () => tx('audFairplayCheater', 'Qoidabuzar deb belgiladi')],
     fairplay_clear: ['🕵️', () => tx('audFairplayClear', 'Toza deb belgiladi')],
+    fairplay_analyze: ['🔍', () => tx('audFairplayAnalyze', "O'yinlarini dvigatel bilan tekshirdi")],
     filter_add: ['🚫', () => tx('audFilterAdd', "Taqiqlangan so'z qo'shdi")],
     filter_remove: ['↩️', () => tx('audFilterRemove', "Taqiqlangan so'zni olib tashladi")],
     club_role: ['👑', () => tx('audClubRole', "Klubdagi rolni o'zgartirdi")],
@@ -219,7 +220,9 @@
   // Fair-play: shubhali o'yinlari bor o'yinchilar (fokus yo'qotish, mashinaga o'xshash bir xil yurish vaqtlari)
   function fairplayHtml() {
     const flagLabel = { flagged: ['🕵️', tx('fpFlagged', 'Shubhali')], cheater: ['⛔', tx('fpCheater', 'Qoidabuzar')], cleared: ['✓', tx('fpCleared', 'Toza')] };
-    const intro = `<p class="adm-note">${esc(tx('fpIntro', "Har o'yin oxirida tekshiriladi: o'yinchi o'yin paytida sahifadan tez-tez chiqib ketganmi (boshqa oynada dastur ochish belgisi) va yurish vaqtlari g'ayritabiiy bir xilmi. 20 ta o'yinda 3 ta shubhali g'alaba — avtomatik belgilanadi. Qaror adminda."))}</p>`;
+    const queue = st.fairplayQueue ? ` · 🔍 ${esc(tx('fpQueue', "Navbatda {{n}} ta o'yin", { n: st.fairplayQueue }))}` : '';
+    const intro0 = `<p class="adm-note">🤖 ${esc(tx('fpEngineIntro', "Reytingli o'yinlar Stockfish bilan tekshiriladi: yurishlarning dvigatelning eng yaxshi yurishi bilan mosligi va o'rtacha yo'qotish (ACPL). Debyut, majburiy yurishlar va hal bo'lgan pozitsiyalar sanalmaydi. 2000 dan past o'yinchida moslik ≥ 70% va ACPL ≤ 15 (2000+ da ≥ 85% va ≤ 8) — dvigatelga o'xshash; oxirgi 10 tahlilda 3 ta shunday o'yin — avtomatik belgilanadi. Aldashga shikoyat kelsa, oxirgi 5 o'yin darhol tekshiriladi."))}${queue}</p>`;
+    const intro = intro0 + `<p class="adm-note">${esc(tx('fpIntro', "Har o'yin oxirida tekshiriladi: o'yinchi o'yin paytida sahifadan tez-tez chiqib ketganmi (boshqa oynada dastur ochish belgisi) va yurish vaqtlari g'ayritabiiy bir xilmi. 20 ta o'yinda 3 ta shubhali g'alaba — avtomatik belgilanadi. Qaror adminda."))}</p>`;
     if (!st.fairplay.length) return intro + `<div class="adm-empty">${esc(tx('fpNone', "Shubhali o'yinchilar yo'q"))}</div>`;
     return intro + `<div class="adm-list">${st.fairplay.map(u => {
       const f = flagLabel[u.flag];
@@ -229,8 +232,11 @@
           <b><span class="player-link" data-username="${esc(u.username)}">${esc(u.username)}</span> ${f ? `<em class="adm-tag${u.flag === 'cleared' ? '' : ' red'}">${f[0]} ${esc(f[1])}</em>` : ''}</b>
           <small>${esc(tx('fpStats', "{{g}} ta o'yin tekshirilgan · shubhali: {{s}} · sahifadan chiqish: {{b}}% yurishlarda · g'alaba {{w}}%", { g: u.games, s: u.suspicious, b: u.blurRate, w: u.winRate }))}</small>
           <div class="fp-recent">${recent}</div>
+          ${u.engine ? `<small>🤖 ${esc(tx('fpEngineStats', "Dvigatel tahlili: {{g}} o'yin · o'rtacha moslik {{m}}% · ACPL {{a}} · dvigatelga o'xshash: {{s}}", { g: u.engine.games, m: u.engine.match, a: u.engine.acpl, s: u.engine.suspicious }))}</small>` : ''}
+          ${(u.recentEngine || []).length ? `<div class="fp-engine">${u.recentEngine.map(r => `<span class="fp-eng${Number(r.suspicious) ? ' sus' : ''}" title="${esc(new Date(r.createdAt).toLocaleString())}">${Math.round(Number(r.match) * 100)}% · ${esc(r.acpl)}</span>`).join('')}</div>` : ''}
         </div>
         <div class="adm-actions">
+          <button class="set-mini" data-fp-analyze="${esc(u.id)}">🔍 ${esc(tx('fpAnalyze', "Oxirgi 10 o'yinni tekshirish"))}</button>
           ${u.flag !== 'cheater' ? `<button class="set-mini danger" data-fp="cheater" data-id="${esc(u.id)}">⛔ ${esc(tx('fpMarkCheater', 'Qoidabuzar + reytingni qaytarish'))}</button>` : ''}
           ${u.flag !== 'cleared' ? `<button class="set-mini" data-fp="clear" data-id="${esc(u.id)}">✓ ${esc(tx('fpClear', 'Toza deb belgilash'))}</button>` : ''}
           ${banControls(u.id)}
@@ -329,6 +335,10 @@
       const d = await api('/api/admin/users/' + b.dataset.ban + '/ban', { days, reason });
       showToast(d && d.success ? tx('admBanDone', 'Hisob bloklandi') : (tServer(d && d.message) || tx('errGeneric', 'Xatolik yuz berdi!')), d && d.success ? 'success' : 'warning');
       load();
+    }));
+    el.querySelectorAll('[data-fp-analyze]').forEach(b => b.addEventListener('click', async () => {
+      const d = await api('/api/admin/fairplay/' + b.dataset.fpAnalyze + '/analyze', {});
+      showToast(d && d.success ? tx('fpQueued', "{{n}} ta o'yin tahlil navbatiga qo'yildi — bir necha daqiqadan keyin yangilang", { n: d.queued }) : tx('errGeneric', 'Xatolik yuz berdi!'), d && d.success ? 'success' : 'warning');
     }));
     el.querySelectorAll('[data-fp]').forEach(b => b.addEventListener('click', async () => {
       if (b.dataset.fp === 'cheater' && !confirm(tx('fpConfirm', "O'yinchini qoidabuzar deb belgilaysizmi? Unga yutqazgan raqiblarning reytingi qaytariladi."))) return;

@@ -515,6 +515,32 @@ test("Brauzer xatosi admin panelidagi Xatolar bo'limida ko'rinadi", opts, async 
   if (process.env.UI_SHOTS) fs.copyFileSync(require('path').join(srv.dir, 'admin-errors.png'), process.env.UI_SHOTS + '/admin-errors.png');
 });
 
+test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni tekshirish' tugmasi", opts, async () => {
+  const adm = await srv.register('FpAdm'), sus = await srv.register('FpSus');
+  const run = (q, prm) => new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(require('path').join(srv.dir, 'test.sqlite'));
+    d.run(q, prm, (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  await run("UPDATE users SET role = 'admin' WHERE id = ?", [adm.id]);
+  adm.user.role = 'admin';
+  for (let i = 0; i < 3; i++) {
+    await run('INSERT INTO fairplay_engine (id, user_id, game_ref, mode, moves, match_rate, acpl, rating, suspicious, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      ['fpe' + i + sus.id, sus.id, 'room:t' + i, 'blitz', 20, 0.82, 9, 1500, 1, new Date(Date.now() - i * 1000).toISOString()]);
+  }
+  const p = await page(adm);
+  await p.goto(srv.base + '/admin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#adminRoot [data-atab]', { timeout: 15000 });
+  await p.evaluate(() => window.openAdminTab('fairplay'));
+  await p.waitForSelector(`#adminRoot [data-fp-analyze="${sus.id}"]`, { timeout: 8000 });
+  const st = await p.evaluate(() => ({ text: document.getElementById('adminRoot').textContent, chips: document.querySelectorAll('#adminRoot .fp-eng.sus').length }));
+  assert.match(st.text, /Dvigatel tahlili: 3 o'yin · o'rtacha moslik 82% · ACPL 9 · dvigatelga o'xshash: 3/);
+  assert.equal(st.chips, 3);
+  await p.click(`#adminRoot [data-fp-analyze="${sus.id}"]`);
+  await p.waitForFunction(() => [...document.querySelectorAll('.toast')].some((t) => /navbatiga/.test(t.textContent)), { timeout: 8000 });
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/fairplay-admin.png' });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Taklif havolasi: yangi odam banner ko'radi, ro'yxatdan o'tadi va taklif qiluvchiga chaqiruv boradi", opts, async () => {
   const { once } = require('./helpers');
   const a = await srv.register('Uinv');

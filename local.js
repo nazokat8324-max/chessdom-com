@@ -43,9 +43,8 @@
     window.localGameMode = true;
     window.myColor = null;
     clockStarted = false;
-    const v = document.getElementById('variantToggle');
-    const is960 = !!(v && v.checked && window.Chess960);
-    window.setGameVariant(is960 ? 'chess960' : 'standard', is960 ? window.Chess960.randomStartFen() : null);
+    const variant = typeof window.getSelectedVariant === 'function' ? window.getSelectedVariant() : 'standard';
+    window.setGameVariant(variant, variant === 'chess960' && window.Chess960 ? window.Chess960.randomStartFen() : null);
     setGameTime(initialTime);
     if (board && board.orientation() !== 'white' && typeof window.flipBoard === 'function') window.flipBoard();
     window.setOpponentFound(true);

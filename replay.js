@@ -116,7 +116,7 @@
       `[Event "ChessCaravan"]`, `[Site "chessdom-com.onrender.com"]`, `[Date "${d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
       `[White "${white || '?'}"]`, `[Black "${black || '?'}"]`, `[Result "${g.color ? result : '*'}"]`
     ].concat(g.clock ? [`[TimeControl "${g.clock}"]`] : [])
-      .concat(g.variant === 'chess960' && g.startFen ? ['[Variant "Chess960"]', '[SetUp "1"]', `[FEN "${g.startFen}"]`] : []);
+      .concat(window.variantPgnTags ? window.variantPgnTags(g.variant, g.startFen).split('\n').filter(Boolean) : []);
     let body = '';
     st.sans.forEach((s, i) => { body += (i % 2 === 0 ? (i / 2 + 1) + '. ' : '') + s + ' '; });
     return head.join('\n') + '\n\n' + body + (g.color ? result : '*');
@@ -134,7 +134,7 @@
   // O'yin obyekti: {player, opponent, color, result, moves (SAN), variant, startFen, clock, date}
   function showReplay(g) {
     // Yurishlar (SAN) bo'yicha har bir pozitsiya
-    const chess = g.variant === 'chess960' && window.Chess960 && g.startFen ? new Chess960(g.startFen) : (g.startFen ? new Chess(g.startFen) : new Chess());
+    const chess = window.newChessFor ? window.newChessFor(g.variant, g.startFen) : new Chess();
     st.fens = [chess.fen()];
     st.sans = [];
     st.moves = [];
@@ -176,7 +176,7 @@
           <h3>${esc(g.player)} <small>vs</small> ${esc(g.opponent || '—')}</h3>
           <p class="rp-meta"><span class="profile-game-result ${esc(g.result)}">${esc(resultText)}</span> ${esc(g.clock || g.timeControl || '')} · ${esc(d0 && !isNaN(d0) ? d0.toLocaleString() : '')}</p>
           <p class="rp-opening" id="rpOpening" hidden></p>
-          ${st.moves.length >= 2 ? `<div class="rp-analysis" id="rpAnalysis">${anButton()}</div>` : ''}
+          ${st.moves.length >= 2 && (!window.variantAnalysable || window.variantAnalysable(g.variant)) ? `<div class="rp-analysis" id="rpAnalysis">${anButton()}</div>` : ''}
           <div class="rp-moves">${moves || `<p class="rp-meta">${esc(tx('lvNoMoves', 'Hali yurish qilinmadi'))}</p>`}</div>
           <div class="rp-notes" id="rpNotes" hidden></div>
           <button class="rp-pgn" data-pgn="1">📄 ${esc(tx('rpDownloadPgn', 'PGN yuklab olish'))}</button>

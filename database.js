@@ -825,7 +825,9 @@ async function initDatabase() {
 }
 
 // chess960 — alohida reyting (umumiy reytingga ta'sir qilmaydi)
-const RATING_MODES = ['rapid', 'blitz', 'bullet', 'chess960'];
+const RATING_MODES = ['rapid', 'blitz', 'bullet', 'chess960', 'shatranj'];
+// Variant reytinglari umumiy reytingga ta'sir qilmaydi
+const VARIANT_MODES = ['chess960', 'shatranj'];
 
 // Rejim bo'yicha reytinglar; har bir rejim 1500 dan boshlanadi
 function normalizeRatingsByMode(row) {
@@ -1527,7 +1529,7 @@ async function refundAgainst(cheaterId) {
     if (!u) continue;
     const byMode = u.ratings_by_mode;
     byMode[r.mode] = (byMode[r.mode] || 1500) + lost;
-    const overall = r.mode === 'chess960' ? (u.rating || 1500) : (u.rating || 1500) + lost;
+    const overall = VARIANT_MODES.includes(r.mode) ? (u.rating || 1500) : (u.rating || 1500) + lost;
     await dbRun('UPDATE users SET rating = ?, ratings_by_mode = ? WHERE id = ?', [overall, JSON.stringify(byMode), u.id]);
     refunds.push({ userId: u.id, mode: r.mode, amount: lost });
   }
@@ -1934,7 +1936,7 @@ async function updateUserRatingByResult(userId, result, opponentRating, timeCont
   const playerRating = user.rating || 1500;
   // Chess960 o'yini umumiy reytingni o'zgartirmaydi — faqat o'z reytingini
   const kOverall = kFactor(isProvisional(user, 'overall', true), !!opp && isProvisional(opp, 'overall', false));
-  const ratingChange = timeControl === 'chess960' ? 0 : eloChange(playerRating, Number(opponentRating) || 1500, result, kOverall);
+  const ratingChange = VARIANT_MODES.includes(timeControl) ? 0 : eloChange(playerRating, Number(opponentRating) || 1500, result, kOverall);
   const newRating = Math.max(100, playerRating + ratingChange);
 
   const ratingsByMode = user.ratings_by_mode;

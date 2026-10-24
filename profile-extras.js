@@ -120,7 +120,7 @@
     const wdl = (o) => `<i class="w">${o.win || 0}</i>/<i class="d">${o.draw || 0}</i>/<i class="l">${o.loss || 0}</i>`;
     const reasons = { checkmate: tx('lvReasonCheckmate', 'mat'), resign: tx('lvReasonResign', 'taslim'), timeout: tx('lvReasonTimeout', 'vaqt tugadi'), abandon: tx('lvReasonAbandon', "o'yinni tark etdi") };
     const reasonLine = (o) => Object.keys(reasons).filter(k => o[k]).map(k => `${esc(reasons[k])} <b>${o[k]}</b>`).join(' · ') || '—';
-    const modes = [['rapid', '⏱️ Rapid'], ['blitz', '⚡ Blitz'], ['bullet', '🔥 Bullet'], ['chess960', '🎲 Chess960']];
+    const modes = [['rapid', '⏱️ Rapid'], ['blitz', '⚡ Blitz'], ['bullet', '🔥 Bullet'], ['chess960', '🎲 Chess960'], ['shatranj', '🏺 Shatranj']];
     el.innerHTML = `
       <div class="ex-card"><span>🔥 ${esc(tx('exLongestStreak', "Eng uzun g'alaba seriyasi"))}</span><b>${x.longestStreak}</b><small>${esc(tx('exCurrentStreak', 'Hozirgi: {{n}}', { n: x.currentStreak }))}</small></div>
       <div class="ex-card"><span>${window.kingIcon('w')} ${esc(tx('exAsWhite', 'Oq bilan'))}</span><b>${pct(x.byColor.w)}%</b><small>${wdl(x.byColor.w)}</small></div>

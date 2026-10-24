@@ -43,7 +43,7 @@
     }
     el.innerHTML = st.games.map(g => `
       <button class="lv-item${st.watching === g.roomId ? ' active' : ''}" data-watch="${esc(g.roomId)}">
-        <div class="lv-item-top">${modeIcon(g.mode)} <b>${esc(g.clock.initial / 60)}+${esc(g.clock.increment)}</b>${g.variant === 'chess960' ? '<span class="lv-tag v960">🎲 960</span>' : ''}${kindTag(g)}<small>${g.watchers ? '👁 ' + g.watchers : ''}</small></div>
+        <div class="lv-item-top">${modeIcon(g.mode)} <b>${esc(g.clock.initial / 60)}+${esc(g.clock.increment)}</b>${g.variant === 'chess960' ? '<span class="lv-tag v960">🎲 960</span>' : g.variant === 'shatranj' ? '<span class="lv-tag v960">🏺 Shatranj</span>' : ''}${kindTag(g)}<small>${g.watchers ? '👁 ' + g.watchers : ''}</small></div>
         <div class="lv-item-player"><i class="lv-dot w"></i>${flag(g.white.country)}<span>${esc(g.white.username)}</span><em>${g.white.rating}</em></div>
         <div class="lv-item-player"><i class="lv-dot b"></i>${flag(g.black.country)}<span>${esc(g.black.username)}</span><em>${g.black.rating}</em></div>
       </button>`).join('');
@@ -102,8 +102,8 @@
     }
     stage.innerHTML = stageHtml(data);
     stage.querySelector('[data-back]').addEventListener('click', stopWatching);
-    st.variant = data.variant === 'chess960' ? 'chess960' : 'standard';
-    st.chess = st.variant === 'chess960' && window.Chess960 && data.startFen ? new Chess960(data.startFen) : new Chess();
+    st.variant = window.normVariant ? window.normVariant(data.variant) : 'standard';
+    st.chess = window.newChessFor ? window.newChessFor(st.variant, data.startFen) : new Chess();
     st.chat = Array.isArray(data.chat) ? data.chat.slice() : [];
     setWatchers(data.watchers);
     renderChat();
@@ -181,7 +181,8 @@
         const res = st.ended.winner === 'w' ? '1-0' : (st.ended.winner === 'b' ? '0-1' : '½-½');
         const reasons = {
           checkmate: tx('lvReasonCheckmate', 'mat'), resign: tx('lvReasonResign', 'taslim'), timeout: tx('lvReasonTimeout', 'vaqt tugadi'),
-          abandon: tx('lvReasonAbandon', "o'yinni tark etdi"), aborted: tx('lvReasonAborted', 'bekor qilindi'), agreement: tx('lvReasonAgreement', 'kelishuv')
+          abandon: tx('lvReasonAbandon', "o'yinni tark etdi"), aborted: tx('lvReasonAborted', 'bekor qilindi'), agreement: tx('lvReasonAgreement', 'kelishuv'),
+          bare: tx('reasonBare', "yalang'och shoh"), stalemate: tx('ghStalemate', 'pat')
         };
         const reason = reasons[st.ended.reason] || tx('lvReasonDraw', 'durrang');
         statusEl.innerHTML = `<b>🏁 ${esc(tx('lvFinished', "O'yin tugadi"))}: ${res}</b> <span>(${esc(reason)})</span>`;

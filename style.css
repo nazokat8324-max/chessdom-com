@@ -11105,6 +11105,7 @@ body:has(#gameView.active-view) .top-bar {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 #profileModal .mode-chess960::after { background: linear-gradient(90deg, var(--accent), transparent); }
+#profileModal .mode-shatranj::after { background: linear-gradient(90deg, #d9a73c, transparent); }
 @media (max-width: 1100px) {
   #profileModal .profile-ratings-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -15703,3 +15704,11 @@ body.auth-locked {
 .cv-q-n { color: #f0c869; font-weight: 800; font-size: 13px; white-space: nowrap; }
 .cv-q-hint { margin: 10px 0 0; color: #7f8f8a; font-size: 12px; }
 @media (max-width: 900px) { .cv-q-list { grid-template-columns: 1fr; } }
+
+/* ===== 🏺 O'yin turi tanlovi (o'yin paneli #variantSeg: Standart / 960 / Shatranj) ===== */
+.pg-variant-box { padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cd-border-strong, #223439); }
+.pg-variant-seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 3px; border-radius: 10px; background: rgba(0, 0, 0, 0.2); }
+.pg-variant-seg button { padding: 8px 4px; border: none; border-radius: 8px; background: transparent; color: #a9b6b0; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+.pg-variant-seg button.active { background: rgba(var(--accent-rgb), 0.2); color: #fff; }
+.pg-variant-box .rated-sublabel { margin-top: 6px; }
+.profile-rating-card.mode-shatranj .profile-mode-icon { filter: saturate(1.1); }

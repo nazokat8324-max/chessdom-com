@@ -12,6 +12,10 @@ const path = require('path');
 const fs = require('fs');
 const { Chess } = require('chess.js');
 const Chess960 = require('./chess960');
+const Shatranj = require('./shatranj');
+// O'yin turlari: standart, Chess960 va Shatranj (ikkalasi ham — alohida reyting, umumiy reytingga ta'sir qilmaydi)
+const VARIANTS = ['standard', 'chess960', 'shatranj'];
+const normVariant = (v) => (VARIANTS.includes(v) ? v : 'standard');
 const Caravan = require('./caravan');
 const Quests = require('./quests');
 
@@ -286,16 +290,16 @@ function findPlayer(room, socketId) { return room.players.find(p => p.socketId =
 
 function otherColor(color) { return color === 'w' ? 'b' : 'w'; }
 
-// opts.variant: 'standard' | 'chess960' (Chess960 — alohida 'chess960' reytingi), opts.startFen — 960 boshlang'ich pozitsiyasi
+// opts.variant: 'standard' | 'chess960' | 'shatranj' (har biri alohida reyting), opts.startFen — 960 boshlang'ich pozitsiyasi
 function createGameRoom(white, black, clock, rated, opts) {
   for (const p of [white, black]) if (p && p.userId && typeof teaStand === 'function') teaStand(p.userId);
   if (isGuest(white && white.userId) || isGuest(black && black.userId)) rated = false;
-  const variant = opts && opts.variant === 'chess960' ? 'chess960' : 'standard';
+  const variant = normVariant(opts && opts.variant);
   // CHESS960_TEST_FEN — faqat lokal sinov uchun (doim bir xil pozitsiya)
   const startFen = variant === 'chess960' ? (opts.startFen || process.env.CHESS960_TEST_FEN || Chess960.randomStartFen()) : null;
   return {
     players: [{ ...white, color: 'w' }, { ...black, color: 'b' }],
-    chess: variant === 'chess960' ? new Chess960(startFen) : new Chess(),
+    chess: variant === 'chess960' ? new Chess960(startFen) : variant === 'shatranj' ? new Shatranj() : new Chess(),
     variant,
     startFen,
     spectatorChat: [],
@@ -309,11 +313,13 @@ function createGameRoom(white, black, clock, rated, opts) {
   };
 }
 
-// Reyting qaysi rejimga yoziladi: Chess960 — o'z reytingi, aks holda vaqt nazorati bo'yicha
-function ratingModeOf(room) { return room.variant === 'chess960' ? 'chess960' : room.mode; }
+// Reyting qaysi rejimga yoziladi: Chess960 va Shatranj — o'z reytingi, aks holda vaqt nazorati bo'yicha
+function ratingModeOf(room) { return room.variant && room.variant !== 'standard' ? room.variant : room.mode; }
 
 function variantInfo(room) {
-  return room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen, ratingMode: 'chess960' } : { variant: 'standard', ratingMode: room.mode };
+  if (room.variant === 'chess960') return { variant: 'chess960', startFen: room.startFen, ratingMode: 'chess960' };
+  if (room.variant === 'shatranj') return { variant: 'shatranj', ratingMode: 'shatranj' };
+  return { variant: 'standard', ratingMode: room.mode };
 }
 
 function clockPayload(room) {
@@ -476,7 +482,7 @@ async function endGame(roomId, room, winnerColor, reason) {
         const result = scoreFor(p.color, winnerColor);
         const ratingMode = ratingModeOf(room);
         const statsData = await db.updateUserStats(p.userId, result, opp.username, "Online o'yin", moves, ratingMode,
-          { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : {}), ...(room.leagueGameId ? { league: true } : {}), ...(room.tea ? { tea: true } : {}), ...(room.rated ? { rated: true } : {}) });
+          { color: p.color, reason, clock: room.clock.initial / 60 + '+' + room.clock.increment, ...(room.variant === 'chess960' ? { variant: 'chess960', startFen: room.startFen } : room.variant === 'shatranj' ? { variant: 'shatranj' } : {}), ...(room.leagueGameId ? { league: true } : {}), ...(room.tea ? { tea: true } : {}), ...(room.rated ? { rated: true } : {}) });
         let ratingData = null;
         if (room.rated && oppUser) {
           const modeBefore = before[p.color] && before[p.color].ratings_by_mode ? before[p.color].ratings_by_mode[ratingMode] : null;
@@ -588,9 +594,9 @@ async function sendChallenge(socket, data, opts) {
   const me = await db.getUserById(fromId);
   const mode = clockMode(clock);
   const id = uuidv4();
-  const variant = data.variant === 'chess960' ? 'chess960' : 'standard';
+  const variant = normVariant(data.variant);
   const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, variant, rated: data.rated !== false && !isGuest(fromId) && !isGuest(target.id) };
-  const fromMode = variant === 'chess960' ? 'chess960' : mode;
+  const fromMode = variant !== 'standard' ? variant : mode;
   c.timer = setTimeout(() => {
     if (!dropChallenge(id)) return;
     io.to(`user_${fromId}`).emit('challenge-expired', { id, to: target.username });
@@ -670,10 +676,10 @@ async function teaSit(socket, data) {
   if (inActiveGame(userId)) return socket.emit('tea-error', { reason: 'you_busy' });
   if (teaSeats.size >= TEA_MAX_SEATS) return socket.emit('tea-error', { reason: 'full' });
   const clock = normalizeChallengeClock(data && data.initial, data && data.increment);
-  const variant = data && data.variant === 'chess960' ? 'chess960' : 'standard';
+  const variant = normVariant(data && data.variant);
   const u = await db.getUserById(userId);
   if (!u) return socket.emit('tea-error', { reason: 'auth' });
-  const mode = variant === 'chess960' ? 'chess960' : clockMode(clock);
+  const mode = variant !== 'standard' ? variant : clockMode(clock);
   for (const s of teaSeats.values()) if (s.userId === userId) teaSeats.delete(s.id);
   const i = matchmakingQueue.findIndex(q => q.userId === userId);
   if (i !== -1) matchmakingQueue.splice(i, 1);
@@ -874,7 +880,7 @@ const GOD_REASON = { checkmate: 40, stalemate: 25, resign: 20, timeout: 12, agre
 // Baho: uzunlik (120 yarim yurishgacha) + tugash sababi + o'yinchilar kuchi + Chess960 qiziqarliligi
 function godScore(c) {
   return Math.min(Number(c.moveCount) || 0, 120) + (GOD_REASON[c.reason] || 0)
-    + Math.round(((Number(c.rating) || 1500) + (Number(c.oppRating) || 1500)) / 100) + (c.variant === 'chess960' ? 8 : 0);
+    + Math.round(((Number(c.rating) || 1500) + (Number(c.oppRating) || 1500)) / 100) + (c.variant && c.variant !== 'standard' ? 8 : 0);
 }
 function tashkentDayStart(t) {
   const d = new Date((t || Date.now()) + WAR_TZ_MS);
@@ -2012,7 +2018,7 @@ async function start() {
       playerSocket.data.userId = req.user.userId;
       playerSocket.data.username = username;
       const clock = normalizeClock(req.body.initialTime, req.body.increment);
-      const variant = req.body.variant === 'chess960' ? 'chess960' : 'standard';
+      const variant = normVariant(req.body.variant);
       const guest = isGuest(req.user.userId);
       const rated = !guest && req.body.rated !== false;
       pruneMatchmakingQueue();
@@ -2024,7 +2030,7 @@ async function start() {
         myCountry = country;
         await db.updateUserCountry(req.user.userId, country);
       }
-      const mmMode = variant === 'chess960' ? 'chess960' : clockMode(clock);
+      const mmMode = variant !== 'standard' ? variant : clockMode(clock);
       const me = { userId: req.user.userId, username, rating: (user && user.rating) || 1500, ratingsByMode: user ? user.ratings_by_mode : null, country: myCountry, joinedAt: Date.now(), socketId, clock, rated, variant, guest,
         provisional: db.isProvisional(user, mmMode, false) };
       // Faqat bir xil vaqt nazorati, reyting turi va variantni tanlagan o'yinchi bilan juftlanadi
@@ -2729,7 +2735,7 @@ async function start() {
         games: games.length, ...sum, winRate: games.length ? Math.round(sum.win / games.length * 100) : 0, streak, byMode,
         ratings, bestGain, nemesis, victim, mostPlayed, war: { ...war, club },
         // Sevimli debyut klientda hisoblanadi (openings.js): standart o'yinlarning dastlabki yurishlari
-        openingLines: games.filter(g => g.variant !== 'chess960' && Array.isArray(g.moves) && g.moves.length).map(g => g.moves.slice(0, 16))
+        openingLines: games.filter(g => (!g.variant || g.variant === 'standard') && Array.isArray(g.moves) && g.moves.length).map(g => g.moves.slice(0, 16))
       });
     } catch (err) { console.error('Mavsum yakuni xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -2792,7 +2798,8 @@ async function start() {
         const head = [`[Event "ChessCaravan"]`, `[Site "${SITE_URL}"]`, `[Date "${isNaN(d) ? '????.??.??' : d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
           `[White "${white}"]`, `[Black "${black}"]`, `[Result "${g.color ? res1 : '*'}"]`]
           .concat(g.clock ? [`[TimeControl "${g.clock}"]`] : [])
-          .concat(g.variant === 'chess960' && g.startFen ? ['[Variant "Chess960"]', '[SetUp "1"]', `[FEN "${g.startFen}"]`] : []);
+          .concat(g.variant === 'chess960' && g.startFen ? ['[Variant "Chess960"]', '[SetUp "1"]', `[FEN "${g.startFen}"]`] : [])
+          .concat(g.variant === 'shatranj' ? ['[Variant "Shatranj"]', '[SetUp "1"]', `[FEN "${Shatranj.START_FEN}"]`] : []);
         let body = '';
         g.moves.forEach((s, i) => { body += (i % 2 === 0 ? (i / 2 + 1) + '. ' : '') + s + ' '; });
         return head.join('\n') + '\n\n' + body + (g.color ? res1 : '*') + '\n';
@@ -2951,6 +2958,12 @@ async function start() {
       if (room.chess.history().length === PREDICT_OPEN_PLIES && room.pred && room.pred.result.size) emitPredictStats(roomId, room);
       if (room.chess.game_over()) {
         const chess = room.chess;
+        if (typeof chess.result === 'function') {
+          const r = chess.result();
+          io.to('watch_' + roomId).emit('watch-move', { ...watchMove, clock: clockPayload(room) });
+          endGame(roomId, room, r.winner, r.reason);
+          return;
+        }
         let reason = 'draw';
         if (chess.in_checkmate()) reason = 'checkmate';
         else if (chess.in_stalemate()) reason = 'stalemate';

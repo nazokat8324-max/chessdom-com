@@ -1476,7 +1476,7 @@ window.renderProfileCommon = function(p) {
   const baseRating = p.rating || 1500;
   const byMode = p.statsByMode || {};
   const gamesOf = (s) => s ? (s.wins || 0) + (s.losses || 0) + (s.draws || 0) : 0;
-  ['rapid', 'blitz', 'bullet', 'chess960'].forEach(mode => {
+  ['rapid', 'blitz', 'bullet', 'chess960', 'shatranj'].forEach(mode => {
     const cap = mode.charAt(0).toUpperCase() + mode.slice(1);
     const rating = ratingsByMode[mode] || baseRating;
     // 🌱 Dastlabki 15 o'yinda reyting taxminiy — "?" bilan
@@ -1500,7 +1500,7 @@ window.renderProfileCommon = function(p) {
   // Ism ostida — eng yuqori darajasi (o'ynalgan rejimlar bo'yicha)
   const rankChip = document.getElementById('profileRankChip');
   if (rankChip && typeof window.rankBadge === 'function') {
-    const played = ['rapid', 'blitz', 'bullet', 'chess960'].filter(m => gamesOf(byMode[m])).map(m => ratingsByMode[m] || baseRating);
+    const played = ['rapid', 'blitz', 'bullet', 'chess960', 'shatranj'].filter(m => gamesOf(byMode[m])).map(m => ratingsByMode[m] || baseRating);
     rankChip.innerHTML = played.length ? window.rankBadge(Math.max(...played), true) : '';
   }
 
@@ -1550,7 +1550,7 @@ window.renderRecentGames = function(games) {
       <div class="profile-game-row${replayable ? ' replayable' : ''}"${replayable ? ` data-replay="${escapeHtmlSafe(g.id)}" title="${escapeHtmlSafe(tx('rpWatchGame', "O'yinni ko'rish"))}"` : ''}>
         <span class="profile-game-result ${result}">${escapeHtmlSafe(labels[result])}</span>
         <span class="profile-game-opponent"><small>vs</small>${opponentHtml}</span>
-        <span class="profile-game-mode">${g.timeControl === 'chess960' ? '🎲 Chess960' : escapeHtmlSafe(g.timeControl || '')}</span>
+        <span class="profile-game-mode">${g.timeControl === 'chess960' ? '🎲 Chess960' : g.timeControl === 'shatranj' ? '🏺 Shatranj' : escapeHtmlSafe(g.timeControl || '')}</span>
         <span class="profile-game-date">${escapeHtmlSafe(date)}${replayable ? ' <i class="rp-play">▶</i>' : ''}</span>
       </div>`;
   }).join('');

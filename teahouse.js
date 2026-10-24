@@ -56,7 +56,7 @@
   }
 
   function tag(clock, rated, variant) {
-    return `<div class="tea-tag"><b>${clockLabel(clock)}</b><span>${esc(rated ? tx('teaRated', 'Reytingli') : tx('teaCasual', 'Reytingsiz'))}</span>${variant === 'chess960' ? '<span>🎲 960</span>' : ''}</div>`;
+    return `<div class="tea-tag"><b>${clockLabel(clock)}</b><span>${esc(rated ? tx('teaRated', 'Reytingli') : tx('teaCasual', 'Reytingsiz'))}</span>${variant === 'chess960' ? '<span>🎲 960</span>' : variant === 'shatranj' ? '<span>🏺 Shatranj</span>' : ''}</div>`;
   }
 
   // Stol: kutayotgan o'yinchi (o'zimniki yoki boshqaniki)
@@ -81,7 +81,7 @@
       ${chair(g.black, {})}
       <div class="tea-desk">${miniBoard(g.fen, g.lastMove)}
         <span class="tea-watchers">👁 ${g.watchers || 0}</span>${kind}
-        <span class="tea-desk-clock">${clockLabel(g.clock)}${g.variant === 'chess960' ? ' · 🎲' : ''}</span>
+        <span class="tea-desk-clock">${clockLabel(g.clock)}${g.variant === 'chess960' ? ' · 🎲' : g.variant === 'shatranj' ? ' · 🏺' : ''}</span>
       </div>
       ${chair(g.white, {})}
     </div>`;
@@ -172,7 +172,7 @@
       <div class="tea-chips">${p.zone.clocks.map(c => `<button type="button" class="${c === p.clock ? 'active' : ''}" data-clock="${c.join(',')}">${clockLabel(c)}</button>`).join('')}</div>
       <label>${esc(tx('teaPickType', "O'yin turi"))}</label>
       <div class="tea-seg"><button type="button" class="${p.rated ? 'active' : ''}" data-rated="1">${esc(tx('teaRated', 'Reytingli'))}</button><button type="button" class="${!p.rated ? 'active' : ''}" data-rated="0">${esc(tx('teaCasual', 'Reytingsiz'))}</button></div>
-      <div class="tea-seg"><button type="button" class="${p.variant === 'standard' ? 'active' : ''}" data-variant="standard">♟ ${esc(tx('teaStandard', 'Standart'))}</button><button type="button" class="${p.variant === 'chess960' ? 'active' : ''}" data-variant="chess960">🎲 Chess960</button></div>
+      <div class="tea-seg"><button type="button" class="${p.variant === 'standard' ? 'active' : ''}" data-variant="standard">♟ ${esc(tx('teaStandard', 'Standart'))}</button><button type="button" class="${p.variant === 'chess960' ? 'active' : ''}" data-variant="chess960">🎲 Chess960</button><button type="button" class="${p.variant === 'shatranj' ? 'active' : ''}" data-variant="shatranj">🏺 Shatranj</button></div>
       <button type="button" class="tea-go" data-go>🪑 ${esc(tx('teaSitBtn', "O'tirish — {{clock}}", { clock: clockLabel(p.clock) }))}</button>
       <small class="tea-picker-note">${esc(tx('teaPickNote', "Qarshingizga kimdir o'tirishi bilan o'yin boshlanadi. Choyxonadan chiqsangiz, stol bo'shaydi."))}</small>
     </div>`;

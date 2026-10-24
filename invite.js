@@ -30,7 +30,7 @@
     // "180+2" (qo'lda yozilgan havolada + bo'sh joyga aylanadi — ikkalasi ham qabul qilinadi)
     const tc = /^(\d{1,5})[+ ](\d{1,2})$/.exec(q.get('tc') || '');
     try {
-      localStorage.setItem(KEY, JSON.stringify({ code: code.toLowerCase(), initial: tc ? Number(tc[1]) : 300, increment: tc ? Number(tc[2]) : 0, rated: q.get('r') === '1', variant: q.get('v') === '960' ? 'chess960' : 'standard', at: Date.now() }));
+      localStorage.setItem(KEY, JSON.stringify({ code: code.toLowerCase(), initial: tc ? Number(tc[1]) : 300, increment: tc ? Number(tc[2]) : 0, rated: q.get('r') === '1', variant: q.get('v') === '960' ? 'chess960' : q.get('v') === 'shatranj' ? 'shatranj' : 'standard', at: Date.now() }));
     } catch (e) {}
     ['invite', 'tc', 'r', 'v'].forEach(k => q.delete(k));
     const rest = q.toString();

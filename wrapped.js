@@ -4,7 +4,7 @@
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const SLIDE_MS = 6500;
-  const MODE_LABEL = { rapid: '⏱️ Rapid', blitz: '⚡ Blitz', bullet: '🔥 Bullet', chess960: '🎲 Chess960' };
+  const MODE_LABEL = { rapid: '⏱️ Rapid', blitz: '⚡ Blitz', bullet: '🔥 Bullet', chess960: '🎲 Chess960', shatranj: '🏺 Shatranj' };
   const st = { data: null, slides: [], i: 0, timer: null, startedAt: 0, paused: false, username: null };
 
   function monthName(season) {

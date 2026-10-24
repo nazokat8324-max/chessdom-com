@@ -757,21 +757,13 @@
                 </label>
               </div>
 
-              <div class="rated-toggle pg-variant">
-                <div>
-                  <div class="rated-label">🎲 Chess960</div>
-                  <div class="rated-sublabel" data-i18n="gpChess960Hint">
-                    Tasodifiy boshlang'ich pozitsiya · alohida reyting
-                  </div>
+              <div class="pg-variant-box">
+                <div class="pg-variant-seg" id="variantSeg">
+                  <button type="button" class="active" data-variant="standard" onclick="window.pickVariant(this)">♟ <span data-i18n="chStandard">Standart</span></button>
+                  <button type="button" data-variant="chess960" onclick="window.pickVariant(this)">🎲 960</button>
+                  <button type="button" data-variant="shatranj" onclick="window.pickVariant(this)">🏺 <span data-i18n="variantShatranj">Shatranj</span></button>
                 </div>
-                <label class="toggle-switch">
-                  <input
-                    type="checkbox"
-                    id="variantToggle"
-                    onchange="window.toggleVariant()"
-                  />
-                  <span class="toggle-slider"></span>
-                </label>
+                <div class="rated-sublabel" id="variantHint" data-i18n="gpStandardHint">Odatiy shaxmat</div>
               </div>
 
               <button
@@ -2331,6 +2323,8 @@
     <script src="https://cdn.jsdelivr.net/npm/howler@2.2.4/dist/howler.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
     <script src="chess960.js"></script>
+    <script src="shatranj.js"></script>
+    <script src="variants.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -2734,6 +2728,14 @@
                   >0 o'yin</span
                 >
               </div>
+              <div class="stat-card editable-card rating-readonly profile-rating-card mode-shatranj">
+                <div class="profile-rating-top">
+                  <span class="profile-mode-icon">🏺</span>
+                  <span class="stat-title" data-i18n="profShatranjRating">SHATRANJ REYTING</span>
+                </div>
+                <span class="stat-value editable-text" id="statShatranj">1500</span>
+                <span class="profile-mode-games" id="statShatranjGames">0 o'yin</span>
+              </div>
             </div>
           </section>
 
@@ -2747,6 +2749,7 @@
                 <button type="button" data-mode="blitz">⚡ Blitz</button>
                 <button type="button" data-mode="bullet">🔥 Bullet</button>
                 <button type="button" data-mode="chess960">🎲 Chess960</button>
+                <button type="button" data-mode="shatranj">🏺 Shatranj</button>
               </div>
             </div>
             <div class="profile-chart-box">

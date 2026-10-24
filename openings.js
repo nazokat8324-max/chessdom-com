@@ -34,9 +34,9 @@
   // Elementga debyut nomini yozish (baza kerak bo'lsa yuklanadi, keyin qayta chiziladi)
   window.renderOpeningInto = function (el, moves, variant) {
     if (!el) return;
-    if (variant === 'chess960') {
+    if (variant === 'chess960' || variant === 'shatranj') {
       el.hidden = false;
-      el.textContent = '🎲 Chess960';
+      el.textContent = window.variantLabel ? window.variantLabel(variant) : '🎲 Chess960';
       el.title = '';
       return;
     }

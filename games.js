@@ -4,7 +4,7 @@
   const st = { user: null, mode: 'all', result: 'all', color: 'all', q: '', page: 1, data: null, loading: false };
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const root = () => document.getElementById('historyRoot');
-  const modeIcon = (m) => ({ bullet: '🔥', blitz: '⚡', rapid: '⏱️', chess960: '🎲' }[m] || '♟');
+  const modeIcon = (m) => ({ bullet: '🔥', blitz: '⚡', rapid: '⏱️', chess960: '🎲', shatranj: '🏺' }[m] || '♟');
   const query = () => new URLSearchParams({ mode: st.mode, result: st.result, color: st.color, q: st.q }).toString();
 
   async function load() {
@@ -26,14 +26,14 @@
     if (!el) return;
     const d = st.data;
     const reasons = { checkmate: tx('lvReasonCheckmate', 'mat'), resign: tx('lvReasonResign', 'taslim'), timeout: tx('lvReasonTimeout', 'vaqt tugadi'), abandon: tx('lvReasonAbandon', "o'yinni tark etdi"),
-      agreement: tx('lvReasonAgreement', 'kelishuv'), stalemate: tx('ghStalemate', 'pat'), threefold: tx('ghRepetition', 'takrorlanish'), fifty: tx('ghFifty', '50 yurish'), insufficient: tx('ghInsufficient', 'dona yetishmaydi') };
+      agreement: tx('lvReasonAgreement', 'kelishuv'), bare: tx('reasonBare', "yalang'och shoh"), stalemate: tx('ghStalemate', 'pat'), threefold: tx('ghRepetition', 'takrorlanish'), fifty: tx('ghFifty', '50 yurish'), insufficient: tx('ghInsufficient', 'dona yetishmaydi') };
     const resultLabel = { win: tx('profWinsLabel', "G'alaba"), draw: tx('profDrawsLabel', 'Durrang'), loss: tx('profLossesLabel', "Mag'lubiyat") };
     const rows = d && d.games.length ? d.games.map(g => `
       <div class="gh-row">
         <span class="gh-date">${esc(g.date ? new Date(g.date).toLocaleDateString() : '—')}</span>
         <span class="gh-res ${esc(g.result)}">${esc(resultLabel[g.result] || g.result)}</span>
         <span class="gh-opp"><i class="gh-color ${g.color === 'b' ? 'b' : 'w'}" title="${esc(g.color === 'b' ? tx('blackText', 'Qora') : tx('whiteText', 'Oq'))}"></i><b class="player-link" data-username="${esc(g.opponent || '')}">${esc(g.opponent || '—')}</b></span>
-        <span class="gh-mode">${modeIcon(g.variant === 'chess960' ? 'chess960' : g.timeControl)} ${esc(g.clock || g.timeControl || '')}</span>
+        <span class="gh-mode">${modeIcon(g.variant && g.variant !== 'standard' ? g.variant : g.timeControl)} ${esc(g.clock || g.timeControl || '')}</span>
         <span class="gh-reason">${esc(reasons[g.reason] || '')}</span>
         <span class="gh-moves">${g.moves ? esc(tx('ghMovesN', '{{n}} yurish', { n: g.moves })) : ''}</span>
         <span class="gh-act">${g.hasMoves && g.id ? `<button class="set-mini" data-replay="${esc(g.id)}" title="${esc(tx('ghReplay', "Qayta ko'rish"))}">▶</button>` : ''}</span>
@@ -48,7 +48,7 @@
         </div>
       </header>
       <div class="gh-filters">
-        ${chips('mode', [['all', '🏆 ' + tx('lbModeAll', 'Umumiy')], ['rapid', '⏱️ Rapid'], ['blitz', '⚡ Blitz'], ['bullet', '🔥 Bullet'], ['chess960', '🎲 Chess960']], st.mode)}
+        ${chips('mode', [['all', '🏆 ' + tx('lbModeAll', 'Umumiy')], ['rapid', '⏱️ Rapid'], ['blitz', '⚡ Blitz'], ['bullet', '🔥 Bullet'], ['chess960', '🎲 Chess960'], ['shatranj', '🏺 Shatranj']], st.mode)}
         ${chips('result', [['all', tx('ghAllResults', 'Barchasi')], ['win', resultLabel.win], ['draw', resultLabel.draw], ['loss', resultLabel.loss]], st.result)}
         ${chips('color', [['all', window.kingIcon('w') + window.kingIcon('b')], ['w', window.kingIcon('w') + ' ' + tx('whiteText', 'Oq')], ['b', window.kingIcon('b') + ' ' + tx('blackText', 'Qora')]], st.color)}
         <form class="lb-search gh-search" id="ghSearch"><span>🔍</span><input id="ghQuery" type="search" placeholder="${esc(tx('ghOpponent', 'Raqib nomi'))}" value="${esc(st.q)}" autocomplete="off"></form>
@@ -127,10 +127,10 @@
       // Faylda bir nechta o'yin bo'lsa — birinchisi
       const first = text.split(/\n\s*\n(?=\s*\[Event )/)[0] || text;
       const { headers, tokens } = parsePgn(first);
-      const variant = /960|fischer/i.test(headers.Variant || '') ? 'chess960' : 'standard';
+      const variant = /960|fischer/i.test(headers.Variant || '') ? 'chess960' : /shatranj/i.test(headers.Variant || '') ? 'shatranj' : 'standard';
       const startFen = headers.FEN || null;
       let chess;
-      try { chess = variant === 'chess960' && window.Chess960 && startFen ? new Chess960(startFen) : (startFen ? new Chess(startFen) : new Chess()); }
+      try { chess = window.newChessFor(variant, variant === 'shatranj' ? null : startFen); }
       catch (err) { chess = null; }
       if (!chess || (startFen && variant === 'standard' && chess.fen().split(' ')[0] !== startFen.split(' ')[0])) { showToast(tx('ghBadPgn', "PGN ni o'qib bo'lmadi"), 'warning'); return; }
       const sans = [];

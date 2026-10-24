@@ -6,7 +6,7 @@
 
   function finalPosition(g) {
     try {
-      const chess = g.variant === 'chess960' && window.Chess960 ? new window.Chess960(g.startFen) : new Chess();
+      const chess = window.newChessFor ? window.newChessFor(g.variant, g.startFen) : new Chess();
       let last = null;
       for (const m of g.moves || []) {
         const mv = chess.move(typeof m === 'string' ? m : { from: m.from, to: m.to, promotion: m.promotion || 'q' });
@@ -39,7 +39,7 @@
 
   function reasonLabel(r) {
     const map = { checkmate: tx('lvReasonCheckmate', 'mat'), resign: tx('lvReasonResign', 'taslim'), timeout: tx('lvReasonTimeout', 'vaqt tugadi'), abandon: tx('lvReasonAbandon', "o'yinni tark etdi"),
-      agreement: tx('lvReasonAgreement', 'kelishuv'), stalemate: tx('ghStalemate', 'pat'), threefold: tx('ghRepetition', 'takrorlanish'), fifty: tx('ghFifty', '50 yurish'), insufficient: tx('ghInsufficient', 'dona yetishmaydi') };
+      agreement: tx('lvReasonAgreement', 'kelishuv'), bare: tx('reasonBare', "yalang'och shoh"), stalemate: tx('ghStalemate', 'pat'), threefold: tx('ghRepetition', 'takrorlanish'), fifty: tx('ghFifty', '50 yurish'), insufficient: tx('ghInsufficient', 'dona yetishmaydi') };
     return map[r] || '';
   }
 
@@ -56,7 +56,7 @@
     box.hidden = !g;
     if (!g) { box.innerHTML = ''; return; }
     const pos = finalPosition(g);
-    const opening = g.variant === 'chess960' ? { name: '🎲 Chess960' } : (typeof window.openingFor === 'function' ? window.openingFor(g.moves) : null);
+    const opening = g.variant === 'chess960' || g.variant === 'shatranj' ? { name: window.variantLabel(g.variant) } : (typeof window.openingFor === 'function' ? window.openingFor(g.moves) : null);
     const moves = Math.ceil((g.moves || []).length / 2);
     const date = g.playedAt ? new Date(g.playedAt).toLocaleDateString() : g.day;
     const detail = [reasonLabel(g.reason), tx('gdMoves', '{{n}} yurish', { n: moves }), g.clock].filter(Boolean).join(' · ');
@@ -81,7 +81,7 @@
         result: g.result === '1-0' ? 'win' : g.result === '0-1' ? 'loss' : 'draw', reason: g.reason, myColor: 'w' });
     });
     // Debyut bazasi keyin yuklansa — nomi chiqishi uchun qayta chizamiz
-    if (!opening && g.variant !== 'chess960' && typeof window.loadOpenings === 'function' && !st.openingTried) {
+    if (!opening && (!g.variant || g.variant === 'standard') && typeof window.loadOpenings === 'function' && !st.openingTried) {
       st.openingTried = true;
       Promise.resolve(window.loadOpenings()).then(render).catch(() => {});
     }

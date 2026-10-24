@@ -62,6 +62,7 @@
         <div class="ch-variants">
           <button class="ch-variant${st.variant === 'standard' ? ' active' : ''}" data-variant="standard">♟ ${esc(tx('chStandard', 'Standart'))}</button>
           <button class="ch-variant${st.variant === 'chess960' ? ' active' : ''}" data-variant="chess960">🎲 Chess960</button>
+          <button class="ch-variant${st.variant === 'shatranj' ? ' active' : ''}" data-variant="shatranj">🏺 ${esc(tx('variantShatranj', 'Shatranj'))}</button>
         </div>
         <label class="ch-rated"><input type="checkbox" id="chRated" ${st.rated ? 'checked' : ''}> ${esc(tx('chRated', "Reytingli o'yin"))}</label>
         <button class="ch-primary" data-send="1">⚔️ ${esc(tx('chSend', 'Chaqirish'))}</button>

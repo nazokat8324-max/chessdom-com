@@ -135,6 +135,32 @@ test("Bir qurilmada ikki kishi: navbat bilan yuriladi, taxta buriladi, mat — n
   assert.deepEqual(p.errors, []);
 });
 
+test("Shatranj: o'yin panelida tanlanadi, bir qurilmada qoidalari bilan o'ynaladi, pat — g'alaba", opts, async () => {
+  const u = await srv.register('Shat');
+  const p = await page(u);
+  await p.goto(srv.base + '/oyin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#variantSeg [data-variant="shatranj"]', { timeout: 10000 });
+  await sleep(600);
+  await p.click('#variantSeg [data-variant="shatranj"]');
+  assert.equal(await p.evaluate(() => window.getSelectedVariant()), 'shatranj');
+  await p.click('#btnLocalGame');
+  await sleep(400);
+  const st = await p.evaluate(() => ({ v: window.currentVariant, fen: game.fen(), d8: (game.get('d8') || {}).type }));
+  assert.equal(st.v, 'shatranj');
+  assert.equal(st.d8, 'k', "qora shoh d8 da (Shatranj boshlang'ich pozitsiyasi)");
+  assert.equal(await p.evaluate(() => !!window.executeMove('e2', 'e4')), false, "piyoda 2 qadam yurmaydi");
+  assert.equal(await p.evaluate(() => !!window.executeMove('e2', 'e3')), true);
+  assert.equal(await p.evaluate(() => !!window.executeMove('c8', 'a6')), true, 'fil 2 katak sakraydi');
+  assert.equal(await p.evaluate(() => window.isGameInProgress()), true);
+  await p.evaluate(() => window.resetToPreGame());
+  // Pat — pat qilgan tomon yutadi (mahalliy o'yinda ham)
+  await p.evaluate(() => { window.pickVariant(document.querySelector('#variantSeg [data-variant="shatranj"]')); window.startLocalGame(); game.load('k7/2K5/8/8/8/8/8/1R6 w - - 0 1'); board.position(game.fen()); });
+  await p.evaluate(() => { window.executeMove('b1', 'b7'); });
+  await sleep(400);
+  assert.equal(await p.evaluate(() => (window.lastGameEnd || {}).winner), 'w');
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

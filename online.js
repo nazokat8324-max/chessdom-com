@@ -264,7 +264,8 @@ function gameEndMessage(data) {
     case 'timeout': return data.winner === 'w' ? tx('blackTimeUp', "Qoraning vaqti tugadi! Oq g'alaba.") : tx('whiteTimeUp', "Oqning vaqti tugadi! Qora g'alaba.");
     case 'abandon': return won ? tx('opponentAbandoned', "Raqib o'yinni tark etdi. Siz g'olib bo'ldingiz!") : tx('youAbandoned', "Siz o'yinni tark etdingiz.");
     case 'agreement': return tx('gameDrawAgreement', 'Kelishilgan durrang!');
-    case 'stalemate': return tx('gameDrawStalemate', 'Pat: Durrang!');
+    case 'stalemate': return data.winner ? (won ? tx('shtStalemateWin', "Pat — Shatranj'da bu g'alaba!") : tx('shtStalemateLoss', "Pat — Shatranj'da bu mag'lubiyat.")) : tx('gameDrawStalemate', 'Pat: Durrang!');
+    case 'bare': return won ? tx('shtBareWin', "Yalang'och shoh — g'alaba!") : tx('shtBareLoss', "Shohingiz yalang'och qoldi — mag'lubiyat.");
     case 'threefold': return tx('gameDrawRepetition', '3 marta takrorlanish: Durrang!');
     case 'fifty': return tx('gameDraw50', '50 yurish qoidasi: Durrang!');
     case 'insufficient': return tx('gameDrawInsufficient', 'Mat uchun dona yetarli emas: Durrang!');
@@ -395,7 +396,7 @@ window.startMatchmaking = async function() {
         country: getMyCountry(),
         ...(typeof window.getSelectedClock === 'function' ? window.getSelectedClock() : {}),
         rated: !document.getElementById('ratedToggle') || document.getElementById('ratedToggle').checked,
-        variant: document.getElementById('variantToggle') && document.getElementById('variantToggle').checked ? 'chess960' : 'standard'
+        variant: typeof window.getSelectedVariant === 'function' ? window.getSelectedVariant() : 'standard'
       })
     });
     const data = await res.json();

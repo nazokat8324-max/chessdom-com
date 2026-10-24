@@ -64,7 +64,7 @@
   function newInstance(variant, startFen) {
     const v = variant === undefined ? window.currentVariant : variant;
     const f = startFen === undefined ? window.currentStartFen : startFen;
-    return v === 'chess960' && window.Chess960 && f ? new Chess960(f) : (f ? new Chess(f) : new Chess());
+    return window.newChessFor ? window.newChessFor(v, f) : new Chess();
   }
 
   // Umumiy tahlil: yurishlar ({from,to,promotion,color,san}) → baholar va xulosa. Bir vaqtda bitta tahlil (dvigatel bitta)
@@ -270,7 +270,7 @@
     const box = document.getElementById('pgAnalysisBox');
     if (!box) return;
     const enough = typeof game !== 'undefined' && game.history().length >= 2;
-    box.hidden = mode !== 'over' || !enough;
+    box.hidden = mode !== 'over' || !enough || (window.variantAnalysable && !window.variantAnalysable(window.currentVariant));
     if (mode !== 'over' && (st.result || st.running)) window.clearAnalysis();
     else renderBox();
   };

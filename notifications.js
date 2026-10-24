@@ -6,7 +6,7 @@
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const auth = () => ({ 'Authorization': `Bearer ${window.authToken}` });
   const clubName = (d) => (typeof window.countryName === 'function' ? window.countryName(d.club, d.code) : d.club);
-  const modeName = (m) => ({ rapid: 'Rapid', blitz: 'Blitz', bullet: 'Bullet', chess960: 'Chess960' }[m] || m);
+  const modeName = (m) => ({ rapid: 'Rapid', blitz: 'Blitz', bullet: 'Bullet', chess960: 'Chess960', shatranj: 'Shatranj' }[m] || m);
 
   function ago(iso) {
     const s = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 1000));
@@ -21,7 +21,7 @@
     const d = n.data || {};
     switch (n.type) {
       case 'challenge':
-        return { icon: '⚔️', text: tx('nfChallenge', '{{name}} sizni o\'yinga chaqirdi ({{clock}})', { name: d.from, clock: d.clock + (d.variant === 'chess960' ? ' · Chess960' : '') }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
+        return { icon: '⚔️', text: tx('nfChallenge', '{{name}} sizni o\'yinga chaqirdi ({{clock}})', { name: d.from, clock: d.clock + (d.variant === 'chess960' ? ' · Chess960' : d.variant === 'shatranj' ? ' · Shatranj' : '') }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
       case 'friend_request':
         return { icon: '🤝', text: tx('nfFriendRequest', "{{name}} sizga do'stlik so'rovi yubordi", { name: d.from }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
       case 'friend_accepted':

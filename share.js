@@ -13,13 +13,12 @@
   const REASONS = () => ({
     checkmate: tx('shCheckmate', 'Mat'), resign: tx('shResign', 'Taslim'), timeout: tx('shTimeout', 'Vaqt tugadi'),
     abandon: tx('shAbandon', "O'yindan chiqdi"), stalemate: tx('shStalemate', 'Pat'), threefold: tx('shThreefold', 'Uch marta takror'),
-    fifty: tx('shFifty', '50 yurish qoidasi'), insufficient: tx('shInsufficient', 'Dona yetarli emas'), agreement: tx('shAgreement', 'Kelishilgan durrang')
+    fifty: tx('shFifty', '50 yurish qoidasi'), insufficient: tx('shInsufficient', 'Dona yetarli emas'), agreement: tx('shAgreement', 'Kelishilgan durrang'), bare: tx('reasonBareCap', "Yalang'och shoh")
   });
 
   // --- Pozitsiyalar: har yurishdan keyingi taxta + oxirgi yurish kataklari ---
   function positions(data) {
-    const C = data.variant === 'chess960' && window.Chess960 ? window.Chess960 : window.Chess;
-    const chess = data.startFen ? new C(data.startFen) : new C();
+    const chess = window.newChessFor ? window.newChessFor(data.variant, data.startFen) : new window.Chess();
     const list = [{ board: chess.board(), last: null }];
     for (const san of (data.moves || []).slice(0, MAX_PLIES)) {
       const m = chess.move(san);

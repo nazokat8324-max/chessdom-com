@@ -1,19 +1,25 @@
 let game = new Chess();
 
-// O'yin varianti: 'standard' yoki 'chess960' (server match-found/game-resume da yuboradi; boshlang'ich FEN bilan)
+// O'yin varianti: 'standard' | 'chess960' | 'shatranj' (server match-found/game-resume da yuboradi; 960 — boshlang'ich FEN bilan)
 window.currentVariant = 'standard';
 window.currentStartFen = null;
 function newGameInstance() {
-  return window.currentVariant === 'chess960' && window.Chess960 && window.currentStartFen ? new Chess960(window.currentStartFen) : new Chess();
+  return window.newChessFor ? window.newChessFor(window.currentVariant, window.currentStartFen) : new Chess();
 }
 // chessboard.js uchun boshlang'ich joylashuv
 function startPlacement() {
-  return window.currentVariant === 'chess960' && window.currentStartFen ? window.currentStartFen.split(' ')[0] : 'start';
+  return window.startPlacementFor ? window.startPlacementFor(window.currentVariant, window.currentStartFen) : 'start';
 }
 window.setGameVariant = function(variant, startFen) {
-  const is960 = variant === 'chess960' && !!startFen;
-  window.currentVariant = is960 ? 'chess960' : 'standard';
-  window.currentStartFen = is960 ? startFen : null;
+  const v = window.normVariant ? window.normVariant(variant) : 'standard';
+  const ok = v !== 'chess960' || !!startFen;
+  window.currentVariant = ok ? v : 'standard';
+  window.currentStartFen = ok && v === 'chess960' ? startFen : null;
+  // Shatranj birinchi marta — qisqa qoidalar (sessiyada bir marta)
+  if (window.currentVariant === 'shatranj' && !window._shtRulesShown && typeof showToast === 'function') {
+    window._shtRulesShown = true;
+    showToast('🏺 ' + tx('shtRulesTitle', 'Shatranj qoidalari') + ': ' + tx('shtRules', "Farzin — 1 katak diagonal. Fil — aynan 2 katak diagonal sakraydi. Piyoda — faqat 1 katak, faqat farzinga aylanadi. Rokirovka yo'q. Pat va raqibni yalang'och shoh qilib qo'yish — g'alaba."), 'info', 10000);
+  }
   game = newGameInstance();
   if (board) board.position(startPlacement(), false);
 };
@@ -128,7 +134,7 @@ function refreshSearchOverlay() {
   if (!searchStartedAt) searchStartedAt = Date.now();
   const meta = document.getElementById('pgSearchMeta');
   const rated = document.getElementById('ratedToggle');
-  if (meta) meta.textContent = `${Math.round(initialTime / 60)}+${timeIncrement} · ${(!rated || rated.checked) ? tx('ratedLabel', 'Reytingli') : tx('unratedLabel', 'Reytingsiz')}${(document.getElementById('variantToggle') || {}).checked ? ' · Chess960' : ''}`;
+  if (meta) meta.textContent = `${Math.round(initialTime / 60)}+${timeIncrement} · ${(!rated || rated.checked) ? tx('ratedLabel', 'Reytingli') : tx('unratedLabel', 'Reytingsiz')}${window.getSelectedVariant() !== 'standard' ? ' · ' + window.variantLabel(window.getSelectedVariant()) : ''}`;
   const tick = () => {
     const el = document.getElementById('pgSearchTime');
     const s = Math.floor((Date.now() - searchStartedAt) / 1000);
@@ -285,6 +291,16 @@ window.applyClockUpdate = function(data) {
 // Yurishdan keyin (o'zimizning yoki raqibning) o'yin tugaganini tekshiradi.
 window.checkGameOverAfterMove = function() {
   if (!game.game_over()) return;
+  // Onlayn o'yin natijasini server e'lon qiladi (game-ended); Shatranj natijasi o'z qoidalari bilan (result())
+  if (typeof game.result === 'function') {
+    if (window.currentRoomId) return;
+    const r = game.result();
+    playSound('gameEnd');
+    const msg = r.reason === 'checkmate' ? tx('gameCheckmate', "Shaxmat! O'yin tugadi.") : r.reason === 'stalemate' ? tx('shtStalemateWin', "Pat — Shatranj'da bu g'alaba!")
+      : r.reason === 'bare' ? tx('shtBareWin', "Yalang'och shoh — g'alaba!") : tx('gameDraw', 'Durrang!');
+    window.finishGame(r.winner, msg, r.winner ? 'success' : 'warning');
+    return;
+  }
   playSound('gameEnd');
   if (typeof confetti === 'function') {
     confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 } });
@@ -372,9 +388,7 @@ window.exportPGN = function() {
   pgn += `[Date "${new Date().toISOString().split('T')[0].replace(/-/g, '.')}"]\n`;
   pgn += `[White "Player"]\n`;
   pgn += `[Black "Opponent"]\n`;
-  if (window.currentVariant === 'chess960' && window.currentStartFen) {
-    pgn += `[Variant "Chess960"]\n[SetUp "1"]\n[FEN "${window.currentStartFen}"]\n`;
-  }
+  if (window.variantPgnTags) pgn += window.variantPgnTags(window.currentVariant, window.currentStartFen);
   
   let pgnMoves = [];
   for (let i = 0; i < moves.length; i += 2) {
@@ -581,7 +595,18 @@ window.undoMove = function() {
   showToast(tx('lastMoveUndone', 'Oxirgi yurish qaytarildi'), 'info');
 };
 
-// Chess960 tanlovi (reytingli o'yinlar alohida Chess960 reytingiga yoziladi)
+// O'yin turi tanlovi (o'yin paneli #variantSeg): standart / Chess960 / Shatranj — variantlar alohida reytingga yoziladi
+window.getSelectedVariant = function() {
+  const active = document.querySelector('#variantSeg [data-variant].active');
+  return window.normVariant ? window.normVariant(active && active.dataset.variant) : 'standard';
+};
+window.pickVariant = function(btn) {
+  document.querySelectorAll('#variantSeg [data-variant]').forEach((b) => b.classList.toggle('active', b === btn));
+  const hint = document.getElementById('variantHint');
+  if (hint) hint.textContent = btn.dataset.variant === 'chess960' ? tx('gpChess960Hint', "Tasodifiy boshlang'ich pozitsiya · alohida reyting")
+    : btn.dataset.variant === 'shatranj' ? tx('gpShatranjHint', "Ipak yo'li shaxmati: farzin 1, fil 2 katak sakraydi · alohida reyting") : tx('gpStandardHint', 'Odatiy shaxmat');
+  window.toggleVariant();
+};
 window.toggleVariant = function() {
   refreshSearchOverlay();
 };
@@ -696,6 +721,8 @@ window.refreshLastMove = function() {
 let promotionPending = false;
 
 function isPromotionMove(source, target) {
+  // Shatranj: piyoda faqat farzinga aylanadi — tanlash oynasi kerak emas
+  if (window.currentVariant === 'shatranj') return false;
   return game.moves({ square: source, verbose: true }).some(m => m.to === target && m.flags.indexOf('p') !== -1);
 }
 

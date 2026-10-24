@@ -97,6 +97,9 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
   assert.match(fs.readFileSync(path.join(root, 'board.js'), 'utf8'), /window\.currentPieceSet = 'karvon'/);
 });
 
+// index.html <head> ro'yxatlari: muharrir (Prettier) qatorlarga bo'lsa ham bir xil o'qiladi
+const headHtml = (read) => read('index.html').replace(/\s+/g, '').replace(/,\]/g, ']');
+
 test("Sayt rang mavzulari: 10 ta, barcha ro'yxatlar, CSS va 6 tildagi nomlar bir xil", () => {
   const fs = require('fs');
   const path = require('path');
@@ -104,7 +107,7 @@ test("Sayt rang mavzulari: 10 ta, barcha ro'yxatlar, CSS va 6 tildagi nomlar bir
   const list = (src, re) => JSON.parse(src.match(re)[1].replace(/'/g, '"'));
   const site = list(read('script.js'), /window\.SITE_THEMES = (\[[^\]]*\])/);
   assert.equal(site.length, 10);
-  assert.deepEqual(list(read('index.html'), /(\["turquoise"[^\]]*\])\.indexOf\(cdTheme\)/), site, "index.html <head> ro'yxati");
+  assert.deepEqual(list(headHtml(read), /(\["turquoise"[^\]]*\])\.indexOf\(cdTheme\)/), site, "index.html <head> ro'yxati");
   const settings = [...read('settings.js').match(/const THEMES = \[(.*)\];/)[1].matchAll(/\['(\w+)', '(\w+)'/g)];
   assert.deepEqual(settings.map((m) => m[1]), site, "settings.js ro'yxati");
   const css = read('style.css');
@@ -135,7 +138,7 @@ test("Taxta ko'rinishlari: 10 ta + 'Mavzuga mos', barcha ro'yxatlar, CSS va 6 ti
   const list = (src, re) => JSON.parse(src.match(re)[1].replace(/'/g, '"'));
   const styles = list(read('script.js'), /window\.BOARD_STYLES = (\[[^\]]*\])/);
   assert.equal(styles.length, 10);
-  assert.deepEqual(list(read('index.html'), /(\["marble"[^\]]*\])\.indexOf\(cdSettings\.boardStyle\)/), styles, 'index.html <head>');
+  assert.deepEqual(list(headHtml(read), /(\["marble"[^\]]*\])\.indexOf\(cdSettings\.boardStyle\)/), styles, 'index.html <head>');
   const settings = [...read('settings.js').match(/const BOARDS = \[(.*)\];/)[1].matchAll(/\['(\w+)', '(\w+)'/g)];
   assert.deepEqual(settings.map((m) => m[1]), ['auto', ...styles], 'settings.js BOARDS');
   assert.match(read('settings.js'), /boardStyle: 'auto'/, "standart — mavzuga mos");

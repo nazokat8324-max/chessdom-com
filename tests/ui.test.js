@@ -247,6 +247,45 @@ test("Shahar naqshlari: o'z profilida tanlanadi, qulflanganlari bosilmaydi", opt
   assert.equal(await p2.evaluate(() => !!document.querySelector('#profileCaravan .bn-edit')), false);
 });
 
+test("Bahs: chaqiruvda tanlanadi, o'yin panelida hisob, keyingi o'yin tugmasi, profilda ro'yxat", opts, async () => {
+  const a = await srv.register('DuelA'), b = await srv.register('DuelB');
+  const p = await page(a);
+  await p.goto(srv.base + '/', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#topSettingsBtn', { visible: true, timeout: 10000 });
+  await sleep(1200);
+  // Chaqiruv oynasida bahs tanlovi bor
+  await p.evaluate((n) => window.openChallengeDialog(n), b.name);
+  await p.waitForSelector('#challengeModal [data-series="5"]', { visible: true });
+  await p.click('#challengeModal [data-series="5"]');
+  assert.equal(await p.evaluate(() => document.querySelector('#challengeModal [data-series="5"]').classList.contains('active')), true);
+  await p.click('#challengeModal [data-close]');
+  // B (socket) A ni 3 o'yinlik bahsga chaqiradi
+  const sb = await srv.connect(b);
+  sb.emit('challenge-send', { username: a.name, initial: 180, increment: 2, rated: false, series: 3 });
+  await p.waitForSelector('#challengeModal [data-accept]', { visible: true, timeout: 8000 });
+  assert.match(await p.evaluate(() => document.querySelector('#challengeModal .ch-sub').textContent), /⚔️ 3/);
+  const found = new Promise((r) => sb.once('match-found', r));
+  await p.click('#challengeModal [data-accept]');
+  const m = await found;
+  await p.waitForSelector('#duelBox:not([hidden])', { timeout: 8000 });
+  assert.match(await p.evaluate(() => document.querySelector('#duelBox .du-score b').textContent), /0 – 0/);
+  // B taslim → A 1:0, "Keyingi o'yin (2/3)"
+  sb.emit('game-over', { roomId: m.roomId, result: { type: 'resign' } });
+  await p.waitForFunction(() => /1 – 0/.test((document.querySelector('#duelBox .du-score b') || {}).textContent || ''), { timeout: 8000 });
+  await sleep(400);
+  assert.match(await p.evaluate(() => document.getElementById('btnRematch').textContent), /2\/3/);
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/duel-over.png' });
+  // Bahsni to'xtatish → profilda ro'yxat
+  await p.click('#duelBox .du-stop');
+  await p.waitForFunction(() => /to'xtatildi/i.test(document.querySelector('#duelBox .du-status').textContent), { timeout: 8000 });
+  await p.goto(srv.base + '/?profile=' + a.name, { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#profDuelsSection:not([hidden]) .du-row', { timeout: 15000 });
+  assert.match(await p.evaluate(() => document.querySelector('#profDuels .du-row').textContent), /1 – 0/);
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/duel-profile.png', fullPage: false });
+  sb.disconnect();
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

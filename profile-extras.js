@@ -7,7 +7,7 @@
     games_10: '♟️', games_100: '🎯', games_500: '🏛️',
     streak_5: '🔥', streak_10: '☄️', mate_10: '⚔️',
     rank_gold: '♝', rank_platinum: '♜', rank_diamond: '♛', rank_master: '★',
-    chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', tournament_win: '👑', sportsman: '🎖️', oracle: '🔮', mentor: '🎓', invite_3: '📣', invite_10: '🌟'
+    chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', tournament_win: '👑', sportsman: '🎖️', oracle: '🔮', mentor: '🎓', invite_3: '📣', invite_10: '🌟', duel_win: '🤺'
   };
   const ACH_TEXT = {
     first_win: ["Birinchi g'alaba", "Birinchi g'alabangizni qozoning"],
@@ -34,7 +34,8 @@
     oracle: ["Oyning bashoratchisi", "Oy davomida bashorat o'yinida eng ko'p ochko to'plang"],
     mentor: ['Ustoz', "Shogirdingiz reytingini 100 ga oshiring"],
     invite_3: ['Taklifchi', "Havolangiz orqali 3 ta do'stingizni saytga olib keling"],
-    invite_10: ['ChessCaravan elchisi', "Havolangiz orqali 10 ta do'stingizni saytga olib keling"]
+    invite_10: ['ChessCaravan elchisi', "Havolangiz orqali 10 ta do'stingizni saytga olib keling"],
+    duel_win: ["Bahs g'olibi", "Do'stingiz bilan 3, 5 yoki 7 o'yinlik bahsda g'alaba qozoning"]
   };
   const keyName = (k) => k.replace(/(^|_)(\w)/g, (m, a, c) => c.toUpperCase());
   window.achievementInfo = function (key) {
@@ -94,6 +95,7 @@
     if (window.renderProfileBanner) window.renderProfileBanner(st.data && st.data.banner, st.data ? st.data.caravan : null,
       !!(st.data && window.currentUser && !window.currentUser.guest && window.currentUser.username === st.username));
     if (window.renderProfilePredict) window.renderProfilePredict(st.data && st.data.predictions);
+    if (window.renderProfileDuels) window.renderProfileDuels(st.data && st.data.duels);
     const banner = document.getElementById('profileCheater');
     if (banner) banner.hidden = !(st.data && st.data.cheater);
   }

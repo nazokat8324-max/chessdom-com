@@ -56,6 +56,8 @@
         return { icon: '🎯', text: tx('qNotif', 'Haftalik vazifalar bajarildi! Nishonlar: {{total}}', { total: d.total || 1 }), go: () => window.switchView && window.switchView('caravan') };
       case 'game_of_day':
         return { icon: '🌟', text: tx('gdNotif', "{{opponent}} bilan o'yiningiz Kun o'yini bo'ldi!", { opponent: d.opponent || '' }), go: () => window.switchView && window.switchView('live') };
+      case 'duel_end':
+        return { icon: '⚔️', text: tx('nfDuelEnd', '{{opponent}} bilan bahs tugadi: {{me}} – {{opp}}', { opponent: d.opponent, me: window.formatDuelPoints ? window.formatDuelPoints(d.me) : d.me, opp: window.formatDuelPoints ? window.formatDuelPoints(d.opp) : d.opp }), go: () => window.openProfileModal && window.openProfileModal() };
       case 'caravan_city': {
         const city = window.Caravan ? window.Caravan.cityName(d.city, window.currentLang || 'en') : d.city;
         return { icon: '🐪', text: tx('cvArrived', '🐪 Karvoningiz {{city}}ga yetib keldi!', { city }).replace(/^🐪\s*/, ''), go: () => window.switchView && window.switchView('caravan') };

@@ -15785,3 +15785,35 @@ html.landscape-phone .nf-wrap { flex-direction: column-reverse; }
   background-image: linear-gradient(rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.22)), var(--pf-banner);
   background-size: auto, var(--pf-banner-size, 48px);
 }
+
+/* ===== ⚔️ Bahs (duels.js): o'yin panelidagi tablo, chaqiruvdagi tanlov, profil ro'yxati ===== */
+.duel-box { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; text-align: center; background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.14), rgba(var(--accent-rgb), 0.04)); border: 1px solid rgba(var(--accent-rgb), 0.35); }
+.duel-box.won { border-color: rgba(246, 196, 69, 0.6); background: linear-gradient(135deg, rgba(246, 196, 69, 0.18), rgba(246, 196, 69, 0.04)); }
+.duel-box.lost { opacity: 0.92; }
+.du-head { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-light, #7ee8ee); }
+.du-score { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 10px; margin: 6px 0 4px; }
+.du-score b { font-size: 24px; font-weight: 800; color: #fff; white-space: nowrap; }
+.du-name { font-size: 13px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.du-name:first-child { text-align: right; }
+.du-name:last-child { text-align: left; }
+.du-pips { display: flex; justify-content: center; gap: 5px; margin: 4px 0; }
+.du-pips i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.14); }
+.du-pips i.w { background: #22c55e; }
+.du-pips i.l { background: #ef4444; }
+.du-pips i.d { background: #a3a3a3; }
+.du-pips i.x { background: rgba(255, 255, 255, 0.45); }
+.du-status { font-size: 12px; color: var(--cd-muted, #a9b6b0); }
+.duel-box.won .du-status { color: #f6c445; font-weight: 700; }
+.du-stop { margin-top: 6px; padding: 3px 10px; font: inherit; font-size: 12px; border-radius: 999px; background: transparent; color: var(--cd-muted, #a9b6b0); border: 1px solid var(--cd-border-strong); cursor: pointer; }
+.ch-series-label { margin: 12px 0 6px; font-size: 12px; font-weight: 700; color: var(--cd-muted, #a9b6b0); }
+.ch-series { margin-top: 0; }
+.du-summary { margin: 0 0 10px; font-size: 13px; color: var(--cd-muted, #a9b6b0); }
+.du-list { display: grid; gap: 6px; }
+.du-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; padding: 8px 12px; border-radius: 10px; background: var(--cd-surface-2, rgba(255, 255, 255, 0.04)); border-left: 3px solid rgba(255, 255, 255, 0.15); }
+.du-row.win { border-left-color: #22c55e; }
+.du-row.loss { border-left-color: #ef4444; }
+.du-row.draw { border-left-color: #a3a3a3; }
+.du-row .du-res { font-size: 12px; font-weight: 700; }
+.du-row .du-opp { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.du-row .du-sc { font-weight: 800; }
+.du-row small { grid-column: 2 / 4; font-size: 11px; color: var(--cd-muted, #a9b6b0); }

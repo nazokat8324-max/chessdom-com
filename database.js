@@ -709,6 +709,27 @@ async function initDatabase() {
       UNIQUE (user_id, week)
     )
   `);
+  // ⚔️ Bahs: do'st bilan 3/5/7 o'yinlik seriya (hisob yarim ochkolarda: g'alaba 2, durrang 1)
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS duels (
+      id TEXT PRIMARY KEY,
+      player_a TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      player_b TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      best_of INTEGER NOT NULL,
+      score_a INTEGER NOT NULL DEFAULT 0,
+      score_b INTEGER NOT NULL DEFAULT 0,
+      games INTEGER NOT NULL DEFAULT 0,
+      clock TEXT,
+      variant TEXT,
+      rated INTEGER DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'active',
+      winner_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      finished_at TEXT
+    )
+  `);
+  for (const sql of ['CREATE INDEX IF NOT EXISTS idx_duels_a ON duels (player_a)', 'CREATE INDEX IF NOT EXISTS idx_duels_b ON duels (player_b)']) { try { await dbExec(sql); } catch (e) {} }
   // ⭐ Kun o'yini: har kun (Toshkent vaqti) uchun tanlangan o'yin — oq o'yinchining user_games yozuvi
   await dbExec(`
     CREATE TABLE IF NOT EXISTS game_of_day (
@@ -903,6 +924,42 @@ async function addQuestWeek(userId, week) {
   const r = await dbRun('INSERT INTO quest_weeks (id, user_id, week, completed_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, week) DO NOTHING', [uuidv4(), userId, week, new Date().toISOString()]);
   return !!(r && (r.changes || r.rowCount));
 }
+// --- ⚔️ Bahslar ---
+async function createDuel(d) {
+  const id = uuidv4(), now = new Date().toISOString();
+  await dbRun(`INSERT INTO duels (id, player_a, player_b, best_of, score_a, score_b, games, clock, variant, rated, status, created_at, updated_at)
+    VALUES (?, ?, ?, ?, 0, 0, 0, ?, ?, ?, 'active', ?, ?)`, [id, d.a, d.b, d.bestOf, d.clock || null, d.variant || 'standard', d.rated ? 1 : 0, now, now]);
+  return id;
+}
+async function updateDuel(id, f) {
+  const now = new Date().toISOString();
+  await dbRun('UPDATE duels SET score_a = ?, score_b = ?, games = ?, status = ?, winner_id = ?, updated_at = ?, finished_at = ? WHERE id = ?',
+    [f.scoreA, f.scoreB, f.games, f.status, f.winnerId || null, now, f.status === 'active' ? null : now, id]);
+}
+// Uzoq vaqt o'ynalmagan bahslar to'xtatiladi
+async function stopStaleDuels(cutoffIso) {
+  await dbRun("UPDATE duels SET status = 'stopped', finished_at = ? WHERE status = 'active' AND updated_at < ?", [new Date().toISOString(), cutoffIso]);
+}
+// Profil: bahslar soni, natijalari va oxirgilari (o'yinchi nuqtai nazaridan; hisob ochkolarda)
+async function duelSummary(userId) {
+  const rows = await dbAll(`SELECT d.player_a as "a", d.best_of as "bestOf", d.score_a as "scoreA", d.score_b as "scoreB", d.games as "games",
+      d.status as "status", d.winner_id as "winnerId", d.updated_at as "at", ua.username as "aName", ub.username as "bName"
+    FROM duels d LEFT JOIN users ua ON ua.id = d.player_a LEFT JOIN users ub ON ub.id = d.player_b
+    WHERE (d.player_a = ? OR d.player_b = ?) AND d.games > 0 ORDER BY d.updated_at DESC LIMIT 300`, [userId, userId]);
+  const out = { total: 0, won: 0, lost: 0, drawn: 0, recent: [] };
+  for (const r of rows) {
+    const mine = r.a === userId;
+    const item = {
+      opponent: (mine ? r.bName : r.aName) || null, bestOf: Number(r.bestOf), games: Number(r.games), status: r.status, at: r.at,
+      me: Number(mine ? r.scoreA : r.scoreB) / 2, opp: Number(mine ? r.scoreB : r.scoreA) / 2,
+      result: r.status === 'finished' ? (!r.winnerId ? 'draw' : r.winnerId === userId ? 'win' : 'loss') : r.status
+    };
+    if (r.status === 'finished') { out.total++; if (item.result === 'win') out.won++; else if (item.result === 'loss') out.lost++; else out.drawn++; }
+    if (out.recent.length < 8) out.recent.push(item);
+  }
+  return out;
+}
+
 async function countQuestWeeks(userId) {
   const r = await dbGet('SELECT COUNT(*) as "n" FROM quest_weeks WHERE user_id = ?', [userId]);
   return Number(r && r.n) || 0;
@@ -2471,6 +2528,10 @@ module.exports = {
   getPushPrefs,
   setPushPrefs,
   setProfileBanner,
+  createDuel,
+  updateDuel,
+  stopStaleDuels,
+  duelSummary,
   loadDeletedAccountIds,
   getUserHistory,
   getUserGameById,

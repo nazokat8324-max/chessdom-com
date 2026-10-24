@@ -2,7 +2,9 @@
 // Server: 'challenge-send' → raqibga 'challenge-received'; 'challenge-accept' → ikkalasiga 'match-found {challenge: true}'.
 (function () {
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
-  const st = { pick: [180, 2], rated: true, outgoing: null, incoming: null, variant: 'standard', custom: false, customMin: 10, customInc: 5 };
+  const st = { pick: [180, 2], rated: true, outgoing: null, incoming: null, variant: 'standard', custom: false, customMin: 10, customInc: 5, series: 1 };
+  // ⚔️ Bahs: 1 o'yin yoki 3/5/7 o'yinlik seriya (duels.js)
+  const seriesTag = (n) => (n > 1 ? ' · ⚔️ ' + esc(tx('duBestOf', "{{n}} o'yinlik", { n })) : '');
   let countdown = null;
 
   const esc = (v) => {
@@ -64,6 +66,8 @@
           <button class="ch-variant${st.variant === 'chess960' ? ' active' : ''}" data-variant="chess960">🎲 Chess960</button>
           <button class="ch-variant${st.variant === 'shatranj' ? ' active' : ''}" data-variant="shatranj">🏺 ${esc(tx('variantShatranj', 'Shatranj'))}</button>
         </div>
+        <div class="ch-series-label">⚔️ ${esc(tx('duSeriesLabel', "Bahs — necha o'yin?"))}</div>
+        <div class="ch-variants ch-series">${[1, 3, 5, 7].map((n) => `<button class="ch-variant${st.series === n ? ' active' : ''}" data-series="${n}">${n === 1 ? esc(tx('duOne', "1 o'yin")) : n}</button>`).join('')}</div>
         <label class="ch-rated"><input type="checkbox" id="chRated" ${st.rated ? 'checked' : ''}> ${esc(tx('chRated', "Reytingli o'yin"))}</label>
         <button class="ch-primary" data-send="1">⚔️ ${esc(tx('chSend', 'Chaqirish'))}</button>
       </div>`;
@@ -83,11 +87,12 @@
     });
     el.querySelector('[data-custom]').onclick = () => { keep(); st.custom = true; renderPicker(username); };
     el.querySelectorAll('[data-variant]').forEach(b => b.onclick = () => { keep(); st.variant = b.dataset.variant; renderPicker(username); });
+    el.querySelectorAll('[data-series]').forEach(b => b.onclick = () => { keep(); st.series = Number(b.dataset.series); renderPicker(username); });
     el.querySelector('[data-send]').onclick = () => {
       keep();
       const initial = st.custom ? Math.round(st.customMin * 60) : st.pick[0];
       const increment = st.custom ? st.customInc : st.pick[1];
-      socket.emit('challenge-send', { username, initial, increment, rated: st.rated, variant: st.variant });
+      socket.emit('challenge-send', { username, initial, increment, rated: st.rated, variant: st.variant, series: st.series });
     };
   }
 
@@ -97,7 +102,7 @@
       <div class="ch-card">
         <div class="ch-icon pulse">⏳</div>
         <h3>${esc(tx('chWaiting', '{{name}} javobini kutyapmiz...', { name: data.to }))}</h3>
-        <p class="ch-sub">${modeIcon(modeOf(data.clock.initial, data.clock.increment))} ${clockLabel(data.clock.initial, data.clock.increment)} · ${esc(data.rated ? tx('chRatedShort', 'Reytingli') : tx('chCasualShort', 'Reytingsiz'))}${data.variant === 'chess960' ? ' · 🎲 Chess960' : ''}</p>
+        <p class="ch-sub">${modeIcon(modeOf(data.clock.initial, data.clock.increment))} ${clockLabel(data.clock.initial, data.clock.increment)} · ${esc(data.rated ? tx('chRatedShort', 'Reytingli') : tx('chCasualShort', 'Reytingsiz'))}${data.variant === 'chess960' ? ' · 🎲 Chess960' : data.variant === 'shatranj' ? ' · 🏺 Shatranj' : ''}${seriesTag(data.series)}</p>
         <div class="ch-timer" id="chTimer"></div>
         <button class="ch-secondary" data-cancel="1">${esc(tx('arCancel', 'Bekor qilish'))}</button>
       </div>`;
@@ -113,7 +118,7 @@
         <div class="ch-icon">⚔️</div>
         <h3>${esc(data.invite ? tx('chIncomingInvite', "🔗 {{name}} taklifingizni qabul qildi va o'ynashga tayyor!", { name: data.from.username }) : tx('chIncoming', "{{name}} sizni o'yinga chaqirmoqda!", { name: data.from.username }))}</h3>
         <p class="ch-from">${flag(data.from.country)} <b>${esc(data.from.username)}</b> <small>${data.from.rating}</small></p>
-        <p class="ch-sub">${modeIcon(data.mode)} ${clockLabel(data.clock.initial, data.clock.increment)} · ${esc(data.rated ? tx('chRatedShort', 'Reytingli') : tx('chCasualShort', 'Reytingsiz'))}${data.variant === 'chess960' ? ' · 🎲 Chess960' : ''}</p>
+        <p class="ch-sub">${modeIcon(data.mode)} ${clockLabel(data.clock.initial, data.clock.increment)} · ${esc(data.rated ? tx('chRatedShort', 'Reytingli') : tx('chCasualShort', 'Reytingsiz'))}${data.variant === 'chess960' ? ' · 🎲 Chess960' : data.variant === 'shatranj' ? ' · 🏺 Shatranj' : ''}${seriesTag(data.series)}</p>
         <div class="ch-timer" id="chTimer"></div>
         <div class="ch-actions">
           <button class="ch-secondary" data-decline="1">✕ ${esc(tx('chDecline', 'Rad etish'))}</button>

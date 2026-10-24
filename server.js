@@ -343,7 +343,8 @@ function persistRoom(roomId, room) {
     variant: room.variant,
     startFen: room.startFen,
     leagueGameId: room.leagueGameId || null,
-    swissMatch: room.swissMatch || null
+    swissMatch: room.swissMatch || null,
+    duel: room.duel || null
   };
   room.persistChain = (room.persistChain || Promise.resolve())
     .then(() => (room.status === 'active' ? db.saveActiveGame(roomId, snapshot) : null))
@@ -402,6 +403,7 @@ async function restoreActiveGames() {
       room.clock.b = data.clock.b;
       if (data.leagueGameId) room.leagueGameId = data.leagueGameId;
       if (data.swissMatch) room.swissMatch = data.swissMatch;
+      if (data.duel) room.duel = data.duel;
       room.announced = true;
       // Server o'chib turgan va o'yinchilar qaytayotgan vaqt soatdan ayirilmaydi: navbatdagi o'yinchi
       // qaytguncha soat to'xtab turadi (resumeGames → resumeClock). Saqlangan qiymat — server to'xtagan paytdagi soat.
@@ -535,13 +537,20 @@ async function endGame(roomId, room, winnerColor, reason) {
     catch (err) { console.error('Swiss natijasini yozish xatoligi:', err); }
   }
 
+  // ⚔️ Bahs o'yini bo'lsa — hisob yangilanadi (bekor qilingan o'yin sanalmaydi)
+  if (room.duel) {
+    try { await recordDuelGame(room, winnerColor, reason); }
+    catch (err) { console.error('Bahs natijasini yozish xatoligi:', err); }
+  }
+
   room.endedAt = Date.now();
   room.endPayloads = {};
   for (const p of players) {
     clearTimeout(p.awayTimer);
     const payload = {
       roomId, winner: winnerColor, reason, result: scoreFor(p.color, winnerColor),
-      rated: room.rated && recorded, mode: ratingModeOf(room), swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null, ...(updates[p.color] || {})
+      rated: room.rated && recorded, mode: ratingModeOf(room), swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null,
+      duel: room.duel ? duelPublic(room.duel) : null, ...(updates[p.color] || {})
     };
     room.endPayloads[p.color] = payload;
     // O'yin davomida qayta ulangan bo'lsa — yangi socketiga
@@ -596,6 +605,8 @@ async function sendChallenge(socket, data, opts) {
   const id = uuidv4();
   const variant = normVariant(data.variant);
   const c = { id, fromId, fromName: socket.data.username, toId: target.id, toName: target.username, clock, variant, rated: data.rated !== false && !isGuest(fromId) && !isGuest(target.id) };
+  // ⚔️ Bahs: 3, 5 yoki 7 o'yinlik seriya (aks holda bitta o'yin)
+  c.series = DUEL_SIZES.includes(Number(data.series)) ? Number(data.series) : 1;
   const fromMode = variant !== 'standard' ? variant : mode;
   c.timer = setTimeout(() => {
     if (!dropChallenge(id)) return;
@@ -604,12 +615,12 @@ async function sendChallenge(socket, data, opts) {
   }, CHALLENGE_TTL_MS);
   challenges.set(id, c);
   c.payload = {
-    id, clock, rated: c.rated, variant, mode, seconds: CHALLENGE_TTL_MS / 1000, invite,
+    id, clock, rated: c.rated, variant, mode, seconds: CHALLENGE_TTL_MS / 1000, invite, series: c.series,
     from: { username: c.fromName, rating: (me && me.ratings_by_mode && me.ratings_by_mode[fromMode]) || (me && me.rating) || 1500, country: me ? me.country || null : null }
   };
   c.expiresAt = Date.now() + CHALLENGE_TTL_MS;
   io.to(`user_${target.id}`).emit('challenge-received', c.payload);
-  socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, variant, seconds: CHALLENGE_TTL_MS / 1000 });
+  socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, variant, series: c.series, seconds: CHALLENGE_TTL_MS / 1000 });
   notify(target.id, 'challenge', { from: c.fromName, clock: clock.initial / 60 + '+' + clock.increment, variant, rated: c.rated });
 }
 
@@ -625,7 +636,12 @@ async function acceptChallenge(socket, id) {
     if (i !== -1) matchmakingQueue.splice(i, 1);
   }
   const [fromUser, toUser] = await Promise.all([db.getUserById(c.fromId), db.getUserById(c.toId)]);
-  startDirectGame({ socket: fromSocket, user: fromUser }, { socket, user: toUser }, c.clock, c.rated, c.variant, { challenge: true });
+  let duelState = null;
+  if (c.series > 1 && fromUser && toUser) {
+    const id = await db.createDuel({ a: fromUser.id, b: toUser.id, bestOf: c.series, clock: c.clock.initial / 60 + '+' + c.clock.increment, variant: c.variant, rated: c.rated });
+    duelState = { id, a: fromUser.id, b: toUser.id, aName: fromUser.username, bName: toUser.username, bestOf: c.series, scoreA: 0, scoreB: 0, played: 0, finished: false, stopped: false, winner: null };
+  }
+  startDirectGame({ socket: fromSocket, user: fromUser }, { socket, user: toUser }, c.clock, c.rated, c.variant, duelState ? { challenge: true, duelState } : { challenge: true });
 }
 
 // Ikki tayyor o'yinchi (socket + user) o'rtasida o'yin: ranglar tasodifiy, ikkalasiga match-found
@@ -642,11 +658,13 @@ function startDirectGame(a, b, clock, rated, variant, flags) {
     clock, rated, { variant }
   );
   if (flags && flags.tea) room.tea = true;
+  const { duelState, ...pubFlags } = flags || {};
+  if (duelState) room.duel = duelState;
   rooms.set(roomId, room);
   const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null, provisional: db.isProvisional(u, ratingModeOf(room), false) });
   for (const [side, color, opp] of [[white, 'w', black], [black, 'b', white]]) {
     side.socket.join(roomId);
-    side.socket.emit('match-found', { roomId, color, opponent: info(opp.user), clock, rated: room.rated, mode: room.mode, ...(flags || {}), ...variantInfo(room) });
+    side.socket.emit('match-found', { roomId, color, opponent: info(opp.user), clock, rated: room.rated, mode: room.mode, ...pubFlags, ...(room.duel ? { duel: duelPublic(room.duel) } : {}), ...variantInfo(room) });
   }
   scheduleRoomTimer(roomId, room);
   return roomId;
@@ -735,6 +753,43 @@ setInterval(() => {
   if (changed) broadcastTea();
 }, 60 * 1000);
 
+// --- ⚔️ Bahs: do'st bilan 3/5/7 o'yinlik seriya. Holat xonada (room.duel), har o'yin natijasi duels jadvaliga ---
+const DUEL_SIZES = [3, 5, 7];
+const DUEL_STALE_MS = 6 * 60 * 60 * 1000;
+function duelPublic(d) {
+  return {
+    id: d.id, bestOf: d.bestOf, played: d.played, game: Math.min(d.bestOf, d.played + (d.finished || d.stopped ? 0 : 1)),
+    players: [d.aName, d.bName], scores: { [d.aName]: d.scoreA / 2, [d.bName]: d.scoreB / 2 },
+    finished: !!d.finished, stopped: !!d.stopped, winner: d.winner ? (d.winner === d.a ? d.aName : d.bName) : null
+  };
+}
+async function recordDuelGame(room, winnerColor, reason) {
+  const d = room.duel;
+  if (!d || d.finished || d.stopped || reason === 'aborted') return;
+  const pa = room.players.find((p) => p.userId === d.a), pb = room.players.find((p) => p.userId === d.b);
+  if (!pa || !pb) return;
+  const half = (p) => ({ win: 2, draw: 1, loss: 0 }[scoreFor(p.color, winnerColor)] || 0);
+  d.scoreA += half(pa); d.scoreB += half(pb); d.played += 1;
+  // Yarim ochkolarda: g'olib — jami 2·bestOf dan yarmidan ko'pini olgan; o'yinlar tugasa — kim oldinda (teng — durrang)
+  if (d.scoreA > d.bestOf || d.scoreB > d.bestOf || d.played >= d.bestOf) {
+    d.finished = true;
+    d.winner = d.scoreA > d.scoreB ? d.a : d.scoreB > d.scoreA ? d.b : null;
+  }
+  await db.updateDuel(d.id, { scoreA: d.scoreA, scoreB: d.scoreB, games: d.played, status: d.finished ? 'finished' : 'active', winnerId: d.winner });
+  if (d.finished) {
+    for (const [uid, oppName, me, opp] of [[d.a, d.bName, d.scoreA, d.scoreB], [d.b, d.aName, d.scoreB, d.scoreA]]) {
+      notify(uid, 'duel_end', { opponent: oppName, me: me / 2, opp: opp / 2, result: !d.winner ? 'draw' : d.winner === uid ? 'win' : 'loss' });
+    }
+    if (d.winner) awardAchievement(d.winner, 'duel_win');
+  }
+}
+function stopDuel(roomId, room) {
+  const d = room.duel;
+  d.stopped = true;
+  db.updateDuel(d.id, { scoreA: d.scoreA, scoreB: d.scoreB, games: d.played, status: 'stopped', winnerId: null }).catch((err) => console.error('Bahsni to\'xtatish xatoligi:', err.message));
+  for (const p of room.players) if (p.socketId) io.to(p.socketId).emit('duel-stopped', { roomId, duel: duelPublic(d) });
+}
+
 async function startRematch(oldRoomId, old) {
   if (old.rematchStarted) return;
   old.rematchStarted = true;
@@ -750,12 +805,13 @@ async function startRematch(oldRoomId, old) {
     { socketId: prevWhite.socketId, userId: prevWhite.userId, username: prevWhite.username },
     clock, old.rated, { variant: old.variant, startFen: old.startFen }
   );
+  if (old.duel && !old.duel.finished && !old.duel.stopped) room.duel = { ...old.duel };
   rooms.set(roomId, room);
   const info = (u) => ({ username: u.username, rating: u.rating || 1500, ratingsByMode: u.ratings_by_mode, country: u.country || null, provisional: db.isProvisional(u, ratingModeOf(room), false) });
   for (const [p, color, opp] of [[prevBlack, 'w', blackUser], [prevWhite, 'b', whiteUser]]) {
     const s = io.sockets.sockets.get(p.socketId);
     if (s) { s.leave(oldRoomId); s.join(roomId); }
-    io.to(p.socketId).emit('match-found', { roomId, color, opponent: info(opp), clock, rated: room.rated, mode: room.mode, rematch: true, ...variantInfo(room) });
+    io.to(p.socketId).emit('match-found', { roomId, color, opponent: info(opp), clock, rated: room.rated, mode: room.mode, rematch: true, ...(room.duel ? { duel: duelPublic(room.duel) } : {}), ...variantInfo(room) });
   }
   scheduleRoomTimer(roomId, room);
 }
@@ -1376,7 +1432,8 @@ async function resumeGames(socket) {
         ? { username: oppUser.username, rating: oppUser.rating || 1500, ratingsByMode: oppUser.ratings_by_mode, country: oppUser.country || null }
         : { username: opponent ? opponent.username : '?', rating: 1500 },
       league: room.leagueGameId ? { gameId: room.leagueGameId } : null,
-      swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null
+      swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null,
+      duel: room.duel ? duelPublic(room.duel) : null
     });
     socket.to(roomId).emit('opponent-back', { roomId });
   }
@@ -2513,6 +2570,7 @@ async function start() {
         caravan: isGuest(u.id) ? null : Caravan.pointsOf(u.stats),
         banner: isGuest(u.id) ? null : bannerOf(u),
         questBadges: await db.countQuestWeeks(u.id),
+        duels: await db.duelSummary(u.id),
         predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)
       });
@@ -3086,7 +3144,10 @@ async function start() {
     socket.on('rematch-decline', (data) => {
       const room = data && rooms.get(data.roomId);
       const player = room && findPlayer(room, socket.id);
-      if (!player || !room.rematchBy) return;
+      if (!player) return;
+      // ⚔️ Bahsda keyingi o'yindan voz kechish — bahs shu hisob bilan to'xtatiladi
+      if (room.status === 'over' && room.duel && !room.duel.finished && !room.duel.stopped) stopDuel(data.roomId, room);
+      if (!room.rematchBy) return;
       room.rematchBy = null;
       const opponent = room.players.find(p => p !== player);
       if (opponent) io.to(opponent.socketId).emit('rematch-declined', { roomId: data.roomId });
@@ -3287,7 +3348,10 @@ async function start() {
     });
   });
 
-  setInterval(() => { closeWarSeasons(); closeSportMonths(); closePredictionMonths(); cleanupGuests(); }, 60 * 60 * 1000);
+  setInterval(() => {
+    closeWarSeasons(); closeSportMonths(); closePredictionMonths(); cleanupGuests();
+    db.stopStaleDuels(new Date(Date.now() - DUEL_STALE_MS).toISOString()).catch((err) => console.error('Bahslarni tozalash xatoligi:', err.message));
+  }, 60 * 60 * 1000);
   setTimeout(cleanupGuests, 60 * 1000);
   setTimeout(() => { closeSportMonths(); closePredictionMonths(); }, 30 * 1000);
   // Davom etayotgan o'yinlardagi o'yinchilarning internet kechikishi (RTT, silliqlangan) — soat kompensatsiyasi uchun

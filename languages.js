@@ -2910,6 +2910,15 @@ const translationsExtra = {
     reasonBareCap: "Yalang'och shoh",
     shtRulesTitle: "Shatranj qoidalari",
     shtRules: "Farzin — 1 katak diagonal. Fil — aynan 2 katak diagonal sakraydi. Piyoda — faqat 1 katak, faqat farzinga aylanadi. Rokirovka yo'q. Pat va raqibni yalang'och shoh qilib qo'yish — g'alaba.",
+    vcTitle: "Ovoz bilan yurish",
+    vcOn: "🎙️ Ovoz bilan yurish yoqildi — yurishni ayting, masalan «e4» yoki «ot f3»",
+    vcOff: "Ovoz bilan yurish o'chirildi",
+    vcUnsupported: "Brauzeringiz ovozni tanimaydi (Chrome, Edge yoki Safari kerak)",
+    vcDenied: "Mikrofonga ruxsat berilmadi",
+    vcNotUnderstood: "Tushunmadim: «{{text}}»",
+    vcAmbiguous: "Aniqroq ayting: {{list}}",
+    vcNotYourTurn: "Navbat raqibda",
+    vcNoGame: "O'yin boshlanmagan",
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
@@ -4355,6 +4364,15 @@ const translationsExtra = {
     reasonBareCap: "Bare king",
     shtRulesTitle: "Shatranj rules",
     shtRules: "Ferz: 1 square diagonally. Alfil: jumps exactly 2 squares diagonally. Pawns: 1 step only, promote to ferz. No castling. Stalemate and baring the enemy king win.",
+    vcTitle: "Voice moves",
+    vcOn: "🎙️ Voice moves on — say your move, e.g. “e4” or “knight f3”",
+    vcOff: "Voice moves off",
+    vcUnsupported: "Your browser can’t recognise speech (use Chrome, Edge or Safari)",
+    vcDenied: "Microphone access was denied",
+    vcNotUnderstood: "Didn’t catch that: “{{text}}”",
+    vcAmbiguous: "Be more specific: {{list}}",
+    vcNotYourTurn: "It’s your opponent’s turn",
+    vcNoGame: "No game in progress",
     searchNoResults: "Nothing found"
   },
   ru: {
@@ -5800,6 +5818,15 @@ const translationsExtra = {
     reasonBareCap: "Голый король",
     shtRulesTitle: "Правила шатранджа",
     shtRules: "Ферзь — 1 клетка по диагонали. Слон прыгает ровно на 2 клетки по диагонали. Пешка — только на 1 клетку, превращается только в ферзя. Рокировки нет. Пат и голый король соперника — победа.",
+    vcTitle: "Ходы голосом",
+    vcOn: "🎙️ Ходы голосом включены — скажите ход, например «e4» или «конь f3»",
+    vcOff: "Ходы голосом выключены",
+    vcUnsupported: "Ваш браузер не распознаёт речь (нужен Chrome, Edge или Safari)",
+    vcDenied: "Доступ к микрофону запрещён",
+    vcNotUnderstood: "Не понял: «{{text}}»",
+    vcAmbiguous: "Уточните: {{list}}",
+    vcNotYourTurn: "Сейчас ход соперника",
+    vcNoGame: "Партия не идёт",
     searchNoResults: "Ничего не найдено"
   },
   es: {
@@ -7245,6 +7272,15 @@ const translationsExtra = {
     reasonBareCap: "Rey desnudo",
     shtRulesTitle: "Reglas del shatranj",
     shtRules: "Alferza: 1 casilla en diagonal. Alfil: salta exactamente 2 en diagonal. Peón: solo 1 paso, corona solo en alferza. Sin enroque. El ahogado y dejar al rey rival desnudo ganan.",
+    vcTitle: "Jugadas por voz",
+    vcOn: "🎙️ Jugadas por voz activadas: di tu jugada, p. ej. «e4» o «caballo f3»",
+    vcOff: "Jugadas por voz desactivadas",
+    vcUnsupported: "Tu navegador no reconoce la voz (usa Chrome, Edge o Safari)",
+    vcDenied: "Se denegó el acceso al micrófono",
+    vcNotUnderstood: "No entendí: «{{text}}»",
+    vcAmbiguous: "Sé más preciso: {{list}}",
+    vcNotYourTurn: "Es el turno del rival",
+    vcNoGame: "No hay partida en curso",
     searchNoResults: "No se encontró nada"
   },
   de: {
@@ -8690,6 +8726,15 @@ const translationsExtra = {
     reasonBareCap: "Nackter König",
     shtRulesTitle: "Shatranj-Regeln",
     shtRules: "Fers: 1 Feld diagonal. Alfil: springt genau 2 Felder diagonal. Bauer: nur 1 Schritt, wird nur zum Fers. Keine Rochade. Patt und nackter gegnerischer König gewinnen.",
+    vcTitle: "Sprachzüge",
+    vcOn: "🎙️ Sprachzüge an — sag deinen Zug, z. B. „e4“ oder „Springer f3“",
+    vcOff: "Sprachzüge aus",
+    vcUnsupported: "Dein Browser erkennt keine Sprache (Chrome, Edge oder Safari nutzen)",
+    vcDenied: "Mikrofonzugriff verweigert",
+    vcNotUnderstood: "Nicht verstanden: „{{text}}“",
+    vcAmbiguous: "Bitte genauer: {{list}}",
+    vcNotYourTurn: "Der Gegner ist am Zug",
+    vcNoGame: "Keine laufende Partie",
     searchNoResults: "Nichts gefunden"
   },
   fr: {
@@ -10135,6 +10180,15 @@ const translationsExtra = {
     reasonBareCap: "Roi dépouillé",
     shtRulesTitle: "Règles du shatranj",
     shtRules: "Fers : 1 case en diagonale. Alfil : saute exactement 2 cases en diagonale. Pion : 1 pas, promu seulement en fers. Pas de roque. Le pat et le roi adverse dépouillé gagnent.",
+    vcTitle: "Coups à la voix",
+    vcOn: "🎙️ Coups à la voix activés — dites votre coup, ex. « e4 » ou « cavalier f3 »",
+    vcOff: "Coups à la voix désactivés",
+    vcUnsupported: "Votre navigateur ne reconnaît pas la voix (utilisez Chrome, Edge ou Safari)",
+    vcDenied: "Accès au micro refusé",
+    vcNotUnderstood: "Pas compris : « {{text}} »",
+    vcAmbiguous: "Précisez : {{list}}",
+    vcNotYourTurn: "C’est au tour de l’adversaire",
+    vcNoGame: "Aucune partie en cours",
     searchNoResults: "Aucun résultat"
   }
 };

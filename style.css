@@ -15716,3 +15716,12 @@ body.auth-locked {
 /* Raqib-do'stlar — profilda "Ma'lumotlar" ostida o'z bo'limida (2026-10-24); bo'sh bo'lsa joy egallamasin */
 #profileModal .profile-section:has(> .profile-rivals[hidden]) { display: none; }
 #profileModal .profile-section > .profile-rivals { margin-top: 0; }
+
+/* ===== 🎙️ Ovoz bilan yurish (voice.js, #pgVoiceBtn) ===== */
+#pgVoiceBtn.on { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.18); }
+#pgVoiceBtn.listening { position: relative; }
+#pgVoiceBtn.listening::after { content: ''; position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: #ef4444; animation: vcPulse 1.2s ease-in-out infinite; }
+@keyframes vcPulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.7); } }
+
+/* Toastlar bosishni ushlamasin — o'yin sahifasida panel tugmalari (⇅ 🔊 🎙️) ustiga tushadi (2026-10-24) */
+.toast-container, .toast { pointer-events: none; }

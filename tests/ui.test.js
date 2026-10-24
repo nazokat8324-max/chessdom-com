@@ -161,6 +161,43 @@ test("Shatranj: o'yin panelida tanlanadi, bir qurilmada qoidalari bilan o'ynalad
   assert.deepEqual(p.errors, []);
 });
 
+test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
+  const u = await srv.register('Voice');
+  const p = await page(u);
+  // Soxta nutqni aniqlash xizmati (haqiqiy mikrofon yo'q)
+  await p.evaluateOnNewDocument(() => {
+    window.__vc = null;
+    window.webkitSpeechRecognition = function () { window.__vc = this; };
+    window.webkitSpeechRecognition.prototype.start = function () { setTimeout(() => this.onstart && this.onstart(), 0); };
+    window.webkitSpeechRecognition.prototype.abort = function () {};
+    window.SpeechRecognition = window.webkitSpeechRecognition;
+    window.__say = (...alts) => {
+      const res = alts.map((t) => ({ transcript: t }));
+      res.isFinal = true;
+      window.__vc.onresult({ results: [res] });
+    };
+  });
+  await p.goto(srv.base + '/oyin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#pgVoiceBtn', { timeout: 10000 });
+  await sleep(600);
+  assert.equal(await p.evaluate(() => document.getElementById('pgVoiceBtn').hidden), false);
+  await p.click('#btnLocalGame');
+  await sleep(300);
+  await p.click('#pgVoiceBtn');
+  await sleep(300);
+  assert.equal(await p.evaluate(() => document.getElementById('pgVoiceBtn').classList.contains('listening')), true);
+  // Birinchi variant tushunarsiz — ikkinchisi ishlatiladi
+  await p.evaluate(() => window.__say('salom', 'e4'));
+  await p.evaluate(() => window.__say("ot f6"));
+  await sleep(200);
+  assert.deepEqual(await p.evaluate(() => game.history()), ['e4', 'Nf6']);
+  await p.evaluate(() => window.__say('salom'));
+  assert.equal(await p.evaluate(() => game.history().length), 2);
+  await p.click('#pgVoiceBtn');
+  assert.equal(await p.evaluate(() => localStorage.getItem('justChessVoice')), '0');
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

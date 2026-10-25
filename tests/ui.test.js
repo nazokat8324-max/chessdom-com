@@ -522,7 +522,7 @@ test("Kutubxona: javonlar, maqola (manzil, keyingisi, orqaga), mashhur partiya q
     await p.goto(srv.base + '/kutubxona', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('#libraryRoot [data-article="start"]', { visible: true, timeout: 15000 });
     const st = await p.evaluate(() => ({ guides: document.querySelectorAll('#lib-guides .lib-card').length, games: document.querySelectorAll('#lib-games [data-game]').length, books: document.querySelectorAll('#lib-books a.lib-btn').length, nav: document.getElementById('navLibrary').classList.contains('active') }));
-    assert.deepEqual(st, { guides: 4, games: 7, books: 6, nav: true });
+    assert.deepEqual(st, { guides: 8, games: 11, books: 6, nav: true });
     if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/lib-' + (vp ? 'phone' : 'pc') + '.png' });
     await p.click('#libraryRoot [data-article="start"]');
     await p.waitForSelector('#libraryRoot .lib-points li', { timeout: 5000 });
@@ -557,6 +557,43 @@ test("Kutubxona: javonlar, maqola (manzil, keyingisi, orqaga), mashhur partiya q
   await sleep(700);
   if (process.env.UI_SHOTS) await p2.screenshot({ path: process.env.UI_SHOTS + '/about-plan.png' });
   assert.deepEqual(p2.errors, []);
+});
+
+test("Kutubxona: misol taxtasi; admin formasi orqali maqola qo'shiladi va kutubxonada ko'rinadi", opts, async () => {
+  const adm = await srv.register('LibUiAdm');
+  await new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(require('path').join(srv.dir, 'test.sqlite'));
+    d.run("UPDATE users SET role = 'admin' WHERE id = ?", [adm.id], (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  adm.user.role = 'admin';
+  const p = await page(adm);
+  // Vilka qo'llanmasida misol pozitsiyasi (64 katak, belgilangan kataklar, donalar)
+  await p.goto(srv.base + '/kutubxona?m=fork', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#libraryRoot .lib-example .lib-board', { timeout: 15000 });
+  const ex = await p.evaluate(() => ({ cells: document.querySelectorAll('.lib-board i').length, marks: document.querySelectorAll('.lib-board i.mk').length, pieces: document.querySelectorAll('.lib-board img').length }));
+  assert.deepEqual(ex, { cells: 64, marks: 4, pieces: 4 });
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/lib-fork.png' });
+  // Admin → 📚 Kutubxona → maqola qo'shish
+  await p.goto(srv.base + '/admin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#adminRoot [data-atab="library"]', { timeout: 15000 });
+  await p.click('#adminRoot [data-atab="library"]');
+  await p.waitForSelector('#admLibForm [data-lf="title"]', { timeout: 8000 });
+  await p.type('#admLibForm [data-lf="title"]', 'Admin maqolasi');
+  await p.type('#admLibForm [data-lf="lead"]', 'Sinov uchun');
+  await p.type('#admLibForm [data-lf="body"]', 'Birinchi band — yetarlicha uzun matn.');
+  await p.click('#admLibForm button[type="submit"]');
+  await p.waitForSelector('#adminRoot [data-lib-edit]', { timeout: 8000 });
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/admin-library.png' });
+  // Partiya turiga o'tilsa — PGN maydoni chiqadi
+  await p.select('#admLibKind', 'game');
+  await p.waitForSelector('#admLibForm [data-lf="pgn"]', { timeout: 5000 });
+  // Kutubxonada ko'rinadi
+  await p.goto(srv.base + '/kutubxona', { waitUntil: 'domcontentloaded' });
+  await p.waitForFunction(() => [...document.querySelectorAll('#lib-guides .lib-card b')].some((b) => b.textContent === 'Admin maqolasi'), { timeout: 15000 });
+  await p.evaluate(() => [...document.querySelectorAll('#lib-guides .lib-card')].find((c) => /Admin maqolasi/.test(c.textContent)).click());
+  await p.waitForFunction(() => /Birinchi band/.test((document.querySelector('#libraryRoot .lib-points') || {}).textContent || ''), { timeout: 5000 });
+  assert.match(await p.evaluate(() => location.search), /^\?m=c%3A|^\?m=c:/);
+  assert.deepEqual(p.errors, []);
 });
 
 test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni tekshirish' tugmasi", opts, async () => {

@@ -1378,6 +1378,42 @@ async function analyzeRecentGames(userId, limit) {
   return n;
 }
 
+// 📚 Kutubxona materialini tekshirish: tur, til, uzunliklar; partiya — PGN dagi har yurish qonuniy (chess.js); havola — faqat http(s)
+const LIBRARY_KINDS = ['article', 'game', 'book'];
+const LIBRARY_LANGS = ['', 'uz', 'en', 'ru', 'es', 'de', 'fr'];
+function validateLibraryItem(b) {
+  const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
+  const kind = String(b.kind || '');
+  const lang = String(b.lang || '');
+  if (!LIBRARY_KINDS.includes(kind) || !LIBRARY_LANGS.includes(lang)) return { error: "Ma'lumotlar noto'g'ri!" };
+  const title = str(b.title, 140);
+  if (title.length < 2 || title.length > 120) return { error: "Sarlavha 2–120 belgi bo'lsin!" };
+  const item = { id: b.id ? String(b.id) : null, kind, lang, title, data: {} };
+  if (kind === 'article') {
+    const body = str(b.body, 9000);
+    if (body.length < 20 || body.length > 8000) return { error: "Matn juda qisqa yoki juda uzun!" };
+    item.data = { icon: str(b.icon, 8) || '📝', lead: str(b.lead, 300), body };
+  } else if (kind === 'game') {
+    const white = str(b.white, 60), black = str(b.black, 60);
+    if (!white || !black) return { error: "Ma'lumotlar noto'g'ri!" };
+    const result = ['1-0', '0-1', '1/2-1/2'].includes(b.result) ? b.result : '1/2-1/2';
+    const text = String(b.pgn || '').slice(0, 20000).replace(/\[[^\]]*\]/g, ' ').replace(/\{[^}]*\}/g, ' ').replace(/\([^)]*\)/g, ' ').replace(/;[^\n]*/g, ' ');
+    const tokens = text.split(/\s+/).map((t) => t.replace(/^\d+\.+/, '')).filter((t) => t && !/^(1-0|0-1|1\/2-1\/2|\*)$/.test(t) && !/^\$\d+$/.test(t));
+    const chess = new Chess();
+    const moves = [];
+    for (const t of tokens) { const m = chess.move(t.replace(/[!?]+$/, '')); if (!m) return { error: "PGN noto'g'ri yoki yurishlar qonuniy emas!" }; moves.push(m.san); }
+    if (moves.length < 2) return { error: "PGN noto'g'ri yoki yurishlar qonuniy emas!" };
+    const year = Number(b.year);
+    item.data = { white, black, result, moves, year: Number.isInteger(year) && year >= 1400 && year <= 2100 ? year : null, place: str(b.place, 60), story: str(b.story, 1500),
+      reason: chess.in_checkmate() ? 'checkmate' : (str(b.reason, 20) || 'resign') };
+  } else {
+    const url = str(b.url, 500);
+    if (!/^https?:\/\/[^\s"'<>]+$/i.test(url)) return { error: "Havola http:// yoki https:// bilan boshlanishi kerak!" };
+    item.data = { author: str(b.author, 100), url, desc: str(b.desc, 1500) };
+  }
+  return { item };
+}
+
 function emitWatchCount(roomId) {
   const count = (io.sockets.adapter.rooms.get('watch_' + roomId) || new Set()).size;
   io.to('watch_' + roomId).emit('watch-count', { roomId, count });
@@ -2787,6 +2823,32 @@ async function start() {
       res.json({ success: true, users: list, queue: fairplayAnalyzer ? fairplayAnalyzer.size() : 0, engineEnabled: !!fairplayAnalyzer });
     } catch (err) { console.error('Fair-play xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
+  // 📚 Kutubxona: admin materiallari (ommaviy ro'yxat + admin qo'shish/tahrirlash/o'chirish)
+  app.get('/api/library', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, items: await cached('library', 60000, () => db.listLibraryItems()) }); }
+    catch (err) { console.error('Kutubxona xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/admin/library', adminMiddleware, async (req, res) => {
+    try {
+      const v = validateLibraryItem(req.body || {});
+      if (v.error) return res.status(400).json({ success: false, message: v.error });
+      const id = await db.saveLibraryItem(v.item, req.user.userId);
+      if (!id) return res.status(404).json({ success: false, message: 'Kutubxona materiali topilmadi!' });
+      invalidateCache('library');
+      auditLog(req, v.item.id ? 'library_edit' : 'library_add', { type: 'library', id, name: v.item.title }, { kind: v.item.kind });
+      res.json({ success: true, id });
+    } catch (err) { console.error('Kutubxona xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/admin/library/:id/delete', adminMiddleware, async (req, res) => {
+    try {
+      const title = await db.deleteLibraryItem(String(req.params.id));
+      if (title === null) return res.status(404).json({ success: false, message: 'Kutubxona materiali topilmadi!' });
+      invalidateCache('library');
+      auditLog(req, 'library_delete', { type: 'library', id: req.params.id, name: title });
+      res.json({ success: true });
+    } catch (err) { console.error('Kutubxona xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   // Admin: o'yinchining oxirgi 10 ta reytingli o'yinini dvigatel bilan tekshirish
   app.post('/api/admin/fairplay/:id/analyze', adminMiddleware, async (req, res) => {
     try {

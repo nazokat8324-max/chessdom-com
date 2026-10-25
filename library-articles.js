@@ -46,6 +46,319 @@
         ["Shatranjda farzin (ferz — \"vazir\") faqat 1 katak diagonal yuradi, fil esa 2 katak sakraydi. Shuning uchun o'yin sekin, mohirona manyovrlar bilan o'tgan.", 'In shatranj the ferz ("vizier") moves only one square diagonally and the alfil jumps two squares. The game was slow and full of careful manoeuvres.', 'В шатрандже ферзь («визирь») ходит лишь на одно поле по диагонали, а слон прыгает через поле. Игра была медленной и полной тонких манёвров.', 'En el shatranj, el alferza («visir») solo se mueve una casilla en diagonal y el alfil salta dos. El juego era lento y lleno de maniobras cuidadosas.', 'Im Shatranj zieht der Fers („Wesir“) nur ein Feld diagonal, und der Alfil springt zwei Felder. Das Spiel war langsam und voller feiner Manöver.', "Au shatranj, le fers (« vizir ») ne se déplace que d'une case en diagonale et l'alfil saute de deux cases. Le jeu était lent et plein de manœuvres subtiles."],
         ["Bag'dodda as-Suliy kabi ustalar shatranj bo'yicha kitoblar yozgan. O'yin keyin Andalusiya va Sitsiliya orqali Yevropaga yetib borgan.", 'In Baghdad, masters such as as-Suli wrote books on shatranj. The game then reached Europe through Andalusia and Sicily.', 'В Багдаде мастера вроде ас-Сули писали книги о шатрандже. Потом игра пришла в Европу через Андалусию и Сицилию.', 'En Bagdad, maestros como as-Suli escribieron libros sobre el shatranj. Después el juego llegó a Europa a través de al-Ándalus y Sicilia.', 'In Bagdad schrieben Meister wie as-Suli Bücher über Shatranj. Über Andalusien und Sizilien gelangte das Spiel dann nach Europa.', "À Bagdad, des maîtres comme as-Suli ont écrit des livres sur le shatranj. Le jeu est ensuite arrivé en Europe par l'Andalousie et la Sicile."],
         ["XV asrda Yevropada farzin va fil kuchaytirildi — bugungi shaxmat shunday tug'ildi. ChessCaravan'da Shatranj'ni o'ynab ko'rishingiz mumkin: o'yin panelida \"🏺 Shatranj\"ni tanlang (pat va raqibning shohini yolg'iz qoldirish — g'alaba!).", 'In 15th-century Europe the queen and bishop were made stronger — and modern chess was born. You can play shatranj on ChessCaravan: choose "🏺 Shatranj" on the game panel (stalemate and baring the enemy king win!).', 'В Европе XV века ферзь и слон стали сильнее — так родились современные шахматы. На ChessCaravan можно сыграть в шатрандж: выберите «🏺 Шатрандж» на игровой панели (пат и голый король соперника — победа!).', 'En la Europa del siglo XV la dama y el alfil se hicieron más fuertes, y así nació el ajedrez moderno. En ChessCaravan puedes jugar al shatranj: elige «🏺 Shatranj» en el panel de juego (¡el ahogado y dejar al rey rival desnudo ganan!).', 'Im Europa des 15. Jahrhunderts wurden Dame und Läufer stärker — so entstand das moderne Schach. Auf ChessCaravan kannst du Shatranj spielen: Wähle „🏺 Shatranj“ im Spielbereich (Patt und nackter gegnerischer König gewinnen!).', "Dans l'Europe du XVe siècle, la dame et le fou sont devenus plus forts : ainsi sont nés les échecs modernes. Sur ChessCaravan, vous pouvez jouer au shatranj : choisissez « 🏺 Shatranj » dans le panneau de jeu (le pat et le roi adverse dépouillé gagnent !)."]
-      ] }
+      ] },
+    {
+      "id": "endgame",
+      "icon": "👑",
+      "title": [
+        "Endshpil asoslari",
+        "Endgame basics",
+        "Основы эндшпиля",
+        "Fundamentos del final",
+        "Grundlagen des Endspiels",
+        "Les bases de la finale"
+      ],
+      "lead": [
+        "Donalar kamaygach o'yin boshqacha bo'ladi: shoh hujumdan qo'rqmaydi, piyodalar esa farzinga aylanishga intiladi.",
+        "When few pieces remain the game changes: the king is no longer afraid, and pawns race to become queens.",
+        "Когда фигур остаётся мало, игра меняется: король больше не боится атак, а пешки рвутся в ферзи.",
+        "Cuando quedan pocas piezas, el juego cambia: el rey ya no teme ataques y los peones corren para coronar.",
+        "Wenn nur noch wenige Figuren übrig sind, ändert sich das Spiel: Der König hat keine Angst mehr, und die Bauern laufen zur Umwandlung.",
+        "Quand il reste peu de pièces, le jeu change : le roi ne craint plus les attaques et les pions courent à la promotion."
+      ],
+      "points": [
+        [
+          "Endshpilda shoh — kuchli dona. Uni markazga olib chiqing va piyodalaringizga yordam bering.",
+          "In the endgame the king is a strong piece. Bring it to the centre and let it help your pawns.",
+          "В эндшпиле король — сильная фигура. Ведите его в центр, пусть помогает пешкам.",
+          "En el final el rey es una pieza fuerte. Llévalo al centro y que ayude a tus peones.",
+          "Im Endspiel ist der König eine starke Figur. Bring ihn ins Zentrum, damit er deinen Bauern hilft.",
+          "En finale, le roi est une pièce forte. Amenez-le au centre pour qu'il aide vos pions."
+        ],
+        [
+          "O'tgan piyoda (oldida va yonidagi vertikallarda raqib piyodasi yo'q) — eng katta boylik. Uni oldinga yurgizing.",
+          "A passed pawn (no enemy pawns in front of it or on the neighbouring files) is your biggest asset. Push it.",
+          "Проходная пешка (перед ней и на соседних вертикалях нет пешек соперника) — главное богатство. Продвигайте её.",
+          "Un peón pasado (sin peones rivales delante ni en las columnas vecinas) es tu mayor tesoro. Empújalo.",
+          "Ein Freibauer (vor ihm und auf den Nachbarlinien keine gegnerischen Bauern) ist dein größter Trumpf. Schieb ihn vor.",
+          "Un pion passé (sans pion adverse devant lui ni sur les colonnes voisines) est votre plus grand atout. Poussez-le."
+        ],
+        [
+          "Oppozitsiya: shohlar bir chiziqda, orasida bitta katak bo'lsa va navbat raqibda bo'lsa — u chekinishga majbur. Piyodali endshpillarda bu hal qiluvchi.",
+          "Opposition: when the kings face each other with one square between them and it is the opponent’s move, he must give way. In pawn endgames this decides everything.",
+          "Оппозиция: короли стоят друг против друга через одно поле, и ход за соперником — он вынужден уступить. В пешечных эндшпилях это решает всё.",
+          "La oposición: cuando los reyes se enfrentan con una casilla entre ellos y le toca al rival, este debe ceder. En los finales de peones lo decide todo.",
+          "Opposition: Stehen sich die Könige mit einem Feld Abstand gegenüber und ist der Gegner am Zug, muss er weichen. In Bauernendspielen entscheidet das alles.",
+          "L'opposition : quand les rois se font face avec une case entre eux et que l'adversaire est au trait, il doit céder. Dans les finales de pions, c'est décisif."
+        ],
+        [
+          "Kvadrat qoidasi: piyodadan oxirgi qatorgacha kvadrat chizing. Raqib shohi shu kvadratga kira olsa, piyodani ushlaydi.",
+          "Rule of the square: draw a square from the pawn to the last rank. If the enemy king can step into it, it will catch the pawn.",
+          "Правило квадрата: постройте квадрат от пешки до последней горизонтали. Если король соперника может в него войти, он догонит пешку.",
+          "Regla del cuadrado: traza un cuadrado del peón a la última fila. Si el rey rival puede entrar en él, alcanzará al peón.",
+          "Quadratregel: Zeichne ein Quadrat vom Bauern bis zur letzten Reihe. Kann der gegnerische König hineintreten, holt er den Bauern ein.",
+          "La règle du carré : tracez un carré du pion à la dernière rangée. Si le roi adverse peut y entrer, il rattrapera le pion."
+        ],
+        [
+          "Rux endshpilida rux o'tgan piyodaning orqasida tursin — o'zinikida ham, raqibnikida ham (Tarrash qoidasi).",
+          "In rook endgames, put your rook behind passed pawns — your own and the enemy’s (Tarrasch’s rule).",
+          "В ладейных эндшпилях ставьте ладью позади проходных пешек — и своих, и чужих (правило Тарраша).",
+          "En los finales de torres, coloca la torre detrás de los peones pasados, propios y ajenos (regla de Tarrasch).",
+          "Stell im Turmendspiel den Turm hinter Freibauern — eigene wie gegnerische (Tarrasch-Regel).",
+          "En finale de tours, placez votre tour derrière les pions passés, les vôtres comme ceux de l'adversaire (règle de Tarrasch)."
+        ],
+        [
+          "Farzin bilan va rux bilan mat qilishni albatta o'rganing — ularni \"👥 Bir qurilmada\" rejimida o'zingiz mashq qilib ko'ring.",
+          "Learn to mate with a queen and with a rook — practise them yourself in “👥 Same device” mode.",
+          "Обязательно научитесь ставить мат ферзём и ладьёй — потренируйтесь сами в режиме «👥 На одном устройстве».",
+          "Aprende a dar mate con dama y con torre; practícalo en el modo «👥 En un dispositivo».",
+          "Lerne das Matt mit Dame und mit Turm — üb es selbst im Modus „👥 Ein Gerät“.",
+          "Apprenez à mater avec la dame et avec la tour — entraînez-vous en mode « 👥 Même appareil »."
+        ]
+      ],
+      "example": {
+        "fen": "8/8/8/4k3/8/4K3/4P3/8 w - - 0 1",
+        "marks": [
+          "e3",
+          "e5"
+        ],
+        "caption": [
+          "Oppozitsiya: shohlar e3 va e5 da, orasida bitta katak. Navbat kimda bo'lsa, o'sha chekinishga majbur.",
+          "Opposition: the kings on e3 and e5 face each other with one square between them. Whoever is to move must give way.",
+          "Оппозиция: короли на e3 и e5, между ними одно поле. Тот, чей ход, вынужден отступить.",
+          "Oposición: los reyes en e3 y e5, con una casilla entre ellos. A quien le toque mover debe ceder.",
+          "Opposition: Die Könige auf e3 und e5 mit einem Feld dazwischen. Wer am Zug ist, muss weichen.",
+          "Opposition : les rois en e3 et e5, une case entre eux. Celui qui est au trait doit céder."
+        ]
+      }
+    },
+    {
+      "id": "fork",
+      "icon": "🍴",
+      "title": [
+        "Taktika: vilka",
+        "Tactics: the fork",
+        "Тактика: вилка",
+        "Táctica: el doble ataque",
+        "Taktik: die Gabel",
+        "Tactique : la fourchette"
+      ],
+      "lead": [
+        "Bitta yurish bilan ikkita donaga hujum qilish — taktikaning eng ko'p uchraydigan quroli.",
+        "Attacking two pieces with one move is the most common tactical weapon.",
+        "Напасть одним ходом на две фигуры — самое частое тактическое оружие.",
+        "Atacar dos piezas con una sola jugada es el arma táctica más común.",
+        "Mit einem Zug zwei Figuren angreifen — die häufigste taktische Waffe.",
+        "Attaquer deux pièces d'un seul coup : l'arme tactique la plus fréquente."
+      ],
+      "points": [
+        [
+          "Vilka — bitta dona bir vaqtda ikki yoki undan ko'p raqib donasiga hujum qiladi. Raqib faqat bittasini qutqara oladi.",
+          "A fork is one piece attacking two or more enemy pieces at once. The opponent can save only one.",
+          "Вилка — одна фигура нападает сразу на две и более фигуры соперника. Спасти он сможет только одну.",
+          "Un doble ataque es una pieza que ataca a la vez dos o más piezas rivales. El rival solo puede salvar una.",
+          "Eine Gabel ist eine Figur, die gleichzeitig zwei oder mehr gegnerische Figuren angreift. Der Gegner kann nur eine retten.",
+          "Une fourchette, c'est une pièce qui attaque à la fois deux pièces adverses ou plus. L'adversaire ne peut en sauver qu'une."
+        ],
+        [
+          "Ot vilkasi eng xavfli: otning hujumini to'sib bo'lmaydi va u kutilmagan kataklarga sakraydi.",
+          "The knight fork is the most dangerous: a knight’s attack cannot be blocked, and it jumps to unexpected squares.",
+          "Вилка конём — самая опасная: удар коня нельзя перекрыть, и он прыгает на неожиданные поля.",
+          "El doble ataque de caballo es el más peligroso: no se puede interponer nada y salta a casillas inesperadas.",
+          "Die Springergabel ist die gefährlichste: Der Angriff eines Springers lässt sich nicht verstellen, und er springt auf unerwartete Felder.",
+          "La fourchette de cavalier est la plus dangereuse : on ne peut pas s'interposer et il saute sur des cases inattendues."
+        ],
+        [
+          "Shoh bilan birga qilingan vilka (shoh berib) ayniqsa kuchli — raqib avval shohini qutqarishi shart.",
+          "A fork that also gives check is especially strong — the opponent must save the king first.",
+          "Вилка с шахом особенно сильна — сопернику сначала нужно спасать короля.",
+          "Un doble ataque con jaque es especialmente fuerte: el rival debe salvar primero al rey.",
+          "Eine Gabel mit Schach ist besonders stark — der Gegner muss zuerst den König retten.",
+          "Une fourchette avec échec est particulièrement forte : l'adversaire doit d'abord sauver son roi."
+        ],
+        [
+          "Piyoda va farzin ham vilka qiladi: masalan, piyoda bir yurishda ikki yonidagi donaga hujum qiladi.",
+          "Pawns and queens fork too: for example, a pawn advance can attack the two pieces beside its path.",
+          "Вилку делают и пешка, и ферзь: например, пешка одним ходом нападает на две фигуры по сторонам.",
+          "Los peones y la dama también hacen dobles ataques: por ejemplo, un peón que avanza ataca dos piezas a sus lados.",
+          "Auch Bauer und Dame gabeln: Ein Bauernzug kann etwa die beiden Figuren neben ihm angreifen.",
+          "Le pion et la dame font aussi des fourchettes : par exemple, un pion qui avance attaque les deux pièces sur ses côtés."
+        ],
+        [
+          "Qanday topish: raqibning himoyasiz donalari va shohi qayerda? Ularning ikkalasiga bir yurishda yeta oladigan donangiz bormi?",
+          "How to find one: where are the enemy king and the undefended pieces? Can one of your pieces reach two of them in one move?",
+          "Как найти: где король и незащищённые фигуры соперника? Может ли ваша фигура одним ходом напасть на две из них?",
+          "Cómo encontrarlo: ¿dónde están el rey y las piezas sin defensa del rival? ¿Alguna pieza tuya llega a dos de ellas en una jugada?",
+          "So findest du sie: Wo stehen der König und ungedeckte Figuren des Gegners? Kann eine deiner Figuren mit einem Zug zwei davon angreifen?",
+          "Comment la trouver : où sont le roi et les pièces non défendues de l'adversaire ? Une de vos pièces peut-elle en atteindre deux en un coup ?"
+        ]
+      ],
+      "example": {
+        "fen": "r3k3/8/8/3N4/8/8/8/4K3 w - - 0 1",
+        "marks": [
+          "d5",
+          "c7",
+          "e8",
+          "a8"
+        ],
+        "caption": [
+          "Nc7+! — ot shoh beradi va bir vaqtda a8 dagi ruxga hujum qiladi. Shoh qochadi, rux olinadi.",
+          "Nc7+! — the knight gives check and attacks the rook on a8 at the same time. The king moves away and the rook falls.",
+          "Nc7+! — конь объявляет шах и одновременно нападает на ладью a8. Король уходит, ладья теряется.",
+          "¡Cc7+! — el caballo da jaque y a la vez ataca la torre de a8. El rey se aparta y la torre cae.",
+          "Sc7+! — der Springer gibt Schach und greift zugleich den Turm auf a8 an. Der König weicht, der Turm fällt.",
+          "Cc7+ ! — le cavalier fait échec et attaque en même temps la tour a8. Le roi s'écarte, la tour tombe."
+        ]
+      }
+    },
+    {
+      "id": "pin",
+      "icon": "📌",
+      "title": [
+        "Taktika: bog'lash",
+        "Tactics: the pin",
+        "Тактика: связка",
+        "Táctica: la clavada",
+        "Taktik: die Fesselung",
+        "Tactique : le clouage"
+      ],
+      "lead": [
+        "Bog'langan dona yurolmaydi yoki yursa qimmatga tushadi — uni \"mixlab qo'yilgan\" deb tasavvur qiling.",
+        "A pinned piece cannot move, or moving it costs you dearly — think of it as nailed to the board.",
+        "Связанная фигура не может ходить или её ход дорого обходится — представьте, что она прибита к доске.",
+        "Una pieza clavada no puede moverse, o moverla cuesta caro: imagina que está clavada al tablero.",
+        "Eine gefesselte Figur kann nicht ziehen, oder der Zug kostet viel — stell sie dir als festgenagelt vor.",
+        "Une pièce clouée ne peut pas bouger, ou cela coûte cher : imaginez-la clouée à l'échiquier."
+      ],
+      "points": [
+        [
+          "Bog'lash: uzoq yuruvchi dona (fil, rux, farzin) raqib donasiga hujum qiladi, uning orqasida esa qimmatroq dona turadi.",
+          "A pin: a long-range piece (bishop, rook, queen) attacks an enemy piece that has a more valuable piece behind it.",
+          "Связка: дальнобойная фигура (слон, ладья, ферзь) нападает на фигуру соперника, за которой стоит более ценная.",
+          "Clavada: una pieza de largo alcance (alfil, torre, dama) ataca una pieza rival que tiene otra más valiosa detrás.",
+          "Fesselung: Eine langschrittige Figur (Läufer, Turm, Dame) greift eine gegnerische Figur an, hinter der eine wertvollere steht.",
+          "Clouage : une pièce à longue portée (fou, tour, dame) attaque une pièce adverse derrière laquelle se trouve une pièce plus précieuse."
+        ],
+        [
+          "To'liq bog'lash: orqada shoh turgan bo'lsa, bog'langan dona qoidaga ko'ra umuman yura olmaydi.",
+          "Absolute pin: if the king is behind, the pinned piece is not allowed to move at all.",
+          "Полная связка: если сзади король, связанная фигура по правилам вообще не может ходить.",
+          "Clavada absoluta: si detrás está el rey, la pieza clavada no puede moverse en absoluto.",
+          "Absolute Fesselung: Steht der König dahinter, darf die gefesselte Figur gar nicht ziehen.",
+          "Clouage absolu : si le roi est derrière, la pièce clouée n'a pas le droit de bouger."
+        ],
+        [
+          "Qisman bog'lash: orqada farzin yoki rux tursa, yurish mumkin, lekin orqadagi dona yo'qotiladi.",
+          "Relative pin: if a queen or rook is behind, the piece may move, but the piece behind will be lost.",
+          "Частичная связка: если сзади ферзь или ладья, ходить можно, но стоящая сзади фигура будет потеряна.",
+          "Clavada relativa: si detrás hay una dama o una torre, la pieza puede moverse, pero se perderá la de atrás.",
+          "Relative Fesselung: Steht dahinter Dame oder Turm, darf die Figur ziehen, aber die Figur dahinter geht verloren.",
+          "Clouage relatif : si une dame ou une tour est derrière, la pièce peut bouger, mais celle de derrière sera perdue."
+        ],
+        [
+          "Bog'langan donaga yana hujum qiling (masalan, piyoda bilan) — u qochib qutula olmaydi.",
+          "Attack the pinned piece again (for example with a pawn) — it cannot run away.",
+          "Атакуйте связанную фигуру ещё раз (например, пешкой) — убежать она не сможет.",
+          "Ataca de nuevo la pieza clavada (por ejemplo, con un peón): no puede huir.",
+          "Greif die gefesselte Figur noch einmal an (etwa mit einem Bauern) — sie kann nicht fliehen.",
+          "Attaquez encore la pièce clouée (par exemple avec un pion) : elle ne peut pas s'enfuir."
+        ],
+        [
+          "O'zingizni himoya qilish: shohni bog'lash chizig'idan chetga oling yoki o'rtaga boshqa dona qo'ying.",
+          "To defend: step the king off the line or put another piece in between.",
+          "Защита: уведите короля с линии связки или поставьте между ними другую фигуру.",
+          "Para defenderte: aparta al rey de la línea o interpón otra pieza.",
+          "Zur Verteidigung: Stell den König von der Linie weg oder eine andere Figur dazwischen.",
+          "Pour se défendre : écartez le roi de la ligne ou interposez une autre pièce."
+        ]
+      ],
+      "example": {
+        "fen": "4k3/8/2n5/1B6/8/8/8/4K3 w - - 0 1",
+        "marks": [
+          "b5",
+          "c6",
+          "e8"
+        ],
+        "caption": [
+          "Fil b5 c6 dagi otni bog'lagan: ot yursa, e8 dagi shoh hujumga qoladi — shuning uchun ot umuman yura olmaydi.",
+          "The bishop on b5 pins the knight on c6: if the knight moved, the king on e8 would be in check — so it cannot move at all.",
+          "Слон b5 связал коня c6: если конь пойдёт, король e8 окажется под шахом — поэтому конь вообще не может ходить.",
+          "El alfil de b5 clava el caballo de c6: si el caballo se moviera, el rey de e8 quedaría en jaque, así que no puede moverse.",
+          "Der Läufer auf b5 fesselt den Springer auf c6: Würde er ziehen, stünde der König auf e8 im Schach — also darf er gar nicht ziehen.",
+          "Le fou b5 cloue le cavalier c6 : s'il bougeait, le roi e8 serait en échec — il ne peut donc pas bouger du tout."
+        ]
+      }
+    },
+    {
+      "id": "discovered",
+      "icon": "💥",
+      "title": [
+        "Taktika: ochiq hujum",
+        "Tactics: the discovered attack",
+        "Тактика: вскрытое нападение",
+        "Táctica: el ataque a la descubierta",
+        "Taktik: der Abzugsangriff",
+        "Tactique : l’attaque à la découverte"
+      ],
+      "lead": [
+        "Bir dona yo'ldan chiqadi — orqasidagi dona hujumga o'tadi. Bitta yurishda ikkita tahdid!",
+        "One piece steps aside and the piece behind it attacks. Two threats in a single move!",
+        "Одна фигура уходит с линии, и стоящая за ней фигура нападает. Две угрозы одним ходом!",
+        "Una pieza se aparta y la que está detrás ataca. ¡Dos amenazas en una jugada!",
+        "Eine Figur zieht zur Seite, und die Figur dahinter greift an. Zwei Drohungen mit einem Zug!",
+        "Une pièce s'écarte et celle qui est derrière attaque. Deux menaces en un seul coup !"
+      ],
+      "points": [
+        [
+          "Ochiq hujum: o'z donangiz uzoq yuruvchi donangiz (rux, fil, farzin) chizig'ini to'sib turadi. U yurganda chiziq ochiladi.",
+          "A discovered attack: one of your pieces blocks the line of your own long-range piece (rook, bishop, queen). When it moves, the line opens.",
+          "Вскрытое нападение: ваша фигура перекрывает линию вашей же дальнобойной фигуры (ладьи, слона, ферзя). Когда она уходит, линия открывается.",
+          "Ataque a la descubierta: una pieza tuya tapa la línea de tu propia pieza de largo alcance (torre, alfil, dama). Al moverse, la línea se abre.",
+          "Abzugsangriff: Eine eigene Figur verstellt die Linie deiner langschrittigen Figur (Turm, Läufer, Dame). Zieht sie weg, öffnet sich die Linie.",
+          "Attaque à la découverte : une de vos pièces bouche la ligne de votre propre pièce à longue portée (tour, fou, dame). Quand elle bouge, la ligne s'ouvre."
+        ],
+        [
+          "Ochiq shoh: orqadagi dona shoh beradi, oldingi dona esa istalgan joyga — hatto himoyalangan farzinni olishga ham boradi.",
+          "Discovered check: the piece behind gives check, while the front piece goes anywhere — even to grab a defended queen.",
+          "Вскрытый шах: задняя фигура объявляет шах, а передняя идёт куда угодно — даже взять защищённого ферзя.",
+          "Jaque a la descubierta: la pieza de atrás da jaque y la de delante va a donde quiera, incluso a capturar una dama defendida.",
+          "Abzugsschach: Die hintere Figur gibt Schach, die vordere geht irgendwohin — sogar eine gedeckte Dame schlagen.",
+          "Échec à la découverte : la pièce de derrière fait échec, tandis que celle de devant va où elle veut, même prendre une dame défendue."
+        ],
+        [
+          "Qo'sh shoh: ikkala dona bir vaqtda shoh beradi. Undan faqat shoh yurishi bilan qutulish mumkin — Reti–Tartakover partiyasini ko'ring.",
+          "Double check: both pieces give check at once. Only a king move can escape it — see the Réti–Tartakower game.",
+          "Двойной шах: обе фигуры объявляют шах одновременно. Спастись можно только ходом короля — посмотрите партию Рети — Тартаковер.",
+          "Jaque doble: las dos piezas dan jaque a la vez. Solo un movimiento del rey lo evita; mira la partida Réti–Tartakower.",
+          "Doppelschach: Beide Figuren geben gleichzeitig Schach. Nur ein Königszug hilft — sieh dir die Partie Réti–Tartakower an.",
+          "Échec double : les deux pièces font échec à la fois. Seul un coup du roi peut l'éviter — voyez la partie Réti–Tartakower."
+        ],
+        [
+          "Tayyorlash: raqib shohi yoki farzini turgan chiziqqa o'z rux/filingizni qo'ying, oldiga esa yuradigan donangizni.",
+          "Set it up: aim your rook or bishop at the enemy king or queen, with another of your pieces in front of it.",
+          "Подготовка: нацельте ладью или слона на короля или ферзя соперника, а перед ней поставьте другую свою фигуру.",
+          "Prepáralo: apunta tu torre o alfil al rey o la dama rival, con otra pieza tuya delante.",
+          "So bereitest du ihn vor: Richte Turm oder Läufer auf König oder Dame des Gegners und stell eine eigene Figur davor.",
+          "Pour la préparer : visez le roi ou la dame adverse avec votre tour ou votre fou, avec une autre de vos pièces devant."
+        ]
+      ],
+      "example": {
+        "fen": "q3k3/8/8/8/4B3/8/8/4RK2 w - - 0 1",
+        "marks": [
+          "e4",
+          "a8",
+          "e1",
+          "e8"
+        ],
+        "caption": [
+          "Bxa8+! — fil e-chiziqdan chiqib, a8 dagi farzinni oladi, e1 dagi rux esa e8 dagi shohga ochiq shoh beradi.",
+          "Bxa8+! — the bishop leaves the e-file and takes the queen on a8, while the rook on e1 gives a discovered check to the king on e8.",
+          "Bxa8+! — слон уходит с линии «e» и берёт ферзя a8, а ладья e1 объявляет вскрытый шах королю e8.",
+          "¡Axa8+! — el alfil sale de la columna e y captura la dama de a8, mientras la torre de e1 da jaque a la descubierta al rey de e8.",
+          "Lxa8+! — der Läufer verlässt die e-Linie und schlägt die Dame auf a8, der Turm auf e1 gibt dem König auf e8 Abzugsschach.",
+          "Fxa8+ ! — le fou quitte la colonne e et prend la dame a8, tandis que la tour e1 fait échec à la découverte au roi e8."
+        ]
+      }
+    }
   ];
 });

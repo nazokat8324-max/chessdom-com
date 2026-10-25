@@ -675,6 +675,19 @@ async function initDatabase() {
       UNIQUE (user_id, week)
     )
   `);
+  // 📚 Kutubxona: admin panelidan qo'shilgan materiallar (maqola / partiya / kitob-havola); data — turga xos maydonlar JSON
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS library_items (
+      id TEXT PRIMARY KEY,
+      kind TEXT NOT NULL,
+      lang TEXT DEFAULT '',
+      title TEXT NOT NULL,
+      data TEXT,
+      created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    )
+  `);
   // 🕵️ Fair-play: dvigatelga moslik tahlili (fairplay-engine.js) — har o'yinchi, har o'yin bir marta
   await dbExec(`
     CREATE TABLE IF NOT EXISTS fairplay_engine (
@@ -1581,6 +1594,27 @@ async function addFairplayGame(row) {
 }
 async function recentFairplay(userId, limit) {
   return dbAll(`SELECT moves, blurs, avg_ms as "avgMs", cv, result, suspicious, created_at as "createdAt" FROM fairplay_games WHERE user_id = ? ORDER BY created_at DESC LIMIT ${Number(limit) || 20}`, [userId]);
+}
+// --- 📚 Kutubxona (admin materiallari) ---
+async function listLibraryItems() {
+  const rows = await dbAll('SELECT i.id, i.kind, i.lang, i.title, i.data, i.created_at as "createdAt", i.updated_at as "updatedAt", u.username as "author" FROM library_items i LEFT JOIN users u ON u.id = i.created_by ORDER BY i.created_at DESC');
+  return rows.map((r) => ({ id: r.id, kind: r.kind, lang: r.lang || '', title: r.title, ...(parseJson(r.data) || {}), createdAt: r.createdAt, updatedAt: r.updatedAt, author: r.author || null }));
+}
+async function saveLibraryItem(item, userId) {
+  const now = new Date().toISOString();
+  if (item.id) {
+    const r = await dbRun('UPDATE library_items SET kind = ?, lang = ?, title = ?, data = ?, updated_at = ? WHERE id = ?', [item.kind, item.lang, item.title, JSON.stringify(item.data), now, item.id]);
+    return r && (r.changes || r.rowCount) ? item.id : null;
+  }
+  const id = uuidv4();
+  await dbRun('INSERT INTO library_items (id, kind, lang, title, data, created_by, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', [id, item.kind, item.lang, item.title, JSON.stringify(item.data), userId || null, now, now]);
+  return id;
+}
+async function deleteLibraryItem(id) {
+  const row = await dbGet('SELECT title FROM library_items WHERE id = ?', [id]);
+  if (!row) return null;
+  await dbRun('DELETE FROM library_items WHERE id = ?', [id]);
+  return row.title;
 }
 async function addFairplayEngine(r) {
   await dbRun(`INSERT INTO fairplay_engine (id, user_id, game_ref, mode, moves, match_rate, acpl, rating, suspicious, created_at)
@@ -2512,6 +2546,9 @@ module.exports = {
   recentFairplay,
   setFairplayFlag,
   addFairplayEngine,
+  listLibraryItems,
+  saveLibraryItem,
+  deleteLibraryItem,
   recentFairplayEngine,
   fairplayOverview,
   refundAgainst,

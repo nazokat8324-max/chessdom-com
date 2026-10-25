@@ -1,7 +1,7 @@
 // Admin paneli (faqat users.role = 'admin'): statistika (+ 💾 zaxira nusxa), shikoyatlar, o'yinchilarni bloklash, turnirlar, fair-play, chat, 🐞 xatolar, 📜 jurnal (admin amallari).
 // Server: /api/admin/* (adminMiddleware). Admin Render env ADMIN_USERNAMES orqali beriladi.
 (function () {
-  const st = { tab: 'stats', reportStatus: 'open', query: '', stats: null, reports: [], users: [], tournaments: [], fairplay: [], chat: { messages: [], words: [], club: '', user: '' }, errors: { list: [], counts: { server: 0, client: 0 }, status: 'open', source: '' }, audit: { list: [], action: '', q: '', page: 0, more: false } };
+  const st = { tab: 'stats', reportStatus: 'open', query: '', stats: null, reports: [], users: [], tournaments: [], fairplay: [], chat: { messages: [], words: [], club: '', user: '' }, errors: { list: [], counts: { server: 0, client: 0 }, status: 'open', source: '' }, audit: { list: [], action: '', q: '', page: 0, more: false }, library: { items: [], edit: null } };
   const esc = (v) => {
     const div = document.createElement('div');
     div.textContent = (v === null || v === undefined) ? '' : String(v);
@@ -39,8 +39,84 @@
       const d = await api('/api/admin/chat?club=' + encodeURIComponent(st.chat.club) + '&user=' + encodeURIComponent(st.chat.user));
       if (d && d.success) { st.chat.messages = d.messages; st.chat.words = d.words; }
     }
+    if (st.tab === 'library') { const d = await api('/api/library'); st.library.items = d && d.success ? d.items : []; }
     render();
   }
+
+  // 📚 Kutubxona: admin materiallari (maqola / partiya PGN / kitob-havola) — qo'shish, tahrirlash, o'chirish (POST /api/admin/library)
+  const LIB_LANGS = ['', 'uz', 'en', 'ru', 'es', 'de', 'fr'];
+  const LIB_KIND_ICON = { article: '📝', game: '♟', book: '📚' };
+  function libraryHtml() {
+    const L = st.library;
+    const e = L.edit || { kind: 'article', lang: '' };
+    const v = (k) => esc(e[k] == null ? '' : e[k]);
+    const kindLabel = { article: tx('admLibKindArticle', 'Maqola'), game: tx('admLibKindGame', 'Partiya'), book: tx('admLibKindBook', 'Kitob / havola') };
+    const field = (k, label, extra) => `<label class="${extra && extra.full ? 'full' : ''}">${esc(label)}${extra && extra.area ? `<textarea class="set-input" data-lf="${k}">${v(k)}</textarea>` : `<input class="set-input" data-lf="${k}" value="${v(k)}"${extra && extra.type ? ` type="${extra.type}"` : ''}>`}</label>`;
+    let kindFields = '';
+    if (e.kind === 'article') kindFields = field('icon', tx('admLibIcon', 'Belgi (emoji)')) + field('lead', tx('admLibLead', 'Qisqa kirish')) + field('body', tx('admLibBody', "Matn (bandlar orasida bo'sh qator)"), { area: true, full: true });
+    else if (e.kind === 'game') kindFields = field('white', tx('admLibWhite', 'Oq')) + field('black', tx('admLibBlack', 'Qora')) + field('year', tx('admLibYear', 'Yil'), { type: 'number' }) + field('place', tx('admLibPlace', 'Joy')) +
+      `<label>${esc(tx('admLibResult', 'Natija'))}<select class="set-input" data-lf="result">${['1-0', '0-1', '1/2-1/2'].map((r) => `<option${e.result === r ? ' selected' : ''}>${r}</option>`).join('')}</select></label><span></span>` +
+      field('pgn', 'PGN', { area: true, full: true }) + field('story', tx('admLibStory', 'Hikoya'), { area: true, full: true });
+    else kindFields = field('author', tx('admLibAuthor', 'Muallif')) + field('url', tx('admLibUrl', 'Havola (https://...)')) + field('desc', tx('admLibDesc', 'Izoh'), { area: true, full: true });
+    const form = `<form class="adm-lib-form" id="admLibForm">
+      ${e.id ? `<p class="full adm-note">✏️ ${esc(tx('admLibEditing', 'Tahrirlanmoqda'))}: <b>${v('title')}</b></p>` : ''}
+      <label>${esc(tx('admLibKindArticle', 'Maqola'))} / ${esc(tx('admLibKindGame', 'Partiya'))} / ${esc(tx('admLibKindBook', 'Kitob / havola'))}
+        <select class="set-input" data-lf="kind" id="admLibKind">${['article', 'game', 'book'].map((k) => `<option value="${k}"${e.kind === k ? ' selected' : ''}>${LIB_KIND_ICON[k]} ${esc(kindLabel[k])}</option>`).join('')}</select></label>
+      <label>🌐 <select class="set-input" data-lf="lang">${LIB_LANGS.map((l) => `<option value="${l}"${(e.lang || '') === l ? ' selected' : ''}>${l ? l.toUpperCase() : esc(tx('admLibAllLangs', 'Barcha tillarda'))}</option>`).join('')}</select></label>
+      ${field('title', tx('admLibTitle', 'Sarlavha'), { full: true })}
+      ${kindFields}
+      <div class="adm-lib-actions">
+        <button class="set-mini accent" type="submit">${esc(e.id ? tx('admLibSave', 'Saqlash') : tx('admLibAdd', "Qo'shish"))}</button>
+        ${e.id ? `<button class="set-mini" type="button" id="admLibCancel">${esc(tx('admLibCancel', 'Bekor qilish'))}</button>` : ''}
+      </div>
+    </form>`;
+    const list = L.items.length ? `<div class="adm-list">${L.items.map((x) => `<div class="adm-item">
+        <div class="adm-item-main"><b>${LIB_KIND_ICON[x.kind] || ''} ${esc(x.title)}</b>
+          <small>${esc(kindLabel[x.kind] || x.kind)} · ${esc(x.lang ? x.lang.toUpperCase() : tx('admLibAllLangs', 'Barcha tillarda'))} · ${esc(fmt(x.createdAt))}${x.author ? ' · ' + esc(x.author) : ''}</small></div>
+        <div class="adm-actions">
+          <button class="set-mini" data-lib-edit="${esc(x.id)}">✏️</button>
+          <button class="set-mini danger" data-lib-del="${esc(x.id)}">🗑</button>
+        </div></div>`).join('')}</div>` : `<div class="adm-empty">${esc(tx('admLibEmpty', "Hali admin qo'shgan material yo'q — yuqoridagi forma orqali birinchisini qo'shing."))}</div>`;
+    return `<p class="adm-note">${esc(tx('admLibIntro', "Kutubxonaga kod yozmasdan material qo'shing."))}</p>${form}${list}`;
+  }
+  function libraryFormValues(el) {
+    const out = Object.assign({}, st.library.edit || {});
+    el.querySelectorAll('#admLibForm [data-lf]').forEach((f) => { out[f.dataset.lf] = f.value; });
+    return out;
+  }
+  function bindLibrary(el) {
+    const form = el.querySelector('#admLibForm');
+    if (!form) return;
+    el.querySelector('#admLibKind').addEventListener('change', () => { st.library.edit = libraryFormValues(el); render(); });
+    const cancel = el.querySelector('#admLibCancel');
+    if (cancel) cancel.addEventListener('click', () => { st.library.edit = null; render(); });
+    form.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const body = libraryFormValues(el);
+      if (body.kind === 'game' && Array.isArray(body.moves) && !body.pgn) body.pgn = body.moves.join(' ');
+      const d = await api('/api/admin/library', body);
+      if (d && d.success) {
+        showToast(tx('admLibSaved', 'Kutubxonaga saqlandi'), 'success');
+        st.library.edit = null;
+        if (typeof window.reloadLibraryItems === 'function') window.reloadLibraryItems();
+        load();
+      } else showToast(tServer(d && d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning');
+    });
+    el.querySelectorAll('[data-lib-edit]').forEach((b) => b.addEventListener('click', () => {
+      const x = st.library.items.find((i) => i.id === b.dataset.libEdit);
+      if (!x) return;
+      st.library.edit = Object.assign({}, x, x.kind === 'game' ? { pgn: (x.moves || []).join(' ') } : {});
+      render();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }));
+    el.querySelectorAll('[data-lib-del]').forEach((b) => b.addEventListener('click', async () => {
+      if (!confirm(tx('admLibDeleteConfirm', "Bu materialni kutubxonadan o'chirasizmi?"))) return;
+      await api('/api/admin/library/' + encodeURIComponent(b.dataset.libDel) + '/delete', {});
+      if (typeof window.reloadLibraryItems === 'function') window.reloadLibraryItems();
+      load();
+    }));
+  }
+
 
   function statsHtml() {
     const s = st.stats;
@@ -102,7 +178,10 @@
     chat_delete: ['💬', () => tx('audChatDelete', "Klub chatidagi xabarni o'chirdi")],
     tournament_cancel: ['🏁', () => tx('audTournamentCancel', 'Turnirni bekor qildi')],
     backup_download: ['💾', () => tx('audBackup', 'Zaxira nusxani yuklab oldi')],
-    errors_clear: ['🐞', () => tx('audErrorsClear', "Hal qilingan xatolarni o'chirdi")]
+    errors_clear: ['🐞', () => tx('audErrorsClear', "Hal qilingan xatolarni o'chirdi")],
+    library_add: ['📚', () => tx('audLibraryAdd', "Kutubxonaga material qo'shdi")],
+    library_edit: ['✏️', () => tx('audLibraryEdit', 'Kutubxona materialini tahrirladi')],
+    library_delete: ['🗑', () => tx('audLibraryDelete', "Kutubxona materialini o'chirdi")]
   };
   function auditDetails(a) {
     const d = a.details || {};
@@ -123,7 +202,7 @@
     const a = st.audit;
     const filters = [['', tx('audAll', 'Barcha amallar')], ['ban', AUDIT.ban[1]()], ['unban', AUDIT.unban[1]()], ['mute', AUDIT.mute[1]()], ['unmute', AUDIT.unmute[1]()],
       ['report', AUDIT.report_resolve[1]()], ['fairplay', tx('admTabFairplay', 'Fair-play')], ['filter', tx('admBadWords', "Taqiqlangan so'zlar")], ['club', tx('audClubs', 'Klublar')],
-      ['chat_delete', AUDIT.chat_delete[1]()], ['tournament', AUDIT.tournament_cancel[1]()], ['backup', AUDIT.backup_download[1]()], ['errors', AUDIT.errors_clear[1]()]];
+      ['chat_delete', AUDIT.chat_delete[1]()], ['tournament', AUDIT.tournament_cancel[1]()], ['backup', AUDIT.backup_download[1]()], ['errors', AUDIT.errors_clear[1]()], ['library', tx('libTitle', 'Kutubxona')]];
     const bar = `<p class="adm-note">${esc(tx('audIntro', "Adminlarning barcha amallari shu yerda yoziladi: kim, qachon, kimga nima qildi. Yozuvlarni o'chirib bo'lmaydi."))}</p>
       <form class="adm-search" id="admAuditForm">
         <select class="set-input" id="admAuditAction">${filters.map(([id, l]) => `<option value="${id}"${a.action === id ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>
@@ -282,8 +361,8 @@
     const el = root();
     if (!el) return;
     if (!window.currentUser || window.currentUser.role !== 'admin') { el.innerHTML = `<div class="adm-empty">${esc(tx('admNoAccess', "Bu bo'lim faqat adminlar uchun"))}</div>`; return; }
-    const tabs = [['stats', '📊', tx('admTabStats', 'Statistika')], ['reports', '⚠️', tx('admTabReports', 'Shikoyatlar')], ['users', '👥', tx('admTabUsers', "O'yinchilar")], ['tournaments', '🏁', tx('admTabTournaments', 'Turnirlar')], ['fairplay', '🕵️', tx('admTabFairplay', 'Fair-play')], ['chat', '💬', tx('admTabChat', 'Chat')], ['errors', '🐞', tx('admTabErrors', 'Xatolar')], ['audit', '📜', tx('admTabAudit', 'Jurnal')]];
-    const body = { stats: statsHtml, reports: reportsHtml, users: usersHtml, tournaments: tournamentsHtml, fairplay: fairplayHtml, chat: chatHtml, errors: errorsHtml, audit: auditHtml }[st.tab]();
+    const tabs = [['stats', '📊', tx('admTabStats', 'Statistika')], ['reports', '⚠️', tx('admTabReports', 'Shikoyatlar')], ['users', '👥', tx('admTabUsers', "O'yinchilar")], ['tournaments', '🏁', tx('admTabTournaments', 'Turnirlar')], ['fairplay', '🕵️', tx('admTabFairplay', 'Fair-play')], ['chat', '💬', tx('admTabChat', 'Chat')], ['errors', '🐞', tx('admTabErrors', 'Xatolar')], ['library', '📚', tx('libTitle', 'Kutubxona')], ['audit', '📜', tx('admTabAudit', 'Jurnal')]];
+    const body = { stats: statsHtml, reports: reportsHtml, users: usersHtml, tournaments: tournamentsHtml, fairplay: fairplayHtml, chat: chatHtml, errors: errorsHtml, library: libraryHtml, audit: auditHtml }[st.tab]();
     el.innerHTML = `
       <header class="set-head"><div><h1>🛡️ ${esc(tx('admTitle', 'Admin paneli'))}</h1><p>${esc(tx('admSub', "Shikoyatlar, o'yinchilar va turnirlarni boshqarish"))}</p></div></header>
       <div class="lb-seg adm-tabs">${tabs.map(([id, i, l]) => `<button class="${st.tab === id ? 'active' : ''}" data-atab="${id}">${i} ${esc(l)}</button>`).join('')}</div>
@@ -293,6 +372,7 @@
 
   function bind(el) {
     el.querySelectorAll('[data-atab]').forEach(b => b.addEventListener('click', () => { st.tab = b.dataset.atab; render(); load(); }));
+    bindLibrary(el);
     el.querySelectorAll('[data-estatus]').forEach(b => b.addEventListener('click', () => { st.errors.status = b.dataset.estatus; load(); }));
     el.querySelectorAll('[data-esource]').forEach(b => b.addEventListener('click', () => { st.errors.source = b.dataset.esource; load(); }));
     el.querySelectorAll('[data-err-resolve], [data-err-reopen]').forEach(b => b.addEventListener('click', async () => {

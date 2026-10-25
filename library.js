@@ -5,10 +5,51 @@
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr'];
   const L = (arr) => { const l = String((window.i18next && window.i18next.language) || 'en').slice(0, 2); const i = LANGS.indexOf(l); return (arr && arr[i < 0 ? 1 : i]) || (arr && arr[1]) || ''; };
-  const st = { article: null };
+  const st = { article: null, items: null, itemsAt: 0 };
   const root = () => document.getElementById('libraryRoot');
-  const ARTICLES = () => window.LibraryArticles || [];
-  const DATA = () => window.LibraryData || { GAMES: [], BOOKS: [] };
+  const curLang = () => String((window.i18next && window.i18next.language) || 'en').slice(0, 2);
+  const six = (s) => Array(6).fill(s || '');
+  // Admin panelidan qo'shilgan materiallar (GET /api/library): til tanlangan bo'lsa — faqat o'sha tilda ko'rinadi
+  const custom = (kind) => (st.items || []).filter((x) => x.kind === kind && (!x.lang || x.lang === curLang()));
+  const customArticles = () => custom('article').map((x) => ({ id: 'c:' + x.id, icon: x.icon || '📝', title: six(x.title), lead: six(x.lead || ''),
+    points: String(x.body || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).map(six), custom: true }));
+  const customGames = () => custom('game').map((x) => ({ id: 'c:' + x.id, white: x.white, black: x.black, place: x.place || '', year: x.year || '', result: x.result, reason: x.reason,
+    moves: x.moves || [], title: six(x.title), story: six(x.story || ''), custom: true }));
+  const customBooks = () => custom('book').map((x) => ({ id: 'c:' + x.id, title: x.title, author: x.author || '', life: '', url: x.url, desc: six(x.desc || ''), custom: true }));
+  const ARTICLES = () => (window.LibraryArticles || []).concat(customArticles());
+  const DATA = () => {
+    const d = window.LibraryData || { GAMES: [], BOOKS: [], sansOf: () => [] };
+    return { GAMES: d.GAMES.concat(customGames()), BOOKS: d.BOOKS.concat(customBooks()), sansOf: d.sansOf };
+  };
+  async function loadItems(force) {
+    if (!force && st.items && Date.now() - st.itemsAt < 60000) return false;
+    try {
+      const d = await fetch('/api/library').then((r) => r.json());
+      if (d && d.success) { st.items = d.items || []; st.itemsAt = Date.now(); return true; }
+    } catch (e) {}
+    return false;
+  }
+  window.reloadLibraryItems = () => { st.itemsAt = 0; };
+  // Misol pozitsiyasi: kichik taxta, belgilangan kataklar bilan
+  function boardHtml(fen, marks) {
+    const rows = String(fen || '').split(' ')[0].split('/');
+    const mk = new Set(marks || []);
+    let html = '';
+    rows.forEach((row, r) => {
+      let f = 0;
+      for (const ch of row) {
+        if (/\d/.test(ch)) { for (let k = 0; k < Number(ch); k++, f++) html += cell(r, f, null, mk); }
+        else { html += cell(r, f, ch, mk); f++; }
+      }
+    });
+    return `<div class="lib-board">${html}</div>`;
+  }
+  function cell(r, f, piece, mk) {
+    const sq = 'abcdefgh'[f] + (8 - r);
+    const code = piece ? (piece === piece.toUpperCase() ? 'w' : 'b') + piece.toUpperCase() : null;
+    const src = code && window.pieceUrl ? window.pieceUrl(code) : null;
+    return `<i class="${(r + f) % 2 ? 'd' : 'l'}${mk.has(sq) ? ' mk' : ''}">${src ? `<img src="${esc(src)}" alt="">` : ''}</i>`;
+  }
 
   function renderShelves() {
     const el = root();
@@ -49,7 +90,7 @@
           <b>${esc(b.title)}</b>
           <span class="lib-players">${esc(b.author)} <i>${esc(b.life)}</i></span>
           <small>${esc(L(b.desc))}</small>
-          <a class="lib-btn ghost" href="https://www.gutenberg.org/ebooks/${Number(b.gutenberg)}" target="_blank" rel="noopener">📖 ${esc(tx('libOpenBook', "O'qish (inglizcha)"))} ↗</a>
+          <a class="lib-btn ghost" href="${esc(b.url || 'https://www.gutenberg.org/ebooks/' + Number(b.gutenberg))}" target="_blank" rel="noopener noreferrer">📖 ${esc(b.url ? tx('libOpenLink', 'Ochish') : tx('libOpenBook', "O'qish (inglizcha)"))} ↗</a>
         </article>`).join('')}</div>
       </section>`;
     el.querySelectorAll('[data-article]').forEach((b) => b.onclick = () => openArticle(b.dataset.article));
@@ -70,6 +111,7 @@
       <div class="lib-article-head"><span class="lib-ico big">${a.icon}</span><h1>${esc(L(a.title))}</h1></div>
       <p class="lib-lead">${esc(L(a.lead))}</p>
       <ul class="lib-points">${a.points.map((p) => `<li>${esc(L(p))}</li>`).join('')}</ul>
+      ${a.example ? `<figure class="lib-example">${boardHtml(a.example.fen, a.example.marks)}<figcaption>💡 ${esc(L(a.example.caption))}</figcaption></figure>` : ''}
       ${next ? `<button type="button" class="lib-next" data-article="${esc(next.id)}">${esc(tx('libNext', 'Keyingi qo\'llanma'))}: ${next.icon} ${esc(L(next.title))} →</button>` : ''}
     </article>`;
     el.querySelector('[data-lib-back]').onclick = () => window.openLibrary(null);
@@ -97,7 +139,7 @@
     window.showReplayGame({
       id: null, player: g.white, opponent: g.black, color: 'w',
       result: g.result === '1-0' ? 'win' : g.result === '0-1' ? 'loss' : 'draw',
-      reason: 'checkmate', clock: g.place + ', ' + g.year, date: null, moves: D.sansOf(g.pgn), variant: 'standard', imported: true
+      reason: g.reason || 'checkmate', clock: [g.place, g.year].filter(Boolean).join(', '), date: null, moves: g.moves || D.sansOf(g.pgn), variant: 'standard', imported: true
     });
   };
 
@@ -109,6 +151,13 @@
     const a = id && ARTICLES().find((x) => x.id === id);
     st.article = a ? a.id : null;
     if (a) renderArticle(a); else renderShelves();
+    // Admin materiallari yuklangach — qayta chizish (yoki havoladagi admin maqolasini ochish)
+    loadItems().then((changed) => {
+      const v = document.getElementById('libraryView');
+      if (!changed || !v || !v.classList.contains('active-view')) return;
+      const again = id && ARTICLES().find((x) => x.id === id);
+      if (again) { st.article = again.id; renderArticle(again); } else if (!st.article) renderShelves();
+    });
     const url = '/kutubxona' + (a ? '?m=' + encodeURIComponent(a.id) : '');
     setTimeout(() => { if (location.pathname === '/kutubxona' && location.pathname + location.search !== url) history.replaceState({ view: 'library' }, '', url); }, 0);
   };

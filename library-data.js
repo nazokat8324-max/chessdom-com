@@ -68,7 +68,111 @@
         '13-летний Бобби Фишер жертвует ферзя в партии с сильным мастером Дональдом Бирном (17...Се6!). Взамен он получает много материала, и его фигуры сообща матуют белого короля. Позже Фишер стал чемпионом мира.',
         'Con 13 años, Bobby Fischer sacrifica la dama ante el fuerte maestro Donald Byrne (17...Ae6!). A cambio reúne mucho material y sus piezas, en equipo, dan mate al rey blanco. Fischer fue después campeón del mundo.',
         'Der 13-jährige Bobby Fischer opfert gegen den starken Meister Donald Byrne seine Dame (17...Le6!). Dafür sammelt er viel Material, und seine Figuren setzen gemeinsam den weißen König matt. Fischer wurde später Weltmeister.',
-        "À 13 ans, Bobby Fischer sacrifie sa dame face au fort maître Donald Byrne (17...Fe6 !). En échange, il ramasse beaucoup de matériel et ses pièces matent ensemble le roi blanc. Fischer deviendra champion du monde."] }
+        "À 13 ans, Bobby Fischer sacrifie sa dame face au fort maître Donald Byrne (17...Fe6 !). En échange, il ramasse beaucoup de matériel et ses pièces matent ensemble le roi blanc. Fischer deviendra champion du monde."] },    {
+      "id": "rubinstein",
+      "white": "Georg Rotlewi",
+      "black": "Akiba Rubinstein",
+      "place": "Łódź",
+      "year": 1907,
+      "result": "0-1",
+      "reason": "resign",
+      "pgn": "1.d4 d5 2.Nf3 e6 3.e3 c5 4.c4 Nc6 5.Nc3 Nf6 6.dxc5 Bxc5 7.a3 a6 8.b4 Bd6 9.Bb2 O-O 10.Qd2 Qe7 11.Bd3 dxc4 12.Bxc4 b5 13.Bd3 Rd8 14.Qe2 Bb7 15.O-O Ne5 16.Nxe5 Bxe5 17.f4 Bc7 18.e4 Rac8 19.e5 Bb6+ 20.Kh1 Ng4 21.Be4 Qh4 22.g3 Rxc3 23.gxh4 Rd2 24.Qxd2 Bxe4+ 25.Qg2 Rh3",
+      "title": [
+        "Rubinshteynning o'lmas partiyasi",
+        "Rubinstein's Immortal",
+        "Бессмертная партия Рубинштейна",
+        "La Inmortal de Rubinstein",
+        "Rubinsteins Unsterbliche",
+        "L'Immortelle de Rubinstein"
+      ],
+      "story": [
+        "Rubinshteyn farzinini (22... Rxc3!!) va ikkala ruxini qurbon qiladi. Ikki fili oq shohga yo'naltirilgan — 25... Rh3 dan keyin mat muqarrar, oq taslim bo'ldi.",
+        "Rubinstein sacrifices his queen (22...Rxc3!!) and both rooks. His two bishops point at the white king, and after 25...Rh3 mate cannot be stopped, so White resigned.",
+        "Рубинштейн жертвует ферзя (22...Лxc3!!) и обе ладьи. Два слона нацелены на белого короля: после 25...Лh3 мат неотвратим, и белые сдались.",
+        "Rubinstein sacrifica la dama (22...Txc3!!) y las dos torres. Sus dos alfiles apuntan al rey blanco y tras 25...Th3 el mate es imparable: las blancas abandonaron.",
+        "Rubinstein opfert die Dame (22...Txc3!!) und beide Türme. Seine zwei Läufer zielen auf den weißen König, nach 25...Th3 ist das Matt nicht mehr aufzuhalten — Weiß gab auf.",
+        "Rubinstein sacrifie sa dame (22...Txc3 !!) et ses deux tours. Ses deux fous visent le roi blanc ; après 25...Th3, le mat est imparable et les Blancs abandonnent."
+      ]
+    },
+    {
+      "id": "marshall",
+      "white": "Stepan Levitsky",
+      "black": "Frank Marshall",
+      "place": "Breslau",
+      "year": 1912,
+      "result": "0-1",
+      "reason": "resign",
+      "pgn": "1.d4 e6 2.e4 d5 3.Nc3 c5 4.Nf3 Nc6 5.exd5 exd5 6.Be2 Nf6 7.O-O Be7 8.Bg5 O-O 9.dxc5 Be6 10.Nd4 Bxc5 11.Nxe6 fxe6 12.Bg4 Qd6 13.Bh3 Rae8 14.Qd2 Bb4 15.Bxf6 Rxf6 16.Rad1 Qc5 17.Qe2 Bxc3 18.bxc3 Qxc3 19.Rxd5 Nd4 20.Qh5 Ref8 21.Re5 Rh6 22.Qg5 Rxh3 23.Rc5 Qg3",
+      "title": [
+        "\"Oltin tangalar\" partiyasi",
+        "The “Gold Coins” game",
+        "Партия «золотого дождя»",
+        "La partida de las monedas de oro",
+        "Die „Goldmünzen“-Partie",
+        "La partie des « pièces d'or »"
+      ],
+      "story": [
+        "Marshall farzinini uch joydan olinadigan g3 katagiga qo'yadi (23... Qg3!!). Qaysi biri bilan olinsa ham, mat yoki katta yo'qotish. Rivoyatlarga ko'ra, tomoshabinlar hayratdan taxtaga oltin tangalar sochishgan.",
+        "Marshall puts his queen on g3, where it can be taken three ways (23...Qg3!!). Every capture leads to mate or heavy loss. Legend says the spectators showered the board with gold coins.",
+        "Маршалл ставит ферзя на g3, где его можно взять тремя способами (23...Фg3!!). Любое взятие ведёт к мату или большим потерям. По легенде, зрители осыпали доску золотыми монетами.",
+        "Marshall coloca la dama en g3, donde puede capturarse de tres maneras (23...Dg3!!). Cualquier captura lleva al mate o a grandes pérdidas. Cuenta la leyenda que el público lanzó monedas de oro al tablero.",
+        "Marshall stellt seine Dame nach g3, wo sie auf drei Arten geschlagen werden kann (23...Dg3!!). Jedes Schlagen führt zu Matt oder schweren Verlusten. Der Legende nach warfen die Zuschauer Goldmünzen aufs Brett.",
+        "Marshall place sa dame en g3, où elle peut être prise de trois façons (23...Dg3 !!). Chaque prise mène au mat ou à de lourdes pertes. La légende dit que les spectateurs ont couvert l'échiquier de pièces d'or."
+      ]
+    },
+    {
+      "id": "short",
+      "white": "Nigel Short",
+      "black": "Jan Timman",
+      "place": "Tilburg",
+      "year": 1991,
+      "result": "1-0",
+      "reason": "resign",
+      "pgn": "1.e4 Nf6 2.e5 Nd5 3.d4 d6 4.Nf3 g6 5.Bc4 Nb6 6.Bb3 Bg7 7.Qe2 Nc6 8.O-O O-O 9.h3 a5 10.a4 dxe5 11.dxe5 Nd4 12.Nxd4 Qxd4 13.Re1 e6 14.Nd2 Nd5 15.Nf3 Qc5 16.Qe4 Qb4 17.Bc4 Nb6 18.b3 Nxc4 19.bxc4 Re8 20.Rd1 Qc5 21.Qh4 b6 22.Be3 Qc6 23.Bh6 Bh8 24.Rd8 Bb7 25.Rad1 Bg7 26.R8d7 Rf8 27.Bxg7 Kxg7 28.R1d4 Rae8 29.Qf6+ Kg8 30.h4 h5 31.Kh2 Rc8 32.Kg3 Rce8 33.Kf4 Bc8 34.Kg5",
+      "title": [
+        "Shoh sayri",
+        "The King's Walk",
+        "Поход короля",
+        "El paseo del rey",
+        "Der Königsmarsch",
+        "La marche du roi"
+      ],
+      "story": [
+        "Taxtada farzinlar bor, lekin Short shohini h2 dan g5 gacha olib boradi — u Kh6 va Qg7 mat bilan tahdid qiladi. Qora himoya topa olmay taslim bo'ldi. Shoh hujumda ham qatnashishi mumkinligining eng yaxshi namunasi.",
+        "With queens still on the board, Short marches his king from h2 to g5, threatening Kh6 and Qg7 mate. Black found no defence and resigned. The best proof that the king can join the attack too.",
+        "При ферзях на доске Шорт ведёт короля с h2 на g5, угрожая Крh6 и Фg7 с матом. Чёрные не нашли защиты и сдались. Лучшее доказательство того, что король тоже может атаковать.",
+        "Con las damas aún en el tablero, Short lleva su rey de h2 a g5 y amenaza Rh6 y Dg7 mate. Las negras no hallaron defensa y abandonaron. La mejor prueba de que el rey también puede atacar.",
+        "Mit Damen auf dem Brett marschiert Short mit dem König von h2 nach g5 und droht Kh6 und Dg7 matt. Schwarz fand keine Verteidigung und gab auf. Der beste Beweis, dass auch der König angreifen kann.",
+        "Dames encore sur l'échiquier, Short fait marcher son roi de h2 à g5 et menace Rh6 puis Dg7 mat. Les Noirs, sans défense, abandonnent. La meilleure preuve que le roi peut aussi attaquer."
+      ]
+    },
+    {
+      "id": "kasparov",
+      "white": "Garry Kasparov",
+      "black": "Veselin Topalov",
+      "place": "Wijk aan Zee",
+      "year": 1999,
+      "result": "1-0",
+      "reason": "resign",
+      "pgn": "1.e4 d6 2.d4 Nf6 3.Nc3 g6 4.Be3 Bg7 5.Qd2 c6 6.f3 b5 7.Nge2 Nbd7 8.Bh6 Bxh6 9.Qxh6 Bb7 10.a3 e5 11.O-O-O Qe7 12.Kb1 a6 13.Nc1 O-O-O 14.Nb3 exd4 15.Rxd4 c5 16.Rd1 Nb6 17.g3 Kb8 18.Na5 Ba8 19.Bh3 d5 20.Qf4+ Ka7 21.Rhe1 d4 22.Nd5 Nbxd5 23.exd5 Qd6 24.Rxd4 cxd4 25.Re7+ Kb6 26.Qxd4+ Kxa5 27.b4+ Ka4 28.Qc3 Qxd5 29.Ra7 Bb7 30.Rxb7 Qc4 31.Qxf6 Kxa3 32.Qxa6+ Kxb4 33.c3+ Kxc3 34.Qa1+ Kd2 35.Qb2+ Kd1 36.Bf1 Rd2 37.Rd7 Rxd7 38.Bxc4 bxc4 39.Qxh8 Rd3 40.Qa8 c3 41.Qa4+ Ke1 42.f4 f5 43.Kc1 Rd2 44.Qa7",
+      "title": [
+        "Kasparovning o'lmas partiyasi",
+        "Kasparov's Immortal",
+        "Бессмертная партия Каспарова",
+        "La Inmortal de Kaspárov",
+        "Kasparows Unsterbliche",
+        "L'Immortelle de Kasparov"
+      ],
+      "story": [
+        "24. Rxd4!! — Kasparov ruxini qurbon qiladi va qoraning shohi butun taxta bo'ylab d1 gacha quvib boriladi. Ko'plab ustalar buni tarixdagi eng chiroyli partiya deb hisoblaydi.",
+        "24.Rxd4!! — Kasparov sacrifices a rook and the black king is chased across the whole board to d1. Many masters consider it the most beautiful game ever played.",
+        "24.Лxd4!! — Каспаров жертвует ладью, и чёрного короля гонят через всю доску до d1. Многие мастера считают эту партию самой красивой в истории.",
+        "24.Txd4!! — Kaspárov sacrifica una torre y el rey negro es perseguido por todo el tablero hasta d1. Muchos maestros la consideran la partida más bella de la historia.",
+        "24.Txd4!! — Kasparow opfert einen Turm, und der schwarze König wird über das ganze Brett bis nach d1 gejagt. Viele Meister halten sie für die schönste Partie aller Zeiten.",
+        "24.Txd4 !! — Kasparov sacrifie une tour et le roi noir est pourchassé à travers tout l'échiquier jusqu'en d1. Beaucoup de maîtres la tiennent pour la plus belle partie de l'histoire."
+      ]
+    }
+
   ];
 
   // Klassik kitoblar: Project Gutenberg (ingliz tilida); muallif — vafot yili 1955 dan oldin (hayot + 70 yil — jamoat mulki)

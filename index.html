@@ -441,6 +441,10 @@
             <span class="icon">🐪</span>
             <span data-i18n="cvTitle">Karvon yo'li</span>
           </a>
+          <a class="menu-item" id="navLibrary" onclick="switchView('library')">
+            <span class="icon">📚</span>
+            <span data-i18n="libTitle">Kutubxona</span>
+          </a>
           <a
             class="menu-item"
             id="navAdmin"
@@ -1597,6 +1601,11 @@
         <div class="tea-page" id="teaRoot"></div>
       </div>
 
+      <!-- 📚 Kutubxona (library.js): /kutubxona, /kutubxona?m=<maqola> -->
+      <div id="libraryView" class="view-section set-view">
+        <div class="set-page lib-page" id="libraryRoot"></div>
+      </div>
+
       <!-- 🤝 2 ga 2 — maslahatli shaxmat (teamchess-page.js): /jamoa, /jamoa?t=KOD -->
       <div id="teamView" class="view-section set-view">
         <div class="set-page tm-page" id="teamRoot"></div>
@@ -2579,6 +2588,9 @@
     <script src="profile-sections.js"></script>
     <script src="holidays-ui.js"></script>
     <script src="teamchess-page.js"></script>
+    <script src="library-data.js"></script>
+    <script src="library-articles.js"></script>
+    <script src="library.js"></script>
     <script src="myopenings.js"></script>
     <script src="clubs.js"></script>
     <script src="gameday.js"></script>

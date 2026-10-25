@@ -515,6 +515,50 @@ test("Brauzer xatosi admin panelidagi Xatolar bo'limida ko'rinadi", opts, async 
   if (process.env.UI_SHOTS) fs.copyFileSync(require('path').join(srv.dir, 'admin-errors.png'), process.env.UI_SHOTS + '/admin-errors.png');
 });
 
+test("Kutubxona: javonlar, maqola (manzil, keyingisi, orqaga), mashhur partiya qayta ko'rishda; ChessCaravan haqida yangilangan", opts, async () => {
+  const u = await srv.register('Lib');
+  for (const vp of [null, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const p = await page(u, vp);
+    await p.goto(srv.base + '/kutubxona', { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('#libraryRoot [data-article="start"]', { visible: true, timeout: 15000 });
+    const st = await p.evaluate(() => ({ guides: document.querySelectorAll('#lib-guides .lib-card').length, games: document.querySelectorAll('#lib-games [data-game]').length, books: document.querySelectorAll('#lib-books a.lib-btn').length, nav: document.getElementById('navLibrary').classList.contains('active') }));
+    assert.deepEqual(st, { guides: 4, games: 7, books: 6, nav: true });
+    if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/lib-' + (vp ? 'phone' : 'pc') + '.png' });
+    await p.click('#libraryRoot [data-article="start"]');
+    await p.waitForSelector('#libraryRoot .lib-points li', { timeout: 5000 });
+    assert.equal(await p.evaluate(() => location.pathname + location.search), '/kutubxona?m=start');
+    await p.click('#libraryRoot .lib-next');
+    await p.waitForFunction(() => location.search === '?m=opening', { timeout: 5000 });
+    if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/lib-article-' + (vp ? 'phone' : 'pc') + '.png' });
+    await p.click('#libraryRoot [data-lib-back]');
+    await p.waitForSelector('#libraryRoot [data-game="opera"]', { timeout: 5000 });
+    await p.click('#libraryRoot [data-game="opera"]');
+    await p.waitForSelector('#replayModal [data-ply="33"]', { timeout: 8000 });
+    assert.match(await p.evaluate(() => document.querySelector('#replayModal h3').textContent), /Paul Morphy/);
+    await p.evaluate(() => document.getElementById('replayModal').remove());
+    assert.deepEqual(p.errors, []);
+  }
+  // Havola bilan to'g'ridan-to'g'ri maqola
+  const p2 = await page(u);
+  await p2.goto(srv.base + '/kutubxona?m=shatranj', { waitUntil: 'domcontentloaded' });
+  await p2.waitForSelector('#libraryRoot .lib-article h1', { timeout: 15000 });
+  assert.match(await p2.evaluate(() => document.querySelector('#libraryRoot .lib-article h1').textContent), /Shatranj/);
+  // ChessCaravan haqida: 10 ta bo'lim kartasi (kutubxona ham), bajarilgan rejalar, lichess eslatmasi yo'q
+  await p2.evaluate(() => window.openAboutPage());
+  await p2.waitForSelector('#aboutPageContent .ab-card', { timeout: 5000 });
+  const ab = await p2.evaluate(() => ({ cards: document.querySelectorAll('#aboutPageContent .ab-card').length, lib: !!document.querySelector('#aboutPageContent .ab-card[data-view="library"]'),
+    done: document.querySelectorAll('#aboutPageContent .ab-step.done').length, text: document.getElementById('aboutPageContent').textContent }));
+  assert.equal(ab.cards, 10);
+  assert.equal(ab.lib, true);
+  assert.equal(ab.done, 2);
+  assert.doesNotMatch(ab.text, /lichess/i);
+  assert.match(ab.text, /Kutubxona/);
+  await p2.evaluate(() => { document.getElementById('aboutPage').scrollTop = document.getElementById('ab-plan').offsetTop - 60; });
+  await sleep(700);
+  if (process.env.UI_SHOTS) await p2.screenshot({ path: process.env.UI_SHOTS + '/about-plan.png' });
+  assert.deepEqual(p2.errors, []);
+});
+
 test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni tekshirish' tugmasi", opts, async () => {
   const adm = await srv.register('FpAdm'), sus = await srv.register('FpSus');
   const run = (q, prm) => new Promise((resolve, reject) => {

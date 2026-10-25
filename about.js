@@ -8,19 +8,29 @@
   const t = (key, fallback, opts) => (typeof tx === 'function' ? tx(key, fallback, opts) : fallback);
 
   // Sayt tuzilishi kartalari: bosilganda o'sha bo'limga o'tiladi
+  // (2026-10-25 yangilangan: saytdagi barcha asosiy bo'limlar)
   const STRUCTURE = [
-    { icon: '♟️', titleKey: 'mPlay', title: "O'yin", textKey: 'infoTechText1', view: 'game' },
-    { icon: '🏅', titleKey: 'mLeaderboard', title: 'Reyting', textKey: 'infoTechText2', view: 'leaderboard' },
-    { icon: '🛡️', titleKey: 'clubsTitle', title: 'Klublar', textKey: 'infoTechText3', view: 'clubs' },
-    { icon: '🏆', titleKey: 'mLeagues', title: 'Ligalar', textKey: 'infoTechText4', view: 'leagues' },
-    { icon: '⭐', titleKey: 'mChampions', title: 'Chempionlar', textKey: 'infoTechText5', view: 'champions' },
-    { icon: '⚙️', titleKey: 'mSettings', title: 'Sozlamalar', textKey: 'infoTechText6', view: 'settings' }
+    { icon: '♟️', titleKey: 'mPlay', title: "O'yin", textKey: 'abTechGame', view: 'game' },
+    { icon: '🍵', titleKey: 'teaTitle', title: 'Choyxona', textKey: 'abTechTea', view: 'tea' },
+    { icon: '📺', titleKey: 'mLive', title: "Jonli o'yinlar", textKey: 'abTechLive', view: 'live' },
+    { icon: '🏅', titleKey: 'mLeaderboard', title: 'Reyting', textKey: 'abTechRating', view: 'leaderboard' },
+    { icon: '🛡️', titleKey: 'clubsTitle', title: 'Klublar', textKey: 'abTechClubs', view: 'clubs' },
+    { icon: '🏆', titleKey: 'mLeagues', title: 'Ligalar', textKey: 'abTechLeagues', view: 'leagues' },
+    { icon: '🚩', titleKey: 'warTitle', title: 'Bayroqlar bellashuvi', textKey: 'abTechWar', view: 'war' },
+    { icon: '🐪', titleKey: 'cvTitle', title: "Karvon yo'li", textKey: 'abTechCaravan', view: 'caravan' },
+    { icon: '📚', titleKey: 'libTitle', title: 'Kutubxona', textKey: 'abTechLibrary', view: 'library' },
+    { icon: '⚙️', titleKey: 'mSettings', title: 'Sozlamalar', textKey: 'abTechSettings', view: 'settings' }
   ];
   const STATS = [
     { value: 6, labelKey: 'aboutStatLanguages', label: 'til' },
     { value: 190, labelKey: 'aboutStatClubs', label: 'davlat klubi' },
-    { value: 6, labelKey: 'aboutStatLeagues', label: "qit'a ligasi" },
-    { value: 3, labelKey: 'aboutStatModes', label: 'vaqt rejimi' }
+    { value: 3, labelKey: 'abStatVariants', label: "o'yin turi" },
+    { value: 12, labelKey: 'abStatCities', label: "Ipak yo'li shahri" }
+  ];
+  // Rejalar: done — bajarilgan (✓), qolganlari — rejada
+  const PLANS = [
+    { key: 'abPlanLibrary', done: true }, { key: 'abPlanPwa', done: true },
+    { key: 'abPlanStore' }, { key: 'abPlanLibMore' }, { key: 'abPlanTournaments' }, { key: 'abPlanLangs' }
   ];
   const SECTIONS = [
     { id: 'about', titleKey: 'infoAboutTitle', title: 'Sayt haqida', icon: '📖' },
@@ -38,10 +48,10 @@
         <b class="ab-count" data-to="${s.value}">0</b>
         <span>${esc(t(s.labelKey, s.label))}</span>
       </div>`).join('');
-    const plans = ['infoPlanItem1', 'infoPlanItem2', 'infoPlanItem3', 'infoPlanItem4'].map((k, i) => `
-      <li class="ab-step ab-reveal" style="--d:${i * 120}ms">
-        <span class="ab-step-dot">${i + 1}</span>
-        <div class="ab-step-card">${esc(t(k, ''))}</div>
+    const plans = PLANS.map((p, i) => `
+      <li class="ab-step ab-reveal${p.done ? ' done' : ''}" style="--d:${i * 120}ms">
+        <span class="ab-step-dot">${p.done ? '✓' : i + 1}</span>
+        <div class="ab-step-card">${esc(t(p.key, ''))}<small class="ab-step-tag">${esc(p.done ? t('abPlanDone', 'Bajarildi') : t('abPlanTodo', 'Rejada'))}</small></div>
       </li>`).join('');
     const cards = STRUCTURE.map((c, i) => `
       <button class="ab-card ab-reveal" style="--d:${i * 80}ms" data-view="${c.view}">
@@ -78,7 +88,7 @@
         <div class="ab-about-grid">
           <div class="ab-text ab-reveal">
             <p>${esc(t('infoAboutText1', ''))}</p>
-            <p>${esc(t('infoAboutText2', ''))}</p>
+            <p>${esc(t('abAboutText2', ''))}</p>
           </div>
           <div class="ab-stats">${stats}</div>
         </div>
@@ -114,13 +124,15 @@
       <section class="ab-credits">
         <h3>${esc(t('aboutCreditsTitle', 'Foydalanilgan ochiq resurslar'))}</h3>
         <ul>
+          <li><b>ChessCaravan</b> — ${esc(t('abCreditOwn', "donalar, taxtalar, ovozlar va shahar naqshlari — saytning o'z ijodi"))}</li>
+          <li><b>chess.js</b>, <b>chessboard.js</b> — ${esc(t('aboutCreditChess', "shaxmat qoidalari va taxta"))}</li>
+          <li><b>Stockfish</b> — ${esc(t('abCreditStockfish', "o'yin tahlili va halol o'yin tekshiruvi"))} · GPL-3.0</li>
           <li><b>Noto Emoji</b> — ${esc(t('aboutCreditNoto', 'animatsiyali stikerlar'))} · © Google ·
             <a href="https://googlefonts.github.io/noto-emoji-animation/" target="_blank" rel="noopener">CC BY 4.0</a></li>
-          <li><b>lichess.org</b> — ${esc(t('aboutCreditLichess', "donalar to'plamlari va o'yin ovozlari (har biri o'z erkin litsenziyasi ostida)"))} ·
-            <a href="https://github.com/lichess-org/lila" target="_blank" rel="noopener">github.com/lichess-org/lila</a></li>
-          <li><b>chess.js</b>, <b>chessboard.js</b> — ${esc(t('aboutCreditChess', "shaxmat qoidalari va taxta"))}</li>
           <li><b>flagcdn.com</b> — ${esc(t('aboutCreditFlags', 'davlat bayroqlari'))}</li>
+          <li><b>Project Gutenberg</b> — ${esc(t('abCreditGutenberg', 'kutubxonadagi klassik kitoblar (jamoat mulki)'))}</li>
         </ul>
+        <p><a href="/mualliflar" target="_blank" rel="noopener">${esc(t('abCreditsAll', "To'liq ro'yxat: Mualliflar va litsenziyalar"))} ↗</a></p>
       </section>
       <footer class="ab-footer">© 2026 ChessCaravan · <a href="/shartlar" target="_blank" rel="noopener">${esc(t('legalTerms', 'Foydalanish shartlari'))}</a> · <a href="/maxfiylik" target="_blank" rel="noopener">${esc(t('legalPrivacy', 'Maxfiylik siyosati'))}</a> · <a href="/mualliflar" target="_blank" rel="noopener">${esc(t('legalCredits', 'Mualliflar va litsenziyalar'))}</a></footer>`;
 

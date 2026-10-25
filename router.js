@@ -5,14 +5,14 @@
   const ROUTES = {
     home: '/', game: '/oyin', leaderboard: '/reyting', tournaments: '/turnirlar', live: '/jonli',
     messages: '/xabarlar', clubs: '/klublar', leagues: '/ligalar', champions: '/chempionlar',
-    settings: '/sozlamalar', admin: '/admin', history: '/tarix', war: '/bayroqlar', tea: '/choyxona', caravan: '/karvon', profsec: '/profil', team: '/jamoa'
+    settings: '/sozlamalar', admin: '/admin', history: '/tarix', war: '/bayroqlar', tea: '/choyxona', caravan: '/karvon', profsec: '/profil', team: '/jamoa', library: '/kutubxona'
   };
   const BY_PATH = {};
   Object.entries(ROUTES).forEach(([view, p]) => { BY_PATH[p] = view; });
   const BASE_TITLE = 'ChessCaravan';
   // Har bo'limning yon menyudagi tugmasi (ba'zi bo'limlar o'zi belgilamaydi)
   const NAV = { home: 'navHome', game: 'navPlay', tea: 'navTea', leaderboard: 'navLeaderboard', tournaments: 'navTournaments', live: 'navLive', messages: 'navMessages',
-    clubs: 'navClubs', leagues: 'navLeagues', war: 'navWar', caravan: 'navCaravan', champions: 'navLeagues', team: 'navTea', admin: 'navAdmin' };
+    clubs: 'navClubs', leagues: 'navLeagues', war: 'navWar', caravan: 'navCaravan', champions: 'navLeagues', team: 'navTea', library: 'navLibrary', admin: 'navAdmin' };
   let popping = false; // popstate paytida tarixga yangi yozuv qo'shilmaydi
 
   // Bo'lim ichidagi sahifa (klub, turnir): /klublar?club=Uzbekistan&tab=chat, /turnirlar?t=<id>

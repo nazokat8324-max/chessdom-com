@@ -622,6 +622,12 @@ window.switchView = function(viewName) {
     const navEl = document.getElementById("navTea");
     if (navEl) navEl.classList.add("active");
     if (typeof window.renderTeaView === "function") window.renderTeaView();
+  } else if (viewName === "library") {
+    const libEl = document.getElementById("libraryView");
+    if (libEl) libEl.classList.add("active-view");
+    const navEl = document.getElementById("navLibrary");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.updateLibraryView === "function") window.updateLibraryView();
   } else if (viewName === "team") {
     const tmEl = document.getElementById("teamView");
     if (tmEl) tmEl.classList.add("active-view");

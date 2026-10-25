@@ -95,6 +95,11 @@ const countryName = (name, fallbackCode) => {
   if (locale === 'uz') {
     return uzCountryNames[name] || name;
   }
+  // Ўзбекча (кирилл): o'zbekcha nomdan
+  if (locale === 'uzc') {
+    const uzName = uzCountryNames[name] || name;
+    return window.UzCyrl ? window.UzCyrl.toCyrl(uzName) : uzName;
+  }
 
   try {
     let code = fallbackCode;

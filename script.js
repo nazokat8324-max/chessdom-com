@@ -4,10 +4,17 @@ if (typeof window.currentLang === 'undefined') {
 
 // Tarjima yordamchisi: tx('kalit', "o'zbekcha matn", { name }) — i18next tayyor bo'lmasa o'zbekcha matn qaytadi.
 // Qiymatlar HTML-escape qilinmaydi: innerHTML'ga qo'yishdan oldin foydalanuvchi ma'lumotini escapeHtml qiling.
+// Joriy til kodi: 'uzc' (o'zbek kirill) yoki 2 harfli (uz, en, ru …)
+window.uiLang = function() {
+  const l = String((typeof i18next !== 'undefined' && i18next.language) || window.currentLang || 'en');
+  return l === 'uzc' ? 'uzc' : l.slice(0, 2);
+};
 window.tx = function(key, fallback, opts) {
   const vars = opts || {};
   if (typeof i18next !== 'undefined' && i18next.isInitialized) {
-    return i18next.t(key, { defaultValue: fallback, ...vars, interpolation: { escapeValue: false } });
+    // Kalit yo'q bo'lsa o'zbekcha fallback — kirill tilida o'giriladi
+    const def = i18next.language === 'uzc' && window.UzCyrl ? window.UzCyrl.toCyrl(String(fallback)) : fallback;
+    return i18next.t(key, { defaultValue: def, ...vars, interpolation: { escapeValue: false } });
   }
   return String(fallback).replace(/\{\{(\w+)\}\}/g, (m, k) => (k in vars ? vars[k] : m));
 };
@@ -216,6 +223,7 @@ function getStreakText(n) {
   const last = num % 10;
 
   if (lang === 'uz') return count + ' kun';
+  if (lang === 'uzc') return count + ' кун';
   if (lang === 'en') return count === 1 ? '1 day' : count + ' days';
   if (lang === 'ru') {
     // 1, 21, 31... -> день; 2-4, 22-24... -> дня; qolgani -> дней
@@ -1345,6 +1353,7 @@ window.closeLanguageModal = function() {
 
 window.LANGUAGES = [
   { code: 'UZ', name: "O'zbekcha", english: 'Uzbek', flag: '🇺🇿' },
+  { code: 'UZC', name: 'Ўзбекча', english: 'Uzbek (Cyrillic)', flag: '🇺🇿' },
   { code: 'EN', name: 'English', english: 'English', flag: '🇬🇧' },
   { code: 'RU', name: 'Русский', english: 'Russian', flag: '🇷🇺' },
   { code: 'ES', name: 'Español', english: 'Spanish', flag: '🇪🇸' },

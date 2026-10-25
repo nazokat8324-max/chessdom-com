@@ -118,7 +118,7 @@ function init(d) {
     if (!enabled() || !botUsername) return res.status(503).json({ success: false, message: 'Telegram bot sozlanmagan' });
     for (const [k, v] of linkCodes) if (v.exp < Date.now() || v.userId === req.user.userId) linkCodes.delete(k);
     const code = crypto.randomBytes(12).toString('hex');
-    const lang = LANGS.includes(req.body && req.body.lang) ? req.body.lang : null;
+    const lang = LANGS.concat(['uzc']).includes(req.body && req.body.lang) ? req.body.lang : null;
     linkCodes.set(code, { userId: req.user.userId, lang, exp: Date.now() + LINK_TTL_MS });
     res.json({ success: true, url: `https://t.me/${botUsername}?start=${code}` });
   });

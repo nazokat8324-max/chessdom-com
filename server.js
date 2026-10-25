@@ -1516,7 +1516,7 @@ const deletedUsers = new Set(); // o'chirilgan akkauntlar (eski JWT bilan kira o
 const guestUsers = new Set();
 const isGuest = (userId) => !!userId && guestUsers.has(userId);
 const GUEST_TTL_MS = 8 * 24 * 60 * 60 * 1000; // JWT 7 kun — undan keyin mehmon akkaunti o'chiriladi
-const GUEST_PREFIX = { uz: 'Mehmon', en: 'Guest', ru: 'Гость', es: 'Invitado', de: 'Gast', fr: 'Invite' };
+const GUEST_PREFIX = { uz: 'Mehmon', uzc: 'Mehmon', en: 'Guest', ru: 'Гость', es: 'Invitado', de: 'Gast', fr: 'Invite' };
 const GUEST_NAME_RE = new RegExp('^(' + Object.values(GUEST_PREFIX).join('|') + ')-', 'i');
 // Mehmonga ruxsat etilgan yozuvchi so'rovlar (qolganlari 403 "ro'yxatdan o'ting")
 const GUEST_ALLOWED = new Set(['/api/matchmaking/join', '/api/matchmaking/leave', '/api/auth/logout', '/api/users/me/country', '/api/notifications/read', '/api/notifications/clear']);
@@ -1908,7 +1908,7 @@ async function start() {
       const sub = req.body && req.body.subscription;
       const ok = sub && typeof sub.endpoint === 'string' && /^https:\/\//.test(sub.endpoint) && sub.endpoint.length < 1000 && sub.keys && typeof sub.keys.p256dh === 'string' && typeof sub.keys.auth === 'string';
       if (!ok) return res.status(400).json({ success: false, message: "Noto'g'ri ma'lumot!" });
-      const lang = ['uz', 'en', 'ru', 'es', 'de', 'fr'].includes(req.body.lang) ? req.body.lang : 'en';
+      const lang = ['uz', 'uzc', 'en', 'ru', 'es', 'de', 'fr'].includes(req.body.lang) ? req.body.lang : 'en';
       await db.savePushSubscription(req.user.userId, sub, lang);
       res.json({ success: true, prefs: await db.getPushPrefs(req.user.userId) });
     } catch (err) { console.error('Push obuna xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }

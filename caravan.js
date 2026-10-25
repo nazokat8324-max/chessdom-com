@@ -42,6 +42,7 @@
   const cityName = (key, lang) => {
     const c = CITIES.find((x) => x.key === key);
     if (!c) return key;
+    if (lang === 'uzc') { const U = (typeof UzCyrl !== 'undefined' ? UzCyrl : (typeof require === 'function' ? require('./uzcyrl') : null)); return U ? U.toCyrl(c.names[0]) : c.names[0]; }
     const i = LANGS.indexOf(lang);
     return c.names[i < 0 ? 1 : i];
   };

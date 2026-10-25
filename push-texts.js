@@ -40,7 +40,10 @@ const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr'];
 
 function fill(s, vars) { return String(s).replace(/\{\{(\w+)\}\}/g, (m, k) => (vars[k] == null ? '' : String(vars[k]))); }
 
+// Ўзбекча (кирилл): o'zbekcha matn tayyorlanib, kirillga o'giriladi
+const UzCyrl = require('./uzcyrl');
 function pushMessage(type, data, lang, ownName) {
+  if (lang === 'uzc') { const m = pushMessage(type, data, 'uz', ownName); return { ...m, title: UzCyrl.toCyrl(m.title), body: UzCyrl.toCyrl(m.body) }; }
   const l = LANGS.includes(lang) ? lang : 'en';
   const d = data || {};
   const prof = (n) => '/?profile=' + encodeURIComponent(n || '');
@@ -113,6 +116,8 @@ const BOT = {
 };
 // Telegram language_code (masalan "ru", "uz", "en-US") → sayt tili
 function langOf(code) { const c = String(code || '').slice(0, 2).toLowerCase(); return LANGS.includes(c) ? c : 'en'; }
-function botText(key, lang, vars) { const l = LANGS.includes(lang) ? lang : 'en'; return fill((BOT[key] || BOT.help)[l], vars || {}); }
+function botText(key, lang, vars) {
+  if (lang === 'uzc') return UzCyrl.toCyrl(botText(key, 'uz', vars));
+  const l = LANGS.includes(lang) ? lang : 'en'; return fill((BOT[key] || BOT.help)[l], vars || {}); }
 
 module.exports = { pushMessage, CATEGORY, botText, langOf, LANGS };

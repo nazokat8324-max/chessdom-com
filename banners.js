@@ -51,7 +51,7 @@
   }
   const tileSize = (key) => (TILES[key] ? TILES[key][0] : 40);
   const lang = () => (window.i18next && window.i18next.language) || 'en';
-  const cityName = (key) => (window.Caravan ? window.Caravan.cityName(key, String(lang()).slice(0, 2)) : key);
+  const cityName = (key) => (window.Caravan ? window.Caravan.cityName(key, window.uiLang ? window.uiLang() : String(lang()).slice(0, 2)) : key);
   // Ochilgan shaharlar indeksi (qadamlar bo'yicha)
   const unlockedUpTo = (points) => (window.Caravan && points != null ? window.Caravan.cityIndex(points) : -1);
 

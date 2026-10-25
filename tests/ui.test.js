@@ -596,6 +596,30 @@ test("Kutubxona: misol taxtasi; admin formasi orqali maqola qo'shiladi va kutubx
   assert.deepEqual(p.errors, []);
 });
 
+test("Ўзбекча (кирилл): menyu, kutubxona va sozlamalar kirillda; tanlovda bor; huquqiy sahifa ham", opts, async () => {
+  const u = await srv.register('Kiril');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => localStorage.setItem('justChessLang', 'uzc'));
+  await p.goto(srv.base + '/kutubxona?m=fork', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#libraryRoot .lib-article h1', { timeout: 15000 });
+  await sleep(800);
+  const st = await p.evaluate(() => ({ home: document.querySelector('#navHome span:not(.icon)').textContent.trim(), lib: document.querySelector('#navLibrary span:not(.icon)').textContent.trim(),
+    h1: document.querySelector('#libraryRoot .lib-article h1').textContent, ex: document.querySelector('.lib-example figcaption').textContent }));
+  assert.equal(st.lib, 'Кутубхона');
+  assert.match(st.home, /^[А-Яа-яЎўҚқҒғҲҳЁё ]+$/, 'menyu kirillda: ' + st.home);
+  assert.equal(st.h1, 'Тактика: вилка');
+  assert.match(st.ex, /Nc7\+/, "shaxmat yozuvi o'zgarmaydi");
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/uzc-library.png' });
+  // Sozlamalar: Ўзбекча tanlangan
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('.set-lang[data-lang="uzc"]', { timeout: 15000 });
+  assert.equal(await p.evaluate(() => document.querySelector('.set-lang[data-lang="uzc"]').classList.contains('active')), true);
+  // Huquqiy sahifa ?lang=uzc
+  await p.goto(srv.base + '/maxfiylik?lang=uzc', { waitUntil: 'domcontentloaded' });
+  await p.waitForFunction(() => /Махфийлик/.test(document.body.textContent), { timeout: 10000 });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni tekshirish' tugmasi", opts, async () => {
   const adm = await srv.register('FpAdm'), sus = await srv.register('FpSus');
   const run = (q, prm) => new Promise((resolve, reject) => {

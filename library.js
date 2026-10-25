@@ -4,13 +4,22 @@
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr'];
-  const L = (arr) => { const l = String((window.i18next && window.i18next.language) || 'en').slice(0, 2); const i = LANGS.indexOf(l); return (arr && arr[i < 0 ? 1 : i]) || (arr && arr[1]) || ''; };
+  const uiLang = () => (window.uiLang ? window.uiLang() : String((window.i18next && window.i18next.language) || 'en').slice(0, 2));
+  const L = (arr) => {
+    const l = uiLang();
+    // Ўзбекча (кирилл) — o'zbekcha matndan
+    if (l === 'uzc') return window.UzCyrl ? window.UzCyrl.toCyrl((arr && arr[0]) || '') : (arr && arr[0]) || '';
+    const i = LANGS.indexOf(l);
+    return (arr && arr[i < 0 ? 1 : i]) || (arr && arr[1]) || '';
+  };
   const st = { article: null, items: null, itemsAt: 0 };
   const root = () => document.getElementById('libraryRoot');
-  const curLang = () => String((window.i18next && window.i18next.language) || 'en').slice(0, 2);
+  const curLang = () => (uiLang() === 'uzc' ? 'uz' : uiLang());
   const six = (s) => Array(6).fill(s || '');
   // Admin panelidan qo'shilgan materiallar (GET /api/library): til tanlangan bo'lsa — faqat o'sha tilda ko'rinadi
-  const custom = (kind) => (st.items || []).filter((x) => x.kind === kind && (!x.lang || x.lang === curLang()));
+  const custom = (kind) => (st.items || []).filter((x) => x.kind === kind && (!x.lang || x.lang === curLang()))
+    .map((x) => (uiLang() === 'uzc' && x.lang === 'uz' && window.UzCyrl
+      ? Object.assign({}, x, { title: window.UzCyrl.toCyrl(x.title), lead: window.UzCyrl.toCyrl(x.lead || ''), body: window.UzCyrl.toCyrl(x.body || ''), story: window.UzCyrl.toCyrl(x.story || ''), desc: window.UzCyrl.toCyrl(x.desc || '') }) : x));
   const customArticles = () => custom('article').map((x) => ({ id: 'c:' + x.id, icon: x.icon || '📝', title: six(x.title), lead: six(x.lead || ''),
     points: String(x.body || '').split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean).map(six), custom: true }));
   const customGames = () => custom('game').map((x) => ({ id: 'c:' + x.id, white: x.white, black: x.black, place: x.place || '', year: x.year || '', result: x.result, reason: x.reason,

@@ -22,7 +22,7 @@
     { icon: '⚙️', titleKey: 'mSettings', title: 'Sozlamalar', textKey: 'abTechSettings', view: 'settings' }
   ];
   const STATS = [
-    { value: 6, labelKey: 'aboutStatLanguages', label: 'til' },
+    { value: 7, labelKey: 'aboutStatLanguages', label: 'til' }, // 6 til + o'zbek kirill
     { value: 190, labelKey: 'aboutStatClubs', label: 'davlat klubi' },
     { value: 3, labelKey: 'abStatVariants', label: "o'yin turi" },
     { value: 12, labelKey: 'abStatCities', label: "Ipak yo'li shahri" }

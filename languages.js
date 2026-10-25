@@ -11117,6 +11117,8 @@ const translationsExtra = {
   }
 };
 Object.keys(translationsExtra).forEach(lang => Object.assign(translations[lang], translationsExtra[lang]));
+// Ўзбекча (кирилл): alohida saqlanmaydi — o'zbekcha (lotin) kalitlardan avtomatik (uzcyrl.js)
+if (window.UzCyrl) translations.uzc = window.UzCyrl.deep(translations.uz);
 
 i18next.init({
   lng: localStorage.getItem("justChessLang") || "en",
@@ -11124,6 +11126,7 @@ i18next.init({
   debug: false,
   resources: {
     uz: { translation: translations.uz },
+    uzc: { translation: translations.uzc || translations.uz },
     en: { translation: translations.en },
     ru: { translation: translations.ru },
     es: { translation: translations.es },

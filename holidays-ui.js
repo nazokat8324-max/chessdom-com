@@ -2,7 +2,7 @@
 // bir martalik tabrik (justChessHolidaySeen), Karvon yo'li sahifasida bayram kartasi .cv-holiday (vazifa progressi yoki keyingi bayram).
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const lang = () => String((window.i18next && window.i18next.language) || 'en').slice(0, 2);
+  const lang = () => (window.uiLang ? window.uiLang() : String((window.i18next && window.i18next.language) || 'en').slice(0, 2));
   const hName = (key) => (window.Holidays ? window.Holidays.name(key, lang()) : key);
   const st = { data: null, at: 0 };
 

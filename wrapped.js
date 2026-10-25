@@ -10,7 +10,10 @@
   function monthName(season) {
     const [y, m] = season.split('-').map(Number);
     const lang = (window.i18next && window.i18next.language) || 'en';
-    if (lang === 'uz') return ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'][m - 1] + ' ' + y; // brauzerlarda uz-UZ oy nomi yo'q
+    if (lang === 'uz' || lang === 'uzc') {
+      const mn = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'][m - 1]; // brauzerlarda uz-UZ oy nomi yo'q
+      return (lang === 'uzc' && window.UzCyrl ? window.UzCyrl.toCyrl(mn) : mn) + ' ' + y;
+    }
     try { return new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString(lang, { month: 'long', year: 'numeric', timeZone: 'UTC' }); }
     catch (e) { return season; }
   }

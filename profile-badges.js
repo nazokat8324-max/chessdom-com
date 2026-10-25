@@ -3,18 +3,21 @@
 // duels.won (yutilgan bahslar), caravan (qadamlar → Karvon shaharlari muhrlari). profile-extras.js renderAll chaqiradi.
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const lang = () => String((window.i18next && window.i18next.language) || 'en').slice(0, 2);
+  const lang = () => (window.uiLang ? window.uiLang() : String((window.i18next && window.i18next.language) || 'en').slice(0, 2));
+  const cyr = (s) => (window.UzCyrl ? window.UzCyrl.toCyrl(s) : s);
   const UZ_MONTHS = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'];
   function monthName(ym) {
     const [y, m] = String(ym).split('-').map(Number);
     if (!y || !m) return ym;
     if (lang() === 'uz') return UZ_MONTHS[m - 1] + ' ' + y; // brauzerlarda uz-UZ oy nomi yo'q
+    if (lang() === 'uzc') return cyr(UZ_MONTHS[m - 1]) + ' ' + y;
     try { return new Date(Date.UTC(y, m - 1, 15)).toLocaleDateString(lang(), { month: 'long', year: 'numeric', timeZone: 'UTC' }); } catch (e) { return ym; }
   }
   function dayName(d) {
     const [y, m, day] = String(d).split('-').map(Number);
     if (!y) return d;
     if (lang() === 'uz') return day + '-' + UZ_MONTHS[m - 1].toLowerCase() + ' ' + y;
+    if (lang() === 'uzc') return day + '-' + cyr(UZ_MONTHS[m - 1]).toLowerCase() + ' ' + y;
     try { return new Date(Date.UTC(y, m - 1, day)).toLocaleDateString(lang(), { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }); } catch (e) { return d; }
   }
 

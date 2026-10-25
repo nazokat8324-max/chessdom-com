@@ -54,6 +54,7 @@
   function name(key, lang) {
     const h = HOLIDAYS.find((x) => x.key === key);
     if (!h) return key;
+    if (lang === 'uzc') { const U = (typeof UzCyrl !== 'undefined' ? UzCyrl : (typeof require === 'function' ? require('./uzcyrl') : null)); return U ? U.toCyrl(h.names[0]) : h.names[0]; }
     const i = LANGS.indexOf(lang);
     return h.names[i < 0 ? 1 : i];
   }

@@ -495,6 +495,7 @@
       const messages = {
         expired: tx('lgErrExpired', "Bu o'yinning muddati tugagan."),
         not_pending: tx('lgErrNotPending', "Bu o'yin allaqachon o'ynalgan."),
+        busy: tx('arErrInGame', "Avval joriy o'yiningizni tugating."),
         auth: tx('errLoginRequired', 'Avval tizimga kirishingiz kerak!')
       };
       showToast(messages[reason] || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning');

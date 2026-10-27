@@ -454,8 +454,21 @@ function scheduleRoomTimer(roomId, room) {
   const grace = lagCompFor(room.players.find(p => p.color === side));
   room.timer = setTimeout(() => {
     room.clock[side] = 0;
-    endGame(roomId, room, otherColor(side), 'timeout');
+    const t = timeoutResult(room, side);
+    endGame(roomId, room, t.winner, t.reason);
   }, room.clock[side] + grace);
+}
+
+// Vaqt tugadi: raqibda mat qilish uchun dona yetarli bo'lmasa — durrang (FIDE qoidasi). Raqibda faqat shoh qolgan
+// yoki shoh + bitta yengil dona va vaqti tugagan tomonda ham faqat shoh — mat mumkin emas. Shatranj'da o'z qoidalari.
+function timeoutResult(room, flagged) {
+  const winner = otherColor(flagged);
+  if (room.variant === 'shatranj' || typeof room.chess.board !== 'function') return { winner, reason: 'timeout' };
+  const pieces = { w: [], b: [] };
+  for (const row of room.chess.board()) for (const sq of row) if (sq && sq.type !== 'k') pieces[sq.color].push(sq.type);
+  const mine = pieces[winner], theirs = pieces[flagged];
+  const cannotMate = mine.length === 0 || (mine.length === 1 && (mine[0] === 'n' || mine[0] === 'b') && theirs.length === 0);
+  return cannotMate ? { winner: null, reason: 'insufficient' } : { winner, reason: 'timeout' };
 }
 
 function scoreFor(color, winnerColor) {
@@ -804,6 +817,15 @@ async function startRematch(oldRoomId, old) {
   old.rematchBy = null;
   const prevWhite = old.players.find(p => p.color === 'w'), prevBlack = old.players.find(p => p.color === 'b');
   if (!prevWhite || !prevBlack) return;
+  // Taklif va qabul orasida kimdir boshqa o'yin boshlagan yoki chiqib ketgan bo'lishi mumkin
+  if (inActiveGame(prevWhite.userId) || inActiveGame(prevBlack.userId) || !io.sockets.sockets.get(prevWhite.socketId) || !io.sockets.sockets.get(prevBlack.socketId)) {
+    for (const p of [prevWhite, prevBlack]) if (p.socketId) io.to(p.socketId).emit('rematch-unavailable', { roomId: oldRoomId });
+    return;
+  }
+  for (const p of [prevWhite, prevBlack]) {
+    const i = matchmakingQueue.findIndex(u => u.userId === p.userId);
+    if (i !== -1) matchmakingQueue.splice(i, 1);
+  }
   const [whiteUser, blackUser] = await Promise.all([db.getUserById(prevBlack.userId), db.getUserById(prevWhite.userId)]);
   const clock = { initial: old.clock.initial, increment: old.clock.increment };
   const roomId = generateRoomId();
@@ -2157,6 +2179,9 @@ async function start() {
       const guest = isGuest(req.user.userId);
       const rated = !guest && req.body.rated !== false;
       pruneMatchmakingQueue();
+      // O'yindagi o'yinchi ikkinchi o'yinga tushmasin; navbatda turganlardan o'yinga kirib ketganlar chiqariladi
+      if (inActiveGame(req.user.userId)) return res.status(409).json({ success: false, reason: 'in_game', message: "Avval joriy o'yiningizni tugating!" });
+      for (let i = matchmakingQueue.length - 1; i >= 0; i--) if (inActiveGame(matchmakingQueue[i].userId)) matchmakingQueue.splice(i, 1);
       if (matchmakingQueue.some(u => u.username === username)) return res.status(400).json({ success: false, message: 'Already in queue' });
       const user = await db.getUserById(req.user.userId);
       // Klient yuborgan davlatni (Sozlamalardan) bazaga ham yozib qo'yamiz
@@ -2976,23 +3001,25 @@ async function start() {
       if (player.color !== room.chess.turn()) { socket.emit('move-rejected', { reason: 'not_your_turn', error: 'Not your turn' }); return; }
       const validation = validateMove(move);
       if (!validation.valid) { socket.emit('move-rejected', { reason: 'invalid_move', error: validation.error }); return; }
-      // Soat: yurgan tomonning o'tgan vaqtini ayiramiz; vaqti tugagan bo'lsa yurish qabul qilinmaydi
+      // Soat: yurgan tomonning o'tgan vaqti. Vaqti tugagan bo'lsa yurish qabul qilinmaydi; soat faqat qonuniy
+      // yurishdan keyin o'zgaradi (avval noqonuniy yurish ham vaqtni ayirardi va keyingi urinishda ikki marta ayirilardi)
       const now = Date.now();
-      if (room.turnStartedAt !== null) {
-        const spent = now - room.turnStartedAt;
-        (player.moveTimes = player.moveTimes || []).push(spent);
-        room.clock[player.color] -= Math.max(0, spent - Math.min(spent, lagCompFor(player)));
-        if (room.clock[player.color] <= 0) {
-          room.clock[player.color] = 0;
-          socket.emit('move-rejected', { reason: 'game_over', error: 'Time is up' });
-          endGame(roomId, room, otherColor(player.color), 'timeout');
-          return;
-        }
+      const spent = room.turnStartedAt !== null ? now - room.turnStartedAt : 0;
+      const used = Math.max(0, spent - Math.min(spent, lagCompFor(player)));
+      if (room.turnStartedAt !== null && room.clock[player.color] - used <= 0) {
+        room.clock[player.color] = 0;
+        socket.emit('move-rejected', { reason: 'game_over', error: 'Time is up' });
+        const t = timeoutResult(room, player.color);
+        endGame(roomId, room, t.winner, t.reason);
+        return;
       }
       // Qonun-qoidaga zid yurish rad etiladi (chess.js serverda ham tekshiradi)
       const result = room.chess.move({ from: move.from, to: move.to, promotion: move.promotion || 'q' });
       if (!result) { socket.emit('move-rejected', { reason: 'invalid_move', error: 'Illegal move' }); return; }
-      if (room.turnStartedAt !== null) room.clock[player.color] += room.clock.increment * 1000;
+      if (room.turnStartedAt !== null) {
+        (player.moveTimes = player.moveTimes || []).push(spent);
+        room.clock[player.color] += room.clock.increment * 1000 - used;
+      }
       room.drawOfferBy = null;
       room.turnStartedAt = room.chess.history().length >= 2 ? now : null;
       socket.to(roomId).emit('opponent-move', { from: result.from, to: result.to, promotion: result.promotion });
@@ -3032,6 +3059,10 @@ async function start() {
     };
     socket.on('offer-draw', (data) => {
       const ctx = activeRoomOf(data); if (!ctx) return;
+      // Bir yurish davomida bitta taklif (rad etilgandan keyin qayta-qayta taklif qilib bezovta qilib bo'lmaydi)
+      const ply = ctx.room.chess.history().length;
+      if (ctx.room.drawOfferBy === ctx.player.color || ctx.player.drawOfferPly === ply) return;
+      ctx.player.drawOfferPly = ply;
       ctx.room.drawOfferBy = ctx.player.color;
       socket.to(ctx.roomId).emit('draw-offered', { roomId: ctx.roomId });
     });
@@ -3336,7 +3367,7 @@ async function start() {
   }, 4000);
 
   telegram.init({ app, db, io, SITE_URL, isActive, authMiddleware, inviteUrl: async (userId) => `${SITE_URL}/?invite=${await db.getInviteCode(userId)}` });
-  league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId, notify });
+  league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId, notify, inActiveGame });
   swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId, notify, awardAchievement });
   // Bloklar, banlar va adminlar (ADMIN_USERNAMES="ism1,ism2" — Render env)
   try {

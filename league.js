@@ -295,6 +295,9 @@ async function ready(socket, gameId) {
   if (!g || (g.white_id !== userId && g.black_id !== userId)) return socket.emit('league-error', { reason: 'not_found' });
   if (g.status !== 'pending' || g.match_status !== 'active') return socket.emit('league-error', { reason: 'not_pending' });
   if (Date.now() >= new Date(g.deadline).getTime()) return socket.emit('league-error', { reason: 'expired' });
+  // Boshqa o'yinda turgan o'yinchi liga o'yiniga tayyor bo'la olmaydi (bir vaqtda ikki o'yin bo'lmasin)
+  const busy = (uid) => !!(deps.inActiveGame && deps.inActiveGame(uid));
+  if (busy(userId)) return socket.emit('league-error', { reason: 'busy' });
 
   const side = g.white_id === userId ? 'w' : 'b';
   const readyCol = side === 'w' ? 'white_ready_at' : 'black_ready_at';
@@ -305,7 +308,9 @@ async function ready(socket, gameId) {
   waiting.set(g.id, entry);
   const other = side === 'w' ? 'b' : 'w';
   const otherSocket = entry[other] && deps.io.sockets.sockets.get(entry[other]);
-  if (otherSocket) return startLeagueGame(g, entry);
+  // Raqib tayyor bo'lgandan keyin boshqa o'yinga kirib ketgan bo'lsa — uning tayyorligi bekor, bu o'yinchi kutadi
+  if (otherSocket && busy(otherSocket.data.userId)) delete entry[other];
+  else if (otherSocket) return startLeagueGame(g, entry);
 
   socket.emit('league-waiting', { gameId: g.id });
   const opponentId = side === 'w' ? g.black_id : g.white_id;

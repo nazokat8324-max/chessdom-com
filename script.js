@@ -727,13 +727,14 @@ window.updateAuthHeaderUI = function() {
 // Server login/register javobidan sessiyani o'rnatish
 window.applyAuthSession = function(user, token) {
   const settings = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
-  const country = user.country || settings.country || "uz";
+  // Davlat tanlanmagan bo'lsa — xalqaro (BMT) bayrog'i (avval hammaga O'zbekiston qo'yilardi)
+  const country = user.country || settings.country || "un";
   let countryName = user.countryName || "";
   if (!countryName && typeof allCountries !== 'undefined') {
     const found = allCountries.find(c => c.code === country);
     if (found) countryName = found.name;
   }
-  if (!countryName && country === "uz") countryName = "O'zbekiston";
+  if (!countryName && country === "un") countryName = window.countryNameByCode('un');
 
   window.currentUser = {
     ...user,
@@ -1453,6 +1454,7 @@ window.renderLanguageCards = function(filter = '') {
 
 // Davlat kodi bo'yicha (tarjima qilingan) davlat nomi
 function countryNameByCode(code) {
+  if (code === 'un') return tx('countryIntl', 'Xalqaro');
   if (!code || typeof allCountries === 'undefined') return '';
   const found = allCountries.find(c => c.code === code);
   if (!found) return '';
@@ -1838,7 +1840,7 @@ window.populateSettingsCountries = function() {
 
   country.innerHTML = "";
   country.appendChild(fragment);
-  country.value = keep || saved.country || "uz";
+  country.value = keep || saved.country || "un";
 };
 
 // Oq/qora shoh belgisi: ♔/♚ matn belgilari ko'p shriftlarda xochli chiqadi — o'rniga tanlangan to'plamning shoh rasmi
@@ -1888,7 +1890,7 @@ window.saveSettings = function() {
       ? i18next.t(key, { defaultValue: fallback })
       : fallback;
   const saved = {
-    country: (document.getElementById("settingsCountry")?.value || "uz"),
+    country: (document.getElementById("settingsCountry")?.value || "un"),
     language: (document.getElementById("settingsLanguage")?.value || "uz"),
     soundEnabled: document.getElementById("settingsSound")?.checked !== false,
     volume: (parseInt(document.getElementById("settingsVolume")?.value || "80") / 100),
@@ -1908,6 +1910,7 @@ window.syncMyCountry = function(country) {
   if (typeof allCountries !== 'undefined') {
     const found = allCountries.find(c => c.code === country);
     if (found) window.currentUser.countryName = found.name;
+    else if (country === 'un') window.currentUser.countryName = countryNameByCode('un');
   }
   localStorage.setItem("justChessCurrentUser", JSON.stringify(window.currentUser));
   if (typeof window.updateGameFlags === 'function') window.updateGameFlags();

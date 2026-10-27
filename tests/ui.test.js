@@ -888,3 +888,20 @@ test("Barcha bo'limlar: kirgan foydalanuvchi har bir sahifani ochganda ushlanmag
     assert.deepEqual(p.consoleErrors, [], 'console.error ' + (vp ? 'telefon' : 'kompyuter'));
   }
 });
+
+test("Davlat: yangi foydalanuvchida xalqaro (BMT) bayrog'i, tanlab saqlansa serverga yoziladi", opts, async () => {
+  const u = await srv.register('Intl');
+  const p = await page(u);
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#setCountry', { timeout: 15000 });
+  const st = await p.evaluate(() => ({ me: window.currentUser.country, sel: document.getElementById('setCountry').value, first: document.querySelector('#setCountry option').textContent, flag: document.getElementById('setCountryFlag').src }));
+  assert.notEqual(st.me, 'uz', "O'zbekiston o'z-o'zidan qo'yilmaydi");
+  assert.equal(st.sel, 'un');
+  assert.match(st.first, /Xalqaro/);
+  assert.ok(st.flag.endsWith('/un.png'), st.flag);
+  await p.select('#setCountry', 'kz');
+  await p.click('[data-save]');
+  await sleep(800);
+  assert.equal((await srv.api(null, '/api/users/' + u.name + '/profile')).profile.country, 'kz');
+  assert.deepEqual(p.errors, []);
+});

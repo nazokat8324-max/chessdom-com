@@ -22,7 +22,7 @@ window.updateProfileViewData = function() {
   const cardFlag = document.getElementById("profileCardFlag");
   const cardCountryName = document.getElementById("profileCardCountryName");
   const cardCountryWrap = document.getElementById("profileCardCountry");
-  const countryCode = (window.currentUser.country || 'uz').toLowerCase();
+  const countryCode = (window.currentUser.country || 'un').toLowerCase();
   const countryName = window.currentUser.countryName || '';
   if (cardCountryWrap) {
     if (countryName) {

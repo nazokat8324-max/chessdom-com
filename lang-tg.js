@@ -108,6 +108,7 @@ window.TRANSLATIONS_TG = {
   colWins: "Ғалаба",
   colGames: "Бозӣ",
   colWinPercent: "Ғалаба %",
+  countryIntl: "Байналмилалӣ",
   arColWdl: "Ғ / Д / М",
   arColWdlTitle: "Ғалаба / Дуранг / Мағлубият",
   colPlayer: "Бозингар",

@@ -108,6 +108,7 @@ window.TRANSLATIONS_KK = {
   colWins: "Жеңіс",
   colGames: "Ойын",
   colWinPercent: "Жеңіс %",
+  countryIntl: "Халықаралық",
   arColWdl: "Ж / Т / Ж",
   arColWdlTitle: "Жеңіс / Тең / Жеңіліс",
   colPlayer: "Ойыншы",

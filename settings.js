@@ -3,7 +3,7 @@
 // localStorage: justChessSettings; serverda: davlat (users.country) va maxfiylik (users.privacy).
 (function () {
   const DEFAULTS = {
-    country: 'uz', language: 'en', soundEnabled: true, volume: 0.8, soundPack: 'wood',
+    country: 'un', language: 'en', soundEnabled: true, volume: 0.8, soundPack: 'wood',
     siteTheme: 'turquoise', boardStyle: 'auto', showCoords: true, pieceSet: 'karvon',
     showHints: true, showLastMove: true, autoQueen: false, confirmResign: true,
     quickClock: [300, 0], quickRated: true, vibration: true
@@ -89,6 +89,8 @@
     const d = st.draft;
     const countries = (typeof allCountries !== 'undefined' ? allCountries : []).map(c => [c.code, typeof window.countryName === 'function' ? window.countryName(c.name, c.code) : c.name]);
     countries.sort((a, b) => a[1].localeCompare(b[1]));
+    // Davlat tanlanmaguncha — xalqaro (BMT) bayrog'i; ro'yxatda birinchi
+    countries.unshift(['un', '🌐 ' + tx('countryIntl', 'Xalqaro')]);
     return `
       <div class="set-card">
         <h3>${esc(tx('setLanguageTitle', 'Interfeys tili'))}</h3>

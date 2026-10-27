@@ -108,6 +108,7 @@ window.TRANSLATIONS_TR = {
   colWins: "Galibiyet",
   colGames: "Oyun",
   colWinPercent: "Galibiyet %",
+  countryIntl: "Uluslararası",
   arColWdl: "G / B / M",
   arColWdlTitle: "Galibiyet / Beraberlik / Mağlubiyet",
   colPlayer: "Oyuncu",

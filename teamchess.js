@@ -168,6 +168,11 @@ function attach(socket) {
     const s = uid() ? seatOf(t, uid()) : null;
     const color = t.chess.turn();
     if (!s || s[0] !== color || !allowedSeats(t, color).includes(s)) return reply(ack, { ok: false, reason: 'not_your_turn' });
+    // Vaqt tugagan, lekin taymer hali ishlamagan bo'lsa — yurish emas, vaqt tugashi (aks holda qo'shimcha soniya bilan "tirilardi")
+    if (t.turnStartedAt !== null && Date.now() - t.turnStartedAt >= t.timeLeft[color]) {
+      reply(ack, { ok: false, reason: 'not_active' });
+      return end(t, other(color), 'timeout');
+    }
     let mv = null;
     try { mv = t.chess.move({ from: String(data.from), to: String(data.to), promotion: data.promotion || 'q' }); } catch (e) { mv = null; }
     if (!mv) return reply(ack, { ok: false, reason: 'invalid_move' });
@@ -253,7 +258,7 @@ function init(d) {
       else if (t.status === 'active' && t.moveCount.w === 0 && now - t.startedAt > FIRST_MOVE_MS) end(t, null, 'aborted');
     }
   }, Math.min(15000, FIRST_MOVE_MS / 3));
-  return { attach, socketGone, tables, inTeamGame };
+  return { attach, socketGone, tables, inTeamGame, leaveWaiting };
 }
 
 module.exports = { init, SEATS };

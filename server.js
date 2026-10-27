@@ -304,7 +304,11 @@ function otherColor(color) { return color === 'w' ? 'b' : 'w'; }
 
 // opts.variant: 'standard' | 'chess960' | 'shatranj' (har biri alohida reyting), opts.startFen — 960 boshlang'ich pozitsiyasi
 function createGameRoom(white, black, clock, rated, opts) {
-  for (const p of [white, black]) if (p && p.userId && typeof teaStand === 'function') teaStand(p.userId);
+  for (const p of [white, black]) if (p && p.userId) {
+    if (typeof teaStand === 'function') teaStand(p.userId);
+    // 2 ga 2 kutayotgan stolidan ham turadi — aks holda stol to'lganda ikki o'yinda bo'lib qolardi
+    if (teamChess && teamChess.leaveWaiting) teamChess.leaveWaiting(p.userId);
+  }
   if (isGuest(white && white.userId) || isGuest(black && black.userId)) rated = false;
   const variant = normVariant(opts && opts.variant);
   // CHESS960_TEST_FEN — faqat lokal sinov uchun (doim bir xil pozitsiya)
@@ -591,6 +595,17 @@ async function endGame(roomId, room, winnerColor, reason) {
 // --- O'yinga chaqirish (do'st yoki istalgan o'yinchi) ---
 const CHALLENGE_TTL_MS = 60 * 1000;
 const challenges = new Map(); // id -> { id, fromId, fromName, toId, toName, clock, rated, timer }
+const lastChallengeAt = new Map(); // userId -> oxirgi chaqiruv vaqti
+// Ikki o'yinchi orasidagi barcha kutayotgan chaqiruvlarni bekor qilish (bloklanganda)
+function dropChallengesBetween(a, b) {
+  for (const c of [...challenges.values()]) {
+    if ((c.fromId === a && c.toId === b) || (c.fromId === b && c.toId === a)) {
+      dropChallenge(c.id);
+      io.to(`user_${c.toId}`).emit('challenge-cancelled', { id: c.id });
+      io.to(`user_${c.fromId}`).emit('challenge-declined', { id: c.id, by: c.toName });
+    }
+  }
+}
 
 function userSocket(userId) {
   const set = io.sockets.adapter.rooms.get(`user_${userId}`);
@@ -625,6 +640,10 @@ async function sendChallenge(socket, data, opts) {
   if (!userSocket(target.id)) return socket.emit('challenge-error', { reason: 'offline' });
   if (inActiveGame(fromId)) return socket.emit('challenge-error', { reason: 'you_busy' });
   if (inActiveGame(target.id)) return socket.emit('challenge-error', { reason: 'busy' });
+  // Chaqiruv yuborish/bekor qilish oqimi (har biri raqibga push) — 2 soniyada bittadan ko'p emas
+  const nowMs = Date.now();
+  if (!TEST_MODE && nowMs - (lastChallengeAt.get(fromId) || 0) < 2000) return socket.emit('challenge-error', { reason: 'too_fast' });
+  lastChallengeAt.set(fromId, nowMs);
   // Bir o'yinchiga bitta faol chaqiruv
   for (const c of challenges.values()) if (c.fromId === fromId) { dropChallenge(c.id); io.to(`user_${c.toId}`).emit('challenge-cancelled', { id: c.id }); }
   const clock = normalizeChallengeClock(data.initial, data.increment);
@@ -649,7 +668,7 @@ async function sendChallenge(socket, data, opts) {
   c.expiresAt = Date.now() + CHALLENGE_TTL_MS;
   io.to(`user_${target.id}`).emit('challenge-received', c.payload);
   socket.emit('challenge-sent', { id, to: target.username, clock, rated: c.rated, variant, series: c.series, seconds: CHALLENGE_TTL_MS / 1000 });
-  notify(target.id, 'challenge', { from: c.fromName, clock: clock.initial / 60 + '+' + clock.increment, variant, rated: c.rated });
+  notify(target.id, 'challenge', { from: c.fromName, clock: clock.initial / 60 + '+' + clock.increment, variant, rated: c.rated }, 'ch:' + fromId);
 }
 
 async function acceptChallenge(socket, id) {
@@ -664,6 +683,9 @@ async function acceptChallenge(socket, id) {
     if (i !== -1) matchmakingQueue.splice(i, 1);
   }
   const [fromUser, toUser] = await Promise.all([db.getUserById(c.fromId), db.getUserById(c.toId)]);
+  // Kutish paytida (bazadan o'qish) ulardan biri boshqa o'yinga kirib ketgan bo'lishi mumkin
+  if (!fromUser || !toUser || !fromSocket.connected) return socket.emit('challenge-error', { reason: 'gone' });
+  if (inActiveGame(c.fromId) || inActiveGame(c.toId)) return socket.emit('challenge-error', { reason: 'busy' });
   let duelState = null;
   if (c.series > 1 && fromUser && toUser) {
     const id = await db.createDuel({ a: fromUser.id, b: toUser.id, bestOf: c.series, clock: c.clock.initial / 60 + '+' + c.clock.increment, variant: c.variant, rated: c.rated });
@@ -754,7 +776,10 @@ async function teaJoin(socket, id) {
   }
   teaSeats.delete(seat.id);
   const [owner, me] = await Promise.all([db.getUserById(seat.userId), db.getUserById(userId)]);
-  if (!owner || !me) return socket.emit('tea-error', { reason: 'gone' });
+  if (!owner || !me || !ownerSocket.connected) return socket.emit('tea-error', { reason: 'gone' });
+  // Bir vaqtda ikki stolga o'tirib (yoki o'z stoliga kimdir o'tirib) ikki o'yinga tushib qolmasin
+  if (inActiveGame(seat.userId)) return socket.emit('tea-error', { reason: 'gone' });
+  if (inActiveGame(userId)) return socket.emit('tea-error', { reason: 'you_busy' });
   startDirectGame({ socket: ownerSocket, user: owner }, { socket, user: me }, seat.clock, seat.rated, seat.variant, { challenge: true, tea: true });
 }
 // Choyxonadagi band stollar: davom etayotgan o'yinlar (mini-doska uchun FEN va oxirgi yurish)
@@ -1537,6 +1562,7 @@ function handlePlayerLeave(socket, roomId, room) {
 // --- Bloklar (o'zaro): "a|b" — a b ni bloklagan. Har startda bazadan yuklanadi ---
 const blocks = new Set();
 const lastChatPost = new Map(); // userId -> oxirgi xabar vaqti (chat spam cheklovi)
+const lastFriendNotify = new Map(); // "yuboruvchi|oluvchi" -> oxirgi do'stlik so'rovi bildirishnomasi
 function blockedPair(a, b) { return blocks.has(a + '|' + b) || blocks.has(b + '|' + a); }
 
 // --- Hisobni bloklash (ban): userId -> { until, reason }. Har so'rovda bazaga murojaat qilmaslik uchun xotirada ---
@@ -1618,7 +1644,12 @@ function resolveChatRoom(roomId, userId) {
     if (!partnerId || partnerId === userId) return null;
     return 'dm_' + [userId, partnerId].sort().join('_');
   }
-  if (roomId.startsWith('dm_')) return roomId.slice(3).split('_').includes(userId) ? roomId : null;
+  if (roomId.startsWith('dm_')) {
+    // Faqat aynan ikki ishtirokchili, tartiblangan nom ("dm_<men>_x_y" kabi soxta xonalar rad etiladi)
+    const ids = roomId.slice(3).split('_');
+    if (ids.length !== 2 || !ids.includes(userId) || ids[0] === ids[1]) return null;
+    return 'dm_' + ids.sort().join('_');
+  }
   // Faqat davlat klubi chati; boshqa ixtiyoriy xona nomlari (avval istalgan "yashirin" xona ochib bo'lardi) rad etiladi
   if (roomId.startsWith('club_') && isValidClubName(roomId.slice(5))) return roomId;
   return null;
@@ -2022,6 +2053,7 @@ async function start() {
       if (!other || other.id === req.user.userId) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
       await db.blockUser(req.user.userId, other.id);
       blocks.add(req.user.userId + '|' + other.id);
+      dropChallengesBetween(req.user.userId, other.id);
       res.json({ success: true, message: "O'yinchi bloklandi" });
     } catch (err) { console.error('Block xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -2322,7 +2354,12 @@ async function start() {
         notify(receiver.id, 'friend_accepted', { from: req.user.username });
       } else if (result.success) {
         io.to(`user_${receiver.id}`).emit('friend-request-received', { senderId: req.user.userId, senderName: req.user.username });
-        notify(receiver.id, 'friend_request', { from: req.user.username }, 'fr:' + req.user.userId);
+        // So'rov → bekor → so'rov oqimi push bilan bezovta qilmasin: juftlikka 10 daqiqada bitta bildirishnoma
+        const frKey = req.user.userId + '|' + receiver.id;
+        if (TEST_MODE || Date.now() - (lastFriendNotify.get(frKey) || 0) > 10 * 60 * 1000) {
+          lastFriendNotify.set(frKey, Date.now());
+          notify(receiver.id, 'friend_request', { from: req.user.username }, 'fr:' + req.user.userId);
+        }
       }
       res.json(result);
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }

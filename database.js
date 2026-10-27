@@ -1229,7 +1229,8 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
 async function blockUser(userId, blockedId) {
   const existing = await dbGet('SELECT id FROM user_blocks WHERE user_id = ? AND blocked_id = ?', [userId, blockedId]);
   if (!existing) await dbRun('INSERT INTO user_blocks (id, user_id, blocked_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, blocked_id) DO NOTHING', [uuidv4(), userId, blockedId, new Date().toISOString()]);
-  // Bloklanganda do'stlik va kutilayotgan so'rovlar bekor bo'ladi
+  // Bloklanganda do'stlik, kuzatish va kutilayotgan so'rovlar bekor bo'ladi
+  await dbRun('DELETE FROM follows WHERE (follower_id = ? AND followee_id = ?) OR (follower_id = ? AND followee_id = ?)', [userId, blockedId, blockedId, userId]);
   await dbRun('DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)', [userId, blockedId, blockedId, userId]);
   await dbRun("UPDATE friend_requests SET status = 'cancelled' WHERE status = 'pending' AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))", [userId, blockedId, blockedId, userId]);
 }

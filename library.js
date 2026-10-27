@@ -3,7 +3,7 @@
 // (jamoat mulki, Project Gutenberg'da o'qiladi). Server ishtirok etmaydi.
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr'];
+  const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr'];
   const uiLang = () => (window.uiLang ? window.uiLang() : String((window.i18next && window.i18next.language) || 'en').slice(0, 2));
   const L = (arr) => {
     const l = uiLang();

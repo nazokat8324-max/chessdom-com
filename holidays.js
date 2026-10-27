@@ -8,21 +8,21 @@
   const TZ = 5 * 3600000; // Toshkent UTC+5
   const DAY = 864e5;
   const NEED = 3;
-  const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr'];
+  const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr'];
   // start(yil) → [oy, kun] (bayram shu yil nomi bilan), days — necha kun
   const HOLIDAYS = [
     { key: 'newyear', icon: '🎆', days: 3, start: (y) => [12, 31, y - 1],
-      names: ['Yangi yil', 'New Year', 'Новый год', 'Año Nuevo', 'Neujahr', 'Nouvel An'] },
+      names: ['Yangi yil', 'New Year', 'Новый год', 'Año Nuevo', 'Neujahr', 'Nouvel An', 'Yılbaşı'] },
     { key: 'ramazon', icon: '🌙', days: 3, start: (y) => ({ 2026: [3, 20], 2027: [3, 10], 2028: [2, 27], 2029: [2, 14], 2030: [2, 4] })[y] || null,
-      names: ['Ramazon hayiti', 'Eid al-Fitr', 'Ураза-байрам', 'Eid al-Fitr', 'Zuckerfest', 'Aïd el-Fitr'] },
+      names: ['Ramazon hayiti', 'Eid al-Fitr', 'Ураза-байрам', 'Eid al-Fitr', 'Zuckerfest', 'Aïd el-Fitr', 'Ramazan Bayramı'] },
     { key: 'navruz', icon: '🌷', days: 4, start: () => [3, 20],
-      names: ["Navro'z", 'Navruz', 'Навруз', 'Nowruz', 'Nouruz', 'Norouz'] },
+      names: ["Navro'z", 'Navruz', 'Навруз', 'Nowruz', 'Nouruz', 'Norouz', 'Nevruz'] },
     { key: 'qurbon', icon: '🕌', days: 3, start: (y) => ({ 2026: [5, 27], 2027: [5, 17], 2028: [5, 5], 2029: [4, 24], 2030: [4, 13] })[y] || null,
-      names: ['Qurbon hayiti', 'Eid al-Adha', 'Курбан-байрам', 'Eid al-Adha', 'Opferfest', 'Aïd el-Kébir'] },
+      names: ['Qurbon hayiti', 'Eid al-Adha', 'Курбан-байрам', 'Eid al-Adha', 'Opferfest', 'Aïd el-Kébir', 'Kurban Bayramı'] },
     { key: 'chessday', icon: '♟', days: 2, start: () => [7, 20],
-      names: ['Xalqaro shaxmat kuni', 'International Chess Day', 'Международный день шахмат', 'Día Internacional del Ajedrez', 'Internationaler Schachtag', 'Journée internationale des échecs'] },
+      names: ['Xalqaro shaxmat kuni', 'International Chess Day', 'Международный день шахмат', 'Día Internacional del Ajedrez', 'Internationaler Schachtag', 'Journée internationale des échecs', 'Dünya Satranç Günü'] },
     { key: 'independence', icon: '🎉', days: 3, start: () => [8, 31],
-      names: ['Mustaqillik kuni', 'Independence Day', 'День независимости', 'Día de la Independencia', 'Unabhängigkeitstag', "Fête de l'indépendance"] }
+      names: ['Mustaqillik kuni', 'Independence Day', 'День независимости', 'Día de la Independencia', 'Unabhängigkeitstag', "Fête de l'indépendance", 'Bağımsızlık Günü'] }
   ];
 
   // Bayram oynasi (UTC ms): Toshkent kunining 00:00 dan days kun
@@ -56,7 +56,7 @@
     if (!h) return key;
     if (lang === 'uzc') { const U = (typeof UzCyrl !== 'undefined' ? UzCyrl : (typeof require === 'function' ? require('./uzcyrl') : null)); return U ? U.toCyrl(h.names[0]) : h.names[0]; }
     const i = LANGS.indexOf(lang);
-    return h.names[i < 0 ? 1 : i];
+    return h.names[i < 0 ? 1 : i] || h.names[1];
   }
   const icon = (key) => (HOLIDAYS.find((x) => x.key === key) || {}).icon || '🎊';
   return { HOLIDAYS, NEED, active, next, name, icon, windowOf };

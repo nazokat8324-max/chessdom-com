@@ -11119,6 +11119,8 @@ const translationsExtra = {
 Object.keys(translationsExtra).forEach(lang => Object.assign(translations[lang], translationsExtra[lang]));
 // Ўзбекча (кирилл): alohida saqlanmaydi — o'zbekcha (lotin) kalitlardan avtomatik (uzcyrl.js)
 if (window.UzCyrl) translations.uzc = window.UzCyrl.deep(translations.uz);
+// Türkçe — lang-tr.js (alohida fayl; yo'q kalitlar i18next fallbackLng bilan inglizchadan)
+if (window.TRANSLATIONS_TR) translations.tr = window.TRANSLATIONS_TR;
 
 i18next.init({
   lng: localStorage.getItem("justChessLang") || "en",
@@ -11131,7 +11133,8 @@ i18next.init({
     ru: { translation: translations.ru },
     es: { translation: translations.es },
     de: { translation: translations.de },
-    fr: { translation: translations.fr }
+    fr: { translation: translations.fr },
+    tr: { translation: translations.tr || {} }
   }
 }, function(err, t) {
   if (!err) updateUI();

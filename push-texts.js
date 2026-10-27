@@ -36,7 +36,34 @@ const CATEGORY = {
   invite_waiting: 'challenge',
   friend_request: 'social', friend_accepted: 'social', invite_joined: 'social', rival_online: 'social', follow_playing: 'social'
 };
-const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr'];
+// Türkçe — alohida blok (L() 6 tilli bo'lib qoladi)
+const TR_T = {
+  challenge: '{{from}} sana meydan okudu ({{clock}})',
+  message: '{{from}}: {{preview}}',
+  messages: '{{from}} kişisinden {{count}} yeni mesaj',
+  friend_request: '{{from}} sana arkadaşlık isteği gönderdi',
+  friend_accepted: '{{from}} artık arkadaşın',
+  rival_online: 'Rakibin {{name}} çevrim içi — bir maça var mısın? ⚔️',
+  follow_playing: '{{name}} bir oyun başlattı — izle',
+  league_ready: 'Lig oyunu: {{opponent}} seni bekliyor',
+  tournament_soon: '«{{name}}» turnuvası 1 dakika sonra başlıyor',
+  prediction_won: 'Tahminin doğru çıktı! +{{points}} 🔮',
+  achievement: 'Yeni başarı! 🏅',
+  quests_done: '🎯 Haftalık görevler tamamlandı! Rozetler: {{total}}',
+  game_of_day: '🌟 {{opponent}} ile oyunun Günün Oyunu seçildi!',
+  holiday_badge: '{{icon}} Bayram rozeti: {{name}} {{year}}!',
+  duel_end: '⚔️ {{opponent}} ile maçın bitti: {{me}} – {{opp}}',
+  caravan_city: '🐪 Kervanın {{city}} şehrine ulaştı!',
+  rank_up: 'Yeni rütbe! Puanın {{rating}} ⭐',
+  invite_joined: '{{from}} davetinle ChessCaravan\'a katıldı 🎉',
+  invite_waiting: '{{from}} seninle oynamak istiyor — siteye gir ve ona meydan oku ⚔️',
+  server_error: '🐞 Sitede yeni hata: {{message}}',
+  test: 'Anlık bildirimler çalışıyor! ♞',
+  generic: 'Yeni bir bildirimin var'
+};
+Object.keys(TR_T).forEach((k) => { T[k].tr = TR_T[k]; });
+STICKER.tr = '🎨 Çıkartma';
+const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr'];
 
 function fill(s, vars) { return String(s).replace(/\{\{(\w+)\}\}/g, (m, k) => (vars[k] == null ? '' : String(vars[k]))); }
 
@@ -114,6 +141,25 @@ const BOT = {
   cmdStop: L("Telegram'ni uzish", 'Disconnect Telegram', 'Отключить Telegram', 'Desconectar Telegram', 'Telegram trennen', 'Déconnecter Telegram'),
   cmdHelp: L('Yordam', 'Help', 'Помощь', 'Ayuda', 'Hilfe', 'Aide')
 };
+const TR_BOT = {
+  open: '♞ ChessCaravan\'ı aç',
+  openShort: 'Aç ↗',
+  share: '📤 Arkadaşlara gönder',
+  welcome: "Merhaba! Bu, ChessCaravan botu ♞\n\nOyun davetlerini, mesajları ve diğer önemli olayları buraya gönderir.\n\nBağlamak için sitede: Ayarlar → Ses ve bildirimler → Telegram → «Bağla».",
+  linked: "✅ Tamam! Telegram artık {{name}} hesabına bağlı.\n\nSite kapalıyken meydan okumalar ve mesajlar buraya gelecek.\n/invite — arkadaşların için davet bağlantın\n/stop — bağlantıyı kes",
+  already: 'Bu sohbet {{name}} hesabına bağlı ✅\n/invite — davet bağlantısı · /stop — bağlantıyı kes',
+  badCode: 'Bu bağlantının süresi dolmuş veya geçersiz. Sitede «Bağla» düğmesine tekrar bas.',
+  stopped: 'Telegram, ChessCaravan hesabından ayrıldı. İstediğin zaman Ayarlar\'dan yeniden bağlayabilirsin.',
+  notLinked: 'Önce hesabını bağla: sitede Ayarlar → Ses ve bildirimler → Telegram.',
+  invite: "Davet bağlantın 👇\nArkadaşlarına gönder: kayıt olur olmaz seninle oynayabilirler.\n\n{{url}}",
+  shareText: '{{name}} seni ChessCaravan\'da bir satranç oyununa davet ediyor ♞',
+  help: "Komutlar:\n/invite — arkadaşlar için davet bağlantısı\n/stop — Telegram'ı hesaptan ayır\n/help — yardım",
+  test: 'Telegram bildirimleri çalışıyor! ♞',
+  cmdInvite: 'Arkadaşlarını davet et',
+  cmdStop: 'Telegram bağlantısını kes',
+  cmdHelp: 'Yardım'
+};
+Object.keys(TR_BOT).forEach((k) => { BOT[k].tr = TR_BOT[k]; });
 // Telegram language_code (masalan "ru", "uz", "en-US") → sayt tili
 function langOf(code) { const c = String(code || '').slice(0, 2).toLowerCase(); return LANGS.includes(c) ? c : 'en'; }
 function botText(key, lang, vars) {

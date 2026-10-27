@@ -235,6 +235,7 @@ function getStreakText(n) {
   if (lang === 'es') return count === 1 ? '1 día' : count + ' días';
   if (lang === 'de') return count === 1 ? '1 Tag' : count + ' Tage';
   if (lang === 'fr') return count === 1 ? '1 jour' : count + ' jours';
+  if (lang === 'tr') return count + ' gün';
   return count === 1 ? '1 day' : count + ' days';
 }
 
@@ -1358,7 +1359,8 @@ window.LANGUAGES = [
   { code: 'RU', name: 'Русский', english: 'Russian', flag: '🇷🇺' },
   { code: 'ES', name: 'Español', english: 'Spanish', flag: '🇪🇸' },
   { code: 'DE', name: 'Deutsch', english: 'German', flag: '🇩🇪' },
-  { code: 'FR', name: 'Français', english: 'French', flag: '🇫🇷' }
+  { code: 'FR', name: 'Français', english: 'French', flag: '🇫🇷' },
+  { code: 'TR', name: 'Türkçe', english: 'Turkish', flag: '🇹🇷' }
 ];
 
 // --- Leagues Data ---

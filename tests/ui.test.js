@@ -620,6 +620,29 @@ test("Ўзбекча (кирилл): menyu, kutubxona va sozlamalar kirillda; ta
   assert.deepEqual(p.errors, []);
 });
 
+test("Türkçe: menyu, kutubxona, Karvon yo'li va sozlamalar turkchada; huquqiy sahifa ham", opts, async () => {
+  const u = await srv.register('Turk');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => localStorage.setItem('justChessLang', 'tr'));
+  await p.goto(srv.base + '/kutubxona?m=fork', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#libraryRoot .lib-article h1', { timeout: 15000 });
+  await sleep(800);
+  const st = await p.evaluate(() => ({ home: document.querySelector('#navHome span:not(.icon)').textContent.trim(), lib: document.querySelector('#navLibrary span:not(.icon)').textContent.trim(),
+    h1: document.querySelector('#libraryRoot .lib-article h1').textContent }));
+  assert.equal(st.home, 'Ana sayfa');
+  assert.equal(st.lib, 'Kütüphane');
+  assert.equal(st.h1, 'Taktik: çatal');
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/tr-library.png' });
+  await p.goto(srv.base + '/karvon', { waitUntil: 'domcontentloaded' });
+  await p.waitForFunction(() => /Kervan Yolu/.test(document.getElementById('caravanRoot').textContent) && /İstanbul/.test(document.getElementById('caravanRoot').textContent), { timeout: 15000 });
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('.set-lang[data-lang="tr"]', { timeout: 15000 });
+  assert.equal(await p.evaluate(() => document.querySelector('.set-lang[data-lang="tr"]').classList.contains('active')), true);
+  await p.goto(srv.base + '/maxfiylik?lang=tr', { waitUntil: 'domcontentloaded' });
+  await p.waitForFunction(() => /Gizlilik Politikası/.test(document.body.textContent), { timeout: 10000 });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni tekshirish' tugmasi", opts, async () => {
   const adm = await srv.register('FpAdm'), sus = await srv.register('FpSus');
   const run = (q, prm) => new Promise((resolve, reject) => {

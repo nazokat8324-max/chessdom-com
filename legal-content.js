@@ -1,4 +1,4 @@
-// Maxfiylik siyosati va Foydalanish shartlari matnlari (legal.html ko'rsatadi). 6 til: uz, en, ru, es, de, fr.
+// Maxfiylik siyosati va Foydalanish shartlari matnlari (legal.html ko'rsatadi). 7 til: uz, en, ru, es, de, fr, tr (uzc — legal.html da uz dan avtomatik).
 // Har hujjat: title, updated, intro, sections: [[sarlavha, [paragraf yoki ["ro'yxat", ...]] ...]]. {{contact}} — aloqa manzili.
 window.LEGAL_TEXT = {
   uz: {
@@ -468,6 +468,85 @@ window.LEGAL_TEXT = {
         ]]
       ]
     }
+  }
+};
+// Türkçe (inglizcha matndan tarjima)
+window.LEGAL_TEXT.tr = {
+  ui: { credits: 'Katkıda bulunanlar ve lisanslar', privacy: 'Gizlilik Politikası', terms: 'Kullanım Koşulları', back: 'Siteye dön', updated: 'Son güncelleme', contactNone: 'sitedeki “Şikâyet et” düğmesiyle yöneticilere yaz' },
+  credits: {"intro":"ChessCaravan açık kaynak kütüphaneler ve özgür lisanslı kaynaklar üzerine kuruludur. Yazarlarına teşekkürler! Aşağıda sitenin kullandığı tüm üçüncü taraf kaynaklar, yazarları ve lisanslarıyla birlikte yer alıyor.","code":"Yazılım kütüphaneleri (tarayıcıda)","assets":"Resimler, yazı tipleri ve veriler","own":"ChessCaravan yapımı","server":"Sunucu: Node.js, Express, Socket.IO, PostgreSQL / SQLite ve diğer açık kaynak paketler (MIT, BSD, ISC, MPL-2.0 lisansları) — bunlar kullanıcılara gönderilmez.","gpl":"GPL lisanslı kısım (Stockfish analiz motoru) değiştirilmeden kullanılır; kaynak kodu yukarıdaki bağlantıda mevcuttur.","ownText":"10 taş takımının tamamı (Karvon, Klasik, Atlas, Rişton, Ahşap, Royal, Neon, Geometrik, Bolajon, Piksel), hamle sesleri (kodla sentezlenmiş), logo, simgeler, atlas deseni ve bağlantı önizleme resmi."},
+  privacy: {
+    intro: 'ChessCaravan bir çevrim içi satranç sitesidir. Bu sayfa hangi verileri, neden sakladığımızı ve onları nasıl koruduğumuzu açıklar. Siteyi kullanarak bu politikayı kabul etmiş olursun.',
+    sections: [
+      ['Ne saklıyoruz', [
+        ['Hesap: kullanıcı adı, e-posta (isteğe bağlı), şifre — yalnızca şifrelenmiş bcrypt özeti olarak, ülke, profil fotoğrafı ve profiline eklediğin her şey.',
+         'Oyunlar: hamleler, sonuçlar, puan geçmişi, istatistikler, başarılar, tahminler ve centilmenlik oyları.',
+         'İletişim: özel mesajlar, kulüp ve oyun sohbetleri, izleyici sohbeti ve şikâyetler.',
+         'Teknik: IP adresi (yalnızca istekleri sınırlamak için, sunucu belleğinde geçici olarak), bağlantı gecikmesi, oyun sırasında sayfadan ayrılma ve hamle süreleri (fair-play kontrolü için).',
+         'Tarayıcında (localStorage): giriş anahtarın, ayarların ve dilin. Çerez, reklam veya takip (analitik) betikleri kullanmıyoruz.']
+      ]],
+      ['Neden kullanıyoruz', [
+        'Oyunları yürütmek, puanları ve istatistikleri hesaplamak, bildirim ve şifre sıfırlama e-postaları göndermek, hile ve kötüye kullanımla mücadele etmek ve siteyi geliştirmek için. Verilerini asla satmayız ve reklam için paylaşmayız.'
+      ]],
+      ['Başkaları neyi görebilir', [
+        'Herkese açık: kullanıcı adı, ülke, profil fotoğrafı, puanlar, istatistikler, oyunlar ve hamleleri, kulüp, başarılar ve karşılıklı skorlar. E-postan ve şifren asla gösterilmez. Özel mesajları yalnızca sohbetteki iki kişi görür. Gizlilik ayarlarında sana kimin mesaj atabileceğini veya meydan okuyabileceğini seçersin.'
+      ]],
+      ['Üçüncü taraf hizmetler', [
+        ['Render — web barındırma.', 'Neon — PostgreSQL veritabanı.', 'Brevo — şifre sıfırlama e-postalarının gönderimi.', 'Telegram — yalnızca botu bağlarsan: sohbet kimliğin ve bildirim metinleri gönderilir.', 'Anlık bildirimler — yalnızca açarsan, tarayıcı sağlayıcın (Google, Apple, Mozilla) üzerinden.', 'Sesle hamle — yalnızca açarsan: konuşman tarayıcının konuşma tanıma hizmeti (örneğin Chrome’da Google) tarafından metne çevrilir; kayıtları asla almayız ve saklamayız.',
+         'Kütüphaneler ve yazı tipleri için CDN’ler: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; bayraklar — flagcdn.com; çıkartmalar — Google Noto Emoji.',
+         'Teknik nedenlerle bu hizmetler IP adresini görebilir. Oyun analizi (Stockfish) tamamen tarayıcında çalışır.']
+      ]],
+      ['Verileri ne kadar saklıyoruz', [
+        'Hesabın var olduğu sürece verileri saklarız. Hesabını silersen profilin, oyunların, mesajların, arkadaşların, bildirimlerin ve diğer kişisel verilerin hemen silinir. Bu oyunlar rakiplerinin geçmişinde anonim bir adla kalır ve kulübünün Bayraklar Yarışı puanları adın olmadan korunur. Barındırma sağlayıcılarının yedekleri verileri kısa bir süre tutabilir.'
+      ]],
+      ['Hakların', [
+        ['Verilerini Profil ve Ayarlar’da görüntüle ve değiştir.', 'Oyunlarını PGN dosyası olarak indir.',
+         'Hesabını tamamen sil: Ayarlar → Hesap → “Hesabı sil”.', 'Diğer oyuncuları engelle ve şikâyet et.']
+      ]],
+      ['Güvenlik', [
+        'Site HTTPS kullanır, şifreler yalnızca bcrypt özeti olarak saklanır ve giriş anahtarı 7 gün geçerlidir. Yine de internette hiçbir sistem %100 güvenli değildir — lütfen şifreni başka sitelerde kullanma.'
+      ]],
+      ['Çocuklar', [
+        '13 yaşından küçük çocuklar siteyi yalnızca ebeveyn veya vasilerinin izniyle kullanabilir.'
+      ]],
+      ['Değişiklikler ve iletişim', [
+        'Bu politika değişirse bu sayfadaki tarih güncellenir. Sorular ve veri silme talepleri için: {{contact}}.'
+      ]]
+    ]
+  },
+  terms: {
+    intro: 'Siteyi kullanarak aşağıdaki koşulları kabul etmiş olursun. Kabul etmiyorsan lütfen siteyi kullanma.',
+    sections: [
+      ['Hesap', [
+        ['Kayıt olurken doğru bilgi ver ve şifreni asla paylaşma — hesabında olanlardan sen sorumlusun.',
+         'Puanı şişirmek için birden fazla hesap açmak yasaktır.',
+         'Hakaret içeren, başkasını taklit eden veya reklam yapan kullanıcı adları yasaktır.']
+      ]],
+      ['Fair play', [
+        ['Oyun sırasında satranç motoru, başkalarının tavsiyesi veya herhangi bir dış yardım kullanmak yasaktır.',
+         'Bilerek kaybetmek, sonuç ayarlamak ve puanla oynamak yasaktır.',
+         'Site oyunları otomatik olarak kontrol eder. Hile yaptığı tespit edilen oyuncular işaretlenir veya yasaklanır, rakipleri ise kaybettikleri puanı geri alır.']
+      ]],
+      ['Davranış', [
+        ['Hakaret, ayrımcılık, tehdit, spam, reklam, yasa dışı ve müstehcen içerik yasaktır.',
+         'Yasaklı kelimeler sohbette otomatik olarak gizlenir; kuralı çiğneyenler geçici olarak susturulabilir.',
+         'Diğer oyuncuları engelleyebilir ve şikâyet edebilirsin — şikâyetleri yöneticiler inceler.']
+      ]],
+      ['Yaptırımlar', [
+        'Kuralları çiğnemek uyarıya, sohbet kısıtlamasına veya geçici ya da kalıcı yasağa yol açabilir. Ciddi ihlaller uyarısız yasakla sonuçlanabilir.'
+      ]],
+      ['İçerik', [
+        'Oyunların (hamleler ve sonuçlar) herkese açıktır; başkaları onları görebilir, analiz edebilir ve PGN olarak indirebilir. Mesajlarından ve notlarından sen sorumlusun. Hizmeti sunabilmemiz için bu içeriği saklama ve gösterme hakkını bize vermiş olursun.'
+      ]],
+      ['Hizmet', [
+        'ChessCaravan ücretsizdir ve “olduğu gibi” sunulur. Kesintisiz çalışmayı, hata olmamasını veya verilerin asla kaybolmayacağını garanti etmeyiz. Özellikleri değiştirebilir, askıya alabilir veya kapatabiliriz. Yasanın izin verdiği ölçüde siteyle ilgili dolaylı zararlardan sorumlu değiliz.'
+      ]],
+      ['Hesabın kapatılması', [
+        'Hesabını istediğin zaman Ayarlar → Hesap → “Hesabı sil” yoluyla silebilirsin. Kuralları çiğneyen hesapları kapatabiliriz.'
+      ]],
+      ['Değişiklikler ve iletişim', [
+        'Bu koşullar değişirse bu sayfadaki tarih güncellenir; değişiklikten sonra siteyi kullanmak yeni koşulları kabul ettiğin anlamına gelir. Sorular: {{contact}}.'
+      ]]
+    ]
   }
 };
 window.LEGAL_UPDATED = '2026-10-24';

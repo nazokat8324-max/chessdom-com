@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const { startServer, startGame, finish, closeAll, uniq, once } = require('./helpers');
 
 let srv;
-before(async () => { srv = await startServer(); });
+before(async () => { srv = await startServer({ ADMIN_USERNAMES: 'BossAdmin, OtherAdm' }); });
 after(async () => { await srv.stop(); });
 
 test("Ro'yxatdan o'tish: tekshiruvlar", async () => {
@@ -74,4 +74,14 @@ test("Akkauntni o'chirish: ma'lumotlar tozalanadi, raqib tarixida anonim nom", a
   // Nom bo'shadi
   const again = await srv.api(null, '/api/auth/register', 'POST', { username: a.name, email: 'again@t.uz', password: 'secret1' });
   assert.equal(again.success, true);
+});
+
+test("ADMIN_USERNAMES dagi nom bilan ro'yxatdan o'tgan foydalanuvchi darhol admin (server qayta ishga tushmasdan)", async () => {
+  const d = await srv.api(null, '/api/auth/register', 'POST', { username: 'BossAdmin', email: 'boss@test.uz', password: 'secret1' });
+  assert.equal(d.success, true);
+  assert.equal(d.user.role, 'admin');
+  assert.equal((await srv.api({ token: d.token }, '/api/admin/stats')).success, true, 'admin paneli ochiladi');
+  const u = await srv.register('Plain');
+  assert.equal(u.user.role, null);
+  assert.equal((await srv.api(u, '/api/admin/stats')).status, 403);
 });

@@ -918,6 +918,7 @@ async function initPush() {
 }
 // Foydalanuvchi saytni hozir ko'ryaptimi (kamida bitta ochiq va ko'rinib turgan sahifa) — unda push shart emas
 // Saytni hozir kimdir ochiq ko'rib turibdimi (fonda qolgan oynalar sanalmaydi)
+const adminUsernames = () => String(process.env.ADMIN_USERNAMES || '').split(',').map(s => s.trim()).filter(Boolean);
 function anyoneActive() {
   for (const id of onlineUsers.keys()) if (isActive(id)) return true;
   return false;
@@ -1778,6 +1779,10 @@ async function start() {
         }
       }
       if (!user) user = await db.createUser({ username, email, passwordHash });
+      // ADMIN_USERNAMES dagi nom bilan ro'yxatdan o'tilsa — darhol admin (avval faqat server qayta ishga tushganda berilardi;
+      // yangi bo'sh bazaga o'tilganda admin o'z akkauntini qayta ochib, keyingi deploygacha admin bo'lmay qolardi)
+      const isAdminName = adminUsernames().includes(user.username);
+      if (isAdminName) await db.setAdmins([user.username]);
       // 🔗 Taklif havolasi orqali kelgan bo'lsa — kim taklif qilgani yoziladi, taklif qiluvchiga xabar va yutuq
       if (req.body.inviteCode) {
         try {
@@ -1790,7 +1795,7 @@ async function start() {
         } catch (e) { console.error('Taklif kodi xatoligi:', e.message); }
       }
       const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-      res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!", user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.statsByMode }, token });
+      res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!", user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.statsByMode, role: isAdminName ? 'admin' : null }, token });
     } catch (err) {
       // Bir vaqtda ikki so'rov: tekshiruvdan o'tib, UNIQUE cheklovga urilgan — server xatosi emas
       if (/unique|duplicate/i.test(err && err.message)) {
@@ -3456,7 +3461,7 @@ async function start() {
     await initPush();
     for (const m of await db.loadMutes()) if (m.until) mutes.set(m.id, m.until);
     setChatFilter(await db.listChatFilter());
-    const admins = String(process.env.ADMIN_USERNAMES || '').split(',').map(s => s.trim()).filter(Boolean);
+    const admins = adminUsernames();
     if (admins.length) await db.setAdmins(admins);
   } catch (err) { console.error('Blok/ban yuklash xatoligi:', err); }
   // Deploydan oldin davom etayotgan o'yinlar (swiss tick ularni "yo'qolgan" deb yopmasligi uchun tickdan oldin)

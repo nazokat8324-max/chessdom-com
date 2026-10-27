@@ -253,7 +253,12 @@ const RECONNECT_GRACE_MS = Number(process.env.RECONNECT_GRACE_MS) || 60 * 1000;
 // Server qayta ishga tushgach (deploy) o'yinchilar qaytishi uchun vaqt
 const RESTORE_GRACE_MS = Number(process.env.RESTORE_GRACE_MS) || 2 * 60 * 1000;
 
-function generateRoomId() { return Math.random().toString(36).substring(2, 8).toUpperCase(); }
+// Takrorlanmas xona ID (mavjud o'yin ustidan yozib yubormaslik uchun)
+function generateRoomId() {
+  let id;
+  do { id = Math.random().toString(36).substring(2, 8).toUpperCase(); } while (id.length < 6 || rooms.has(id));
+  return id;
+}
 
 function normalizeClock(initial, increment) {
   const base = Number(initial);

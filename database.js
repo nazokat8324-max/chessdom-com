@@ -408,6 +408,11 @@ async function initDatabase() {
     )
   `);
   await dbExec(`CREATE INDEX IF NOT EXISTS idx_chat_reads_user_room ON chat_reads(user_id, room_id)`);
+  // Bir vaqtdagi ikki "o'qildi" so'rovi takroriy qator yaratardi (o'qilmaganlar soni noto'g'ri chiqishi mumkin edi).
+  // Takrorlar o'chiriladi (eng so'nggisi qoladi) va noyob indeks qo'yiladi — markChatRead endi ON CONFLICT bilan
+  await dbExec(`DELETE FROM chat_reads WHERE EXISTS (SELECT 1 FROM chat_reads c2 WHERE c2.user_id = chat_reads.user_id AND c2.room_id = chat_reads.room_id
+    AND (c2.last_read_at > chat_reads.last_read_at OR (c2.last_read_at = chat_reads.last_read_at AND c2.id > chat_reads.id)))`);
+  await dbExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_chat_reads_unique ON chat_reads(user_id, room_id)`);
 
   // --- Jamoaviy ligalar (league.js) ---
   // Mavsum: barcha qit'a ligalari bir xil vaqt nazoratida, keyin Chempionlar ligasi va 1 haftalik tanaffus
@@ -759,7 +764,9 @@ async function initDatabase() {
   for (const sql of [
     'CREATE INDEX IF NOT EXISTS idx_user_games_user ON user_games (user_id, played_at)',
     'CREATE INDEX IF NOT EXISTS idx_user_games_played ON user_games (played_at)',
-    'CREATE INDEX IF NOT EXISTS idx_user_games_opp ON user_games (user_id, opponent)'
+    'CREATE INDEX IF NOT EXISTS idx_user_games_opp ON user_games (user_id, opponent)',
+    // Akkaunt o'chirilganda raqiblar tarixidagi nom shu ustun bo'yicha almashtiriladi (avval butun jadval ko'rib chiqilardi)
+    'CREATE INDEX IF NOT EXISTS idx_user_games_opponent ON user_games (opponent)'
   ]) { try { await dbExec(sql); } catch (e) {} }
   await migrateHistoryToTable();
   // 📲 Push-bildirishnomalar: qurilma obunalari (bitta foydalanuvchida bir nechta qurilma) va server sozlamalari (VAPID kalitlari)
@@ -1221,7 +1228,7 @@ async function updateUserStats(userId, result, opponent, mode, moves, timeContro
 // --- Bloklash ---
 async function blockUser(userId, blockedId) {
   const existing = await dbGet('SELECT id FROM user_blocks WHERE user_id = ? AND blocked_id = ?', [userId, blockedId]);
-  if (!existing) await dbRun('INSERT INTO user_blocks (id, user_id, blocked_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, blockedId, new Date().toISOString()]);
+  if (!existing) await dbRun('INSERT INTO user_blocks (id, user_id, blocked_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, blocked_id) DO NOTHING', [uuidv4(), userId, blockedId, new Date().toISOString()]);
   // Bloklanganda do'stlik va kutilayotgan so'rovlar bekor bo'ladi
   await dbRun('DELETE FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)', [userId, blockedId, blockedId, userId]);
   await dbRun("UPDATE friend_requests SET status = 'cancelled' WHERE status = 'pending' AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))", [userId, blockedId, blockedId, userId]);
@@ -1342,9 +1349,8 @@ async function areFriends(userId, otherId) {
 
 async function setAvatar(userId, mime, data) {
   const now = new Date().toISOString();
-  const existing = await dbGet('SELECT user_id FROM avatars WHERE user_id = ?', [userId]);
-  if (existing) await dbRun('UPDATE avatars SET mime = ?, data = ?, updated_at = ? WHERE user_id = ?', [mime, data, now, userId]);
-  else await dbRun('INSERT INTO avatars (user_id, mime, data, updated_at) VALUES (?, ?, ?, ?)', [userId, mime, data, now]);
+  await dbRun('INSERT INTO avatars (user_id, mime, data, updated_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id) DO UPDATE SET mime = excluded.mime, data = excluded.data, updated_at = excluded.updated_at',
+    [userId, mime, data, now]);
   await dbRun('UPDATE users SET avatar_version = ? WHERE id = ?', [now, userId]);
   return now;
 }
@@ -1495,11 +1501,11 @@ async function getPublicProfile(username) {
 async function getAchievements(userId) {
   return dbAll('SELECT key, earned_at as "earnedAt" FROM user_achievements WHERE user_id = ? ORDER BY earned_at ASC', [userId]);
 }
+// Bir vaqtdagi ikki tekshiruv (o'yin yakuni + profil ochilishi) unique xatosiga olib kelmasin: atomar, true — yangi yutuq
+const changedRows = (r) => !!(r && (r.changes || r.rowCount));
 async function addAchievement(userId, key) {
-  const exists = await dbGet('SELECT id FROM user_achievements WHERE user_id = ? AND key = ?', [userId, key]);
-  if (exists) return false;
-  await dbRun('INSERT INTO user_achievements (id, user_id, key, earned_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, key, new Date().toISOString()]);
-  return true;
+  return changedRows(await dbRun('INSERT INTO user_achievements (id, user_id, key, earned_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, key) DO NOTHING',
+    [uuidv4(), userId, key, new Date().toISOString()]));
 }
 async function countFriends(userId) {
   const r = await dbGet('SELECT COUNT(*) as "n" FROM friends WHERE user_id = ?', [userId]);
@@ -1508,8 +1514,8 @@ async function countFriends(userId) {
 
 // --- Kuzatish ---
 async function setFollow(followerId, followeeId, on) {
-  await dbRun('DELETE FROM follows WHERE follower_id = ? AND followee_id = ?', [followerId, followeeId]);
-  if (on) await dbRun('INSERT INTO follows (id, follower_id, followee_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), followerId, followeeId, new Date().toISOString()]);
+  if (!on) return dbRun('DELETE FROM follows WHERE follower_id = ? AND followee_id = ?', [followerId, followeeId]);
+  await dbRun('INSERT INTO follows (id, follower_id, followee_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT (follower_id, followee_id) DO NOTHING', [uuidv4(), followerId, followeeId, new Date().toISOString()]);
 }
 async function followCounts(userId) {
   const a = await dbGet('SELECT COUNT(*) as "n" FROM follows WHERE followee_id = ?', [userId]);
@@ -1695,10 +1701,9 @@ async function getWarSeason(season) {
   return dbGet('SELECT season, ruler_country as "country", ruler_code as "code", territories, points FROM war_seasons WHERE season = ?', [season]);
 }
 async function saveWarSeason(season, ruler) {
-  if (await getWarSeason(season)) return false;
-  await dbRun('INSERT INTO war_seasons (id, season, ruler_country, ruler_code, territories, points, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [uuidv4(), season, ruler ? ruler.country : null, ruler ? ruler.code : null, ruler ? ruler.territories : 0, ruler ? ruler.points : 0, new Date().toISOString()]);
-  return true;
+  // Atomar: soatlik yopish va /api/war bir vaqtda chaqirilsa ham bitta yozuv, hukmdorga bitta bildirishnoma
+  return changedRows(await dbRun('INSERT INTO war_seasons (id, season, ruler_country, ruler_code, territories, points, created_at) VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (season) DO NOTHING',
+    [uuidv4(), season, ruler ? ruler.country : null, ruler ? ruler.code : null, ruler ? ruler.territories : 0, ruler ? ruler.points : 0, new Date().toISOString()]));
 }
 async function listWarSeasons(limit) {
   return dbAll(`SELECT season, ruler_country as "country", ruler_code as "code", territories, points FROM war_seasons WHERE ruler_code IS NOT NULL ORDER BY season DESC LIMIT ${Number(limit) || 6}`);
@@ -1730,10 +1735,8 @@ async function getSportAward(month) {
   return dbGet('SELECT month, user_id as "userId" FROM sportsmanship_awards WHERE month = ?', [month]);
 }
 async function saveSportAward(month, winner) {
-  if (await getSportAward(month)) return false;
-  await dbRun('INSERT INTO sportsmanship_awards (id, month, user_id, up, total, created_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [uuidv4(), month, winner ? winner.userId : null, winner ? winner.up : 0, winner ? winner.total : 0, new Date().toISOString()]);
-  return true;
+  return changedRows(await dbRun('INSERT INTO sportsmanship_awards (id, month, user_id, up, total, created_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (month) DO NOTHING',
+    [uuidv4(), month, winner ? winner.userId : null, winner ? winner.up : 0, winner ? winner.total : 0, new Date().toISOString()]));
 }
 
 // --- 🔮 Bashorat o'yini ---
@@ -1784,10 +1787,8 @@ async function getPredictionAward(month) {
   return dbGet('SELECT month, user_id as "userId" FROM prediction_awards WHERE month = ?', [month]);
 }
 async function savePredictionAward(month, winner) {
-  if (await getPredictionAward(month)) return false;
-  await dbRun('INSERT INTO prediction_awards (id, month, user_id, points, created_at) VALUES (?, ?, ?, ?, ?)',
-    [uuidv4(), month, winner ? winner.userId : null, winner ? winner.points : 0, new Date().toISOString()]);
-  return true;
+  return changedRows(await dbRun('INSERT INTO prediction_awards (id, month, user_id, points, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (month) DO NOTHING',
+    [uuidv4(), month, winner ? winner.userId : null, winner ? winner.points : 0, new Date().toISOString()]));
 }
 async function monthPredictionLeaders(fromIso, toIso) {
   const rows = await dbAll(`SELECT user_id as "userId", SUM(points) as "points" FROM predictions
@@ -1810,7 +1811,7 @@ async function listChatFilter() {
 }
 async function addChatFilterWord(word) {
   const exists = await dbGet('SELECT id FROM chat_filter WHERE word = ?', [word]);
-  if (!exists) await dbRun('INSERT INTO chat_filter (id, word, created_at) VALUES (?, ?, ?)', [uuidv4(), word, new Date().toISOString()]);
+  if (!exists) await dbRun('INSERT INTO chat_filter (id, word, created_at) VALUES (?, ?, ?) ON CONFLICT (word) DO NOTHING', [uuidv4(), word, new Date().toISOString()]);
 }
 async function removeChatFilterWord(word) {
   await dbRun('DELETE FROM chat_filter WHERE word = ?', [word]);
@@ -1864,10 +1865,9 @@ async function getClubStaff(club) {
 
 // role: 'captain' | 'moderator' | 'member' (member — rol olib tashlanadi)
 async function setClubRole(club, userId, role) {
-  await dbRun('DELETE FROM club_roles WHERE club_country = ? AND user_id = ?', [club, userId]);
-  if (role === 'captain' || role === 'moderator') {
-    await dbRun('INSERT INTO club_roles (id, club_country, user_id, role, created_at) VALUES (?, ?, ?, ?, ?)', [uuidv4(), club, userId, role, new Date().toISOString()]);
-  }
+  if (role !== 'captain' && role !== 'moderator') return dbRun('DELETE FROM club_roles WHERE club_country = ? AND user_id = ?', [club, userId]);
+  await dbRun('INSERT INTO club_roles (id, club_country, user_id, role, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (club_country, user_id) DO UPDATE SET role = excluded.role',
+    [uuidv4(), club, userId, role, new Date().toISOString()]);
 }
 
 async function listClubNews(club) {
@@ -2045,18 +2045,20 @@ async function sendFriendRequest(senderId, receiverId) {
   if (existing) return { success: false, message: 'So\'rov allaqachon yuborilgan!' };
   // Juftlik uchun bitta qator (UNIQUE): avval rad etilgan/bekor qilingan so'rov bo'lsa — qayta faollashtiramiz
   const now = new Date().toISOString();
-  const old = await dbGet('SELECT id FROM friend_requests WHERE sender_id = ? AND receiver_id = ?', [senderId, receiverId]);
-  if (old) await dbRun("UPDATE friend_requests SET status = 'pending', created_at = ?, updated_at = ? WHERE id = ?", [now, now, old.id]);
-  else await dbRun('INSERT INTO friend_requests (id, sender_id, receiver_id, status, created_at) VALUES (?, ?, ?, ?, ?)', [uuidv4(), senderId, receiverId, 'pending', now]);
+  await dbRun(`INSERT INTO friend_requests (id, sender_id, receiver_id, status, created_at) VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT (sender_id, receiver_id) DO UPDATE SET status = 'pending', created_at = excluded.created_at, updated_at = excluded.created_at`,
+    [uuidv4(), senderId, receiverId, 'pending', now]);
   return { success: true, message: 'Do\'stlik so\'rovi yuborildi!' };
 }
 
 async function acceptFriendRequest(requestId, receiverId) {
   const req = await dbGet('SELECT * FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = ?', [requestId, receiverId, 'pending']);
   if (!req) return { success: false, message: 'So\'rov topilmadi!' };
-  await dbRun("UPDATE friend_requests SET status = 'accepted', updated_at = ? WHERE id = ?", [new Date().toISOString(), requestId]);
-  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), req.sender_id, req.receiver_id, new Date().toISOString()]);
-  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), req.receiver_id, req.sender_id, new Date().toISOString()]);
+  // Ikki marta bosilsa (yoki ikki qurilmadan) — faqat birinchisi qabul qiladi
+  const upd = await dbRun("UPDATE friend_requests SET status = 'accepted', updated_at = ? WHERE id = ? AND status = 'pending'", [new Date().toISOString(), requestId]);
+  if (!changedRows(upd)) return { success: false, message: 'So\'rov topilmadi!' };
+  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, friend_id) DO NOTHING', [uuidv4(), req.sender_id, req.receiver_id, new Date().toISOString()]);
+  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, friend_id) DO NOTHING', [uuidv4(), req.receiver_id, req.sender_id, new Date().toISOString()]);
   return { success: true, message: 'Do\'stlik qabul qilindi!', senderId: req.sender_id };
 }
 
@@ -2115,9 +2117,8 @@ async function getChatMessages({ userId, roomId, viewerId }) {
 // --- Shaxsiy xabarlar (dm_<id1>_<id2> xonalari) ---
 async function markRoomRead(userId, roomId) {
   const now = new Date().toISOString();
-  const existing = await dbGet('SELECT id FROM chat_reads WHERE user_id = ? AND room_id = ?', [userId, roomId]);
-  if (existing) await dbRun('UPDATE chat_reads SET last_read_at = ? WHERE id = ?', [now, existing.id]);
-  else await dbRun('INSERT INTO chat_reads (id, user_id, room_id, last_read_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, roomId, now]);
+  await dbRun('INSERT INTO chat_reads (id, user_id, room_id, last_read_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, room_id) DO UPDATE SET last_read_at = excluded.last_read_at',
+    [uuidv4(), userId, roomId, now]);
 }
 
 async function clearedAt(userId, roomId) {
@@ -2128,9 +2129,8 @@ async function clearedAt(userId, roomId) {
 
 async function clearChat(userId, roomId) {
   const now = new Date().toISOString();
-  const existing = await dbGet('SELECT id FROM chat_clears WHERE user_id = ? AND room_id = ?', [userId, roomId]);
-  if (existing) await dbRun('UPDATE chat_clears SET cleared_at = ? WHERE id = ?', [now, existing.id]);
-  else await dbRun('INSERT INTO chat_clears (id, user_id, room_id, cleared_at) VALUES (?, ?, ?, ?)', [uuidv4(), userId, roomId, now]);
+  await dbRun('INSERT INTO chat_clears (id, user_id, room_id, cleared_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, room_id) DO UPDATE SET cleared_at = excluded.cleared_at',
+    [uuidv4(), userId, roomId, now]);
 }
 
 async function unreadInRoom(userId, roomId) {
@@ -2251,8 +2251,8 @@ async function makeFriends(a, b) {
   if (a === b || await areFriends(a, b)) return false;
   const now = new Date().toISOString();
   await dbRun("UPDATE friend_requests SET status = 'accepted', updated_at = ? WHERE status = 'pending' AND ((sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?))", [now, a, b, b, a]);
-  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), a, b, now]);
-  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?)', [uuidv4(), b, a, now]);
+  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, friend_id) DO NOTHING', [uuidv4(), a, b, now]);
+  await dbRun('INSERT INTO friends (id, user_id, friend_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT (user_id, friend_id) DO NOTHING', [uuidv4(), b, a, now]);
   return true;
 }
 

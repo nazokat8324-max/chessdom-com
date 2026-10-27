@@ -664,6 +664,27 @@ test("Қазақша: menyu, kutubxona va sozlamalar qozoqchada; huquqiy sahifa 
   assert.deepEqual(p.errors, []);
 });
 
+test("Тоҷикӣ, Кыргызча, Türkmençe, Azərbaycanca: menyu va kutubxona shu tillarda, sozlamalarda tanlangan", opts, async () => {
+  const u = await srv.register('Tillar4');
+  const want = { tg: ['Саҳифаи асосӣ', 'Тактика: чангак'], ky: ['Башкы бет', 'Тактика: айры'], tk: ['Baş sahypa', 'Taktika: çeňňek'], az: ['Ana səhifə', 'Taktika: çəngəl'] };
+  for (const l of Object.keys(want)) {
+    const p = await page(u);
+    await p.evaluateOnNewDocument((lang) => localStorage.setItem('justChessLang', lang), l);
+    await p.goto(srv.base + '/kutubxona?m=fork', { waitUntil: 'domcontentloaded' });
+    await p.waitForSelector('#libraryRoot .lib-article h1', { timeout: 15000 });
+    await sleep(500);
+    const st = await p.evaluate(() => ({ home: document.querySelector('#navHome span:not(.icon)').textContent.trim(), h1: document.querySelector('#libraryRoot .lib-article h1').textContent }));
+    assert.deepEqual([st.home, st.h1], want[l], l);
+    if (l === 'az') {
+      await p.goto(srv.base + '/sozlamalar', { waitUntil: 'domcontentloaded' });
+      await p.waitForSelector('.set-lang[data-lang="az"]', { timeout: 15000 });
+      assert.equal(await p.evaluate(() => document.querySelector('.set-lang[data-lang="az"]').classList.contains('active')), true);
+    }
+    assert.deepEqual(p.errors, [], l);
+    await p.close();
+  }
+});
+
 test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni tekshirish' tugmasi", opts, async () => {
   const adm = await srv.register('FpAdm'), sus = await srv.register('FpSus');
   const run = (q, prm) => new Promise((resolve, reject) => {

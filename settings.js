@@ -9,7 +9,7 @@
     quickClock: [300, 0], quickRated: true, vibration: true
   };
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
-  const LANGS = [['uz', 'uz', "O'zbekcha"], ['uzc', 'uz', 'Ўзбекча'], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français'], ['tr', 'tr', 'Türkçe'], ['kk', 'kz', 'Қазақша']];
+  const LANGS = [['uz', 'uz', "O'zbekcha"], ['uzc', 'uz', 'Ўзбекча'], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français'], ['tr', 'tr', 'Türkçe'], ['kk', 'kz', 'Қазақша'], ['tg', 'tj', 'Тоҷикӣ'], ['ky', 'kg', 'Кыргызча'], ['tk', 'tm', 'Türkmençe'], ['az', 'az', 'Azərbaycanca']];
   const THEMES = [['turquoise', 'themeTurquoise', 'Firuza'], ['ocean', 'themeOcean', 'Okean'], ['amethyst', 'themeAmethyst', 'Ametist'], ['sunset', 'themeSunset', 'Shafaq'], ['jade', 'themeJade', 'Zumrad'], ['ruby', 'themeRuby', 'Yoqut'], ['rose', 'themeRose', 'Atirgul'], ['gold', 'themeGold', 'Oltin'], ['lapis', 'themeLapis', 'Lojuvard'], ['graphite', 'themeGraphite', 'Grafit']];
   // Ovoz to'plamlari (sound.js SOUND_PACKS, tools/make-sounds.js)
   const SOUND_PACKS = [['wood', 'soundWood', "Yog'och", '🌳'], ['teahouse', 'soundTeahouse', "Choyxona", '🍵'], ['marble', 'soundMarble', "Marmar", '🏛️'], ['doira', 'soundDoira', "Doira", '🥁'], ['retro', 'soundRetro', "Retro", '👾'], ['soft', 'soundSoft', "Yumshoq", '🤫']];

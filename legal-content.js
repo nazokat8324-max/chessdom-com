@@ -628,6 +628,322 @@ window.LEGAL_TEXT.kk = {
     ]
   }
 };
+// Тоҷикӣ (inglizcha matndan tarjima)
+window.LEGAL_TEXT.tg = {
+  ui: { credits: 'Муаллифон ва иҷозатномаҳо', privacy: 'Сиёсати махфият', terms: 'Шартҳои истифода', back: 'Бозгашт ба сайт', updated: 'Навсозии охирин', contactNone: 'тавассути тугмаи «Шикоят» дар сайт ба маъмурон нависед' },
+  credits: {"intro":"ChessCaravan ба китобхонаҳои кушодаманбаъ ва захираҳои дорои иҷозатномаи озод такя мекунад. Ба муаллифони онҳо ташаккур! Дар поён ҳамаи захираҳои беруние, ки сайт истифода мебарад, бо муаллиф ва иҷозатномаашон оварда шудаанд.","code":"Китобхонаҳои барномавӣ (дар браузер)","assets":"Тасвирҳо, ҳуруфот ва маълумот","own":"Сохти ChessCaravan","server":"Сервер: Node.js, Express, Socket.IO, PostgreSQL / SQLite ва дигар бастаҳои кушодаманбаъ (иҷозатномаҳои MIT, BSD, ISC, MPL-2.0) — онҳо ба корбарон фиристода намешаванд.","gpl":"Қисми дорои иҷозатномаи GPL (муҳаррики таҳлили Stockfish) бе тағйир истифода мешавад; коди манбаи он дар истиноди боло дастрас аст.","ownText":"Ҳамаи 10 маҷмӯи дона (Karvon, Classic, Atlas, Rishton, Wood, Royal, Neon, Geo, Bolajon, Pixel), садоҳои юриш (бо код синтез шудаанд), логотип, нишонаҳо, нақши атлас ва тасвири пешнамоиши истинод."},
+  privacy: {
+    intro: 'ChessCaravan сайти шоҳмоти онлайн аст. Ин саҳифа шарҳ медиҳад, ки мо кадом маълумотро, барои чӣ нигоҳ медорем ва чӣ гуна онро ҳифз мекунем. Бо истифодаи сайт шумо ба ин сиёсат розӣ мешавед.',
+    sections: [
+      ['Мо чиро нигоҳ медорем', [
+        ['Ҳисоб: номи корбар, email (ихтиёрӣ), парол — танҳо ҳамчун ҳэши рамзгузоришудаи bcrypt, кишвар, акси профил ва ҳар чизе, ки ба профил илова мекунед.',
+         'Бозиҳо: юришҳо, натиҷаҳо, таърихи рейтинг, омор, дастовардҳо, пешгӯиҳо ва овозҳои одоб.',
+         'Муошират: паёмҳои шахсӣ, чатҳои клуб ва бозӣ, чати тамошобинон ва шикоятҳо.',
+         'Техникӣ: суроғаи IP (танҳо барои маҳдуд кардани дархостҳо, муваққатан дар хотираи сервер), таъхири пайваст, тарк кардани саҳифа ҳангоми бозӣ ва вақти юришҳо (барои санҷиши бозии ҳалол).',
+         'Дар браузери шумо (localStorage): токени воридшавӣ, танзимот ва забон. Мо cookie, реклама ё скриптҳои пайгирӣ (аналитика) истифода намебарем.']
+      ]],
+      ['Барои чӣ истифода мебарем', [
+        'Барои гузаронидани бозиҳо, ҳисоб кардани рейтинг ва омор, фиристодани огоҳиномаҳо ва мактубҳои барқарорсозии парол, мубориза бо фиреб ва сӯиистифода ва беҳтар кардани сайт. Мо маълумоти шуморо ҳеҷ гоҳ намефурӯшем ва барои реклама намедиҳем.'
+      ]],
+      ['Дигарон чиро дида метавонанд', [
+        'Ошкоро: номи корбар, кишвар, акси профил, рейтингҳо, омор, бозиҳо ва юришҳои онҳо, клуб, дастовардҳо ва ҳисоби мутақобил. Email ва пароли шумо ҳеҷ гоҳ нишон дода намешаванд. Паёмҳои шахсиро танҳо ду нафари суҳбат мебинанд. Дар танзимоти махфият интихоб мекунед, ки кӣ ба шумо навишта ё даъват карда метавонад.'
+      ]],
+      ['Хидматҳои беруна', [
+        ['Render — хостинги веб.', 'Neon — пойгоҳи додаҳои PostgreSQL.', 'Brevo — фиристодани мактубҳои барқарорсозии парол.', 'Telegram — танҳо агар ботро пайваст кунед: ID-и чат ва матни огоҳиномаҳо фиристода мешаванд.', 'Огоҳиномаҳои push — танҳо агар фаъол кунед, тавассути таъминкунандаи браузер (Google, Apple, Mozilla).', 'Юриш бо овоз — танҳо агар фаъол кунед: нутқи шуморо хидмати шинохти нутқи браузер (масалан, Google дар Chrome) ба матн табдил медиҳад; мо сабтҳоро ҳеҷ гоҳ намегирем ва нигоҳ намедорем.',
+         'CDN-ҳо барои китобхонаҳо ва ҳуруфот: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; парчамҳо — flagcdn.com; стикерҳо — Google Noto Emoji.',
+         'Бо сабабҳои техникӣ ин хидматҳо метавонанд суроғаи IP-и шуморо бинанд. Таҳлили бозӣ (Stockfish) пурра дар браузери шумо кор мекунад.']
+      ]],
+      ['Маълумотро то кай нигоҳ медорем', [
+        'То даме ки ҳисоби шумо вуҷуд дорад, маълумотро нигоҳ медорем. Агар ҳисобро нест кунед, профил, бозиҳо, паёмҳо, дӯстон, огоҳиномаҳо ва дигар маълумоти шахсӣ фавран нест мешаванд. Ин бозиҳо дар таърихи рақибон бо номи номаълум мемонанд ва холҳои клубатон дар Мусобиқаи парчамҳо бе номи шумо боқӣ мемонанд. Нусхаҳои эҳтиётии хостинг метавонанд маълумотро муддати кӯтоҳ нигоҳ доранд.'
+      ]],
+      ['Ҳуқуқҳои шумо', [
+        ['Маълумоти худро дар Профил ва Танзимот бинед ва тағйир диҳед.', 'Бозиҳоятонро ҳамчун файли PGN боргирӣ кунед.',
+         'Ҳисобатонро пурра нест кунед: Танзимот → Ҳисоб → «Нест кардани ҳисоб».', 'Бозингарони дигарро манъ кунед ва шикоят кунед.']
+      ]],
+      ['Амният', [
+        'Сайт HTTPS-ро истифода мебарад, паролҳо танҳо ҳамчун ҳэши bcrypt нигоҳ дошта мешаванд ва токени воридшавӣ 7 рӯз эътибор дорад. Бо вуҷуди ин, ҳеҷ системаи интернетӣ 100% бехатар нест — пароли худро дар сайтҳои дигар такрор накунед.'
+      ]],
+      ['Кӯдакон', [
+        'Кӯдакони то 13-сола сайтро танҳо бо розигии волидон ё сарпараст истифода бурда метавонанд.'
+      ]],
+      ['Тағйирот ва тамос', [
+        'Агар ин сиёсат тағйир ёбад, санаи ин саҳифа нав мешавад. Барои саволҳо ва дархостҳои нест кардани маълумот: {{contact}}.'
+      ]]
+    ]
+  },
+  terms: {
+    intro: 'Бо истифодаи сайт шумо ба шартҳои зерин розӣ мешавед. Агар розӣ набошед, лутфан сайтро истифода набаред.',
+    sections: [
+      ['Ҳисоб', [
+        ['Ҳангоми бақайдгирӣ маълумоти дуруст диҳед ва пароли худро ба касе надиҳед — шумо барои амалҳо дар ҳисобатон масъулед.',
+         'Сохтани якчанд ҳисоб барои баланд бардоштани рейтинг манъ аст.',
+         'Номҳои корбари таҳқиромез, тақлидкунанда ё рекламавӣ манъ аст.']
+      ]],
+      ['Бозии ҳалол', [
+        ['Ҳангоми бозӣ истифодаи муҳаррикҳои шоҳмот, маслиҳати дигарон ё ҳар гуна кӯмаки беруна манъ аст.',
+         'Қасдан бохтан, натиҷаро пешакӣ созиш кардан ва фиреб бо рейтинг манъ аст.',
+         'Сайт бозиҳоро худкор тафтиш мекунад. Бозингарони фиребгар қайд ё манъ карда мешаванд ва ба рақибонашон рейтинги аздастрафта баргардонида мешавад.']
+      ]],
+      ['Рафтор', [
+        ['Таҳқир, табъиз, таҳдид, спам, реклама, мундариҷаи ғайриқонунӣ ва қабеҳ манъ аст.',
+         'Калимаҳои манъшуда дар чат худкор пӯшонида мешаванд; вайронкунандагон метавонанд муваққатан хомӯш карда шаванд.',
+         'Шумо метавонед бозингарони дигарро манъ кунед ва шикоят кунед — шикоятҳоро маъмурон баррасӣ мекунанд.']
+      ]],
+      ['Чораҳо', [
+        'Вайрон кардани қоидаҳо метавонад ба огоҳӣ, маҳдудияти чат ё манъи муваққатӣ ё доимӣ оварда расонад. Вайронкориҳои ҷиддӣ метавонанд бе огоҳӣ ба манъ оварда расонанд.'
+      ]],
+      ['Мундариҷа', [
+        'Бозиҳои шумо (юришҳо ва натиҷаҳо) ошкоранд; дигарон метавонанд онҳоро бинанд, таҳлил кунанд ва ҳамчун PGN боргирӣ кунанд. Шумо барои паёмҳо ва қайдҳои худ масъулед. Барои пешниҳоди хидмат шумо ба мо ҳуқуқи нигоҳ доштан ва нишон додани ин мундариҷаро медиҳед.'
+      ]],
+      ['Хидмат', [
+        'ChessCaravan ройгон ва «ҳамон тавре ки ҳаст» пешниҳод мешавад. Мо кори бефосила, набудани хатоҳо ё ҳеҷ гоҳ гум нашудани маълумотро кафолат намедиҳем. Мо метавонем имкониятҳоро тағйир диҳем, боздорем ё пӯшем. Дар доираи иҷозати қонун мо барои зарари ғайримустақими марбут ба сайт ҷавобгар нестем.'
+      ]],
+      ['Бастани ҳисоб', [
+        'Шумо метавонед ҳисобатонро ҳар вақт тавассути Танзимот → Ҳисоб → «Нест кардани ҳисоб» нест кунед. Мо метавонем ҳисобҳои қоидашиканро бандем.'
+      ]],
+      ['Тағйирот ва тамос', [
+        'Агар ин шартҳо тағйир ёбанд, санаи ин саҳифа нав мешавад; истифодаи сайт пас аз тағйирот маънои қабули шартҳои навро дорад. Саволҳо: {{contact}}.'
+      ]]
+    ]
+  }
+};
+// Кыргызча (inglizcha matndan tarjima)
+window.LEGAL_TEXT.ky = {
+  ui: { credits: 'Авторлор жана лицензиялар', privacy: 'Купуялык саясаты', terms: 'Колдонуу шарттары', back: 'Сайтка кайтуу', updated: 'Акыркы жаңыртуу', contactNone: 'сайттагы «Даттануу» баскычы аркылуу администраторлорго жазыңыз' },
+  credits: {"intro":"ChessCaravan ачык булактуу китепканаларга жана эркин лицензиялуу ресурстарга таянат. Алардын авторлоруна рахмат! Төмөндө сайт колдонгон бардык тышкы ресурстар автору жана лицензиясы менен көрсөтүлгөн.","code":"Программалык китепканалар (браузерде)","assets":"Сүрөттөр, арип жана маалыматтар","own":"ChessCaravan жасаган","server":"Сервер: Node.js, Express, Socket.IO, PostgreSQL / SQLite жана башка ачык булактуу пакеттер (MIT, BSD, ISC, MPL-2.0 лицензиялары) — алар колдонуучуларга жөнөтүлбөйт.","gpl":"GPL лицензиясындагы бөлүк (Stockfish талдоо кыймылдаткычы) өзгөртүүсүз колдонулат; анын баштапкы коду жогорудагы шилтемеде жеткиликтүү.","ownText":"Бардык 10 фигура топтому (Karvon, Classic, Atlas, Rishton, Wood, Royal, Neon, Geo, Bolajon, Pixel), жүрүш үндөрү (код менен синтезделген), логотип, сөлөкөттөр, атлас оймосу жана шилтемени алдын ала көрүү сүрөтү."},
+  privacy: {
+    intro: 'ChessCaravan — онлайн шахмат сайты. Бул барак кандай маалыматтарды, эмне үчүн сактай турганыбызды жана аларды кантип коргой турганыбызды түшүндүрөт. Сайтты колдонуу менен сиз бул саясатка макул болосуз.',
+    sections: [
+      ['Биз эмнени сактайбыз', [
+        ['Аккаунт: колдонуучу аты, email (милдеттүү эмес), сырсөз — шифрленген bcrypt хэши катары гана, өлкө, профиль сүрөтү жана профилге кошкон башка маалыматтар.',
+         'Оюндар: жүрүштөр, жыйынтыктар, рейтинг тарыхы, статистика, жетишкендиктер, божомолдор жана адеп добуштары.',
+         'Байланыш: жеке билдирүүлөр, клуб жана оюн чаттары, көрүүчүлөр чаты жана даттануулар.',
+         'Техникалык: IP дареги (сурамдарды чектөө үчүн гана, сервердин эсинде убактылуу), байланыштын кечигүүсү, оюн учурунда барактан чыгуу жана жүрүштөрдүн убактысы (адилет оюнду текшерүү үчүн).',
+         'Браузериңизде (localStorage): кирүү токени, жөндөөлөр жана тил. Биз cookie, жарнама же көзөмөлдөө (аналитика) скрипттерин колдонбойбуз.']
+      ]],
+      ['Эмне үчүн колдонобуз', [
+        'Оюндарды өткөрүү, рейтинг жана статистиканы эсептөө, билдирмелерди жана сырсөздү калыбына келтирүү каттарын жөнөтүү, алдамчылык жана кыянаттык менен күрөшүү жана сайтты жакшыртуу үчүн. Биз маалыматыңызды эч качан сатпайбыз жана жарнама үчүн бербейбиз.'
+      ]],
+      ['Башкалар эмнени көрө алат', [
+        'Ачык: колдонуучу аты, өлкө, профиль сүрөтү, рейтингдер, статистика, оюндар жана алардын жүрүштөрү, клуб, жетишкендиктер жана өз ара эсептер. Email жана сырсөзүңүз эч качан көрсөтүлбөйт. Жеке билдирүүлөрдү маектеги эки адам гана көрөт. Купуялык жөндөөлөрүндө сизге ким жаза аларын же оюнга чакыра аларын тандайсыз.'
+      ]],
+      ['Тышкы кызматтар', [
+        ['Render — веб-хостинг.', 'Neon — PostgreSQL маалымат базасы.', 'Brevo — сырсөздү калыбына келтирүү каттарын жөнөтүү.', 'Telegram — ботту туташтырсаңыз гана: чат ID жана билдирме тексттери жөнөтүлөт.', 'Push-билдирмелер — күйгүзсөңүз гана, браузериңиздин камсыздоочусу (Google, Apple, Mozilla) аркылуу.', 'Үн менен жүрүү — күйгүзсөңүз гана: сөзүңүздү браузериңиздин сүйлөөнү таануу кызматы (мисалы, Chrome’до Google) текстке айлантат; биз жазууларды эч качан албайбыз жана сактабайбыз.',
+         'Китепканалар жана арип үчүн CDN’дер: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; желектер — flagcdn.com; стикерлер — Google Noto Emoji.',
+         'Техникалык себептерден бул кызматтар IP дарегиңизди көрүшү мүмкүн. Оюн талдоосу (Stockfish) толугу менен браузериңизде иштейт.']
+      ]],
+      ['Маалыматты канча убакыт сактайбыз', [
+        'Аккаунтуңуз бар болгонго чейин маалыматты сактайбыз. Аккаунтту өчүрсөңүз, профиль, оюндар, билдирүүлөр, достор, билдирмелер жана башка жеке маалыматтар дароо өчүрүлөт. Бул оюндар атаандаштарыңыздын тарыхында белгисиз ат менен калат, ал эми клубуңуздун Желектер жарышындагы упайлары атыңызсыз сакталат. Хостинг камсыздоочуларынын камдык көчүрмөлөрү маалыматты кыска убакыт сакташы мүмкүн.'
+      ]],
+      ['Сиздин укуктарыңыз', [
+        ['Маалыматтарыңызды Профилде жана Жөндөөлөрдө көрүп, өзгөртүңүз.', 'Оюндарыңызды PGN файлы катары жүктөп алыңыз.',
+         'Аккаунтуңузду толугу менен өчүрүңүз: Жөндөөлөр → Аккаунт → «Аккаунтту өчүрүү».', 'Башка оюнчуларды бөгөттөп, даттаныңыз.']
+      ]],
+      ['Коопсуздук', [
+        'Сайт HTTPS колдонот, сырсөздөр bcrypt хэши катары гана сакталат, ал эми кирүү токени 7 күн жарактуу. Ошентсе да интернетте эч бир система 100% коопсуз эмес — сырсөзүңүздү башка сайттарда кайталабаңыз.'
+      ]],
+      ['Балдар', [
+        '13 жашка чейинки балдар сайтты ата-энесинин же камкорчусунун макулдугу менен гана колдоно алат.'
+      ]],
+      ['Өзгөртүүлөр жана байланыш', [
+        'Бул саясат өзгөрсө, ушул барактагы күн жаңыртылат. Суроолор жана маалыматты өчүрүү өтүнүчтөрү үчүн: {{contact}}.'
+      ]]
+    ]
+  },
+  terms: {
+    intro: 'Сайтты колдонуу менен сиз төмөнкү шарттарга макул болосуз. Макул болбосоңуз, сайтты колдонбоңуз.',
+    sections: [
+      ['Аккаунт', [
+        ['Катталууда туура маалымат бериңиз жана сырсөзүңүздү эч кимге бербеңиз — аккаунтуңуздагы аракеттерге өзүңүз жооптуусуз.',
+         'Рейтингди көтөрүү үчүн бир нече аккаунт ачууга тыюу салынат.',
+         'Кордогон, башка адамды туурап жасалган же жарнамалык колдонуучу аттарына тыюу салынат.']
+      ]],
+      ['Адилет оюн', [
+        ['Оюн учурунда шахмат кыймылдаткычтарын, башкалардын кеңешин же кандайдыр бир тышкы жардамды колдонууга тыюу салынат.',
+         'Атайылап утулуу, жыйынтыкты алдын ала макулдашуу жана рейтинг менен айла кылууга тыюу салынат.',
+         'Сайт оюндарды автоматтык түрдө текшерет. Алдамчылыгы аныкталган оюнчулар белгиленет же бөгөттөлөт, ал эми алардын атаандаштарына жоготкон рейтинги кайтарылат.']
+      ]],
+      ['Жүрүм-турум', [
+        ['Кордоо, басмырлоо, коркутуу, спам, жарнама, мыйзамсыз жана уятсыз мазмунга тыюу салынат.',
+         'Тыюу салынган сөздөр чатта автоматтык түрдө жашырылат; бузуучулар убактылуу үнсүз кылынышы мүмкүн.',
+         'Башка оюнчуларды бөгөттөп, даттана аласыз — даттанууларды администраторлор карайт.']
+      ]],
+      ['Чаралар', [
+        'Эрежелерди бузуу эскертүүгө, чатты чектөөгө же убактылуу же түбөлүк бөгөттөөгө алып келиши мүмкүн. Олуттуу бузуулар эскертүүсүз бөгөттөөгө алып келиши мүмкүн.'
+      ]],
+      ['Мазмун', [
+        'Оюндарыңыз (жүрүштөр жана жыйынтыктар) ачык; башкалар аларды көрүп, талдап, PGN катары жүктөп ала алат. Билдирүүлөрүңүз жана жазууларыңыз үчүн өзүңүз жооптуусуз. Кызматты көрсөтүү үчүн бизге бул мазмунду сактоо жана көрсөтүү укугун бересиз.'
+      ]],
+      ['Кызмат', [
+        'ChessCaravan акысыз жана «кандай болсо ошондой» сунушталат. Биз үзгүлтүксүз иштөөгө, каталардын жоктугуна же маалыматтын эч качан жоголбоосуна кепилдик бербейбиз. Мүмкүнчүлүктөрдү өзгөртүшүбүз, токтотушубуз же жабышыбыз мүмкүн. Мыйзам уруксат берген чекте сайтка байланыштуу кыйыр зыян үчүн жооп бербейбиз.'
+      ]],
+      ['Аккаунтту жабуу', [
+        'Аккаунтуңузду каалаган убакта Жөндөөлөр → Аккаунт → «Аккаунтту өчүрүү» аркылуу өчүрө аласыз. Эрежелерди бузган аккаунттарды жабышыбыз мүмкүн.'
+      ]],
+      ['Өзгөртүүлөр жана байланыш', [
+        'Бул шарттар өзгөрсө, ушул барактагы күн жаңыртылат; өзгөртүүдөн кийин сайтты колдонуу жаңы шарттарды кабыл алганыңызды билдирет. Суроолор: {{contact}}.'
+      ]]
+    ]
+  }
+};
+// Türkmençe (inglizcha matndan tarjima)
+window.LEGAL_TEXT.tk = {
+  ui: { credits: 'Awtorlar we ygtyýarnamalar', privacy: 'Gizlinlik syýasaty', terms: 'Ulanyş şertleri', back: 'Saýta dolan', updated: 'Soňky täzelenme', contactNone: 'saýtdaky «Arz» düwmesi arkaly administratorlara ýazyň' },
+  credits: {"intro":"ChessCaravan açyk çeşmeli kitaphanalara we erkin ygtyýarnamaly serişdelere esaslanýar. Olaryň awtorlaryna sag bolsun! Aşakda saýtyň ulanýan ähli daşary serişdeleri awtory we ygtyýarnamasy bilen görkezilen.","code":"Programma kitaphanalary (brauzerde)","assets":"Suratlar, şriftler we maglumatlar","own":"ChessCaravan tarapyndan döredilen","server":"Serwer: Node.js, Express, Socket.IO, PostgreSQL / SQLite we beýleki açyk çeşmeli bukjalar (MIT, BSD, ISC, MPL-2.0 ygtyýarnamalary) — olar ulanyjylara iberilmeýär.","gpl":"GPL ygtyýarnamaly bölek (Stockfish derňew hereketlendirijisi) üýtgedilmän ulanylýar; onuň çeşme kody ýokardaky salgyda elýeterli.","ownText":"Ähli 10 daş toplumy (Karvon, Classic, Atlas, Rishton, Wood, Royal, Neon, Geo, Bolajon, Pixel), ýöriş sesleri (kod bilen sintezlenen), logotip, nyşanlar, atlas nagyşy we salgyny öňünden görkeziş suraty."},
+  privacy: {
+    intro: 'ChessCaravan — onlaýn küşt saýty. Bu sahypa haýsy maglumatlary, näme üçin saklaýandygymyzy we olary nähili goraýandygymyzy düşündirýär. Saýty ulanmak bilen siz bu syýasata razylaşýarsyňyz.',
+    sections: [
+      ['Näme saklaýarys', [
+        ['Hasap: ulanyjy ady, email (hökmany däl), açar söz — diňe şifrlenen bcrypt heşi görnüşinde, ýurt, profil suraty we profile goşan beýleki maglumatlaryňyz.',
+         'Oýunlar: ýörişler, netijeler, reýting taryhy, statistika, üstünlikler, çaklamalar we edep sesleri.',
+         'Aragatnaşyk: şahsy habarlar, klub we oýun çatlary, tomaşaçylaryň çaty we arzlar.',
+         'Tehniki: IP salgysy (diňe haýyşlary çäklendirmek üçin, serweriň ýadynda wagtlaýyn), birikmäniň gijikmesi, oýun wagtynda sahypadan çykmak we ýöriş wagtlary (dogruçyl oýny barlamak üçin).',
+         'Brauzeriňizde (localStorage): giriş tokeni, sazlamalar we dil. Biz cookie, mahabat ýa-da yzarlaýyş (analitika) skriptlerini ulanmaýarys.']
+      ]],
+      ['Näme üçin ulanýarys', [
+        'Oýunlary geçirmek, reýtingi we statistikany hasaplamak, bildirişleri we açar sözi dikeltmek hatlaryny ibermek, aldaw we hyýanatçylyk bilen göreşmek hem-de saýty gowulandyrmak üçin. Maglumatlaryňyzy hiç haçan satmaýarys we mahabat üçin bermeýäris.'
+      ]],
+      ['Beýlekiler näme görüp biler', [
+        'Açyk: ulanyjy ady, ýurt, profil suraty, reýtingler, statistika, oýunlar we olaryň ýörişleri, klub, üstünlikler we özara hasaplar. Email-iňiz we açar sözüňiz hiç haçan görkezilmeýär. Şahsy habarlary diňe söhbetdäki iki adam görýär. Gizlinlik sazlamalarynda size kimiň ýazyp ýa-da oýna çagyryp biljekdigini saýlaýarsyňyz.'
+      ]],
+      ['Daşary hyzmatlar', [
+        ['Render — web hosting.', 'Neon — PostgreSQL maglumatlar binasy.', 'Brevo — açar sözi dikeltmek hatlaryny ibermek.', 'Telegram — diňe boty birikdirseňiz: çat ID-iňiz we bildiriş tekstleri iberilýär.', 'Push bildirişleri — diňe ýaksaňyz, brauzeriňiziň üpjün edijisi (Google, Apple, Mozilla) arkaly.', 'Ses bilen ýöriş — diňe ýaksaňyz: sözüňizi brauzeriňiziň gürlemäni tanaýyş hyzmaty (meselem, Chrome-da Google) tekste öwürýär; biz ýazgylary hiç haçan almaýarys we saklamaýarys.',
+         'Kitaphanalar we şriftler üçin CDN-ler: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; baýdaklar — flagcdn.com; stikerler — Google Noto Emoji.',
+         'Tehniki sebäplere görä bu hyzmatlar IP salgyňyzy görüp biler. Oýun derňewi (Stockfish) doly brauzeriňizde işleýär.']
+      ]],
+      ['Maglumatlary näçe wagt saklaýarys', [
+        'Hasabyňyz bar wagty maglumatlary saklaýarys. Hasaby pozsaňyz, profil, oýunlar, habarlar, dostlar, bildirişler we beýleki şahsy maglumatlar derrew pozulýar. Bu oýunlar garşydaşlaryňyzyň taryhynda näbelli at bilen galýar, klubuňyzyň Baýdaklar bäsleşigindäki utuklary bolsa adyňyzsyz saklanýar. Hosting üpjün edijileriniň ätiýaçlyk nusgalary maglumatlary gysga wagt saklap biler.'
+      ]],
+      ['Hukuklaryňyz', [
+        ['Maglumatlaryňyzy Profilde we Sazlamalarda görüň we üýtgediň.', 'Oýunlaryňyzy PGN faýly hökmünde ýükläň.',
+         'Hasabyňyzy doly pozuň: Sazlamalar → Hasap → «Hasaby poz».', 'Beýleki oýunçylary petikläň we arz ediň.']
+      ]],
+      ['Howpsuzlyk', [
+        'Saýt HTTPS ulanýar, açar sözler diňe bcrypt heşi görnüşinde saklanýar we giriş tokeni 7 gün hereket edýär. Şeýle-de bolsa internetde hiç bir ulgam 100% howpsuz däl — açar sözüňizi başga saýtlarda gaýtalamaň.'
+      ]],
+      ['Çagalar', [
+        '13 ýaşa çenli çagalar saýty diňe ene-atasynyň ýa-da hossarynyň razylygy bilen ulanyp biler.'
+      ]],
+      ['Üýtgeşmeler we habarlaşmak', [
+        'Bu syýasat üýtgese, şu sahypadaky sene täzelenýär. Soraglar we maglumatlary pozmak baradaky haýyşlar üçin: {{contact}}.'
+      ]]
+    ]
+  },
+  terms: {
+    intro: 'Saýty ulanmak bilen siz aşakdaky şertlere razylaşýarsyňyz. Razy bolmasaňyz, saýty ulanmaň.',
+    sections: [
+      ['Hasap', [
+        ['Hasaba alnanyňyzda dogry maglumat beriň we açar sözüňizi hiç kime bermäň — hasabyňyzdaky hereketler üçin özüňiz jogapkär.',
+         'Reýtingi ýokarlandyrmak üçin birnäçe hasap açmak gadagan.',
+         'Kemsidiji, başga birine öýkünýän ýa-da mahabat häsiýetli ulanyjy atlary gadagan.']
+      ]],
+      ['Dogruçyl oýun', [
+        ['Oýun wagtynda küşt hereketlendirijilerini, başgalaryň maslahatyny ýa-da islendik daşary kömegi ulanmak gadagan.',
+         'Bilkastlaýyn utulmak, netijäni öňünden ylalaşmak we reýting bilen hile etmek gadagan.',
+         'Saýt oýunlary awtomatik barlaýar. Aldaw edendigi anyklanan oýunçylar bellenýär ýa-da petiklenýär, olaryň garşydaşlaryna bolsa ýitiren reýtingi gaýtarylýar.']
+      ]],
+      ['Özüňi alyp barmak', [
+        ['Kemsitme, diskriminasiýa, haýbat, spam, mahabat, bikanun we edepsiz mazmun gadagan.',
+         'Gadagan sözler çatda awtomatik gizlenýär; düzgün bozujylaryň sesi wagtlaýyn öçürilip bilner.',
+         'Beýleki oýunçylary petikläp we arz edip bilersiňiz — arzlara administratorlar seredýär.']
+      ]],
+      ['Çäreler', [
+        'Düzgünleri bozmak duýduryşa, çaty çäklendirmäge ýa-da wagtlaýyn ýa-da hemişelik petiklemäge getirip biler. Agyr bozulmalar duýduryşsyz petiklemäge getirip biler.'
+      ]],
+      ['Mazmun', [
+        'Oýunlaryňyz (ýörişler we netijeler) açyk; beýlekiler olary görüp, derňäp we PGN hökmünde ýükläp biler. Habarlaryňyz we bellikleriňiz üçin özüňiz jogapkär. Hyzmaty bermek üçin bize bu mazmuny saklamak we görkezmek hukugyny berýärsiňiz.'
+      ]],
+      ['Hyzmat', [
+        'ChessCaravan mugt we «bar bolşy ýaly» hödürlenýär. Biz kesgitsiz işlemegi, ýalňyşlyklaryň bolmazlygyny ýa-da maglumatlaryň hiç haçan ýitmejekdigini kepillendirmeýäris. Mümkinçilikleri üýtgedip, togtadyp ýa-da ýapyp bileris. Kanunyň rugsat berýän çäginde saýt bilen bagly gytaklaýyn zyýan üçin jogapkär däldiris.'
+      ]],
+      ['Hasaby ýapmak', [
+        'Hasabyňyzy islendik wagt Sazlamalar → Hasap → «Hasaby poz» arkaly pozup bilersiňiz. Düzgünleri bozýan hasaplary ýapyp bileris.'
+      ]],
+      ['Üýtgeşmeler we habarlaşmak', [
+        'Bu şertler üýtgese, şu sahypadaky sene täzelenýär; üýtgeşmeden soň saýty ulanmak täze şertleri kabul edendigiňizi aňladýar. Soraglar: {{contact}}.'
+      ]]
+    ]
+  }
+};
+// Azərbaycanca (inglizcha matndan tarjima)
+window.LEGAL_TEXT.az = {
+  ui: { credits: 'Müəlliflər və lisenziyalar', privacy: 'Məxfilik siyasəti', terms: 'İstifadə şərtləri', back: 'Sayta qayıt', updated: 'Son yenilənmə', contactNone: 'saytdakı «Şikayət» düyməsi ilə adminlərə yaz' },
+  credits: {"intro":"ChessCaravan açıq mənbəli kitabxanalar və azad lisenziyalı resurslar üzərində qurulub. Onların müəlliflərinə təşəkkürlər! Aşağıda saytın istifadə etdiyi bütün kənar resurslar müəllifi və lisenziyası ilə göstərilib.","code":"Proqram kitabxanaları (brauzerdə)","assets":"Şəkillər, şriftlər və məlumatlar","own":"ChessCaravan tərəfindən hazırlanıb","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite və digər açıq mənbəli paketlər (MIT, BSD, ISC, MPL-2.0 lisenziyaları) — onlar istifadəçilərə göndərilmir.","gpl":"GPL lisenziyalı hissə (Stockfish təhlil mühərriki) dəyişdirilmədən istifadə olunur; onun mənbə kodu yuxarıdakı keçiddə mövcuddur.","ownText":"Bütün 10 fiqur dəsti (Karvon, Classic, Atlas, Rishton, Wood, Royal, Neon, Geo, Bolajon, Pixel), gediş səsləri (kodla sintez edilib), loqotip, ikonlar, atlas naxışı və keçid önizləmə şəkli."},
+  privacy: {
+    intro: 'ChessCaravan onlayn şahmat saytıdır. Bu səhifə hansı məlumatları, nə üçün saxladığımızı və onları necə qoruduğumuzu izah edir. Saytdan istifadə etməklə bu siyasətlə razılaşırsan.',
+    sections: [
+      ['Nə saxlayırıq', [
+        ['Hesab: istifadəçi adı, e-poçt (könüllü), şifrə — yalnız şifrələnmiş bcrypt heşi kimi, ölkə, profil şəkli və profilinə əlavə etdiyin hər şey.',
+         'Oyunlar: gedişlər, nəticələr, reytinq tarixçəsi, statistika, nailiyyətlər, proqnozlar və ədəb səsləri.',
+         'Ünsiyyət: şəxsi mesajlar, klub və oyun çatları, izləyici çatı və şikayətlər.',
+         'Texniki: IP ünvanı (yalnız sorğuları məhdudlaşdırmaq üçün, server yaddaşında müvəqqəti), bağlantı gecikməsi, oyun zamanı səhifəni tərk etmə və gediş vaxtları (ədalətli oyun yoxlaması üçün).',
+         'Brauzerində (localStorage): giriş tokeni, ayarlar və dil. Biz cookie, reklam və ya izləmə (analitika) skriptlərindən istifadə etmirik.']
+      ]],
+      ['Nə üçün istifadə edirik', [
+        'Oyunları keçirmək, reytinq və statistikanı hesablamaq, bildirişlər və şifrə bərpası məktubları göndərmək, fırıldaq və sui-istifadə ilə mübarizə aparmaq və saytı təkmilləşdirmək üçün. Məlumatlarını heç vaxt satmırıq və reklam üçün paylaşmırıq.'
+      ]],
+      ['Başqaları nəyi görə bilər', [
+        'Açıq: istifadəçi adı, ölkə, profil şəkli, reytinqlər, statistika, oyunlar və onların gedişləri, klub, nailiyyətlər və qarşılıqlı hesablar. E-poçtun və şifrən heç vaxt göstərilmir. Şəxsi mesajları yalnız söhbətdəki iki nəfər görür. Məxfilik ayarlarında sənə kimin yaza və ya oyuna çağıra biləcəyini seçirsən.'
+      ]],
+      ['Kənar xidmətlər', [
+        ['Render — veb hostinq.', 'Neon — PostgreSQL verilənlər bazası.', 'Brevo — şifrə bərpası məktublarının göndərilməsi.', 'Telegram — yalnız botu qoşsan: çat ID-n və bildiriş mətnləri göndərilir.', 'Push bildirişləri — yalnız aktiv etsən, brauzer təminatçısı (Google, Apple, Mozilla) vasitəsilə.', 'Səslə gediş — yalnız aktiv etsən: nitqini brauzerinin nitq tanıma xidməti (məsələn, Chrome-da Google) mətnə çevirir; biz səs yazılarını heç vaxt almırıq və saxlamırıq.',
+         'Kitabxanalar və şriftlər üçün CDN-lər: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; bayraqlar — flagcdn.com; stikerlər — Google Noto Emoji.',
+         'Texniki səbəblərdən bu xidmətlər IP ünvanını görə bilər. Oyun təhlili (Stockfish) tamamilə brauzerində işləyir.']
+      ]],
+      ['Məlumatları nə qədər saxlayırıq', [
+        'Hesabın mövcud olduğu müddətdə məlumatları saxlayırıq. Hesabını silsən, profil, oyunlar, mesajlar, dostlar, bildirişlər və digər şəxsi məlumatlar dərhal silinir. Bu oyunlar rəqiblərinin tarixçəsində anonim adla qalır, klubunun Bayraqlar yarışındakı xalları isə adsız qalır. Hostinq təminatçılarının ehtiyat nüsxələri məlumatları qısa müddət saxlaya bilər.'
+      ]],
+      ['Hüquqların', [
+        ['Məlumatlarına Profil və Ayarlarda bax və dəyiş.', 'Oyunlarını PGN faylı kimi yüklə.',
+         'Hesabını tamamilə sil: Ayarlar → Hesab → «Hesabı sil».', 'Digər oyunçuları blokla və şikayət et.']
+      ]],
+      ['Təhlükəsizlik', [
+        'Sayt HTTPS istifadə edir, şifrələr yalnız bcrypt heşi kimi saxlanılır və giriş tokeni 7 gün etibarlıdır. Bununla belə, internetdə heç bir sistem 100% təhlükəsiz deyil — şifrəni başqa saytlarda təkrarlama.'
+      ]],
+      ['Uşaqlar', [
+        '13 yaşından kiçik uşaqlar saytdan yalnız valideyn və ya qəyyumun razılığı ilə istifadə edə bilər.'
+      ]],
+      ['Dəyişikliklər və əlaqə', [
+        'Bu siyasət dəyişsə, bu səhifədəki tarix yenilənir. Suallar və məlumatların silinməsi sorğuları üçün: {{contact}}.'
+      ]]
+    ]
+  },
+  terms: {
+    intro: 'Saytdan istifadə etməklə aşağıdakı şərtlərlə razılaşırsan. Razı deyilsənsə, saytdan istifadə etmə.',
+    sections: [
+      ['Hesab', [
+        ['Qeydiyyat zamanı düzgün məlumat ver və şifrəni heç kimə vermə — hesabında baş verənlərə görə sən məsuliyyət daşıyırsan.',
+         'Reytinqi şişirtmək üçün bir neçə hesab yaratmaq qadağandır.',
+         'Təhqiramiz, başqasını təqlid edən və ya reklam xarakterli istifadəçi adları qadağandır.']
+      ]],
+      ['Ədalətli oyun', [
+        ['Oyun zamanı şahmat mühərriklərindən, başqalarının məsləhətindən və ya hər hansı kənar köməkdən istifadə qadağandır.',
+         'Qəsdən uduzmaq, nəticəni əvvəlcədən razılaşdırmaq və reytinqlə manipulyasiya qadağandır.',
+         'Sayt oyunları avtomatik yoxlayır. Fırıldaq etdiyi müəyyən edilən oyunçular işarələnir və ya bloklanır, onların rəqiblərinə isə itirdikləri reytinq qaytarılır.']
+      ]],
+      ['Davranış', [
+        ['Təhqir, ayrı-seçkilik, hədə, spam, reklam, qanunsuz və ədəbsiz məzmun qadağandır.',
+         'Qadağan sözlər çatda avtomatik gizlədilir; pozuntu edənlər müvəqqəti səssizləşdirilə bilər.',
+         'Digər oyunçuları bloklaya və şikayət edə bilərsən — şikayətlərə adminlər baxır.']
+      ]],
+      ['Sanksiyalar', [
+        'Qaydaların pozulması xəbərdarlığa, çat məhdudiyyətinə və ya müvəqqəti, yaxud daimi bloklanmaya səbəb ola bilər. Ciddi pozuntular xəbərdarlıqsız bloklanmaya səbəb ola bilər.'
+      ]],
+      ['Məzmun', [
+        'Oyunların (gedişlər və nəticələr) açıqdır; başqaları onlara baxa, təhlil edə və PGN kimi yükləyə bilər. Mesajlarına və qeydlərinə görə sən məsuliyyət daşıyırsan. Xidməti göstərmək üçün bizə bu məzmunu saxlamaq və göstərmək hüququ verirsən.'
+      ]],
+      ['Xidmət', [
+        'ChessCaravan pulsuzdur və «olduğu kimi» təqdim olunur. Fasiləsiz işə, xətaların olmamasına və ya məlumatların heç vaxt itməyəcəyinə zəmanət vermirik. İmkanları dəyişə, dayandıra və ya bağlaya bilərik. Qanunun icazə verdiyi həddə saytla bağlı dolayı zərərə görə məsuliyyət daşımırıq.'
+      ]],
+      ['Hesabın bağlanması', [
+        'Hesabını istənilən vaxt Ayarlar → Hesab → «Hesabı sil» vasitəsilə silə bilərsən. Qaydaları pozan hesabları bağlaya bilərik.'
+      ]],
+      ['Dəyişikliklər və əlaqə', [
+        'Bu şərtlər dəyişsə, bu səhifədəki tarix yenilənir; dəyişiklikdən sonra saytdan istifadə yeni şərtləri qəbul etdiyin mənasına gəlir. Suallar: {{contact}}.'
+      ]]
+    ]
+  }
+};
 window.LEGAL_UPDATED = '2026-10-24';
 
 // 📜 Mualliflar va litsenziyalar (/mualliflar): [nomi, havola, muallif, litsenziya, litsenziya havolasi]

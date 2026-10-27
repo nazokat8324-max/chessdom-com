@@ -5,21 +5,21 @@
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.Caravan = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
-  const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk'];
-  // key, kerakli qadamlar, belgi, nom (uz, en, ru, es, de, fr, tr, kk)
+  const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk', 'tg', 'ky', 'tk', 'az'];
+  // key, kerakli qadamlar, belgi, nom (uz, en, ru, es, de, fr, tr, kk, tg, ky, tk, az)
   const CITIES = [
-    ['xian', 0, '🏯', ['Sian', "Xi'an", 'Сиань', "Xi'an", "Xi'an", "Xi'an", 'Şian', 'Сиань']],
-    ['dunhuang', 15, '🏜️', ['Dunxuan', 'Dunhuang', 'Дуньхуан', 'Dunhuang', 'Dunhuang', 'Dunhuang', 'Dunhuang', 'Дуньхуан']],
-    ['kashgar', 40, '🐫', ['Qashqar', 'Kashgar', 'Кашгар', 'Kashgar', 'Kaschgar', 'Kachgar', 'Kaşgar', 'Қашқар']],
-    ['fergana', 75, '🍇', ["Farg'ona", 'Fergana', 'Фергана', 'Fergana', 'Fergana', 'Ferghana', 'Fergana', 'Ферғана']],
-    ['tashkent', 120, '🌇', ['Toshkent', 'Tashkent', 'Ташкент', 'Taskent', 'Taschkent', 'Tachkent', 'Taşkent', 'Ташкент']],
-    ['samarkand', 180, '🕌', ['Samarqand', 'Samarkand', 'Самарканд', 'Samarcanda', 'Samarkand', 'Samarcande', 'Semerkant', 'Самарқанд']],
-    ['bukhara', 250, '🏛️', ['Buxoro', 'Bukhara', 'Бухара', 'Bujará', 'Buchara', 'Boukhara', 'Buhara', 'Бұхара']],
-    ['khiva', 330, '🧱', ['Xiva', 'Khiva', 'Хива', 'Jiva', 'Chiwa', 'Khiva', 'Hive', 'Хиуа']],
-    ['merv', 420, '🌴', ['Marv', 'Merv', 'Мерв', 'Merv', 'Merw', 'Merv', 'Merv', 'Мерв']],
-    ['baghdad', 520, '📜', ["Bag'dod", 'Baghdad', 'Багдад', 'Bagdad', 'Bagdad', 'Bagdad', 'Bağdat', 'Бағдат']],
-    ['damascus', 630, '🌹', ['Damashq', 'Damascus', 'Дамаск', 'Damasco', 'Damaskus', 'Damas', 'Şam', 'Дамаск']],
-    ['istanbul', 750, '🌉', ['Istanbul', 'Istanbul', 'Стамбул', 'Estambul', 'Istanbul', 'Istanbul', 'İstanbul', 'Ыстамбұл']]
+    ['xian', 0, '🏯', ['Sian', "Xi'an", 'Сиань', "Xi'an", "Xi'an", "Xi'an", 'Şian', 'Сиань', 'Сиан', 'Сиань', 'Sian', 'Sian']],
+    ['dunhuang', 15, '🏜️', ['Dunxuan', 'Dunhuang', 'Дуньхуан', 'Dunhuang', 'Dunhuang', 'Dunhuang', 'Dunhuang', 'Дуньхуан', 'Дунхуан', 'Дуньхуан', 'Dunhuan', 'Dunhuan']],
+    ['kashgar', 40, '🐫', ['Qashqar', 'Kashgar', 'Кашгар', 'Kashgar', 'Kaschgar', 'Kachgar', 'Kaşgar', 'Қашқар', 'Кошғар', 'Кашкар', 'Kaşgar', 'Kaşqar']],
+    ['fergana', 75, '🍇', ["Farg'ona", 'Fergana', 'Фергана', 'Fergana', 'Fergana', 'Ferghana', 'Fergana', 'Ферғана', 'Фарғона', 'Фергана', 'Fergana', 'Fərqanə']],
+    ['tashkent', 120, '🌇', ['Toshkent', 'Tashkent', 'Ташкент', 'Taskent', 'Taschkent', 'Tachkent', 'Taşkent', 'Ташкент', 'Тошкент', 'Ташкент', 'Daşkent', 'Daşkənd']],
+    ['samarkand', 180, '🕌', ['Samarqand', 'Samarkand', 'Самарканд', 'Samarcanda', 'Samarkand', 'Samarcande', 'Semerkant', 'Самарқанд', 'Самарқанд', 'Самарканд', 'Samarkant', 'Səmərqənd']],
+    ['bukhara', 250, '🏛️', ['Buxoro', 'Bukhara', 'Бухара', 'Bujará', 'Buchara', 'Boukhara', 'Buhara', 'Бұхара', 'Бухоро', 'Бухара', 'Buhara', 'Buxara']],
+    ['khiva', 330, '🧱', ['Xiva', 'Khiva', 'Хива', 'Jiva', 'Chiwa', 'Khiva', 'Hive', 'Хиуа', 'Хева', 'Хива', 'Hywa', 'Xivə']],
+    ['merv', 420, '🌴', ['Marv', 'Merv', 'Мерв', 'Merv', 'Merw', 'Merv', 'Merv', 'Мерв', 'Марв', 'Мерв', 'Merw', 'Mərv']],
+    ['baghdad', 520, '📜', ["Bag'dod", 'Baghdad', 'Багдад', 'Bagdad', 'Bagdad', 'Bagdad', 'Bağdat', 'Бағдат', 'Бағдод', 'Багдад', 'Bagdat', 'Bağdad']],
+    ['damascus', 630, '🌹', ['Damashq', 'Damascus', 'Дамаск', 'Damasco', 'Damaskus', 'Damas', 'Şam', 'Дамаск', 'Димишқ', 'Дамаск', 'Damask', 'Dəməşq']],
+    ['istanbul', 750, '🌉', ['Istanbul', 'Istanbul', 'Стамбул', 'Estambul', 'Istanbul', 'Istanbul', 'İstanbul', 'Ыстамбұл', 'Истанбул', 'Стамбул', 'Stambul', 'İstanbul']]
   ].map(([key, at, icon, names]) => ({ key, at, icon, names }));
 
   const STEP = { win: 3, draw: 2, loss: 1 };

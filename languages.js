@@ -11122,6 +11122,8 @@ if (window.UzCyrl) translations.uzc = window.UzCyrl.deep(translations.uz);
 // Türkçe — lang-tr.js (alohida fayl; yo'q kalitlar i18next fallbackLng bilan inglizchadan)
 if (window.TRANSLATIONS_TR) translations.tr = window.TRANSLATIONS_TR;
 if (window.TRANSLATIONS_KK) translations.kk = window.TRANSLATIONS_KK; // Қазақша — lang-kk.js
+// Тоҷикӣ, Кыргызча, Türkmençe, Azərbaycanca — lang-<kod>.js
+["tg", "ky", "tk", "az"].forEach(l => { const T = window["TRANSLATIONS_" + l.toUpperCase()]; if (T) translations[l] = T; });
 
 i18next.init({
   lng: localStorage.getItem("justChessLang") || "en",
@@ -11136,7 +11138,11 @@ i18next.init({
     de: { translation: translations.de },
     fr: { translation: translations.fr },
     tr: { translation: translations.tr || {} },
-    kk: { translation: translations.kk || {} }
+    kk: { translation: translations.kk || {} },
+    tg: { translation: translations.tg || {} },
+    ky: { translation: translations.ky || {} },
+    tk: { translation: translations.tk || {} },
+    az: { translation: translations.az || {} }
   }
 }, function(err, t) {
   if (!err) updateUI();

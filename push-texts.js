@@ -90,7 +90,35 @@ const KK_T = {
 };
 Object.keys(KK_T).forEach((k) => { T[k].kk = KK_T[k]; });
 STICKER.kk = '🎨 Стикер';
-const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk'];
+// Тоҷикӣ, Кыргызча, Türkmençe, Azərbaycanca — kalit: [tg, ky, tk, az]
+const MORE = ['tg', 'ky', 'tk', 'az'];
+const MORE_T = {
+  challenge: ['{{from}} шуморо ба бозӣ даъват кард ({{clock}})', '{{from}} сизди оюнга чакырды ({{clock}})', '{{from}} sizi oýna çagyrdy ({{clock}})', '{{from}} səni oyuna çağırdı ({{clock}})'],
+  message: ['{{from}}: {{preview}}', '{{from}}: {{preview}}', '{{from}}: {{preview}}', '{{from}}: {{preview}}'],
+  messages: ['{{count}} паёми нав аз {{from}}', '{{from}} оюнчусунан {{count}} жаңы билдирүү', '{{from}}-dan {{count}} täze habar', '{{from}} adlı oyunçudan {{count}} yeni mesaj'],
+  friend_request: ['{{from}} ба шумо дархости дӯстӣ фиристод', '{{from}} сизге достук сурамын жөнөттү', '{{from}} size dostluk haýyşyny iberdi', '{{from}} sənə dostluq sorğusu göndərdi'],
+  friend_accepted: ['{{from}} акнун дӯсти шумост', '{{from}} эми сиздин досуңуз', '{{from}} indi siziň dostuňyz', '{{from}} artıq sənin dostundur'],
+  rival_online: ['Рақиби доимии шумо {{name}} онлайн аст — бозӣ мекунем? ⚔️', 'Атаандаш-досуңуз {{name}} онлайн — ойнойлубу? ⚔️', 'Garşydaş-dostuňyz {{name}} onlaýn — oýnalymy? ⚔️', 'Rəqib-dostun {{name}} onlayndır — bir oyun? ⚔️'],
+  follow_playing: ['{{name}} бозӣ оғоз кард — тамошо кунед', '{{name}} оюн баштады — көрүңүз', '{{name}} oýun başlady — tomaşa ediň', '{{name}} oyuna başladı — izlə'],
+  league_ready: ['Бозии лига: {{opponent}} шуморо интизор аст', 'Лига оюну: {{opponent}} сизди күтүүдө', 'Liga oýny: {{opponent}} size garaşýar', 'Liqa oyunu: {{opponent}} səni gözləyir'],
+  tournament_soon: ['Мусобиқаи «{{name}}» баъд аз 1 дақиқа оғоз мешавад', '«{{name}}» турнири 1 мүнөттөн кийин башталат', '«{{name}}» ýaryşy 1 minutdan soň başlaýar', '«{{name}}» turniri 1 dəqiqə sonra başlayır'],
+  prediction_won: ['Пешгӯии шумо дуруст баромад! +{{points}} 🔮', 'Божомолуңуз туура чыкты! +{{points}} 🔮', 'Çaklamaňyz dogry çykdy! +{{points}} 🔮', 'Proqnozun doğru çıxdı! +{{points}} 🔮'],
+  achievement: ['Дастоварди нав! 🏅', 'Жаңы жетишкендик! 🏅', 'Täze üstünlik! 🏅', 'Yeni nailiyyət! 🏅'],
+  quests_done: ['🎯 Вазифаҳои ҳафтаина иҷро шуданд! Нишонҳо: {{total}}', '🎯 Апталык тапшырмалар аткарылды! Белгилер: {{total}}', '🎯 Hepdelik tabşyryklar ýerine ýetirildi! Nyşanlar: {{total}}', '🎯 Həftəlik tapşırıqlar tamamlandı! Nişanlar: {{total}}'],
+  game_of_day: ['🌟 Бозии шумо бо {{opponent}} Бозии рӯз шуд!', '🌟 {{opponent}} менен оюнуңуз Күндүн оюну болду!', '🌟 {{opponent}} bilen oýnuňyz Günüň oýny boldy!', '🌟 {{opponent}} ilə oyunun Günün oyunu oldu!'],
+  holiday_badge: ['{{icon}} Нишони ид: {{name}} {{year}}!', '{{icon}} Майрам белгиси: {{name}} {{year}}!', '{{icon}} Baýramçylyk nyşany: {{name}} {{year}}!', '{{icon}} Bayram nişanı: {{name}} {{year}}!'],
+  duel_end: ['⚔️ Баҳси шумо бо {{opponent}} анҷом ёфт: {{me}} – {{opp}}', '⚔️ {{opponent}} менен беттешиңиз бүттү: {{me}} – {{opp}}', '⚔️ {{opponent}} bilen bäsleşigiňiz gutardy: {{me}} – {{opp}}', '⚔️ {{opponent}} ilə matçın bitdi: {{me}} – {{opp}}'],
+  caravan_city: ['🐪 Корвони шумо ба {{city}} расид!', '🐪 Кербениңиз {{city}} шаарына жетти!', '🐪 Kerweniňiz {{city}} şäherine ýetdi!', '🐪 Karvanın {{city}} şəhərinə çatdı!'],
+  rank_up: ['Дараҷаи нав! Рейтинги шумо {{rating}} ⭐', 'Жаңы даража! Рейтингиңиз {{rating}} ⭐', 'Täze dereje! Reýtingiňiz {{rating}} ⭐', 'Yeni dərəcə! Reytinqin {{rating}} ⭐'],
+  invite_joined: ['{{from}} бо даъвати шумо ба ChessCaravan ҳамроҳ шуд 🎉', '{{from}} сиздин чакыруу менен ChessCaravan\'га кошулду 🎉', '{{from}} siziň çakylygyňyz bilen ChessCaravan-a goşuldy 🎉', '{{from}} sənin dəvətinlə ChessCaravan-a qoşuldu 🎉'],
+  invite_waiting: ['{{from}} мехоҳад бо шумо бозӣ кунад — ба сайт ворид шуда, ӯро даъват кунед ⚔️', '{{from}} сиз менен ойногусу келет — сайтка кирип, аны чакырыңыз ⚔️', '{{from}} siz bilen oýnamak isleýär — saýta girip, ony çagyryň ⚔️', '{{from}} səninlə oynamaq istəyir — sayta gir və onu çağır ⚔️'],
+  server_error: ['🐞 Хатои нав дар сайт: {{message}}', '🐞 Сайттагы жаңы ката: {{message}}', '🐞 Saýtda täze ýalňyşlyk: {{message}}', '🐞 Saytda yeni xəta: {{message}}'],
+  test: ['Огоҳиномаҳо кор мекунанд! ♞', 'Билдирмелер иштейт! ♞', 'Bildirişler işleýär! ♞', 'Bildirişlər işləyir! ♞'],
+  generic: ['Шумо огоҳиномаи нав доред', 'Сизге жаңы билдирме бар', 'Size täze bildiriş bar', 'Yeni bildirişin var']
+};
+Object.keys(MORE_T).forEach((k) => MORE.forEach((l, i) => { T[k][l] = MORE_T[k][i]; }));
+MORE.forEach((l, i) => { STICKER[l] = ['🎨 Стикер', '🎨 Стикер', '🎨 Stiker', '🎨 Stiker'][i]; });
+const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk', 'tg', 'ky', 'tk', 'az'];
 
 function fill(s, vars) { return String(s).replace(/\{\{(\w+)\}\}/g, (m, k) => (vars[k] == null ? '' : String(vars[k]))); }
 
@@ -206,6 +234,41 @@ const KK_BOT = {
   cmdHelp: 'Көмек'
 };
 Object.keys(KK_BOT).forEach((k) => { BOT[k].kk = KK_BOT[k]; });
+const MORE_BOT = {
+  open: ['♞ Кушодани ChessCaravan', '♞ ChessCaravan\'ды ачуу', '♞ ChessCaravan-y aç', '♞ ChessCaravan-ı aç'],
+  openShort: ['Кушодан ↗', 'Ачуу ↗', 'Aç ↗', 'Aç ↗'],
+  share: ['📤 Ба дӯстон фиристодан', '📤 Досторго жөнөтүү', '📤 Dostlara iber', '📤 Dostlara göndər'],
+  welcome: [
+    'Салом! Ин боти ChessCaravan аст ♞\n\nВай даъватҳо ба бозӣ, паёмҳо ва дигар рӯйдодҳои муҳимро ба ин ҷо мефиристад.\n\nБарои пайваст кардан дар сайт: Танзимот → Садо ва огоҳиномаҳо → Telegram → «Пайваст кардан».',
+    'Салам! Бул — ChessCaravan боту ♞\n\nАл оюнга чакырууларды, билдирүүлөрдү жана башка маанилүү окуяларды ушул жерге жөнөтөт.\n\nТуташтыруу үчүн сайтта: Жөндөөлөр → Үн жана билдирмелер → Telegram → «Туташтыруу».',
+    'Salam! Bu — ChessCaravan boty ♞\n\nOl oýna çakylyklary, habarlary we beýleki möhüm wakalary şu ýere iberýär.\n\nBirikdirmek üçin saýtda: Sazlamalar → Ses we bildirişler → Telegram → «Birikdir».',
+    'Salam! Bu ChessCaravan botudur ♞\n\nO, oyun çağırışlarını, mesajları və digər vacib hadisələri bura göndərir.\n\nQoşmaq üçün saytda: Ayarlar → Səs və bildirişlər → Telegram → «Qoş».'],
+  linked: [
+    '✅ Тайёр! Telegram ба ҳисоби {{name}} пайваст шуд.\n\nВақте сайт баста аст, даъватҳо ва паёмҳо ба ин ҷо меоянд.\n/invite — истиноди даъват барои дӯстон\n/stop — ҷудо кардан',
+    '✅ Даяр! Telegram {{name}} аккаунтуна туташты.\n\nСайт жабык болгондо чакыруулар жана билдирүүлөр ушул жерге келет.\n/invite — достор үчүн чакыруу шилтемеси\n/stop — ажыратуу',
+    '✅ Taýýar! Telegram {{name}} hasabyna birikdirildi.\n\nSaýt ýapyk wagty çakylyklar we habarlar şu ýere geler.\n/invite — dostlar üçin çakylyk salgysy\n/stop — aýyr',
+    '✅ Hazırdır! Telegram {{name}} hesabına qoşuldu.\n\nSayt bağlı olanda çağırışlar və mesajlar bura gələcək.\n/invite — dostlar üçün dəvət keçidi\n/stop — ayır'],
+  already: ['Ин чат ба ҳисоби {{name}} пайваст аст ✅\n/invite — истиноди даъват · /stop — ҷудо кардан', 'Бул чат {{name}} аккаунтуна туташкан ✅\n/invite — чакыруу шилтемеси · /stop — ажыратуу', 'Bu çat {{name}} hasabyna birikdirilen ✅\n/invite — çakylyk salgysy · /stop — aýyr', 'Bu çat {{name}} hesabına qoşulub ✅\n/invite — dəvət keçidi · /stop — ayır'],
+  badCode: ['Истинод кӯҳна ё нодуруст аст. Дар сайт тугмаи «Пайваст кардан»-ро дубора пахш кунед.', 'Шилтеменин мөөнөтү өткөн же туура эмес. Сайттагы «Туташтыруу» баскычын кайра басыңыз.', 'Salgynyň möhleti geçen ýa-da nädogry. Saýtdaky «Birikdir» düwmesine täzeden basyň.', 'Keçidin müddəti bitib və ya yanlışdır. Saytda «Qoş» düyməsini yenidən bas.'],
+  stopped: ['Telegram аз ҳисоби ChessCaravan-и шумо ҷудо шуд. Дубора пайваст кардан — тавассути Танзимот.', 'Telegram ChessCaravan аккаунтуңуздан ажыратылды. Кайра туташтыруу — Жөндөөлөр аркылуу.', 'Telegram ChessCaravan hasabyňyzdan aýryldy. Täzeden birikdirmek — Sazlamalar arkaly.', 'Telegram ChessCaravan hesabından ayrıldı. Yenidən qoşmaq — Ayarlar vasitəsilə.'],
+  notLinked: ['Аввал ҳисобатонро пайваст кунед: дар сайт Танзимот → Садо ва огоҳиномаҳо → Telegram.', 'Адегенде аккаунтуңузду туташтырыңыз: сайтта Жөндөөлөр → Үн жана билдирмелер → Telegram.', 'Ilki hasabyňyzy birikdiriň: saýtda Sazlamalar → Ses we bildirişler → Telegram.', 'Əvvəlcə hesabını qoş: saytda Ayarlar → Səs və bildirişlər → Telegram.'],
+  invite: [
+    'Истиноди даъвати шумо 👇\nОнро ба дӯстонатон фиристед: ҳамин ки ба қайд гиранд, бо шумо бозӣ карда метавонанд.\n\n{{url}}',
+    'Сиздин чакыруу шилтемеңиз 👇\nАны досторуңузга жөнөтүңүз: катталары менен сиз менен ойной алышат.\n\n{{url}}',
+    'Siziň çakylyk salgyňyz 👇\nOny dostlaryňyza iberiň: hasaba alnan badyna siz bilen oýnap bilerler.\n\n{{url}}',
+    'Dəvət keçidin 👇\nOnu dostlarına göndər: qeydiyyatdan keçən kimi səninlə oynaya bilərlər.\n\n{{url}}'],
+  shareText: ['{{name}} шуморо ба бозии шоҳмот дар ChessCaravan даъват мекунад ♞', '{{name}} сизди ChessCaravan\'да шахмат ойноого чакырат ♞', '{{name}} sizi ChessCaravan-da küşt oýnamaga çagyrýar ♞', '{{name}} səni ChessCaravan-da şahmat oynamağa dəvət edir ♞'],
+  help: [
+    'Фармонҳо:\n/invite — истиноди даъват барои дӯстон\n/stop — ҷудо кардани Telegram аз ҳисоб\n/help — ёрӣ',
+    'Буйруктар:\n/invite — достор үчүн чакыруу шилтемеси\n/stop — Telegram\'ды аккаунттан ажыратуу\n/help — жардам',
+    'Buýruklar:\n/invite — dostlar üçin çakylyk salgysy\n/stop — Telegram-y hasapdan aýyr\n/help — kömek',
+    'Əmrlər:\n/invite — dostlar üçün dəvət keçidi\n/stop — Telegram-ı hesabdan ayır\n/help — kömək'],
+  test: ['Огоҳиномаҳои Telegram кор мекунанд! ♞', 'Telegram билдирмелери иштейт! ♞', 'Telegram bildirişleri işleýär! ♞', 'Telegram bildirişləri işləyir! ♞'],
+  cmdInvite: ['Даъвати дӯстон', 'Досторду чакыруу', 'Dostlary çagyr', 'Dostları dəvət et'],
+  cmdStop: ['Ҷудо кардани Telegram', 'Telegram\'ды ажыратуу', 'Telegram-y aýyr', 'Telegram-ı ayır'],
+  cmdHelp: ['Ёрӣ', 'Жардам', 'Kömek', 'Kömək']
+};
+Object.keys(MORE_BOT).forEach((k) => MORE.forEach((l, i) => { BOT[k][l] = MORE_BOT[k][i]; }));
 // Telegram language_code (masalan "ru", "uz", "en-US") → sayt tili
 function langOf(code) { const c = String(code || '').slice(0, 2).toLowerCase(); return LANGS.includes(c) ? c : 'en'; }
 function botText(key, lang, vars) {

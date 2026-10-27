@@ -58,7 +58,7 @@
     (function () {
       // Ўзбекча (кирилл) — o'zbekcha matndan avtomatik (uzcyrl.js)
       if (window.UzCyrl && LEGAL_TEXT.uz && !LEGAL_TEXT.uzc) LEGAL_TEXT.uzc = UzCyrl.deep(LEGAL_TEXT.uz);
-      var LANGS = [['uz', "O'zbekcha"], ['uzc', 'Ўзбекча'], ['en', 'English'], ['ru', 'Русский'], ['es', 'Español'], ['de', 'Deutsch'], ['fr', 'Français'], ['tr', 'Türkçe'], ['kk', 'Қазақша']];
+      var LANGS = [['uz', "O'zbekcha"], ['uzc', 'Ўзбекча'], ['en', 'English'], ['ru', 'Русский'], ['es', 'Español'], ['de', 'Deutsch'], ['fr', 'Français'], ['tr', 'Türkçe'], ['kk', 'Қазақша'], ['tg', 'Тоҷикӣ'], ['ky', 'Кыргызча'], ['tk', 'Türkmençe'], ['az', 'Azərbaycanca']];
       var esc = function (v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
       var doc = /shartlar|terms/.test(location.pathname) ? 'terms' : (/mualliflar|credits/.test(location.pathname) ? 'credits' : 'privacy');
       var saved = null;

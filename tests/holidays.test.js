@@ -28,7 +28,7 @@ test("Sanalar: Navro'z, Yangi yil (yil chegarasi), Mustaqillik, shaxmat kuni, ha
   assert.deepEqual([nx.key, nx.year, nx.start], ['newyear', 2027, tash('2026-12-31 00:00')]);
   assert.equal(Holidays.name('navruz', 'uz'), "Navro'z");
   assert.equal(Holidays.name('qurbon', 'ru'), 'Курбан-байрам');
-  for (const h of Holidays.HOLIDAYS) assert.equal(h.names.length, Holidays.LANGS ? Holidays.LANGS.length : 7, h.key); // uz, en, ru, es, de, fr, tr
+  for (const h of Holidays.HOLIDAYS) assert.equal(h.names.length, Holidays.LANGS.length, h.key); // uz, en, ru, es, de, fr, tr, kk
   assert.equal(Holidays.name('navruz', 'tr'), 'Nevruz');
 });
 

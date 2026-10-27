@@ -11121,6 +11121,7 @@ Object.keys(translationsExtra).forEach(lang => Object.assign(translations[lang],
 if (window.UzCyrl) translations.uzc = window.UzCyrl.deep(translations.uz);
 // Türkçe — lang-tr.js (alohida fayl; yo'q kalitlar i18next fallbackLng bilan inglizchadan)
 if (window.TRANSLATIONS_TR) translations.tr = window.TRANSLATIONS_TR;
+if (window.TRANSLATIONS_KK) translations.kk = window.TRANSLATIONS_KK; // Қазақша — lang-kk.js
 
 i18next.init({
   lng: localStorage.getItem("justChessLang") || "en",
@@ -11134,7 +11135,8 @@ i18next.init({
     es: { translation: translations.es },
     de: { translation: translations.de },
     fr: { translation: translations.fr },
-    tr: { translation: translations.tr || {} }
+    tr: { translation: translations.tr || {} },
+    kk: { translation: translations.kk || {} }
   }
 }, function(err, t) {
   if (!err) updateUI();

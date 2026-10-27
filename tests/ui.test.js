@@ -643,6 +643,27 @@ test("Türkçe: menyu, kutubxona, Karvon yo'li va sozlamalar turkchada; huquqiy 
   assert.deepEqual(p.errors, []);
 });
 
+test("Қазақша: menyu, kutubxona va sozlamalar qozoqchada; huquqiy sahifa ham", opts, async () => {
+  const u = await srv.register('Qazaq');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => localStorage.setItem('justChessLang', 'kk'));
+  await p.goto(srv.base + '/kutubxona?m=fork', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#libraryRoot .lib-article h1', { timeout: 15000 });
+  await sleep(800);
+  const st = await p.evaluate(() => ({ home: document.querySelector('#navHome span:not(.icon)').textContent.trim(), lib: document.querySelector('#navLibrary span:not(.icon)').textContent.trim(),
+    h1: document.querySelector('#libraryRoot .lib-article h1').textContent }));
+  assert.equal(st.home, 'Басты бет');
+  assert.equal(st.lib, 'Кітапхана');
+  assert.equal(st.h1, 'Тактика: шанышқы');
+  if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/kk-library.png' });
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('.set-lang[data-lang="kk"]', { timeout: 15000 });
+  assert.equal(await p.evaluate(() => document.querySelector('.set-lang[data-lang="kk"]').classList.contains('active')), true);
+  await p.goto(srv.base + '/maxfiylik?lang=kk', { waitUntil: 'domcontentloaded' });
+  await p.waitForFunction(() => /Құпиялылық саясаты/.test(document.body.textContent), { timeout: 10000 });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni tekshirish' tugmasi", opts, async () => {
   const adm = await srv.register('FpAdm'), sus = await srv.register('FpSus');
   const run = (q, prm) => new Promise((resolve, reject) => {

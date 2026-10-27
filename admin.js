@@ -44,7 +44,7 @@
   }
 
   // 📚 Kutubxona: admin materiallari (maqola / partiya PGN / kitob-havola) — qo'shish, tahrirlash, o'chirish (POST /api/admin/library)
-  const LIB_LANGS = ['', 'uz', 'en', 'ru', 'es', 'de', 'fr', 'tr'];
+  const LIB_LANGS = ['', 'uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk'];
   const LIB_KIND_ICON = { article: '📝', game: '♟', book: '📚' };
   function libraryHtml() {
     const L = st.library;

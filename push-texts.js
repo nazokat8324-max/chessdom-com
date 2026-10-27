@@ -63,7 +63,34 @@ const TR_T = {
 };
 Object.keys(TR_T).forEach((k) => { T[k].tr = TR_T[k]; });
 STICKER.tr = '🎨 Çıkartma';
-const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr'];
+// Қазақша
+const KK_T = {
+  challenge: '{{from}} сізді ойынға шақырды ({{clock}})',
+  message: '{{from}}: {{preview}}',
+  messages: '{{from}} ойыншысынан {{count}} жаңа хабарлама',
+  friend_request: '{{from}} сізге достық сұрауын жіберді',
+  friend_accepted: '{{from}} енді сіздің досыңыз',
+  rival_online: 'Қарсылас-досыңыз {{name}} желіде — бір ойнаймыз ба? ⚔️',
+  follow_playing: '{{name}} ойын бастады — көріңіз',
+  league_ready: 'Лига ойыны: {{opponent}} сізді күтуде',
+  tournament_soon: '«{{name}}» турнирі 1 минуттан кейін басталады',
+  prediction_won: 'Болжамыңыз дұрыс шықты! +{{points}} 🔮',
+  achievement: 'Жаңа жетістік! 🏅',
+  quests_done: '🎯 Апталық тапсырмалар орындалды! Белгілер: {{total}}',
+  game_of_day: '🌟 {{opponent}} ойыншысымен ойыныңыз Күн ойыны болды!',
+  holiday_badge: '{{icon}} Мереке белгісі: {{name}} {{year}}!',
+  duel_end: '⚔️ {{opponent}} ойыншысымен бәсеке аяқталды: {{me}} – {{opp}}',
+  caravan_city: '🐪 Керуеніңіз {{city}} қаласына жетті!',
+  rank_up: 'Жаңа дәреже! Рейтингіңіз {{rating}} ⭐',
+  invite_joined: '{{from}} сіздің шақыруыңызбен ChessCaravan-ға қосылды 🎉',
+  invite_waiting: '{{from}} сізбен ойнағысы келеді — сайтқа кіріп, оны шақырыңыз ⚔️',
+  server_error: '🐞 Сайтта жаңа қате: {{message}}',
+  test: 'Push-хабарландырулар жұмыс істейді! ♞',
+  generic: 'Сізге жаңа хабарландыру бар'
+};
+Object.keys(KK_T).forEach((k) => { T[k].kk = KK_T[k]; });
+STICKER.kk = '🎨 Стикер';
+const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk'];
 
 function fill(s, vars) { return String(s).replace(/\{\{(\w+)\}\}/g, (m, k) => (vars[k] == null ? '' : String(vars[k]))); }
 
@@ -160,6 +187,25 @@ const TR_BOT = {
   cmdHelp: 'Yardım'
 };
 Object.keys(TR_BOT).forEach((k) => { BOT[k].tr = TR_BOT[k]; });
+const KK_BOT = {
+  open: '♞ ChessCaravan-ды ашу',
+  openShort: 'Ашу ↗',
+  share: '📤 Достарға жіберу',
+  welcome: "Сәлем! Бұл — ChessCaravan боты ♞\n\nОл ойынға шақыруларды, хабарламаларды және басқа маңызды оқиғаларды осында жібереді.\n\nҚосу үшін сайтта: Баптаулар → Дыбыс және хабарландырулар → Telegram → «Қосу».",
+  linked: "✅ Дайын! Telegram {{name}} аккаунтына қосылды.\n\nСайт жабық болғанда шақырулар мен хабарламалар осында келеді.\n/invite — достарға арналған шақыру сілтемесі\n/stop — ажырату",
+  already: 'Бұл чат {{name}} аккаунтына қосылған ✅\n/invite — шақыру сілтемесі · /stop — ажырату',
+  badCode: 'Сілтеменің мерзімі өткен немесе қате. Сайттағы «Қосу» түймесін қайта басыңыз.',
+  stopped: 'Telegram ChessCaravan аккаунтыңыздан ажыратылды. Баптаулар арқылы кез келген уақытта қайта қоса аласыз.',
+  notLinked: 'Алдымен аккаунтыңызды қосыңыз: сайтта Баптаулар → Дыбыс және хабарландырулар → Telegram.',
+  invite: "Сіздің шақыру сілтемеңіз 👇\nОны достарыңызға жіберіңіз: тіркелген бойда олар сізбен ойнай алады.\n\n{{url}}",
+  shareText: '{{name}} сізді ChessCaravan-да шахмат ойнауға шақырады ♞',
+  help: "Командалар:\n/invite — достарға арналған шақыру сілтемесі\n/stop — Telegram-ды аккаунттан ажырату\n/help — көмек",
+  test: 'Telegram хабарландырулары жұмыс істейді! ♞',
+  cmdInvite: 'Достарды шақыру',
+  cmdStop: 'Telegram-ды ажырату',
+  cmdHelp: 'Көмек'
+};
+Object.keys(KK_BOT).forEach((k) => { BOT[k].kk = KK_BOT[k]; });
 // Telegram language_code (masalan "ru", "uz", "en-US") → sayt tili
 function langOf(code) { const c = String(code || '').slice(0, 2).toLowerCase(); return LANGS.includes(c) ? c : 'en'; }
 function botText(key, lang, vars) {

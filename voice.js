@@ -7,25 +7,25 @@
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.VoiceMoves = api;
 })(typeof self !== 'undefined' ? self : this, function () {
-  // Dona so'zlari (7 til, turli qo'shimchalar bilan)
+  // Dona so'zlari (8 til, turli qo'shimchalar bilan)
   const PIECE_WORDS = {
-    n: /^(ot(ni|ga|im|ingiz|i)?|knights?|night|конь|коня|конем|конём|коню|caballo|springer|pferd|cavalier|at(ı|i|la|ım|ını)?)$/,
-    b: /^(fil(ni|ga|im|i)?|bishops?|слон|слона|слоном|слону|alfil|läufer|laufer|fou|fili|fille)$/,
-    r: /^(rux(ni|ga|im|i)?|ladya(ni|ga)?|rooks?|ладья|ладью|ладьей|ладьёй|ладьи|torre|turm|tour|kale(yi|yle|m)?)$/,
-    q: /^(farzin(ni|ga|im|i)?|ferz(ni|ga|i)?|qirolicha(ni|ga)?|queens?|ферзь|ферзя|ферзем|ферзём|ферзю|dama|reina|dame|vezir(i|le|im)?)$/,
-    k: /^(shoh(ni|ga|im|i)?|qirol(ni|ga|im|i)?|kings?|король|короля|королем|королём|rey|könig|konig|roi|şah(ı|la|ım)?)$/,
-    p: /^(piyoda(ni|ga|m|si)?|pawns?|пешка|пешку|пешкой|peón|peon|bauer|pion|piyon(u|la|um)?)$/
+    n: /^(ot(ni|ga|im|ingiz|i)?|knights?|night|конь|коня|конем|конём|коню|caballo|springer|pferd|cavalier|at(ı|i|la|ım|ını)?|ат(ты|пен|ым|қа)?)$/,
+    b: /^(fil(ni|ga|im|i)?|bishops?|слон|слона|слоном|слону|alfil|läufer|laufer|fou|fili|fille|піл(ді|мен|ге)?)$/,
+    r: /^(rux(ni|ga|im|i)?|ladya(ni|ga)?|rooks?|ладья|ладью|ладьей|ладьёй|ладьи|torre|turm|tour|kale(yi|yle|m)?|тура(ны|мен|ға)?)$/,
+    q: /^(farzin(ni|ga|im|i)?|ferz(ni|ga|i)?|qirolicha(ni|ga)?|queens?|ферзь|ферзя|ферзем|ферзём|ферзю|dama|reina|dame|vezir(i|le|im)?|ферзьді|ферзьмен|уәзір(ді|мен)?)$/,
+    k: /^(shoh(ni|ga|im|i)?|qirol(ni|ga|im|i)?|kings?|король|короля|королем|королём|rey|könig|konig|roi|şah(ı|la|ım)?|патша(ны|мен|ға)?)$/,
+    p: /^(piyoda(ni|ga|m|si)?|pawns?|пешка|пешку|пешкой|peón|peon|bauer|pion|piyon(u|la|um)?|пешка(ны|мен|ға)?|пешкамен)$/
   };
   // Raqam so'zlari ("e to'rt", "е четыре", "e four")
   const NUMBER_WORDS = {
-    1: ['bir', 'one', 'один', 'uno', 'eins', 'un'],
-    2: ['ikki', 'two', 'to', 'too', 'два', 'dos', 'zwei', 'deux', 'iki'],
-    3: ['uch', 'three', 'три', 'tres', 'drei', 'trois', 'üç', 'uc'],
-    4: ["to'rt", 'tort', 'four', 'for', 'четыре', 'cuatro', 'vier', 'quatre', 'dört', 'dort'],
-    5: ['besh', 'five', 'пять', 'cinco', 'fünf', 'funf', 'cinq', 'beş', 'bes'],
-    6: ['olti', 'six', 'шесть', 'seis', 'sechs', 'altı', 'alti'],
-    7: ['yetti', 'seven', 'семь', 'siete', 'sieben', 'sept', 'yedi'],
-    8: ['sakkiz', 'eight', 'ate', 'восемь', 'ocho', 'acht', 'huit', 'sekiz']
+    1: ['bir', 'one', 'один', 'uno', 'eins', 'un', 'бір'],
+    2: ['ikki', 'two', 'to', 'too', 'два', 'dos', 'zwei', 'deux', 'iki', 'екі'],
+    3: ['uch', 'three', 'три', 'tres', 'drei', 'trois', 'üç', 'uc', 'үш'],
+    4: ["to'rt", 'tort', 'four', 'for', 'четыре', 'cuatro', 'vier', 'quatre', 'dört', 'dort', 'төрт'],
+    5: ['besh', 'five', 'пять', 'cinco', 'fünf', 'funf', 'cinq', 'beş', 'bes', 'бес'],
+    6: ['olti', 'six', 'шесть', 'seis', 'sechs', 'altı', 'alti', 'алты'],
+    7: ['yetti', 'seven', 'семь', 'siete', 'sieben', 'sept', 'yedi', 'жеті'],
+    8: ['sakkiz', 'eight', 'ate', 'восемь', 'ocho', 'acht', 'huit', 'sekiz', 'сегіз']
   };
   const NUM = {};
   Object.keys(NUMBER_WORDS).forEach((d) => NUMBER_WORDS[d].forEach((w) => { NUM[w] = d; }));
@@ -34,7 +34,7 @@
     бэ: 'b', цэ: 'c', дэ: 'd', эф: 'f', жэ: 'g', же: 'g', аш: 'h', ха: 'h',
     bee: 'b', see: 'c', sea: 'c', dee: 'd', ef: 'f', eff: 'f', gee: 'g', aitch: 'h', eitch: 'h' };
 
-  const LONG_CASTLE = /(o-o-o|0-0-0|ooo|long castl|castle long|castles long|queen ?side|uzun rokirovka|rokirovka uzun|длинн\S* рокиров|рокиров\S* длинн|enroque largo|lange rochade|grand roque|uzun rok)/;
+  const LONG_CASTLE = /(o-o-o|0-0-0|ooo|long castl|castle long|castles long|queen ?side|uzun rokirovka|rokirovka uzun|длинн\S* рокиров|рокиров\S* длинн|enroque largo|lange rochade|grand roque|uzun rok|ұзын рокиров)/;
   const CASTLE = /(o-o|0-0|castl|king ?side|rokirovka|рокиров|enroque|rochade|roque|(^|\s)rok(\s|$))/;
 
   function fileOf(t) {
@@ -52,7 +52,7 @@
     const out = { castle: null, piece: null, squares: [], promo: null };
     if (!raw) return out;
     if (LONG_CASTLE.test(raw)) { out.castle = 'long'; return out; }
-    if (/short castl|castle short|qisqa rokirovka|rokirovka qisqa|коротк\S* рокиров|рокиров\S* коротк|enroque corto|kurze rochade|petit roque|k[ıi]sa rok/.test(raw)) { out.castle = 'short'; return out; }
+    if (/short castl|castle short|qisqa rokirovka|rokirovka qisqa|коротк\S* рокиров|рокиров\S* коротк|enroque corto|kurze rochade|petit roque|k[ıi]sa rok|қысқа рокиров/.test(raw)) { out.castle = 'short'; return out; }
     if (CASTLE.test(raw)) { out.castle = /o-o|0-0/.test(raw) ? 'short' : 'any'; return out; }
     const tokens = raw.split(/[\s,.;:!?—–\-=()]+/).filter(Boolean);
     const items = [];
@@ -126,7 +126,8 @@
     es: { p: '', n: 'caballo', b: 'alfil', r: 'torre', q: 'dama', k: 'rey', x: 'captura', check: 'jaque', mate: 'jaque mate', short: 'enroque corto', long: 'enroque largo', promo: 'corona' },
     de: { p: '', n: 'Springer', b: 'Läufer', r: 'Turm', q: 'Dame', k: 'König', x: 'schlägt', check: 'Schach', mate: 'Schachmatt', short: 'kurze Rochade', long: 'lange Rochade', promo: 'Umwandlung' },
     fr: { p: '', n: 'cavalier', b: 'fou', r: 'tour', q: 'dame', k: 'roi', x: 'prend', check: 'échec', mate: 'échec et mat', short: 'petit roque', long: 'grand roque', promo: 'promotion' },
-    tr: { p: '', n: 'at', b: 'fil', r: 'kale', q: 'vezir', k: 'şah', x: 'alır', check: 'şah', mate: 'şah mat', short: 'kısa rok', long: 'uzun rok', promo: 'terfi' }
+    tr: { p: '', n: 'at', b: 'fil', r: 'kale', q: 'vezir', k: 'şah', x: 'alır', check: 'şah', mate: 'şah mat', short: 'kısa rok', long: 'uzun rok', promo: 'terfi' },
+    kk: { p: '', n: 'ат', b: 'піл', r: 'тура', q: 'ферзь', k: 'патша', x: 'алады', check: 'шах', mate: 'мат', short: 'қысқа рокировка', long: 'ұзын рокировка', promo: 'айналды' }
   };
   function moveToWords(m, lang) {
     const w = SPEAK[lang] || SPEAK.en;
@@ -150,7 +151,7 @@
 (function () {
   if (typeof window === 'undefined' || typeof document === 'undefined') return;
   const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const LANGS = { uz: 'uz-UZ', en: 'en-US', ru: 'ru-RU', es: 'es-ES', de: 'de-DE', fr: 'fr-FR', tr: 'tr-TR' };
+  const LANGS = { uz: 'uz-UZ', en: 'en-US', ru: 'ru-RU', es: 'es-ES', de: 'de-DE', fr: 'fr-FR', tr: 'tr-TR', kk: 'kk-KZ' };
   let on = false;
   try { on = localStorage.getItem('justChessVoice') === '1'; } catch (e) {}
   let rec = null, listening = false, restartTimer = null;

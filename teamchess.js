@@ -82,12 +82,34 @@ function start(t) {
   broadcast(t);
 }
 
+// Bir o'yinchi bir vaqtda bitta kutayotgan stolda o'tiradi (avval cheksiz stol ochib xotirani to'ldirish va
+// ikki stolda o'tirib, ikkala o'yin bir vaqtda boshlanishi mumkin edi)
+const MAX_TABLES = 300;
+function leaveWaiting(userId, exceptCode) {
+  for (const t of [...tables.values()]) {
+    if (t.code === exceptCode || t.status !== 'waiting') continue;
+    const s = seatOf(t, userId);
+    if (!s) continue;
+    t.seats[s] = null;
+    if (SEATS.every((x) => !t.seats[x])) tables.delete(t.code); else broadcast(t);
+  }
+}
+function inTeamGame(userId) {
+  for (const t of tables.values()) if (t.status === 'active' && seatOf(t, userId)) return true;
+  return false;
+}
+// deps.inActiveGame jamoa o'yinlarini ham sanaydi (server.js)
+const busy = (userId) => inTeamGame(userId) || !!(deps.inActiveGame && deps.inActiveGame(userId));
+
 function attach(socket) {
   const uid = () => socket.data.userId, uname = () => socket.data.username;
   const reply = (ack, v) => { if (typeof ack === 'function') ack(v); };
 
   socket.on('team-create', (data, ack) => {
     if (!uid()) return reply(ack, { ok: false, reason: 'auth' });
+    if (busy(uid())) return reply(ack, { ok: false, reason: 'busy' });
+    leaveWaiting(uid());
+    if (tables.size >= MAX_TABLES) return reply(ack, { ok: false, reason: 'full' });
     const clock = normClock(data && data.initial, data && data.increment);
     const t = { code: newCode(), createdAt: Date.now(), clock, seats: { w1: null, w2: null, b1: null, b2: null }, status: 'waiting', chess: null,
       timeLeft: { w: clock.initial * 1000, b: clock.initial * 1000 }, moveCount: { w: 0, b: 0 }, turnStartedAt: null, timer: null, result: null, chat: { w: [], b: [] } };
@@ -120,6 +142,8 @@ function attach(socket) {
     if (t.status !== 'waiting') return reply(ack, { ok: false, reason: 'started' });
     if (!SEATS.includes(seat)) return reply(ack, { ok: false, reason: 'bad_seat' });
     if (t.seats[seat] && t.seats[seat].userId !== uid()) return reply(ack, { ok: false, reason: 'taken' });
+    if (busy(uid())) return reply(ack, { ok: false, reason: 'busy' });
+    leaveWaiting(uid(), t.code);
     const was = seatOf(t, uid());
     if (was) t.seats[was] = null;
     t.seats[seat] = { userId: uid(), username: uname() };
@@ -176,7 +200,11 @@ function attach(socket) {
   socket.on('team-chat', (data, ack) => {
     const t = tables.get(String((data && data.code) || '').toUpperCase());
     const s = t && uid() ? seatOf(t, uid()) : null;
-    if (!s) return reply(ack, { ok: false });
+    // Mehmonlar boshqa chatlardagi kabi yoza olmaydi; sekundiga ko'pi bilan 2 ta xabar
+    if (!s || (deps.isGuest && deps.isGuest(uid()))) return reply(ack, { ok: false });
+    const now = Date.now();
+    if (socket.data.lastTeamChat && now - socket.data.lastTeamChat < 500) return reply(ack, { ok: false });
+    socket.data.lastTeamChat = now;
     let message = String((data && data.message) || '').trim().slice(0, 200);
     if (!message || deps.mutedUntil(uid())) return reply(ack, { ok: false });
     message = deps.cleanChat(message);
@@ -225,7 +253,7 @@ function init(d) {
       else if (t.status === 'active' && t.moveCount.w === 0 && now - t.startedAt > FIRST_MOVE_MS) end(t, null, 'aborted');
     }
   }, Math.min(15000, FIRST_MOVE_MS / 3));
-  return { attach, socketGone, tables };
+  return { attach, socketGone, tables, inTeamGame };
 }
 
 module.exports = { init, SEATS };

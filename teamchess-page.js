@@ -31,6 +31,7 @@
       const [initial, increment] = b.dataset.tc.split(',').map(Number);
       const r = await emit('team-create', { initial, increment });
       if (r && r.ok) window.openTeamChess(r.code);
+      else if (r && r.reason === 'busy') showToast(tx('arErrInGame', "Avval joriy o'yiningizni tugating."), 'warning');
     });
     const r = await emit('team-list', {});
     st.list = (r && r.tables) || [];
@@ -179,7 +180,8 @@
       </div>`).join('');
       seatsEl.querySelectorAll('[data-sit]').forEach((b) => b.onclick = async () => {
         const r = await emit('team-sit', { code: st.code, seat: b.dataset.sit });
-        if (r && r.ok) { st.mySeat = r.seat; st.chat = r.chat || []; renderChat(); } else showToast(tx('tmSeatTaken', "Bu o'rin band"), 'warning');
+        if (r && r.ok) { st.mySeat = r.seat; st.chat = r.chat || []; renderChat(); }
+        else showToast(r && r.reason === 'busy' ? tx('arErrInGame', "Avval joriy o'yiningizni tugating.") : tx('tmSeatTaken', "Bu o'rin band"), 'warning');
       });
       const stand = seatsEl.querySelector('[data-stand]');
       if (stand) stand.onclick = async () => { await emit('team-stand', { code: st.code }); st.mySeat = null; render(); };

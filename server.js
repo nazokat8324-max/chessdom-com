@@ -54,11 +54,12 @@ const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } 
 app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS) || 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors({ origin: true, credentials: true }));
-app.use(express.json({ limit: '10mb' }));
+// Eng katta so'rov — profil rasmi (≤ 200 KB, base64 ~270 KB); 10 MB xotirani band qilishga yo'l ochardi
+app.use(express.json({ limit: '1mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram|teamchess|fairplay-engine|fairplay-worker)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram|teamchess|fairplay-engine|fairplay-worker)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*|[\w.-]*\.log)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -595,7 +596,8 @@ function userSocket(userId) {
 
 function inActiveGame(userId) {
   for (const room of rooms.values()) if (room.status === 'active' && room.players.some(p => p.userId === userId)) return true;
-  return false;
+  // 🤝 2 ga 2 o'yinidagi o'yinchi ham band
+  return !!(teamChess && teamChess.inTeamGame(userId));
 }
 
 function dropChallenge(id) {
@@ -1529,6 +1531,7 @@ function handlePlayerLeave(socket, roomId, room) {
 
 // --- Bloklar (o'zaro): "a|b" — a b ni bloklagan. Har startda bazadan yuklanadi ---
 const blocks = new Set();
+const lastChatPost = new Map(); // userId -> oxirgi xabar vaqti (chat spam cheklovi)
 function blockedPair(a, b) { return blocks.has(a + '|' + b) || blocks.has(b + '|' + a); }
 
 // --- Hisobni bloklash (ban): userId -> { until, reason }. Har so'rovda bazaga murojaat qilmaslik uchun xotirada ---
@@ -1611,19 +1614,14 @@ function resolveChatRoom(roomId, userId) {
     return 'dm_' + [userId, partnerId].sort().join('_');
   }
   if (roomId.startsWith('dm_')) return roomId.slice(3).split('_').includes(userId) ? roomId : null;
-  if (rooms.has(roomId)) return null;
-  return roomId;
+  // Faqat davlat klubi chati; boshqa ixtiyoriy xona nomlari (avval istalgan "yashirin" xona ochib bo'lardi) rad etiladi
+  if (roomId.startsWith('club_') && isValidClubName(roomId.slice(5))) return roomId;
+  return null;
 }
 
 function dmPartner(roomId, userId) {
   if (!roomId.startsWith('dm_')) return null;
   return roomId.slice(3).split('_').find(id => id !== userId) || null;
-}
-
-// Socket orqali qo'shilish mumkin bo'lgan ochiq xonalar (shaxsiy va o'yin xonalari emas)
-function isPublicSocketRoom(roomId) {
-  return typeof roomId === 'string' && roomId.length > 0 && roomId.length <= 100
-    && !roomId.startsWith('user_') && !roomId.startsWith('dm_') && !rooms.has(roomId);
 }
 
 function validateMove(move) {
@@ -1640,6 +1638,20 @@ function validateMove(move) {
 async function start() {
   await db.initDatabase();
   errorTracker.start();
+
+  // Barcha yozuvchi so'rovlar (POST/DELETE) uchun umumiy chegara — foydalanuvchi bo'yicha (umumiy IP ortidagi maktab/ofis
+  // to'silmasin). Avval do'stlik so'rovi, klub yangiligi va boshqalarni cheksiz yuborish mumkin edi. Oddiy foydalanishda yetmaydi:
+  // 15 daqiqada 600 ta. Telegram webhook va o'z chegarasi bor yo'llar hisobga olinmaydi.
+  const WRITE_SKIP = new Set(['/telegram/webhook', '/client-errors']);
+  app.use('/api', rateLimit({
+    windowMs: 15 * 60 * 1000, max: 600, message: tooMany,
+    skip: (req) => TEST_MODE || ['GET', 'HEAD', 'OPTIONS'].includes(req.method) || WRITE_SKIP.has(req.path),
+    keyGenerator: (req) => {
+      const a = req.headers.authorization;
+      if (a && a.startsWith('Bearer ')) { try { return 'u:' + jwt.verify(a.slice(7), JWT_SECRET).userId; } catch (e) { /* IP bo'yicha */ } }
+      return 'ip:' + req.ip;
+    }
+  }));
 
   // --- 🐞 Brauzer xatolari (errors.js) — kirmagan foydalanuvchidan ham; IP bo'yicha cheklangan ---
   const clientErrorLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, skip: () => TEST_MODE, message: tooMany });
@@ -2020,7 +2032,8 @@ async function start() {
 
   // --- Shikoyat ---
   const REPORT_REASONS = ['abuse', 'cheating', 'spam', 'name', 'other'];
-  app.post('/api/reports', authMiddleware, async (req, res) => {
+  const reportLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20, skip: () => TEST_MODE, message: tooMany });
+  app.post('/api/reports', authMiddleware, reportLimiter, async (req, res) => {
     try {
       const { username, reason } = req.body || {};
       const details = String((req.body && req.body.details) || '').slice(0, 500);
@@ -2028,8 +2041,8 @@ async function start() {
       const target = await db.getUserByUsername(String(username || ''));
       if (!target || target.id === req.user.userId) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
       const created = await db.createReport(req.user.userId, target.id, reason, details);
-      // Aldashga shikoyat — o'yinchining oxirgi o'yinlari dvigatel bilan tekshiriladi
-      if (reason === 'cheating') analyzeRecentGames(target.id, 5).catch((err) => console.error('Fair-play tahlil xatoligi:', err.message));
+      // Aldashga shikoyat — o'yinchining oxirgi o'yinlari dvigatel bilan tekshiriladi (takroriy shikoyatda emas)
+      if (reason === 'cheating' && created && created.success) analyzeRecentGames(target.id, 5).catch((err) => console.error('Fair-play tahlil xatoligi:', err.message));
       res.json(created);
     } catch (err) { console.error('Report xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -2114,6 +2127,11 @@ async function start() {
         const p = room.status === 'active' && room.players.find(x => x.userId === target.id);
         if (p) endGame(roomId, room, room.chess.history().length < 2 ? null : otherColor(p.color), room.chess.history().length < 2 ? 'aborted' : 'abandon');
       }
+      // Navbat va choyxonadan chiqariladi; socketlar serverda uziladi (avval faqat klientga xabar yuborilardi va
+      // o'zgartirilgan klient socket orqali chat/chaqiruv yuborishda davom eta olardi)
+      for (let i = matchmakingQueue.length - 1; i >= 0; i--) if (matchmakingQueue[i].userId === target.id) matchmakingQueue.splice(i, 1);
+      teaStand(target.id);
+      setTimeout(() => io.in(`user_${target.id}`).disconnectSockets(true), 300);
       res.json({ success: true, until });
     } catch (err) { console.error('Ban xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -2383,7 +2401,7 @@ async function start() {
   app.get('/api/chat/messages', authMiddleware, async (req, res) => {
     try {
       const roomId = req.query.roomId ? resolveChatRoom(String(req.query.roomId), req.user.userId) : null;
-      if (req.query.roomId && !roomId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
+      if (!roomId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
       const messages = await db.getChatMessages({ roomId, viewerId: req.user.userId });
       res.json({ success: true, messages });
     }
@@ -2408,11 +2426,15 @@ async function start() {
     try {
       const errors = validationResult(req); if (!errors.isEmpty()) return res.status(400).json({ success: false, message: errors.array()[0].msg });
       if (mutedUntil(req.user.userId)) return res.status(403).json({ success: false, message: 'Siz vaqtincha chatda yoza olmaysiz!' });
+      // Ketma-ket xabarlar oqimi (spam): bir foydalanuvchidan 0.4 soniyada bittadan ko'p emas
+      const nowMs = Date.now();
+      if (!TEST_MODE && nowMs - (lastChatPost.get(req.user.userId) || 0) < 400) return res.status(429).json({ success: false, message: 'Too many requests, please try again later.' });
+      lastChatPost.set(req.user.userId, nowMs);
       const message = cleanChat(String(req.body.message));
-      // Shaxsiy xabar: "user_<id>" yoki receiverId → ikki tomon uchun umumiy dm_ xonasi
+      // Shaxsiy xabar: "user_<id>" yoki receiverId → ikki tomon uchun umumiy dm_ xonasi; aks holda faqat klub chati
       const requested = req.body.roomId || (req.body.receiverId ? `user_${req.body.receiverId}` : null);
       const roomId = requested ? resolveChatRoom(String(requested), req.user.userId) : null;
-      if (requested && !roomId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
+      if (!roomId) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
       // Klub chati (club_<davlat>): o'qish hammaga, yozish faqat shu klub a'zolariga
       if (roomId && roomId.startsWith('club_')) {
         const me = await db.getUserById(req.user.userId);
@@ -2432,8 +2454,7 @@ async function start() {
         const preview = message.startsWith('[sticker:') ? '🎨' : message.slice(0, 80);
         notify(partnerId, 'message', { from: req.user.username, preview }, 'dm:' + req.user.userId);
       }
-      else if (roomId) io.to(roomId).emit('chat-message', payload);
-      else io.emit('chat-message', payload);
+      else io.to(roomId).emit('chat-message', payload);
       res.json({ success: true, messageId: id });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
@@ -2956,7 +2977,7 @@ async function start() {
     catch (err) { console.error('Club leaderboard xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  teamChess = teamchess.init({ io, cleanChat, mutedUntil });
+  teamChess = teamchess.init({ io, cleanChat, mutedUntil, isGuest, inActiveGame });
   io.on('connection', (socket) => {
     teamChess.attach(socket);
     // Ochiq sahifalar yangi deployni sezishi uchun
@@ -2990,7 +3011,13 @@ async function start() {
         }
       } catch (err) { socket.emit('auth-error', { message: 'Invalid or expired token' }); }
     });
-    socket.on('join-club-room', (clubRoomId) => { if (isPublicSocketRoom(clubRoomId)) socket.join(clubRoomId); });
+    // Faqat klub chati xonasi (avval istalgan xonaga — tomoshabinlar, 2 ga 2 stollari — qo'shilib bo'lardi).
+    // Eski send-chat-message / join-chat-room olib tashlangan: ular bloklash, mute, so'z filtri va a'zolikni chetlab o'tardi
+    socket.on('join-club-room', (clubRoomId) => {
+      if (typeof clubRoomId !== 'string' || !clubRoomId.startsWith('club_') || !isValidClubName(clubRoomId.slice(5))) return;
+      for (const r of socket.rooms) if (r.startsWith('club_') && r !== clubRoomId) socket.leave(r);
+      socket.join(clubRoomId);
+    });
     socket.on('make-move', (data) => {
       const { roomId, move } = data || {};
       const room = rooms.get(roomId);
@@ -3292,15 +3319,6 @@ async function start() {
     socket.on('rtt-probe', (ack) => { if (typeof ack === 'function') ack(); });
     socket.on('disconnecting', () => {
       for (const r of socket.rooms) if (r.startsWith('watch_')) setTimeout(() => emitWatchCount(r.slice(6)), 0);
-    });
-    socket.on('join-chat-room', (roomId) => { if (isPublicSocketRoom(roomId)) socket.join(roomId); });
-    socket.on('send-chat-message', (data) => {
-      if (!socket.data.userId || !data || isGuest(socket.data.userId)) return;
-      const message = typeof data.message === 'string' ? data.message.slice(0, 1000) : '';
-      if (!message) return;
-      const payload = { senderId: socket.data.userId, senderName: socket.data.username, message, createdAt: new Date().toISOString() };
-      if (data.roomId && isPublicSocketRoom(data.roomId)) io.to(data.roomId).emit('chat-message', { ...payload, roomId: data.roomId });
-      else if (data.receiverId) io.to(`user_${data.receiverId}`).emit('chat-message', payload);
     });
     // Liga: o'yinchi o'z doska o'yiniga tayyor (ikkalasi tayyor bo'lganda o'yin boshlanadi)
     socket.on('league-ready', (data) => { league.ready(socket, data && data.gameId).catch(err => console.error('Liga ready xatoligi:', err)); });

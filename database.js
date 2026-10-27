@@ -46,19 +46,24 @@ function sqliteCall(method, sql, params) {
   });
 }
 
+// So'rovlar soni (faqat testlar uchun: bo'sh paytda server bazani uyg'otmasligini tekshirish)
+let queryCount = 0;
 async function dbGet(sql, ...params) {
+  queryCount++;
   params = normalizeParams(params);
   if (usePostgres) return (await pool.query(toPgSql(sql), params)).rows[0];
   return sqliteCall('get', sql, params);
 }
 
 async function dbAll(sql, ...params) {
+  queryCount++;
   params = normalizeParams(params);
   if (usePostgres) return (await pool.query(toPgSql(sql), params)).rows;
   return sqliteCall('all', sql, params);
 }
 
 async function dbRun(sql, ...params) {
+  queryCount++;
   params = normalizeParams(params);
   if (usePostgres) return pool.query(toPgSql(sql), params);
   return sqliteCall('run', sql, params);
@@ -2436,6 +2441,7 @@ async function restoreDump(dump, { force = false, onTable } = {}) {
 }
 
 module.exports = {
+  queryCount: () => queryCount,
   PROVISIONAL_GAMES,
   isProvisional,
   getInviteCode,

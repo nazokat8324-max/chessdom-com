@@ -223,7 +223,7 @@
         </div>`;
     }
     loadList();
-    if (!listTimer) listTimer = setInterval(() => { if (isActiveView()) loadList(); }, 10000);
+    if (!listTimer) listTimer = setInterval(() => { if (isActiveView() && !document.hidden) loadList(); }, 10000);
     if (!clockTimer) clockTimer = setInterval(tickClock, 250);
   };
 

@@ -30,6 +30,9 @@ const CYCLE = [
 let deps = null; // { db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId }
 const matchRooms = new Map(); // matchId -> { roomId, room } (server qayta ishga tushsa bo'sh — o'sha o'yinlar durrang deb yopiladi)
 let ticking = false;
+// Turnirlar o'chiq va tugallanmagani qolmagan — tick bazaga murojaat qilmaydi (avval har 5 s da so'rov bazani
+// hech qachon uxlatmasdi: Neon bepul tarifida oylik hisoblash vaqti 16 kunda tugardi)
+let dormant = false;
 const reminded = new Set(); // eslatma yuborilganlar: "<turnir>:<o'yinchi>"
 const REMIND_MS = Number(process.env.SWISS_REMIND_MS) || 60 * 1000;
 
@@ -307,9 +310,13 @@ async function recordGameResult(room, winnerColor, reason) {
 }
 
 async function tick() {
-  if (ticking || !deps) return;
+  if (ticking || !deps || dormant) return;
   ticking = true;
   try {
+    if (!CFG.enabled) {
+      const left = await q.get("SELECT COUNT(*) as \"n\" FROM tournaments WHERE tournament_type = 'swiss' AND status IN ('registration', 'active')");
+      if (!Number(left && left.n)) { dormant = true; return; }
+    }
     if (CFG.enabled) await ensureUpcoming();
     else {
       // To'xtatilgan: ro'yxat ochiq turnirlar bekor qilinadi (davom etayotgani oxirigacha o'tkaziladi)

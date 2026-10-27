@@ -132,7 +132,7 @@
 
   window.refreshHomeWidgets = function () {
     load();
-    if (!refreshTimer) refreshTimer = setInterval(() => { if (isHome()) load(); }, 30000);
+    if (!refreshTimer) refreshTimer = setInterval(() => { if (isHome() && !document.hidden) load(); }, 30000);
     if (!tickTimer) tickTimer = setInterval(() => { if (isHome()) tick(); }, 1000);
   };
   window.renderHomeWidgets = render;

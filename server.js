@@ -917,6 +917,11 @@ async function initPush() {
   } catch (err) { console.error('Push sozlash xatoligi:', err.message); }
 }
 // Foydalanuvchi saytni hozir ko'ryaptimi (kamida bitta ochiq va ko'rinib turgan sahifa) — unda push shart emas
+// Saytni hozir kimdir ochiq ko'rib turibdimi (fonda qolgan oynalar sanalmaydi)
+function anyoneActive() {
+  for (const id of onlineUsers.keys()) if (isActive(id)) return true;
+  return false;
+}
 function isActive(userId) {
   const set = onlineUsers.get(userId);
   if (!set) return false;
@@ -1721,6 +1726,7 @@ async function start() {
     errorTracker.capture('client', message, stack || (src ? `    at ${src}:${context.line || 0}:${context.col || 0}` : ''), context);
     res.json({ success: true });
   });
+  if (TEST_MODE) app.get('/api/test/db-queries', (req, res) => res.json({ success: true, count: db.queryCount() }));
   if (TEST_MODE) app.get('/api/test/throw', () => { throw new Error('Test uchun xato'); });
   if (TEST_MODE) app.post('/api/test/cleanup-guests', async (req, res) => res.json({ success: true, ids: await cleanupGuests(new Date(Date.now() + 60000).toISOString()) }));
 
@@ -3415,6 +3421,7 @@ async function start() {
   });
 
   setInterval(() => {
+    league.tick();
     closeWarSeasons(); closeSportMonths(); closePredictionMonths(); cleanupGuests();
     db.stopStaleDuels(new Date(Date.now() - DUEL_STALE_MS).toISOString()).catch((err) => console.error('Bahslarni tozalash xatoligi:', err.message));
   }, 60 * 60 * 1000);
@@ -3460,7 +3467,9 @@ async function start() {
   } catch (err) { console.error("O'yinlarni tiklash xatoligi:", err); }
   setInterval(swiss.tick, swiss.CFG.tickMs);
   swiss.tick();
-  setInterval(league.tick, league.CFG.tickMs);
+  // Liga: har daqiqalik tekshiruv faqat saytda kimdir faol bo'lsa; aks holda soatlik vazifalar bilan birga — shunda bo'sh
+  // paytda (tunda) baza uxlaydi va hisoblash vaqti sarflanmaydi. Muddatlar 48 soatlik, bir soatlik kechikish sezilmaydi.
+  setInterval(() => { if (league.CFG.tickMs < 60000 || anyoneActive()) league.tick(); }, league.CFG.tickMs);
   league.tick();
 
   // 💾 Avtomatik zaxira (GitHub Actions): X-Backup-Token = BACKUP_TOKEN (env); javob shu token bilan shifrlangan

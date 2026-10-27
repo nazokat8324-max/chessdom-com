@@ -94,7 +94,7 @@
   // Kirgandan keyin va har 30 daqiqada (bayram yarim tunda boshlanadi)
   document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => load(true), 2500);
-    setInterval(() => load(true), 30 * 60 * 1000);
+    setInterval(() => { if (!document.hidden) load(true); }, 30 * 60 * 1000);
   });
   if (typeof socket !== 'undefined' && socket && socket.on) socket.on('game-ended', () => { st.at = 0; });
 })();

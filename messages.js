@@ -321,6 +321,8 @@
       if (isActiveView()) loadFriends().then(render);
     });
     if (window.authToken) window.refreshMessagesBadge();
-    setInterval(() => { if (window.authToken) window.refreshMessagesBadge(); }, 60000);
+    // Fonda qolgan oyna so'ramaydi (yangi xabar baribir socket orqali keladi); qaytganda bir marta yangilanadi
+    setInterval(() => { if (window.authToken && !document.hidden) window.refreshMessagesBadge(); }, 60000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden && window.authToken) window.refreshMessagesBadge(); });
   });
 })();

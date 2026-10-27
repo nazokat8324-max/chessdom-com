@@ -1,5 +1,5 @@
 // Brauzer testi (puppeteer-core): Chrome topilmasa o'tkazib yuboriladi. CHROME_PATH bilan yo'lni berish mumkin.
-const { test, before, after } = require('node:test');
+const { test, before, after, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('fs');
 const { startServer, sleep } = require('./helpers');
@@ -18,10 +18,37 @@ before(async () => {
   browser = await require('puppeteer-core').launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox'] });
 });
 after(async () => { if (browser) await browser.close(); if (srv) await srv.stop(); });
+// Har test o'z sahifalarini yopadi: avval 36 ta sahifa (har birida socket, taymerlar) oxirigacha ochiq qolib,
+// brauzer og'irlashar va keyingi testlar vaqt limitiga tushardi
+const openContexts = [];
+afterEach(async () => { for (const c of openContexts.splice(0)) await c.close().catch(() => {}); });
+
+// CDN fayllari (jQuery, chess.js, socket.io, i18next, shriftlar…) bir marta yuklanib, keyingi sahifalarga xotiradan beriladi.
+// Avval har sahifa ularni qayta yuklardi va tarmoq sekinlashganda <head> dagi skriptlar sabab navigatsiya 30 s ga tushardi.
+const CDN = /^https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|unpkg\.com|code\.jquery\.com|fonts\.googleapis\.com|fonts\.gstatic\.com)\//;
+const cdnCache = new Map(); // url → { status, contentType, body }
+async function useCdnCache(p) {
+  await p.setRequestInterception(true);
+  // Kooperativ rejim (ustuvorlik bilan): testning o'z ushlagichi (soxta /api javobi, ustuvorliksiz) har doim ustun turadi
+  p.on('request', (req) => {
+    if (req.isInterceptResolutionHandled()) return;
+    const hit = req.method() === 'GET' && cdnCache.get(req.url());
+    if (hit) return req.respond({ status: hit.status, contentType: hit.contentType, headers: { 'access-control-allow-origin': '*' }, body: hit.body }, 1).catch(() => {});
+    req.continue(req.continueRequestOverrides(), 0).catch(() => {});
+  });
+  p.on('response', async (res) => {
+    const url = res.url();
+    if (!CDN.test(url) || res.status() !== 200 || cdnCache.has(url) || res.request().method() !== 'GET') return;
+    try { cdnCache.set(url, { status: 200, contentType: res.headers()['content-type'] || 'application/octet-stream', body: await res.buffer() }); } catch (e) { /* oqim yopilgan */ }
+  });
+}
 
 async function page(user, viewport) {
   const ctx = await browser.createBrowserContext();
+  openContexts.push(ctx);
   const p = await ctx.newPage();
+  p.setDefaultNavigationTimeout(60000);
+  await useCdnCache(p);
   await p.setViewport(viewport || { width: 1366, height: 860 });
   p.errors = [];
   p.on('pageerror', (e) => p.errors.push(e.message));
@@ -35,7 +62,7 @@ async function page(user, viewport) {
 
 test('Kirmagan foydalanuvchiga kirish sahifasi chiqadi', opts, async () => {
   const p = await page(null);
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   await sleep(800);
   const gate = await p.evaluate(() => document.body.classList.contains('auth-locked') && !!document.querySelector('#authGate .auth-legal a[href="/maxfiylik"]'));
   assert.ok(gate);
@@ -44,7 +71,7 @@ test('Kirmagan foydalanuvchiga kirish sahifasi chiqadi', opts, async () => {
 
 test("Mehmon: ro'yxatdan o'tmasdan o'ynash → reytingsiz qidiruv, eslatma, ro'yxatdan o'tganda o'sha akkaunt saqlanadi", opts, async () => {
   const p = await page(null);
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   await sleep(500);
   await p.click('#authGuestBtn');
   await p.waitForFunction(() => window.isSearchingOpponent === true, { timeout: 8000 });
@@ -230,7 +257,13 @@ test("Shahar naqshlari: o'z profilida tanlanadi, qulflanganlari bosilmaydi", opt
     const p = await page(u, vp);
     await p.goto(srv.base + '/?profile=' + u.name, { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('#profileCaravan .bn-edit', { visible: true, timeout: 15000 });
-    await p.click('#profileCaravan .bn-edit');
+    // Profil ma'lumoti kelganda karta qayta chiziladi — bosish yo'qolsa, oyna chiqmaguncha qayta bosamiz
+    await p.waitForFunction(() => {
+      if (document.querySelector('#bnPicker .bn-opt')) return true;
+      const b = document.querySelector('#profileCaravan .bn-edit');
+      if (b) b.click();
+      return false;
+    }, { polling: 700, timeout: 20000 });
     await p.waitForSelector('#bnPicker .bn-opt', { visible: true });
     const st = await p.evaluate(() => ({ all: document.querySelectorAll('#bnPicker .bn-opt').length, locked: document.querySelectorAll('#bnPicker .bn-opt.locked').length }));
     assert.deepEqual(st, { all: 13, locked: 11 }, "naqshsiz + 12 shahar, yangi o'yinchida faqat Sian ochiq");
@@ -454,7 +487,7 @@ test("2 ga 2: stol ro'yxati, o'rinda o'tirish, o'z navbatida sudrab yurish, jamo
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   await sleep(1000);
   const views = ['home', 'game', 'tea', 'leaderboard', 'live', 'messages', 'clubs', 'leagues', 'war', 'champions', 'settings'];
   for (const v of views) {
@@ -475,7 +508,7 @@ test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
 test('Telefon: pastki menyu va gorizontal aylantirish yo\'q', opts, async () => {
   const u = await srv.register('Um');
   const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   await sleep(1000);
   const r = await p.evaluate(() => ({
     sw: document.documentElement.scrollWidth,
@@ -494,7 +527,7 @@ test("Brauzer xatosi admin panelidagi Xatolar bo'limida ko'rinadi", opts, async 
   });
   u.user.role = 'admin';
   const p = await page(u);
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   await sleep(800);
   // Sahifaning o'z skripti (puppeteer evaluate ichidagi xato brauzerda "Script error." bo'lib ko'rinadi)
   await p.evaluate(() => { const s = document.createElement('script'); s.textContent = "throw new Error('UI sinov xatosi')"; document.body.appendChild(s); });
@@ -717,7 +750,7 @@ test("Taklif havolasi: yangi odam banner ko'radi, ro'yxatdan o'tadi va taklif qi
   const code = (await srv.api(a, '/api/invite')).code;
   const sa = await srv.connect(a);
   const p = await page(null, { width: 390, height: 844, isMobile: true });
-  await p.goto(srv.base + '/?invite=' + code + '&tc=180%2B2', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/?invite=' + code + '&tc=180%2B2', { waitUntil: 'load' });
   await sleep(1000);
   assert.equal(await p.evaluate(() => location.search), '', 'kod manzildan olib tashlanadi');
   assert.match(await p.evaluate(() => (document.getElementById('authInviteBanner') || {}).textContent || ''), new RegExp(a.name));
@@ -736,7 +769,7 @@ test("Taklif havolasi: yangi odam banner ko'radi, ro'yxatdan o'tadi va taklif qi
 test("O'yinni ulashish: GIF va rasm brauzerda yasaladi", opts, async () => {
   const u = await srv.register('Ushr');
   const p = await page(u);
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   await sleep(600);
   const data = { moves: ['e4', 'e5', 'Bc4', 'Nc6', 'Qh5', 'Nf6', 'Qxf7#'], variant: 'standard', white: { name: u.name, rating: 1532 }, black: { name: 'Raqib', rating: 1488 }, result: '1-0', reason: 'checkmate', myColor: 'w' };
   await p.evaluate((d) => window.openGameShare(d), data);
@@ -758,7 +791,7 @@ test("O'yinni ulashish: GIF va rasm brauzerda yasaladi", opts, async () => {
 test("Telefon yon holatda: oyna tugmasiga yetiladi, menyu ekranga sig'adi; klublar ikki ustunda", opts, async () => {
   const u = await srv.register('Uland'), o = await srv.register('Ulando');
   const p = await page(u, { width: 740, height: 360, isMobile: true, hasTouch: true });
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   await sleep(700);
   // O'yinga chaqirish oynasi: karta ekrandan oshmaydi va ichida aylanib "Chaqirish" ga yetiladi
   await p.evaluate((n) => window.openChallengeDialog(n), o.name);
@@ -791,7 +824,7 @@ test("Telefon: Xabarlar — uzun havolali suhbat ekranga sig'adi, yuborish tugma
   const a = await srv.register('Umsg'), b = await srv.register('Umsgb');
   await srv.api(b, '/api/chat/messages', 'POST', { roomId: 'user_' + a.id, message: 'Havola: https://chessdom-com.onrender.com/?profile=' + 'juda_uzun_bolinmaydigan_havola_'.repeat(4) });
   const p = await page(a, { width: 360, height: 640, isMobile: true, hasTouch: true });
-  await p.goto(srv.base + '/xabarlar', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/xabarlar', { waitUntil: 'load' });
   await sleep(800);
   await p.evaluate((n) => window.openMessagesWith(n), b.name);
   await sleep(1000);
@@ -806,7 +839,7 @@ test("Telefon: Xabarlar — uzun havolali suhbat ekranga sig'adi, yuborish tugma
 test("Bosh sahifadagi \"Onlayn o'ynash\" darhol raqib qidiradi; taxta o'yindan oldin sahifani aylantirishga xalaqit bermaydi", opts, async () => {
   const u = await srv.register('Uqp');
   const p = await page(u, { width: 375, height: 667, isMobile: true, hasTouch: true });
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   await sleep(700);
   await p.evaluate(() => switchView('game'));
   await sleep(300);
@@ -828,7 +861,30 @@ test("Bosh sahifadagi \"Onlayn o'ynash\" darhol raqib qidiradi; taxta o'yindan o
 test("Service worker ro'yxatdan o'tadi", opts, async () => {
   const u = await srv.register('Us');
   const p = await page(u);
-  await p.goto(srv.base + '/', { waitUntil: 'networkidle2' });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
   const scope = await p.evaluate(async () => (await navigator.serviceWorker.ready).scope);
   assert.equal(scope, srv.base + '/');
+});
+
+test("Barcha bo'limlar: kirgan foydalanuvchi har bir sahifani ochganda ushlanmagan JS xatosi yo'q (kompyuter va telefon)", opts, async () => {
+  const u = await srv.register('Tour');
+  await srv.api(u, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
+  const login = await srv.api(null, '/api/auth/login', 'POST', { username: u.name, password: u.password });
+  const ROUTES = ['/', '/oyin', '/choyxona', '/reyting', '/jonli', '/xabarlar', '/klublar', '/klublar?club=Uzbekistan', '/ligalar', '/chempionlar',
+    '/bayroqlar', '/karvon', '/kutubxona', '/sozlamalar', '/tarix?u=' + u.name, '/profil?u=' + u.name + '&b=nishonlar', '/jamoa', '/?profile=' + u.name];
+  for (const vp of [undefined, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const p = await page({ token: login.token, user: login.user }, vp);
+    p.consoleErrors = [];
+    p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load resource|net::|jsdelivr|gstatic|fonts\.g/.test(m.text())) p.consoleErrors.push(m.text()); });
+    await p.goto(srv.base + '/', { waitUntil: 'load' });
+    await sleep(600);
+    for (const r of ROUTES) {
+      // SPA ichida o'tish (router) va to'g'ridan-to'g'ri ochish — ikkalasi ham
+      await p.evaluate((url) => { history.pushState({}, '', url); window.dispatchEvent(new PopStateEvent('popstate', { state: {} })); }, r);
+      await sleep(350);
+    }
+    for (const r of ['/sozlamalar', '/karvon', '/kutubxona?m=fork', '/jamoa']) { await p.goto(srv.base + r, { waitUntil: 'load' }); await sleep(400); }
+    assert.deepEqual(p.errors, [], 'pageerror ' + (vp ? 'telefon' : 'kompyuter'));
+    assert.deepEqual(p.consoleErrors, [], 'console.error ' + (vp ? 'telefon' : 'kompyuter'));
+  }
 });

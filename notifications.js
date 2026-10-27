@@ -31,7 +31,7 @@
           icon: '💬',
           text: (d.count || 1) > 1
             ? tx('nfMessages', '{{name}} dan {{count}} ta yangi xabar', { name: d.from, count: d.count })
-            : tx('nfMessage', '{{name}}: {{text}}', { name: d.from, text: d.preview === '🎨' ? tx('stickerPreview', '🎨 Stiker') : d.preview }),
+            : tx('nfMessage', '{{name}}: {{text}}', { name: d.from, text: d.preview === '🎨' ? '🎨 ' + tx('msgSticker', 'Stiker') : d.preview }),
           go: () => window.openMessagesWith && window.openMessagesWith(d.from)
         };
       case 'tournament_soon':

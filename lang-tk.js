@@ -108,6 +108,8 @@ window.TRANSLATIONS_TK = {
   colWins: "Ýeňiş",
   colGames: "Oýun",
   colWinPercent: "Ýeňiş %",
+  arColWdl: "Ý / D / U",
+  arColWdlTitle: "Ýeňiş / Deňlik / Utulyş",
   colPlayer: "Oýunçy",
   clubRankTitle: "Klublaryň reýtingi",
   clubRankClan: "Klub",

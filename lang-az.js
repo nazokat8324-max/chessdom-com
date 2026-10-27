@@ -108,6 +108,8 @@ window.TRANSLATIONS_AZ = {
   colWins: "Qələbə",
   colGames: "Oyun",
   colWinPercent: "Qələbə %",
+  arColWdl: "Q / H / M",
+  arColWdlTitle: "Qələbə / Heç-heçə / Məğlubiyyət",
   colPlayer: "Oyunçu",
   clubRankTitle: "Klubların reytinqi",
   clubRankClan: "Klub",

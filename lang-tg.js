@@ -108,6 +108,8 @@ window.TRANSLATIONS_TG = {
   colWins: "Ғалаба",
   colGames: "Бозӣ",
   colWinPercent: "Ғалаба %",
+  arColWdl: "Ғ / Д / М",
+  arColWdlTitle: "Ғалаба / Дуранг / Мағлубият",
   colPlayer: "Бозингар",
   clubRankTitle: "Рейтинги клубҳо",
   clubRankClan: "Клуб",

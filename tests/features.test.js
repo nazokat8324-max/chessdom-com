@@ -51,16 +51,27 @@ test('Bayroqlar bellashuvi: reytingli g\'alaba klubga ochko beradi (qo\'shni dav
   const a = await srv.register('Wa'), b = await srv.register('Wb');
   await srv.api(a, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
   await srv.api(b, '/api/country-clubs/join', 'POST', { country: 'Kazakhstan', code: 'kz' });
-  const g = await startGame(srv, a, b);
-  await play(g, ['e2e4', 'e7e5']);
-  await finish(g, g.white === a ? 'black-resigns' : 'white-resigns'); // a yutadi
-  closeAll(a, b);
-  await sleep(400);
+  const LINE = ['e2e4', 'e7e5', 'g1f3', 'b8c6', 'f1c4', 'g8f6', 'd2d3', 'f8c5', 'b1c3', 'd7d6'];
+  const aWins = async (moves) => { // a yutadi
+    const g = await startGame(srv, a, b);
+    await play(g, moves);
+    await finish(g, g.white === a ? 'black-resigns' : 'white-resigns');
+    await sleep(300);
+  };
+  const uzPoints = async () => { const w = await srv.api(a, '/api/war'); const c = w.clubs.find((x) => x.code === 'uz'); return c ? c.points : 0; };
+  // Juda qisqa o'yin (ochko yig'ish uchun 1 yurishda taslim) — ochko yo'q
+  await aWins(['e2e4', 'e7e5']);
+  assert.equal(await uzPoints(), 0, 'qisqa o\'yin ochko bermaydi');
+  await aWins(LINE);
   const war = await srv.api(a, '/api/war');
   const uz = war.clubs.find((c) => c.code === 'uz');
   assert.equal(uz.points, 5, 'g\'alaba 3 + boshqa klub 1 + qo\'shni 1');
   assert.equal(war.regions.uz.ruler, 'uz');
   assert.equal(war.me.myPoints, 5);
+  // Bir juftlik bir kunda ko'pi bilan 3 ta ochkoli o'yin
+  await aWins(LINE); await aWins(LINE); await aWins(LINE);
+  assert.equal(await uzPoints(), 15, "4-o'yin ochko bermadi");
+  closeAll(a, b);
 });
 
 test('Bashorat: natija taxmini, qabul yopilishi, ochkolar', async () => {

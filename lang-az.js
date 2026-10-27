@@ -1210,6 +1210,7 @@ window.TRANSLATIONS_AZ = {
   warRuleForeign: "başqa ölkə klubunun oyunçusunu udmaq",
   warRuleNeighbor: "qonşu ölkənin oyunçusunu udmaq — əlavə bonus",
   warRuleSeason: "Mövsüm bir ay davam edir. Sonda ən çox ərazisi olan klub çempion olur, sonra xəritə sıfırlanır",
+  warRuleFair: "Xal yalnız ən azı 5 gedişli oyunlara verilir; eyni rəqiblə gündə 3 oyuna qədər sayılır",
   warRuleTerritory: "Ərazidə öz klubunun bayrağı və ya xalının yarısı ondan çox olan qonşu klubun bayrağı dalğalanır",
   warRuleWin: "reytinqli qələbə",
   warRuler: "Mövsümün çempionu",

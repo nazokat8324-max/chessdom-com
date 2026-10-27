@@ -193,8 +193,21 @@ async function finalizeMatch(match) {
   await update(match.away_club, away, home);
 }
 
-// Muddat tugaganda boshlanmagan o'yinlar: kelgan (tayyor bo'lgan) o'yinchi texnik g'alaba oladi, ikkalasi kelmasa — 0:0
+// Xotirada shu liga o'yinining jonli xonasi bormi
+function hasLiveRoom(gameId) {
+  for (const room of deps.rooms.values()) if (room.leagueGameId === gameId && room.status === 'active') return true;
+  return false;
+}
+
+// Muddat tugaganda boshlanmagan o'yinlar: kelgan (tayyor bo'lgan) o'yinchi texnik g'alaba oladi, ikkalasi kelmasa — 0:0.
+// "playing" bo'lib qolgan, lekin xonasi yo'q o'yin (server qayta ishga tushib tiklanmagan) — durrang; aks holda bahs va butun
+// divizion abadiy to'xtab qolardi. Jonli davom etayotgan o'yin kutiladi.
 async function forfeitPending(match) {
+  const stuck = await q.all('SELECT id FROM league_games WHERE match_id = ? AND status = ?', [match.id, 'playing']);
+  for (const g of stuck) {
+    if (hasLiveRoom(g.id)) continue;
+    await q.run('UPDATE league_games SET status = ?, result = ?, finished_at = ? WHERE id = ? AND status = ?', ['finished', '1/2', nowIso(), g.id, 'playing']);
+  }
   const pending = await q.all('SELECT * FROM league_games WHERE match_id = ? AND status = ?', [match.id, 'pending']);
   for (const g of pending) {
     const result = g.white_ready_at && !g.black_ready_at ? '+-' : (!g.white_ready_at && g.black_ready_at ? '-+' : '0-0');
@@ -334,8 +347,18 @@ function socketGone(socketId) {
 
 async function startLeagueGame(g, entry) {
   waiting.delete(g.id);
-  await q.run('UPDATE league_games SET status = ? WHERE id = ?', ['playing', g.id]);
+  // Atomar: o'yin faqat bir marta boshlanadi (ikki oyna / takroriy "O'ynash")
+  const upd = await q.run('UPDATE league_games SET status = ? WHERE id = ? AND status = ?', ['playing', g.id, 'pending']);
+  if (!(upd && (upd.changes || upd.rowCount))) return;
   const [whiteUser, blackUser] = await Promise.all([deps.db.getUserById(g.white_id), deps.db.getUserById(g.black_id)]);
+  const busy = (uid) => !!(deps.inActiveGame && deps.inActiveGame(uid));
+  const sockOk = (id) => { const s = deps.io.sockets.sockets.get(id); return !!(s && s.connected); };
+  // Bazadan o'qish paytida kimdir uzilgan yoki boshqa o'yinga kirgan bo'lsa — o'yin qayta kutishga qaytadi
+  if (!whiteUser || !blackUser || busy(g.white_id) || busy(g.black_id) || !sockOk(entry.w) || !sockOk(entry.b)) {
+    await q.run('UPDATE league_games SET status = ? WHERE id = ? AND status = ?', ['pending', g.id, 'playing']);
+    notifyUsers([g.white_id, g.black_id], 'league-update', { type: 'cancelled' });
+    return;
+  }
   const clock = { initial: g.initial_time, increment: g.increment };
   const roomId = deps.generateRoomId();
   const room = deps.createGameRoom(

@@ -128,6 +128,7 @@
               <li><b>+1</b> ${esc(tx('warRuleForeign', "boshqa davlat klubi o'yinchisini yutish"))}</li>
               <li><b>+1</b> ${esc(tx('warRuleNeighbor', "qo'shni davlat o'yinchisini yutish — yana qo'shimcha"))}</li>
               <li>🛡️ ${esc(tx('warRuleTerritory', "Hudud kimning bayrog'i ostida: o'z klubi yoki ochkosining yarmi o'z klubidan ko'p bo'lgan qo'shni klub"))}</li>
+              <li>⚖️ ${esc(tx('warRuleFair', "Ochko kamida 5 yurishli o'yinlar uchun beriladi; bir raqib bilan kuniga 3 tagacha o'yin sanaladi"))}</li>
               <li>📅 ${esc(tx('warRuleSeason', "Mavsum — bir oy. Oy oxirida eng ko'p hududli klub chempion bo'ladi, keyin xarita yangidan boshlanadi"))}</li>
             </ul>
           </section>

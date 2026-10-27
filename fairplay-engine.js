@@ -68,6 +68,7 @@ function createAnalyzer(opts) {
   const depth = Number(opts && opts.depth) || 9;
   const onResult = opts.onResult;
   const queue = [], seen = new Set();
+  const MAX_QUEUE = 300;
   let worker = null, busy = false, seq = 0;
   const pending = new Map();
   function ensureWorker() {
@@ -76,7 +77,8 @@ function createAnalyzer(opts) {
     worker = new Worker(path.join(__dirname, 'fairplay-worker.js'));
     worker.on('message', (msg) => { const p = pending.get(msg.id); if (p) { pending.delete(msg.id); p(msg); } });
     worker.on('error', (err) => { console.error('Fair-play worker xatoligi:', err.message); worker = null; for (const p of pending.values()) p({ error: err.message }); pending.clear(); });
-    worker.on('exit', () => { worker = null; });
+    // Ishchi xatosiz to'xtasa ham (masalan, xotira) kutayotgan tahlil osilib qolmasin — aks holda navbat abadiy to'xtardi
+    worker.on('exit', () => { worker = null; for (const p of pending.values()) p({ error: 'worker exited' }); pending.clear(); });
     return worker;
   }
   async function run() {
@@ -101,6 +103,12 @@ function createAnalyzer(opts) {
       if (!job || !job.ref || seen.has(job.ref) || !Array.isArray(job.moves) || job.moves.length < OPENING_PLIES + 2 * MIN_MOVES - 2) return false;
       seen.add(job.ref);
       if (seen.size > 5000) seen.clear();
+      // Navbat chegarasi: ko'p o'yin bo'lsa eng eski avtomatik (room:) tahlil tashlanadi, shikoyat/admin so'ragani qoladi
+      if (queue.length >= MAX_QUEUE) {
+        const i = queue.findIndex((j) => String(j.ref).startsWith('room:'));
+        if (i === -1) return false;
+        queue.splice(i, 1);
+      }
       queue.push(job);
       setImmediate(run);
       return true;

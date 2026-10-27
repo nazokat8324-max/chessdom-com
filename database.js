@@ -1025,7 +1025,8 @@ async function recentGameOfDayIds(sinceDay) {
   return (await dbAll('SELECT game_id as "gameId" FROM game_of_day WHERE day >= ?', [sinceDay])).map((r) => r.gameId);
 }
 async function setGameOfDay(day, userId, gameId, score) {
-  await dbRun('INSERT INTO game_of_day (day, user_id, game_id, score, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (day) DO NOTHING', [day, userId, gameId, score, new Date().toISOString()]);
+  // true — shu chaqiruv tanladi (bir vaqtdagi ikki so'rovda bildirishnoma bir marta)
+  return changedRows(await dbRun('INSERT INTO game_of_day (day, user_id, game_id, score, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (day) DO NOTHING', [day, userId, gameId, score, new Date().toISOString()]));
 }
 
 async function getUserGameById(userId, gameId) {

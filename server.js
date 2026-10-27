@@ -545,7 +545,7 @@ async function endGame(roomId, room, winnerColor, reason) {
     } catch (err) { console.error("O'yin natijasini saqlash xatoligi:", err); }
   }
   resolvePredictions(roomId, room, winnerColor, reason);
-  if (recorded && room.rated && warBefore) recordWarPoints(players, warBefore, winnerColor).catch(err => console.error('Urush ochkolari xatoligi:', err.message));
+  if (recorded && room.rated && warBefore) recordWarPoints(players, warBefore, winnerColor, moves.length).catch(err => console.error('Urush ochkolari xatoligi:', err.message));
   if (recorded) {
     invalidateCache('leaderboard', 'daily:day', 'daily:week');
     recordFairplay(room, winnerColor).catch(err => console.error('Fair-play xatoligi:', err.message));
@@ -1023,9 +1023,9 @@ async function pickGameOfDay(now) {
     if (!list.length) return null;
     list.sort((a, b) => godScore(b) - godScore(a));
     const best = list[0];
-    await db.setGameOfDay(day, best.userId, best.id, godScore(best));
+    const chosen = await db.setGameOfDay(day, best.userId, best.id, godScore(best));
     row = await db.getGameOfDay(day);
-    if (row && row.gameId === best.id) {
+    if (chosen && row && row.gameId === best.id) {
       notify(best.userId, 'game_of_day', { day, opponent: best.opponent });
       notify(best.oppId, 'game_of_day', { day, opponent: best.username });
     }
@@ -1133,8 +1133,19 @@ async function closeWarSeasons() {
     if (state.ruler) for (const uid of await db.getClubMemberIdsByCode(state.ruler.code)) notify(uid, 'war_ruler', { season: prev, club: state.ruler.country, code: state.ruler.code, territories: state.ruler.territories });
   } catch (err) { console.error('Urush mavsumi xatoligi:', err.message); }
 }
-async function recordWarPoints(players, before, winnerColor) {
+// Ochko yig'ishga qarshi: juda qisqa o'yin (bir klubdagi do'stlar 1 yurishda taslim bo'lib navbat bilan "yutishi") ochko bermaydi,
+// bir juftlik bir kunda ko'pi bilan WAR_PAIR_DAILY ta ochkoli o'yin (xotirada; deploydan keyin qaytadan sanaladi)
+const WAR_MIN_PLIES = 10, WAR_PAIR_DAILY = 3;
+const warPairGames = new Map(); // "kun|id1|id2" -> o'yinlar soni
+async function recordWarPoints(players, before, winnerColor, plies) {
   const season = warSeasonKey();
+  if ((plies || 0) < WAR_MIN_PLIES) return;
+  const day = new Date(Date.now() + WAR_TZ_MS).toISOString().slice(0, 10);
+  const pairKey = day + '|' + players.map((p) => p.userId).sort().join('|');
+  const played = warPairGames.get(pairKey) || 0;
+  if (played >= WAR_PAIR_DAILY) return;
+  warPairGames.set(pairKey, played + 1);
+  if (warPairGames.size > 5000) for (const k of warPairGames.keys()) if (!k.startsWith(day)) warPairGames.delete(k);
   for (const p of players) {
     const me = before[p.color], opp = before[otherColor(p.color)];
     if (!me || !me.club_country || !me.club_code) continue;

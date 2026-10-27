@@ -1210,6 +1210,7 @@ window.TRANSLATIONS_TR = {
   warRuleForeign: "başka ülke kulübünden bir oyuncuyu yenmek",
   warRuleNeighbor: "komşu ülkeden bir oyuncuyu yenmek — ek bonus",
   warRuleSeason: "Bir sezon bir ay sürer. Sonunda en çok bölgesi olan kulüp şampiyon olur, ardından harita sıfırlanır",
+  warRuleFair: "Puanlar yalnızca en az 5 hamlelik oyunlar için verilir; aynı rakiple günde en fazla 3 oyun sayılır",
   warRuleTerritory: "Bir bölgede kendi kulübünün bayrağı ya da puanının yarısı onu geçen komşu kulübün bayrağı dalgalanır",
   warRuleWin: "puanlı galibiyet",
   warRuler: "Sezon şampiyonu",

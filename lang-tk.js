@@ -1210,6 +1210,7 @@ window.TRANSLATIONS_TK = {
   warRuleForeign: "başga ýurduň klubunyň oýunçysyny utmak",
   warRuleNeighbor: "goňşy ýurduň oýunçysyny utmak — goşmaça bonus",
   warRuleSeason: "Möwsüm bir aý dowam edýär. Ahyrynda iň köp sebiti bolan klub çempion bolýar, soňra karta täzeden başlanýar",
+  warRuleFair: "Utuk diňe azyndan 5 ýörişli oýunlar üçin berilýär; bir garşydaş bilen günde 3 oýna çenli hasaplanýar",
   warRuleTerritory: "Sebitde öz klubunyň baýdagy ýa-da utugynyň ýarysy ondan köp bolan goňşy klubuň baýdagy pasyrdaýar",
   warRuleWin: "reýtingli ýeňiş",
   warRuler: "Möwsümiň çempiony",

@@ -1121,9 +1121,11 @@ async function setAppSetting(key, value) {
   await dbRun('INSERT INTO app_settings (key, value) VALUES (?, ?)', [key, value]);
 }
 // Bir qurilma (endpoint) — bitta obuna; boshqa foydalanuvchi shu qurilmada kirsa, obuna unga o'tadi
+// Bitta atomar so'rov: bir qurilmadan ikki so'rov bir vaqtda kelsa ham (kirish + til almashishi) unique xatosi chiqmaydi
 async function savePushSubscription(userId, sub, lang) {
-  await dbRun('DELETE FROM push_subscriptions WHERE endpoint = ?', [sub.endpoint]);
-  await dbRun('INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh, auth, lang, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+  await dbRun(`INSERT INTO push_subscriptions (id, user_id, endpoint, p256dh, auth, lang, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)
+    ON CONFLICT (endpoint) DO UPDATE SET user_id = excluded.user_id, p256dh = excluded.p256dh, auth = excluded.auth,
+      lang = excluded.lang, created_at = excluded.created_at`,
     [uuidv4(), userId, sub.endpoint, sub.keys.p256dh, sub.keys.auth, lang || null, new Date().toISOString()]);
 }
 async function deletePushSubscription(endpoint, userId) {

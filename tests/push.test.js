@@ -41,6 +41,19 @@ test("Obuna: noto'g'ri ma'lumot rad etiladi, qurilmalar soni", async () => {
   assert.equal((await srv.api(u, '/api/users/me/push-prefs')).devices, 1);
 });
 
+test("Bir qurilmadan bir vaqtda bir nechta obuna so'rovi — xatosiz, bitta yozuv, oxirgi til", async () => {
+  const u = await srv.register('Pr');
+  const d = device('race-' + u.name);
+  const res = await Promise.all(['uz', 'ru', 'en', 'tr', 'kk', 'az'].map((lang) => srv.api(u, '/api/push/subscribe', 'POST', { subscription: d.sub, lang })));
+  assert.deepEqual(res.map((r) => r.success), [true, true, true, true, true, true]);
+  assert.equal((await srv.api(u, '/api/users/me/push-prefs')).devices, 1);
+  // Til yangilanadi (oxirgi so'rov tartibi kafolatlanmagan — keyin yana bittasi)
+  await srv.api(u, '/api/push/subscribe', 'POST', { subscription: d.sub, lang: 'de' });
+  assert.equal((await srv.api(u, '/api/users/me/push-prefs')).devices, 1);
+  assert.equal((await srv.api(u, '/api/push/test', 'POST')).sent, 1);
+  assert.equal(open(d, pushes(d).slice(-1)[0]).body, 'Push-Benachrichtigungen funktionieren! ♞');
+});
+
 test('Sayt fonda: push yetadi, har qurilmaga o\'z tilida', async () => {
   const a = await srv.register('Pa'), b = await srv.register('Pb');
   const d1 = device('uz-' + b.name), d2 = device('ru-' + b.name);

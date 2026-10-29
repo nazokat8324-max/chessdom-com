@@ -81,7 +81,10 @@ test("O'yinlar tarixi, qayta ko'rish va PGN", async () => {
   assert.equal(filtered.total, 0);
   const rp = await srv.api(null, '/api/users/' + white + '/games/' + game.id + '/replay');
   assert.deepEqual(rp.game.moves, ['f3', 'e5', 'g4', 'Qh4#']);
-  const pgn = await (await fetch(srv.base + '/api/users/' + white + '/pgn')).text();
+  const pgnRes = await fetch(srv.base + '/api/users/' + white + '/pgn');
+  assert.match(pgnRes.headers.get('content-disposition'), /filename="chesscaravan-/);
+  const pgn = await pgnRes.text();
+  assert.match(pgn, /\[Site "https:\/\/chesscaravan\.com"\]/);
   assert.match(pgn, /1\. f3 e5 2\. g4 Qh4#/);
   assert.match(pgn, /\[Result "0-1"\]/);
   const own = await srv.api(g.white, '/api/users/' + white + '/games');

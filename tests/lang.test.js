@@ -99,6 +99,8 @@ test("Qo'shimcha tillar: kutubxona (maqolalar, partiyalar, kitoblar) va huquqiy 
     const t = lc.LEGAL_TEXT[l];
     assert.ok(t, l + ': huquqiy matn');
     for (const d of ['privacy', 'terms']) assert.equal(shape(t[d]), shape(en[d]), l + ' ' + d);
+    // Uchinchi tomon xizmatlari saytda ishlatilganlarga mos: domen va DNS — Cloudflare
+    assert.match(JSON.stringify(t.privacy), /Cloudflare — [^"]*chesscaravan\.com/, l + ': Cloudflare (domen)');
     assert.deepEqual(Object.keys(t.credits), Object.keys(en.credits));
     assert.deepEqual(Object.keys(t.ui), Object.keys(en.ui));
   }

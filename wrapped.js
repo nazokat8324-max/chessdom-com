@@ -151,14 +151,14 @@
     if (op) line('📖', op.name);
     if (d.war && d.war.club) line('🚩', `${clubLabel(d.war.club)} · ${d.war.points || 0} ${tx('wrCardWarPts', 'bayroq ochkosi')}`);
     x.fillStyle = 'rgba(255,255,255,0.45)'; x.font = font(600, 30);
-    x.fillText(location.host || 'chessdom', 80, 1290);
+    x.fillText(location.host || 'chesscaravan.com', 80, 1290);
   }
 
   function cardBlob(cv) { return new Promise(res => cv.toBlob(res, 'image/png')); }
 
   async function share(cv) {
     const blob = await cardBlob(cv);
-    const name = `chessdom-${st.data.username}-${st.data.season}.png`;
+    const name = `chesscaravan-${st.data.username}-${st.data.season}.png`;
     try {
       const file = new File([blob], name, { type: 'image/png' });
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -233,7 +233,7 @@
     el.classList.add('in');
     if (slide.after) slide.after(el);
     el.querySelectorAll('[data-wr-share]').forEach(b => b.addEventListener('click', () => share(el.querySelector('canvas'))));
-    el.querySelectorAll('[data-wr-download]').forEach(b => b.addEventListener('click', async () => download(await cardBlob(el.querySelector('canvas')), `chessdom-${st.data.username}-${st.data.season}.png`)));
+    el.querySelectorAll('[data-wr-download]').forEach(b => b.addEventListener('click', async () => download(await cardBlob(el.querySelector('canvas')), `chesscaravan-${st.data.username}-${st.data.season}.png`)));
     el.querySelectorAll('[data-wr-play]').forEach(b => b.addEventListener('click', () => { close(); if (window.closeProfileModal) window.closeProfileModal(); switchView('game'); }));
     el.querySelectorAll('[data-wr-clubs]').forEach(b => b.addEventListener('click', () => { close(); if (window.closeProfileModal) window.closeProfileModal(); switchView('clubs'); }));
     // Oxirgi slayd (ulashish) avtomatik o'tmaydi

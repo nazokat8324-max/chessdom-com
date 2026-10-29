@@ -2930,7 +2930,7 @@ async function start() {
         g.moves.forEach((s, i) => { body += (i % 2 === 0 ? (i / 2 + 1) + '. ' : '') + s + ' '; });
         return head.join('\n') + '\n\n' + body + (g.color ? res1 : '*') + '\n';
       }).join('\n');
-      res.set('Content-Disposition', `attachment; filename="chessdom-${u.username}.pgn"`);
+      res.set('Content-Disposition', `attachment; filename="chesscaravan-${u.username}.pgn"`);
       res.type('application/x-chess-pgn').send(pgn);
     } catch (err) { console.error('PGN xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });

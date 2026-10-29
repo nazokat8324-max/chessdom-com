@@ -210,7 +210,7 @@
       : tx('shTextGame', "♞ ChessCaravan'dagi o'yinim: {{white}} — {{black}}", { white: (d.white && d.white.name) || '?', black: (d.black && d.black.name) || '?' });
     return line + (st.invite ? '\n' + tx('shTextInvite', "Men bilan o'ynab ko'ring:") : '');
   }
-  const fileName = (kind) => `chessdom-${((st.data.white && st.data.white.name) || 'white')}-vs-${((st.data.black && st.data.black.name) || 'black')}.${kind === 'gif' ? 'gif' : 'png'}`.replace(/[^\w.-]+/g, '_');
+  const fileName = (kind) => `chesscaravan-${((st.data.white && st.data.white.name) || 'white')}-vs-${((st.data.black && st.data.black.name) || 'black')}.${kind === 'gif' ? 'gif' : 'png'}`.replace(/[^\w.-]+/g, '_');
 
   function render(progress) {
     const el = modal();

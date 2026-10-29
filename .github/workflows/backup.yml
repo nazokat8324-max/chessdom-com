@@ -2,7 +2,7 @@ name: Database backup
 
 # Har kuni saytdan shifrlangan zaxira nusxa olinadi va 30 kun GitHub Actions artefakti sifatida saqlanadi.
 # Kerak: repo Secrets → BACKUP_TOKEN (Render env dagi BACKUP_TOKEN bilan bir xil, kamida 16 belgi).
-# Ixtiyoriy: repo Variables → BACKUP_URL (standart — https://chessdom-com.onrender.com).
+# Ixtiyoriy: repo Variables → BACKUP_URL (standart — https://chesscaravan.com).
 # Fayl shifrlangan (AES-256-GCM), ochish/tiklash: BACKUP_TOKEN=... node tools/backup-restore.js <fayl>
 on:
   schedule:
@@ -21,7 +21,7 @@ jobs:
         id: dl
         env:
           BACKUP_TOKEN: ${{ secrets.BACKUP_TOKEN }}
-          BACKUP_URL: ${{ vars.BACKUP_URL || 'https://chessdom-com.onrender.com' }}
+          BACKUP_URL: ${{ vars.BACKUP_URL || 'https://chesscaravan.com' }}
         run: |
           if [ -z "$BACKUP_TOKEN" ]; then
             echo "::warning::BACKUP_TOKEN secret o'rnatilmagan — zaxira olinmadi"

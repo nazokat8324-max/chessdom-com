@@ -26,6 +26,21 @@ test('Kanonik manzillar va eski manzillar yo\'naltiriladi', async () => {
   }
 });
 
+test("Render manzili (*.onrender.com) rasmiy domenga yo'naltiriladi, API va rasmiy domen o'zgarmaydi", async () => {
+  const http = require('http');
+  const req = (p, host, method = 'GET') => new Promise((resolve, reject) => {
+    const u = new URL(srv.base + p);
+    http.request({ hostname: u.hostname, port: u.port, path: u.pathname + u.search, method, headers: { host }, agent: false }, (r) => { r.resume(); resolve(r); }).on('error', reject).end();
+  });
+  const r = await req('/reyting?profile=Ali', 'chessdom-com.onrender.com');
+  assert.equal(r.statusCode, 301);
+  assert.equal(r.headers.location, 'https://chesscaravan.com/reyting?profile=Ali');
+  assert.equal((await req('/api/tea', 'chessdom-com.onrender.com')).statusCode, 200);
+  assert.equal((await req('/', 'chesscaravan.com')).statusCode, 200);
+  const home = await (await get('/')).text();
+  assert.match(home, /<link rel="canonical" href="https:\/\/chesscaravan\.com\/"/);
+});
+
 test("Olib tashlangan eski API'lar yo'q, ishlatiladiganlari joyida", async () => {
   for (const p of ['/api/tournaments', '/api/tournaments/arenas', '/api/clubs', '/api/clubs/abc', '/server-helpers.js']) assert.equal((await get(p)).status, 404, p);
   for (const p of ['/api/clubs/leaderboard', '/api/swiss', '/api/tea', '/api/games/live']) assert.equal((await get(p)).status, 200, p);

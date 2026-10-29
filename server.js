@@ -58,6 +58,17 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 // Express 5 da tanasiz so'rovlarda req.body undefined bo'ladi — routelar uni doim obyekt deb kutadi
 app.use((req, res, next) => { if (req.body === undefined) req.body = {}; next(); });
+// Sayt manzili: rasmiy domen; Render manzili (*.onrender.com) sahifalari shu domenga 301 bilan yo'naltiriladi
+// (API va socket ochiq qoladi — eski ochiq oynalar va zaxira workflow'i ishlayveradi)
+const SITE_URL = (process.env.APP_URL || 'https://chesscaravan.com').replace(/\/+$/, '');
+const SITE_HOST = (() => { try { return new URL(SITE_URL).host; } catch (e) { return ''; } })();
+app.use((req, res, next) => {
+  const host = String(req.headers.host || '').toLowerCase();
+  if (SITE_HOST && host !== SITE_HOST && host.endsWith('.onrender.com') && (req.method === 'GET' || req.method === 'HEAD') && !req.path.startsWith('/api/')) {
+    return res.redirect(301, SITE_URL + req.originalUrl);
+  }
+  next();
+});
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
 const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram|teamchess|fairplay-engine|fairplay-worker)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*|[\w.-]*\.log)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
@@ -67,7 +78,6 @@ app.use((req, res, next) => {
 });
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const SITE_URL = (process.env.APP_URL || 'https://chessdom-com.onrender.com').replace(/\/+$/, '');
 const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library' };
 const DEFAULT_DESC = 'ChessCaravan — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');

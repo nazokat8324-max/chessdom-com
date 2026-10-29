@@ -124,7 +124,7 @@
     const result = g.result === 'draw' ? '1/2-1/2' : ((g.result === 'win') === (g.color !== 'b') ? '1-0' : '0-1');
     const d = g.date ? new Date(g.date) : new Date();
     const head = [
-      `[Event "ChessCaravan"]`, `[Site "chessdom-com.onrender.com"]`, `[Date "${d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
+      `[Event "ChessCaravan"]`, `[Site "chesscaravan.com"]`, `[Date "${d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
       `[White "${white || '?'}"]`, `[Black "${black || '?'}"]`, `[Result "${g.color ? result : '*'}"]`
     ].concat(g.clock ? [`[TimeControl "${g.clock}"]`] : [])
       .concat(window.variantPgnTags ? window.variantPgnTags(g.variant, g.startFen).split('\n').filter(Boolean) : []);

@@ -120,7 +120,7 @@
       st.messages = [];
       st.roomId = data.roomId;
       st.lastRoomId = data.roomId;
-      st.rematch = data.league || data.swiss ? 'none' : 'available';
+      st.rematch = data.league ? 'none' : 'available';
       st.rematchFrom = null;
       renderChat();
     });
@@ -128,7 +128,7 @@
       if (st.roomId !== data.roomId) { st.messages = []; renderChat(); }
       st.roomId = data.roomId;
       st.lastRoomId = data.roomId;
-      st.rematch = data.league || data.swiss ? 'none' : 'available';
+      st.rematch = data.league ? 'none' : 'available';
     });
     socket.on('rematch-offered', (data) => {
       if (!data || data.roomId !== st.lastRoomId) return;

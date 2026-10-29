@@ -7,7 +7,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-const SERVER_ONLY = /^(lang-|languages|library-|legal-content|server|database|league|swiss|teamchess|telegram|push-texts|backup|mailer|fairplay|continents|sw\.js)/;
+const SERVER_ONLY = /^(lang-|languages|library-|legal-content|server|database|league|teamchess|telegram|push-texts|backup|mailer|fairplay|continents|sw\.js)/;
 // Kalit emas: dinamik prefikslar (pastda alohida tekshiriladi) va izohdagi namuna
 const NOT_KEYS = new Set(['q_', 'achT', 'achD', 'kalit']);
 
@@ -62,7 +62,7 @@ test("Server xato matnlari: har biri klient xaritasida (SERVER_MESSAGE_KEYS) va 
   for (const m of block.matchAll(new RegExp(STR + String.raw`\s*:\s*'(\w+)'`, 'g'))) map.set(lit(m[1]), m[2]);
   assert.ok(map.size > 80, 'xarita: ' + map.size);
   const missing = [];
-  for (const f of ['server.js', 'league.js', 'swiss.js', 'telegram.js', 'teamchess.js']) {
+  for (const f of ['server.js', 'league.js', 'telegram.js', 'teamchess.js']) {
     const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
     for (const m of s.matchAll(new RegExp(String.raw`message:\s*` + STR, 'g'))) {
       const v = lit(m[1]);

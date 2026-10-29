@@ -1,5 +1,4 @@
 // National chess clubs - Asian and European countries
-window.tournamentDetailBoard = null;
 
 // i18next yordamchi funksiyasi - dinamik HTML shablonlarida foydalanish uchun
 const tr = (key, fallback, opts) => (typeof i18next !== 'undefined' && i18next.isInitialized) ? i18next.t(key, { defaultValue: fallback, ...opts }) : fallback;

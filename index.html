@@ -404,16 +404,6 @@
             <span class="icon">🥇</span>
             <span id="mLeaderboard">Reyting</span>
           </a>
-          <!-- Turnirlar to'xtatilgan (script.js TOURNAMENTS_ENABLED) — menyuda ko'rinmaydi -->
-          <a
-            class="menu-item"
-            id="navTournaments"
-            onclick="switchView('tournaments')"
-            style="display: none"
-          >
-            <span class="icon">🏁</span>
-            <span id="mTournaments">Turnirlar</span>
-          </a>
           <a class="menu-item" id="navLive" onclick="switchView('live')">
             <span class="icon">📺</span>
             <span data-i18n="mLive">Jonli o'yinlar</span>
@@ -569,8 +559,8 @@
               ChessCaravan haqida
             </h2>
             <p class="home-about-text" data-i18n="homeAboutText">
-              Onlayn shaxmat, davlat klublari, jamoaviy ligalar va Swiss
-              turnirlari — barchasi bitta saytda.
+              Onlayn shaxmat, davlat klublari, jamoaviy ligalar, choyxona va
+              bayroqlar bellashuvi — barchasi bitta saytda.
             </p>
             <ul class="home-about-points">
               <li>
@@ -1042,15 +1032,6 @@
               </div>
 
               <button
-                class="start-game-btn arena-next-btn"
-                onclick="window.backToTournament()"
-                id="btnTournamentBack"
-                hidden
-              >
-                🏁
-                <span data-i18n="swBackToTable">Turnir jadvaliga qaytish</span>
-              </button>
-              <button
                 class="start-game-btn"
                 onclick="resetToPreGame()"
                 id="btnPlayAgain"
@@ -1308,12 +1289,6 @@
             <div class="op-root" id="profOpenings"></div>
           </div>
         </div>
-      </div>
-
-      <!-- 8. TURNIRLAR -->
-      <!-- 8. TURNIRLAR: Swiss turnirlari (tournaments.js) -->
-      <div id="tournamentsView" class="view-section ar-view">
-        <div class="ar-page" id="arenaRoot"></div>
       </div>
 
       <!-- 10. KLUBLAR (Davlat klublari) -->
@@ -1970,7 +1945,7 @@
             </li>
             <li>
               <span class="auth-feature-icon">🏆</span
-              ><span data-i18n="authFeature2">Turnirlar va arenalar</span>
+              ><span data-i18n="authFeature2">Ligalar va 2 ga 2 o'yinlar</span>
             </li>
             <li>
               <span class="auth-feature-icon">🌍</span
@@ -2555,7 +2530,6 @@
     <script src="about.js"></script>
     <script src="stickers.js"></script>
     <script src="messages.js"></script>
-    <script src="tournaments.js"></script>
     <script src="live.js"></script>
     <script src="challenge.js"></script>
     <script src="home.js"></script>

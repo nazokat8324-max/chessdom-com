@@ -1,7 +1,7 @@
 // 🛡️ Klublar bo'limi (yangi ko'rinish, 2026-10-23): ixcham ro'yxat (mening klubim, faol klublar tepada) va bitta klub sahifasi
 // to'rt tab bilan — Umumiy, A'zolar, Liga, Chat. social.js dagi eski funksiyalar (openClubDetail, showClubChat, showClubLeaderboard,
-// showClubHistory, showClubTournaments, loadClubs ...) shu yerda almashtiriladi; router.js ularni keyin o'raydi (manzillar o'zgarmaydi:
-// /klublar?club=<davlat>[&tab=reyting|tarix|turnirlar|chat]). Klub rahbariyati/yangiliklari — clubstaff.js (#clubStaffNews).
+// showClubHistory, showClubLeague, loadClubs ...) shu yerda almashtiriladi; router.js ularni keyin o'raydi (manzillar o'zgarmaydi:
+// /klublar?club=<davlat>[&tab=reyting|tarix|liga|chat]). Klub rahbariyati/yangiliklari — clubstaff.js (#clubStaffNews).
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const flagUrl = (code, w) => `https://flagcdn.com/w${w || 80}/${encodeURIComponent(String(code || '').toLowerCase())}.png`;
@@ -9,7 +9,7 @@
   const codeOf = (name) => { const c = countries().find((x) => x.name === name); return c ? c.code : ''; };
   const localName = (name, code) => (typeof window.countryName === 'function' ? window.countryName(name, code) : name);
   const myClubName = () => (window.currentUser && window.currentUser.club && window.currentUser.club.name) || null;
-  const TAB_URL = { overview: null, members: 'reyting', league: 'turnirlar', chat: 'chat' };
+  const TAB_URL = { overview: null, members: 'reyting', league: 'liga', chat: 'chat' };
   const st = { name: null, code: null, tab: 'overview', sort: 'rating', data: null, board: null, leagues: null, token: 0 };
 
   // --- Umumiy ma'lumotlar (kesh: klublar reytingi va ligalar 60 s) ---
@@ -293,7 +293,7 @@
   window.openClubDetail = function (name, code) { return openClub(name, code, 'overview'); };
   window.showClubLeaderboard = function (name) { return openClub(name, null, 'members', { sort: 'rating' }); };
   window.showClubHistory = function (name) { return openClub(name, null, 'members', { sort: 'newest' }); };
-  window.showClubTournaments = function (name) { return openClub(name, null, 'league'); };
+  window.showClubLeague = function (name) { return openClub(name, null, 'league'); };
   window.showClubChat = function (name, code) { return openClub(name, code, 'chat'); };
   window.backToClubDetail = function () { if (st.name) openClub(st.name, st.code, 'overview'); else switchView('clubs'); };
   window.refreshClubsUi = function () {

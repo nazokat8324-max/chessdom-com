@@ -87,10 +87,9 @@ socket.on('friend-request-received', (data) => {
 
 // O'yinni boshlash (match-found) yoki qayta ulanganda tiklash (game-resume) — umumiy qism
 function beginOnlineGame(data, resume) {
-  // Liga/turnir o'yini yoki tiklangan o'yin boshqa sahifadan turib boshlanishi mumkin — o'yin sahifasiga o'tamiz
+  // Liga o'yini yoki tiklangan o'yin boshqa sahifadan turib boshlanishi mumkin — o'yin sahifasiga o'tamiz
   if (data.league && !resume && typeof window.leagueMatchStarted === 'function') window.leagueMatchStarted();
-  window.lastGameSwiss = data.swiss || null;
-  if ((data.league || data.swiss || data.challenge || resume) && !isViewActive('gameView')) switchView('game');
+  if ((data.league || data.challenge || resume) && !isViewActive('gameView')) switchView('game');
   window.isSearchingOpponent = false;
   const statusEl = document.getElementById('matchmakingStatus');
   if (statusEl) statusEl.style.display = 'none';
@@ -129,8 +128,6 @@ socket.on('match-found', (data) => {
       away: window.countryName ? window.countryName(data.league.awayClub, null) : data.league.awayClub,
       board: data.league.board
     }), 'success', 5000);
-  } else if (data.swiss) {
-    showToast(tx('swGameToast', "Turnir, {{round}}-tur: raqibingiz {{name}}", { round: data.swiss.round, name: (data.opponent && data.opponent.username) || tx('colOpponent', 'Raqib') }), 'success', 5000);
   } else {
     showToast(tx('opponentFoundName', 'Raqib topildi: {{name}}', { name: (data.opponent && data.opponent.username) || tx('colOpponent', 'Raqib') }), 'success');
   }

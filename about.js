@@ -30,7 +30,7 @@
   // Rejalar: done — bajarilgan (✓), qolganlari — rejada
   const PLANS = [
     { key: 'abPlanLibrary', done: true }, { key: 'abPlanPwa', done: true },
-    { key: 'abPlanStore' }, { key: 'abPlanLibMore' }, { key: 'abPlanTournaments' }, { key: 'abPlanLangs' }
+    { key: 'abPlanStore' }, { key: 'abPlanLibMore' }, { key: 'abPlanLangs' }
   ];
   const SECTIONS = [
     { id: 'about', titleKey: 'infoAboutTitle', title: 'Sayt haqida', icon: '📖' },

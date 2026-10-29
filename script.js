@@ -47,8 +47,6 @@ const SERVER_MESSAGE_KEYS = {
   "Already in queue": 'srvAlreadyInQueue',
   "Serverga socket orqali ulanmagansiz!": 'srvSocketNotConnected',
   "Message must be 1-1000 characters": 'srvMessageLength',
-  "Tournament name must be 3-255 characters": 'srvTournamentNameLength',
-  "Turnir topilmadi!": 'srvTournamentNotFound',
   "O'yinchi bloklandi": 'blkDone',
   "Blokdan chiqarildi": 'blkUndone',
   "Bu o'yinchi bilan aloqa cheklangan": 'srvBlocked',
@@ -57,7 +55,6 @@ const SERVER_MESSAGE_KEYS = {
   "Sababni tanlang!": 'srvPickReason',
   "O'yin topilmadi!": 'srvGameNotFound',
   "Adminni bloklab bo'lmaydi": 'srvCantBanAdmin',
-  "Turnir allaqachon tugagan": 'srvTournamentOver',
   "Bu o'yinchi faqat do'stlaridan xabar qabul qiladi": 'srvMsgFriendsOnly',
   "Joriy parol noto'g'ri!": 'srvWrongPassword',
   "Parol o'zgartirildi!": 'srvPasswordChanged',
@@ -75,20 +72,13 @@ const SERVER_MESSAGE_KEYS = {
   "Bu email boshqa akkauntga biriktirilgan!": 'srvEmailTaken',
   "Bu imkoniyat uchun ro'yxatdan o'ting!": 'srvGuestOnly',
   "Bu nom band qilingan!": 'srvNameReserved',
-  "Turnirga qo'shilish yopilgan!": 'srvSwissClosed',
-  "Siz boshqa turnirda ishtirok etyapsiz!": 'srvSwissBusy',
-  "Turnir to'la!": 'srvTournamentFull',
-  "Siz allaqachon turnirdasiz!": 'srvAlreadyInTournament',
-  "Turnir allaqachon boshlangan!": 'srvTournamentStarted',
   "Faqat yaratuvchi boshlashi mumkin!": 'srvOnlyCreatorStart',
   "Kamida 2 o'yinchi kerak!": 'srvMinTwoPlayers',
   "Juftlik uchun kamida 2 o'yinchi kerak!": 'srvMinTwoPlayers',
   "Barcha raundlar o'ynalib bo'ldi!": 'srvAllRoundsPlayed',
-  "Faqat turnir yaratuvchisi yoki ishtirokchilari juftlik yarata oladi!": 'srvPairingsForbidden',
   "Bu o'yin natijasini kiritishga ruxsatingiz yo'q!": 'srvResultForbidden',
   "O'yin allaqachon yakunlangan!": 'srvMatchFinished',
   "O'yin topilmadi!": 'srvMatchNotFound',
-  "Jamoaviy turnirlar hali qo'llab-quvvatlanmaydi!": 'srvTeamNotImplemented',
   "So'rov allaqachon yuborilgan!": 'srvFriendRequestExists',
   "O'zingizga do'stlik so'rovini yuborib bo'lmaydi!": 'srvFriendSelf',
   "So'rov topilmadi!": 'srvRequestNotFound',
@@ -115,16 +105,12 @@ const SERVER_MESSAGE_KEYS = {
   "Muvaffaqiyatli ro'yxatdan o'tdingiz!": 'srvRegistered',
   "Muvaffaqiyatli kirildi!": 'srvLoggedIn',
   "Hisobdan chiqildi!": 'srvLoggedOut',
-  "Turnir yaratildi!": 'srvTournamentCreated',
-  "Faqat turnir yaratuvchisi o'yinlarni qo'sha oladi!": 'srvOnlyCreatorMatches',
   "O'yinlar ro'yxati kerak!": 'srvMatchesRequired',
   "Noto'g'ri natija turi!": 'srvBadResult',
   "Natija saqlandi!": 'srvResultSaved',
   "Liga topilmadi!": 'srvLeagueNotFound',
   "Club name must be 3-255 characters": 'srvClubNameLength',
   "Klub yaratildi!": 'srvClubCreated',
-  "Turnirga qo'shildingiz!": 'srvJoinedTournament',
-  "Turnir boshlandi!": 'srvTournamentStartedOk',
   "Do'stlik so'rovi yuborildi!": 'srvFriendRequestSent',
   "Do'stlik qabul qilindi!": 'srvFriendAccepted',
   "So'rov rad etildi!": 'srvRequestDeclined',
@@ -463,9 +449,6 @@ window.toggleMobileMenu = function(open) {
   document.body.classList.toggle('mobile-menu-open', next);
 };
 
-// Turnirlar bo'limi to'xtatilgan (swiss.js CFG.enabled / SWISS_ENABLED bilan birga yoqiladi)
-window.TOURNAMENTS_ENABLED = false;
-
 window.switchView = function(viewName) {
   document.body.classList.remove('mobile-menu-open');
   if (viewName !== 'live' && typeof window.stopWatching === 'function') window.stopWatching();
@@ -582,19 +565,6 @@ window.switchView = function(viewName) {
       }
     }
     const navEl = document.getElementById("navHistory");
-    if (navEl) navEl.classList.add("active");
-  } else if (viewName === "tournaments") {
-    const tournamentsEl = document.getElementById("tournamentsView");
-    if (tournamentsEl) {
-      tournamentsEl.classList.add("active-view");
-      if (typeof window.playAnimation === "function") {
-        window.playAnimation("tournamentsView", "fadeIn");
-      }
-      if (typeof window.loadTournaments === "function") {
-        window.loadTournaments();
-      }
-    }
-    const navEl = document.getElementById("navTournaments");
     if (navEl) navEl.classList.add("active");
   } else if (viewName === "clubs") {
     const clubsEl = document.getElementById("clubsView");

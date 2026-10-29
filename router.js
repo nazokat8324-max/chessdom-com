@@ -1,9 +1,9 @@
-// Sahifa manzillari: har bo'lim o'z manziliga ega (/reyting, /turnirlar ...), brauzerning orqaga/oldinga
+// Sahifa manzillari: har bo'lim o'z manziliga ega (/reyting, /jonli ...), brauzerning orqaga/oldinga
 // tugmalari sayt ichida ishlaydi, sahifa yangilansa o'sha bo'lim ochiladi. Profil oynasi — ?profile=ism.
 // Server (server.js) shu manzillarda index.html ni beradi. Fayl oxirida yuklanadi — switchView va profil funksiyalarini o'raydi.
 (function () {
   const ROUTES = {
-    home: '/', game: '/oyin', leaderboard: '/reyting', tournaments: '/turnirlar', live: '/jonli',
+    home: '/', game: '/oyin', leaderboard: '/reyting', live: '/jonli',
     messages: '/xabarlar', clubs: '/klublar', leagues: '/ligalar', champions: '/chempionlar',
     settings: '/sozlamalar', admin: '/admin', history: '/tarix', war: '/bayroqlar', tea: '/choyxona', caravan: '/karvon', profsec: '/profil', team: '/jamoa', library: '/kutubxona'
   };
@@ -11,11 +11,11 @@
   Object.entries(ROUTES).forEach(([view, p]) => { BY_PATH[p] = view; });
   const BASE_TITLE = 'ChessCaravan';
   // Har bo'limning yon menyudagi tugmasi (ba'zi bo'limlar o'zi belgilamaydi)
-  const NAV = { home: 'navHome', game: 'navPlay', tea: 'navTea', leaderboard: 'navLeaderboard', tournaments: 'navTournaments', live: 'navLive', messages: 'navMessages',
+  const NAV = { home: 'navHome', game: 'navPlay', tea: 'navTea', leaderboard: 'navLeaderboard', live: 'navLive', messages: 'navMessages',
     clubs: 'navClubs', leagues: 'navLeagues', war: 'navWar', caravan: 'navCaravan', champions: 'navLeagues', team: 'navTea', library: 'navLibrary', admin: 'navAdmin' };
   let popping = false; // popstate paytida tarixga yangi yozuv qo'shilmaydi
 
-  // Bo'lim ichidagi sahifa (klub, turnir): /klublar?club=Uzbekistan&tab=chat, /turnirlar?t=<id>
+  // Bo'lim ichidagi sahifa (klub): /klublar?club=Uzbekistan&tab=chat
   function pushSub(view, params) {
     if (popping) return;
     const q = new URLSearchParams();
@@ -26,8 +26,9 @@
   }
   window.pushSubRoute = pushSub;
 
-  // Klub sahifalari: tafsilot, chat, reyting, turnirlar, tarix
-  const CLUB_TABS = { showClubChat: 'chat', showClubLeaderboard: 'reyting', showClubTournaments: 'turnirlar', showClubHistory: 'tarix' };
+  // Klub sahifalari: tafsilot, chat, a'zolar (reyting / tarix), liga
+  const CLUB_TABS = { showClubChat: 'chat', showClubLeaderboard: 'reyting', showClubLeague: 'liga', showClubHistory: 'tarix' };
+  const CLUB_TAB_ALIASES = { turnirlar: 'liga' }; // eski havolalar
   ['openClubDetail', ...Object.keys(CLUB_TABS)].forEach(fn => {
     const orig = window[fn];
     if (typeof orig !== 'function') return;
@@ -46,6 +47,7 @@
     if (!code) { window.switchView('clubs'); return; }
     window.currentClubName = name;
     window.currentClubCode = code;
+    tab = CLUB_TAB_ALIASES[tab] || tab;
     const fn = Object.keys(CLUB_TABS).find(k => CLUB_TABS[k] === tab) || 'openClubDetail';
     window[fn](name, code);
   }
@@ -82,8 +84,6 @@
   const origSwitch = window.switchView;
   window.switchView = function (viewName, opts) {
     opts = opts || {};
-    // Turnirlar to'xtatilgan — eski havola va bildirishnomalar bosh sahifaga
-    if (viewName === 'tournaments' && !window.TOURNAMENTS_ENABLED) viewName = 'home';
     // Kirishdan oldin ochilgan havola: kirgandan keyin o'sha bo'limga
     if (viewName === 'home' && window.pendingRoute && window.currentUser) { viewName = window.pendingRoute; window.pendingRoute = null; }
     const result = origSwitch.apply(this, [viewName]);
@@ -139,7 +139,6 @@
       const sub = new URLSearchParams(window.location.search);
       if (view === 'clubs' && sub.get('club') && window.currentUser) openClubFromUrl(sub.get('club'), sub.get('tab'));
       else if (view !== activeView()) window.switchView(view);
-      if (view === 'tournaments' && sub.get('t') && typeof window.selectTournament === 'function') window.selectTournament(sub.get('t'));
       const name = profileFromUrl();
       if (name && window.currentUser) {
         if (name === window.currentUser.username) window.openProfileModal(); else window.openPlayerProfile(name);
@@ -175,10 +174,6 @@
         const keep = window.location.pathname + window.location.search;
         quietly(() => { window.switchView('clubs'); openClubFromUrl(sub.get('club'), sub.get('tab')); });
         history.replaceState({ view: 'clubs' }, '', keep);
-      } else if (view === 'tournaments' && sub.get('t')) {
-        const keep = window.location.pathname + window.location.search;
-        quietly(() => window.switchView('tournaments'));
-        history.replaceState({ view: 'tournaments' }, '', keep);
       } else if (view !== 'home' || window.location.pathname !== '/') window.switchView(view, { replace: true });
       else { history.replaceState({ view: 'home' }, '', '/' + window.location.search); setTitle('home'); }
     }, 0);

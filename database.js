@@ -106,79 +106,6 @@ async function initDatabase() {
 
 
   await dbExec(`
-    CREATE TABLE IF NOT EXISTS clubs (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL UNIQUE,
-      description TEXT,
-      icon TEXT DEFAULT '♟️',
-      creator_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-      max_members INTEGER DEFAULT 50,
-      current_members INTEGER DEFAULT 1,
-      is_public INTEGER DEFAULT 1,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  await dbExec(`
-    CREATE TABLE IF NOT EXISTS tournaments (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      description TEXT,
-      max_players INTEGER DEFAULT 16,
-      current_players INTEGER DEFAULT 0,
-      status TEXT DEFAULT 'waiting',
-      creator_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-      tournament_type TEXT DEFAULT 'arena',
-      time_control TEXT,
-      rounds INTEGER DEFAULT 7,
-      current_round INTEGER DEFAULT 0,
-      club_id TEXT REFERENCES clubs(id) ON DELETE SET NULL,
-      club_id_a TEXT REFERENCES clubs(id) ON DELETE SET NULL,
-      club_id_b TEXT REFERENCES clubs(id) ON DELETE SET NULL,
-      is_arena INTEGER DEFAULT 0,
-      team_score_a INTEGER DEFAULT 0,
-      team_score_b INTEGER DEFAULT 0,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      started_at TEXT DEFAULT NULL,
-      finished_at TEXT DEFAULT NULL
-    )
-  `);
-
-  await dbExec(`
-    CREATE TABLE IF NOT EXISTS tournament_participants (
-      id TEXT PRIMARY KEY,
-      tournament_id TEXT REFERENCES tournaments(id) ON DELETE CASCADE,
-      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      score REAL DEFAULT 0,
-      position INTEGER,
-      club TEXT,
-      opponents TEXT DEFAULT '[]',
-      joined_at TEXT DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(tournament_id, user_id)
-    )
-  `);
-
-  await dbExec(`
-    CREATE TABLE IF NOT EXISTS tournament_matches (
-      id TEXT PRIMARY KEY,
-      tournament_id TEXT REFERENCES tournaments(id) ON DELETE CASCADE,
-      round INTEGER DEFAULT 1,
-      board INTEGER,
-      game_num INTEGER,
-      player1_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      player2_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      team_a_player TEXT,
-      team_b_player TEXT,
-      white_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      black_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      winner_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      status TEXT DEFAULT 'pending',
-      completed_at TEXT DEFAULT NULL,
-      created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
-
-  await dbExec(`
     CREATE TABLE IF NOT EXISTS friend_requests (
       id TEXT PRIMARY KEY,
       sender_id TEXT REFERENCES users(id) ON DELETE CASCADE,
@@ -214,9 +141,6 @@ async function initDatabase() {
 
   await dbExec(`CREATE INDEX IF NOT EXISTS idx_users_username ON users(username)`);
   await dbExec(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
-  await dbExec(`CREATE INDEX IF NOT EXISTS idx_tournaments_status ON tournaments(status)`);
-  await dbExec(`CREATE INDEX IF NOT EXISTS idx_tournament_participants_tournament ON tournament_participants(tournament_id)`);
-  await dbExec(`CREATE INDEX IF NOT EXISTS idx_tournament_matches_tournament ON tournament_matches(tournament_id)`);
   await dbExec(`CREATE INDEX IF NOT EXISTS idx_friend_requests_receiver ON friend_requests(receiver_id)`);
   await dbExec(`CREATE INDEX IF NOT EXISTS idx_friends_user ON friends(user_id)`);
   await dbExec(`CREATE INDEX IF NOT EXISTS idx_chat_messages_room ON chat_messages(room_id)`);
@@ -237,30 +161,6 @@ async function initDatabase() {
       await dbExec(`ALTER TABLE users ADD COLUMN ${col} TEXT DEFAULT NULL`);
     } catch (e) {}
   }
-  try {
-    await dbExec(`ALTER TABLE tournaments ADD COLUMN started_at TEXT DEFAULT NULL`);
-  } catch (e) {}
-  try {
-    await dbExec(`ALTER TABLE tournaments ADD COLUMN team_score_a INTEGER DEFAULT 0`);
-  } catch (e) {}
-  try {
-    await dbExec(`ALTER TABLE tournaments ADD COLUMN team_score_b INTEGER DEFAULT 0`);
-  } catch (e) {}
-  try {
-    await dbExec(`ALTER TABLE tournaments ADD COLUMN club_id_a TEXT REFERENCES clubs(id) ON DELETE SET NULL`);
-  } catch (e) {}
-  try {
-    await dbExec(`ALTER TABLE tournaments ADD COLUMN club_id_b TEXT REFERENCES clubs(id) ON DELETE SET NULL`);
-  } catch (e) {}
-  try {
-    await dbExec(`ALTER TABLE tournament_matches ADD COLUMN team_a_player TEXT`);
-  } catch (e) {}
-  try {
-    await dbExec(`ALTER TABLE tournament_matches ADD COLUMN team_b_player TEXT`);
-  } catch (e) {}
-  try {
-    await dbExec(`ALTER TABLE tournament_matches ADD COLUMN completed_at TEXT DEFAULT NULL`);
-  } catch (e) {}
 
   // "Chatni tozalash" (faqat o'zi uchun): shu vaqtdan oldingi xabarlar foydalanuvchiga ko'rsatilmaydi
   await dbExec(`
@@ -389,19 +289,6 @@ async function initDatabase() {
       created_at TEXT NOT NULL
     )
   `);
-
-  // Swiss turnirlari (swiss.js): ishtirokchi natijalari, turnirdan chiqqanlik, o'yin natijasi, keyingi tur vaqti
-  for (const col of ['games', 'wins', 'draws', 'losses', 'withdrawn']) {
-    try {
-      await dbExec(`ALTER TABLE tournament_participants ADD COLUMN ${col} INTEGER DEFAULT 0`);
-    } catch (e) {}
-  }
-  try {
-    await dbExec(`ALTER TABLE tournament_matches ADD COLUMN result TEXT DEFAULT NULL`);
-  } catch (e) {}
-  try {
-    await dbExec(`ALTER TABLE tournaments ADD COLUMN next_round_at TEXT DEFAULT NULL`);
-  } catch (e) {}
 
   // Shaxsiy xabarlar: har foydalanuvchi har suhbatni qachongacha o'qigani (o'qilmaganlar soni uchun)
   await dbExec(`
@@ -562,8 +449,6 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_friend_req_receiver ON friend_requests (receiver_id, status)',
     'CREATE INDEX IF NOT EXISTS idx_rating_history_user ON rating_history (user_id, mode, created_at)',
     'CREATE INDEX IF NOT EXISTS idx_rating_history_opp ON rating_history (opponent_id)',
-    'CREATE INDEX IF NOT EXISTS idx_tp_tournament ON tournament_participants (tournament_id)',
-    'CREATE INDEX IF NOT EXISTS idx_tm_tournament ON tournament_matches (tournament_id)',
     'CREATE INDEX IF NOT EXISTS idx_follows_followee ON follows (followee_id)',
     'CREATE INDEX IF NOT EXISTS idx_fairplay_user ON fairplay_games (user_id, created_at)',
     'CREATE INDEX IF NOT EXISTS idx_club_news_club ON club_news (club_country)',
@@ -855,11 +740,15 @@ async function initDatabase() {
   try { await dbExec('CREATE INDEX IF NOT EXISTS idx_admin_actions_time ON admin_actions (created_at)'); } catch (e) {}
 
   // Eski, ishlatilmaydigan jadvallar (2026-10-21): o'yinlar endi user_games da, sessiyalar JWT bilan, sayt yangiliklari va
-  // foydalanuvchi yaratgan klublar olib tashlangan. clubs jadvali qoladi — tournaments unga FK bilan bog'langan.
+  // foydalanuvchi yaratgan klublar olib tashlangan.
   // 2026-10-24: Ustoz-shogird funksiyasi foydalanuvchi so'rovi bilan butunlay olib tashlandi — jadvallar, yutuq va bildirishnomalar ham
   try { await dbRun("DELETE FROM user_achievements WHERE key = 'mentor'"); } catch (e) {}
   try { await dbRun("DELETE FROM notifications WHERE type IN ('mentor_request', 'mentor_accepted', 'mentor_ended', 'mentor_note', 'student_game', 'mentor_milestone')"); } catch (e) {}
-  for (const t of ['games', 'sessions', 'news_posts', 'club_members', 'game_notes', 'mentorships']) {
+  // 2026-10-29: Swiss turnirlari foydalanuvchi so'rovi bilan butunlay olib tashlandi — jadvallar (avval bolalari, FK tartibida),
+  // eski foydalanuvchi klublari jadvali (faqat tournaments unga bog'langan edi), "Turnir g'olibi" yutug'i va bildirishnomalar
+  try { await dbRun("DELETE FROM user_achievements WHERE key = 'tournament_win'"); } catch (e) {}
+  try { await dbRun("DELETE FROM notifications WHERE type = 'tournament_soon'"); } catch (e) {}
+  for (const t of ['games', 'sessions', 'news_posts', 'club_members', 'game_notes', 'mentorships', 'tournament_matches', 'tournament_participants', 'tournaments', 'clubs']) {
     try { await dbExec(`DROP TABLE IF EXISTS ${t}`); } catch (e) { console.error(`${t} jadvalini o'chirib bo'lmadi:`, e.message); }
   }
 
@@ -2038,9 +1927,6 @@ async function updateUserRatingByResult(userId, result, opponentRating, timeCont
   return { success: true, newRating, change: ratingChange, mode: modeChange === null ? null : timeControl, modeChange, ratingsByMode };
 }
 
-async function getTournamentById(id) {
-  return await dbGet('SELECT * FROM tournaments WHERE id = ?', id);
-}
 
 async function sendFriendRequest(senderId, receiverId) {
   const already = await dbGet('SELECT id FROM friends WHERE user_id = ? AND friend_id = ?', [senderId, receiverId]);
@@ -2478,7 +2364,6 @@ module.exports = {
   getStatsByUsername,
   getUserGames,
   updateUserRatingByResult,
-  getTournamentById,
   sendFriendRequest,
   acceptFriendRequest,
   declineFriendRequest,

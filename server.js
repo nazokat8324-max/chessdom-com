@@ -27,7 +27,6 @@ const Quests = require('./quests');
 
 const db = require('./database');
 const league = require('./league');
-const swiss = require('./swiss');
 const mailer = require('./mailer');
 const crypto = require('crypto');
 const webpush = require('web-push');
@@ -70,7 +69,7 @@ app.use((req, res, next) => {
   next();
 });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|swiss|mailer|continents|push-texts|backup|telegram|teamchess|fairplay-engine|fairplay-worker)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*|[\w.-]*\.log)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|mailer|continents|push-texts|backup|telegram|teamchess|fairplay-engine|fairplay-worker)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*|[\w.-]*\.log)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -78,7 +77,7 @@ app.use((req, res, next) => {
 });
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', turnirlar: 'Tournaments', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library' };
+const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library' };
 const DEFAULT_DESC = 'ChessCaravan — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
@@ -130,7 +129,7 @@ app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', ...(swiss.CFG.enabled ? ['turnirlar'] : []), 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'karvon', 'kutubxona', 'maxfiylik', 'shartlar', 'mualliflar'];
+  const pages = ['', 'reyting', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'karvon', 'kutubxona', 'maxfiylik', 'shartlar', 'mualliflar'];
   let players = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
@@ -155,13 +154,16 @@ app.get(['/maxfiylik', '/shartlar', '/mualliflar', '/privacy', '/terms', '/credi
   res.type('html').send(LEGAL_HTML);
 });
 app.use(express.static(__dirname, { index: false }));
-// Sayt bo'limlari manzillari (router.js): /reyting, /turnirlar ... — hammasi bitta sahifa (index.html).
+// Sayt bo'limlari manzillari (router.js): /reyting, /jonli ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'turnirlar', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon', 'profil', 'jamoa', 'kutubxona']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon', 'profil', 'jamoa', 'kutubxona']);
 // Nomi o'zgargan bo'limlar: eski manzil → yangisi (301)
 const ROUTE_ALIASES = { urush: 'bayroqlar', dostlar: 'xabarlar', chat: 'xabarlar' };
+// Olib tashlangan bo'limlar: eski havolalar bosh sahifaga (2026-10-29 — Swiss turnirlari)
+const REMOVED_ROUTES = new Set(['turnirlar']);
 app.get(/^\/([A-Za-z]+)\/?$/, (req, res, next) => {
   const raw = req.params[0].toLowerCase();
+  if (REMOVED_ROUTES.has(raw)) return res.redirect(301, '/');
   const slug = ROUTE_ALIASES[raw] || raw;
   if (!PAGE_ROUTES.has(slug)) return next();
   const canonical = '/' + slug;
@@ -369,7 +371,6 @@ function persistRoom(roomId, room) {
     variant: room.variant,
     startFen: room.startFen,
     leagueGameId: room.leagueGameId || null,
-    swissMatch: room.swissMatch || null,
     duel: room.duel || null
   };
   room.persistChain = (room.persistChain || Promise.resolve())
@@ -428,7 +429,6 @@ async function restoreActiveGames() {
       room.clock.w = data.clock.w;
       room.clock.b = data.clock.b;
       if (data.leagueGameId) room.leagueGameId = data.leagueGameId;
-      if (data.swissMatch) room.swissMatch = data.swissMatch;
       if (data.duel) room.duel = data.duel;
       room.announced = true;
       // Server o'chib turgan va o'yinchilar qaytayotgan vaqt soatdan ayirilmaydi: navbatdagi o'yinchi
@@ -572,12 +572,6 @@ async function endGame(roomId, room, winnerColor, reason) {
     catch (err) { console.error('Liga natijasini yozish xatoligi:', err); }
   }
 
-  // Swiss turnir o'yini bo'lsa — natija turnir jadvaliga yoziladi
-  if (room.swissMatch) {
-    try { await swiss.recordGameResult(room, winnerColor, reason); }
-    catch (err) { console.error('Swiss natijasini yozish xatoligi:', err); }
-  }
-
   // ⚔️ Bahs o'yini bo'lsa — hisob yangilanadi (bekor qilingan o'yin sanalmaydi)
   if (room.duel) {
     try { await recordDuelGame(room, winnerColor, reason); }
@@ -590,7 +584,7 @@ async function endGame(roomId, room, winnerColor, reason) {
     clearTimeout(p.awayTimer);
     const payload = {
       roomId, winner: winnerColor, reason, result: scoreFor(p.color, winnerColor),
-      rated: room.rated && recorded, mode: ratingModeOf(room), swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null,
+      rated: room.rated && recorded, mode: ratingModeOf(room),
       duel: room.duel ? duelPublic(room.duel) : null, ...(updates[p.color] || {})
     };
     room.endPayloads[p.color] = payload;
@@ -1511,14 +1505,7 @@ async function liveGameInfo(roomId, room) {
       country: u ? u.country || null : null
     };
   };
-  let kind = 'casual', label = null;
-  if (room.swissMatch) {
-    kind = 'swiss';
-    const t = await db.getTournamentById(room.swissMatch.tournamentId);
-    label = t ? t.name : null;
-  } else if (room.leagueGameId) {
-    kind = 'league';
-  }
+  const kind = room.leagueGameId ? 'league' : 'casual', label = null;
   return {
     roomId, kind, label, mode: room.mode, rated: room.rated, ...variantInfo(room),
     clock: { initial: room.clock.initial, increment: room.clock.increment },
@@ -1566,7 +1553,6 @@ async function resumeGames(socket) {
         ? { username: oppUser.username, rating: oppUser.rating || 1500, ratingsByMode: oppUser.ratings_by_mode, country: oppUser.country || null }
         : { username: opponent ? opponent.username : '?', rating: 1500 },
       league: room.leagueGameId ? { gameId: room.leagueGameId } : null,
-      swiss: room.swissMatch ? { id: room.swissMatch.tournamentId } : null,
       duel: room.duel ? duelPublic(room.duel) : null
     });
     socket.to(roomId).emit('opponent-back', { roomId });
@@ -2214,18 +2200,6 @@ async function start() {
     }
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
-  app.get('/api/admin/tournaments', adminMiddleware, async (req, res) => {
-    try { res.json({ success: true, ...(await swiss.overview(null)) }); }
-    catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-  app.post('/api/admin/tournaments/:id/cancel', adminMiddleware, async (req, res) => {
-    try {
-      const result = await swiss.cancelTournament(req.params.id);
-      if (result && result.success) auditLog(req, 'tournament_cancel', { type: 'tournament', id: req.params.id, name: result.name || null });
-      res.json(result);
-    }
-    catch (err) { console.error('Turnir bekor qilish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
 
   // 🧵 Shahar naqshi: faqat karvon yetib borgan shaharniki ('' — olib tashlash)
   app.post('/api/users/me/banner', authMiddleware, async (req, res) => {
@@ -2308,35 +2282,12 @@ async function start() {
     catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  // Swiss turnirlari (swiss.js)
+  // Ixtiyoriy token: kirgan bo'lsa foydalanuvchi id si, aks holda null
   const optionalUserId = (req) => {
     const auth = req.headers.authorization;
     if (!auth || !auth.startsWith('Bearer ')) return null;
     try { return jwt.verify(auth.slice(7), JWT_SECRET).userId; } catch (e) { return null; }
   };
-
-  app.get('/api/swiss', async (req, res) => {
-    try { res.json({ success: true, ...(await swiss.overview(optionalUserId(req))) }); }
-    catch (err) { console.error('Swiss xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.get('/api/swiss/:id', async (req, res) => {
-    try {
-      const data = await swiss.detail(req.params.id, optionalUserId(req));
-      if (!data) return res.status(404).json({ success: false, message: 'Turnir topilmadi!' });
-      res.json({ success: true, ...data });
-    } catch (err) { console.error('Swiss tafsiloti xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/swiss/:id/join', authMiddleware, async (req, res) => {
-    try { res.json(await swiss.join(req.params.id, req.user.userId)); }
-    catch (err) { console.error('Swiss join xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/swiss/:id/leave', authMiddleware, async (req, res) => {
-    try { res.json(await swiss.leave(req.params.id, req.user.userId)); }
-    catch (err) { console.error('Swiss leave xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
 
   // Jonli o'yinlar: hozir davom etayotgan barcha o'yinlar (tomosha qilish uchun)
   app.get('/api/tea', async (req, res) => {
@@ -2351,7 +2302,7 @@ async function start() {
       for (const [roomId, room] of rooms.entries()) {
         if (room.status === 'active' && room.players.length === 2) games.push(await liveGameInfo(roomId, room));
       }
-      const weight = { swiss: 0, league: 1, casual: 2 };
+      const weight = { league: 0, casual: 1 };
       games.sort((a, b) => weight[a.kind] - weight[b.kind] || (b.white.rating + b.black.rating) - (a.white.rating + a.black.rating));
       res.json({ success: true, games: games.slice(0, 60) });
     } catch (err) { console.error('Jonli o\'yinlar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
@@ -3221,7 +3172,7 @@ async function start() {
     socket.on('rematch-offer', (data) => {
       const room = data && rooms.get(data.roomId);
       const player = room && findPlayer(room, socket.id);
-      if (!player || room.status !== 'over' || room.leagueGameId || room.swissMatch) return socket.emit('rematch-unavailable', { roomId: data && data.roomId });
+      if (!player || room.status !== 'over' || room.leagueGameId) return socket.emit('rematch-unavailable', { roomId: data && data.roomId });
       const opponent = room.players.find(p => p !== player);
       if (!opponent || !io.sockets.sockets.get(opponent.socketId) || inActiveGame(player.userId) || inActiveGame(opponent.userId)) {
         return socket.emit('rematch-unavailable', { roomId: data.roomId });
@@ -3461,7 +3412,6 @@ async function start() {
 
   telegram.init({ app, db, io, SITE_URL, isActive, authMiddleware, inviteUrl: async (userId) => `${SITE_URL}/?invite=${await db.getInviteCode(userId)}` });
   league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId, notify, inActiveGame });
-  swiss.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, generateRoomId, notify, awardAchievement });
   // Bloklar, banlar va adminlar (ADMIN_USERNAMES="ism1,ism2" — Render env)
   try {
     for (const b of await db.loadAllBlocks()) blocks.add(b.userId + '|' + b.blockedId);
@@ -3474,14 +3424,8 @@ async function start() {
     const admins = adminUsernames();
     if (admins.length) await db.setAdmins(admins);
   } catch (err) { console.error('Blok/ban yuklash xatoligi:', err); }
-  // Deploydan oldin davom etayotgan o'yinlar (swiss tick ularni "yo'qolgan" deb yopmasligi uchun tickdan oldin)
-  try {
-    for (const { roomId, room } of await restoreActiveGames()) {
-      if (room.swissMatch) swiss.adoptRoom(room.swissMatch.matchId, roomId, room);
-    }
-  } catch (err) { console.error("O'yinlarni tiklash xatoligi:", err); }
-  setInterval(swiss.tick, swiss.CFG.tickMs);
-  swiss.tick();
+  // Deploydan oldin davom etayotgan o'yinlar
+  try { await restoreActiveGames(); } catch (err) { console.error("O'yinlarni tiklash xatoligi:", err); }
   // Liga: har daqiqalik tekshiruv faqat saytda kimdir faol bo'lsa; aks holda soatlik vazifalar bilan birga — shunda bo'sh
   // paytda (tunda) baza uxlaydi va hisoblash vaqti sarflanmaydi. Muddatlar 48 soatlik, bir soatlik kechikish sezilmaydi.
   setInterval(() => { if (league.CFG.tickMs < 60000 || anyoneActive()) league.tick(); }, league.CFG.tickMs);

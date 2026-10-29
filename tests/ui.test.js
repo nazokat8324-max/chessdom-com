@@ -107,7 +107,7 @@ test("Klublar: mening klubim kartasi, faol klublar tepada, klub sahifasidagi 4 t
   await p.click('.cl-mine');
   await p.waitForSelector('.cl-tabs .cl-tab.active[data-cl-tab="overview"]');
   await p.waitForSelector('.cl-stats');
-  for (const [tab, q] of [['members', 'tab=reyting'], ['league', 'tab=turnirlar'], ['chat', 'tab=chat']]) {
+  for (const [tab, q] of [['members', 'tab=reyting'], ['league', 'tab=liga'], ['chat', 'tab=chat']]) {
     await p.evaluate((t) => document.querySelector(`.cl-tabs [data-cl-tab="${t}"]`).click(), tab);
     await sleep(400);
     assert.ok((await p.evaluate(() => location.search)).includes(q), tab);
@@ -116,6 +116,9 @@ test("Klublar: mening klubim kartasi, faol klublar tepada, klub sahifasidagi 4 t
   await p.goto(srv.base + '/klublar?club=Uzbekistan&tab=tarix', { waitUntil: 'domcontentloaded' });
   await p.waitForSelector('.cl-sort button.active');
   assert.deepEqual(await p.evaluate(() => [document.querySelector('.cl-tab.active').dataset.clTab, document.querySelector('.cl-sort .active').dataset.clSort]), ['members', 'newest']);
+  // Turnirlar olib tashlangan: eski "tab=turnirlar" havolasi klubning Liga tabini ochadi
+  await p.goto(srv.base + '/klublar?club=Uzbekistan&tab=turnirlar', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('.cl-tab.active[data-cl-tab="league"]');
   assert.deepEqual(p.errors, []);
 });
 

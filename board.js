@@ -63,9 +63,6 @@ window.setGamePanelMode = function(mode) {
   if (newGameBtn) newGameBtn.hidden = mode !== 'over';
   const shareBtn = document.getElementById('btnShareGame');
   if (shareBtn) shareBtn.hidden = !(mode === 'over' && game && game.history().length > 0);
-  // Turnir o'yini tugaganda — "Turnir jadvaliga qaytish" tugmasi (keyingi tur o'zi boshlanadi)
-  const tournamentBtn = document.getElementById('btnTournamentBack');
-  if (tournamentBtn) tournamentBtn.hidden = !(mode === 'over' && window.lastGameSwiss);
   if (typeof window.updateRematchBox === 'function') window.updateRematchBox(mode);
   if (typeof window.updateSportBox === 'function') window.updateSportBox(mode);
   if (typeof window.updateGameChatBox === 'function') window.updateGameChatBox(mode);

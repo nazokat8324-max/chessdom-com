@@ -25,7 +25,7 @@
     try { url = new URL(u, location.origin); } catch (e) { return; }
     if (url.origin !== location.origin) return;
     const prof = url.searchParams.get('profile');
-    const VIEWS = { '/': 'home', '/oyin': 'game', '/xabarlar': 'messages', '/ligalar': 'leagues', '/turnirlar': 'tournaments', '/jonli': 'live', '/choyxona': 'tea' };
+    const VIEWS = { '/': 'home', '/oyin': 'game', '/xabarlar': 'messages', '/ligalar': 'leagues', '/jonli': 'live', '/choyxona': 'tea' };
     if (url.pathname === '/tarix' && url.searchParams.get('u') && window.openGameHistory) return window.openGameHistory(url.searchParams.get('u'));
     if (VIEWS[url.pathname] && typeof window.switchView === 'function' && !(url.pathname === '/' && prof)) window.switchView(VIEWS[url.pathname]);
     if (prof) {

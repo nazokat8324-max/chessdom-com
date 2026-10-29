@@ -7,7 +7,7 @@
     games_10: '♟️', games_100: '🎯', games_500: '🏛️',
     streak_5: '🔥', streak_10: '☄️', mate_10: '⚔️',
     rank_gold: '♝', rank_platinum: '♜', rank_diamond: '♛', rank_master: '★',
-    chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', tournament_win: '👑', sportsman: '🎖️', oracle: '🔮', invite_3: '📣', invite_10: '🌟', duel_win: '🤺'
+    chess960: '🎲', all_modes: '🎛️', friends_5: '🤝', club_member: '🏳️', league_player: '🏟️', sportsman: '🎖️', oracle: '🔮', invite_3: '📣', invite_10: '🌟', duel_win: '🤺'
   };
   const ACH_TEXT = {
     first_win: ["Birinchi g'alaba", "Birinchi g'alabangizni qozoning"],
@@ -29,7 +29,6 @@
     friends_5: ["Do'stona", "5 ta do'st orttiring"],
     club_member: ["Klub a'zosi", "Davlat klubiga qo'shiling"],
     league_player: ["Liga o'yinchisi", "Klubingiz uchun liga o'yinida qatnashing"],
-    tournament_win: ["Turnir g'olibi", 'Swiss turnirida birinchi o\'rinni egallang'],
     sportsman: ["Oyning odobli o'yinchisi", "Oy davomida eng ko'p 👍 odob bahosini oling"],
     oracle: ["Oyning bashoratchisi", "Oy davomida bashorat o'yinida eng ko'p ochko to'plang"],
     invite_3: ['Taklifchi', "Havolangiz orqali 3 ta do'stingizni saytga olib keling"],

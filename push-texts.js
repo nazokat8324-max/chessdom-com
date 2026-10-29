@@ -14,7 +14,6 @@ const T = {
   rival_online: L("Raqib-do'stingiz {{name}} onlayn — jang qilasizmi? ⚔️", 'Your rival {{name}} is online — up for a battle? ⚔️', 'Ваш соперник {{name}} в сети — сразимся? ⚔️', 'Tu rival {{name}} está en línea, ¿una batalla? ⚔️', 'Dein Rivale {{name}} ist online — Lust auf ein Duell? ⚔️', 'Votre rival {{name}} est en ligne — une bataille ? ⚔️'),
   follow_playing: L("{{name}} o'yin boshladi — tomosha qiling", '{{name}} started a game — watch it', '{{name}} начал партию — смотрите', '{{name}} empezó una partida: mírala', '{{name}} hat eine Partie begonnen — schau zu', '{{name}} a commencé une partie — regardez'),
   league_ready: L("Liga o'yini: {{opponent}} sizni kutmoqda", 'League game: {{opponent}} is waiting for you', 'Матч лиги: {{opponent}} ждёт вас', 'Partida de liga: {{opponent}} te espera', 'Ligapartie: {{opponent}} wartet auf dich', 'Match de ligue : {{opponent}} vous attend'),
-  tournament_soon: L('«{{name}}» turniri 1 daqiqadan keyin boshlanadi', 'The “{{name}}” tournament starts in 1 minute', 'Турнир «{{name}}» начнётся через минуту', 'El torneo «{{name}}» empieza en 1 minuto', 'Das Turnier „{{name}}“ beginnt in 1 Minute', 'Le tournoi « {{name}} » commence dans 1 minute'),
   prediction_won: L("Bashoratingiz to'g'ri chiqdi! +{{points}} 🔮", 'Your prediction was right! +{{points}} 🔮', 'Прогноз сбылся! +{{points}} 🔮', '¡Acertaste! +{{points}} 🔮', 'Richtig getippt! +{{points}} 🔮', 'Bon pronostic ! +{{points}} 🔮'),
   achievement: L('Yangi yutuq! 🏅', 'New achievement! 🏅', 'Новое достижение! 🏅', '¡Nuevo logro! 🏅', 'Neuer Erfolg! 🏅', 'Nouveau succès ! 🏅'),
   quests_done: L("🎯 Haftalik vazifalar bajarildi! Nishonlar: {{total}}", '🎯 Weekly quests complete! Badges: {{total}}', '🎯 Недельные задания выполнены! Значков: {{total}}', '🎯 ¡Misiones semanales completadas! Insignias: {{total}}', '🎯 Wochenaufgaben erledigt! Abzeichen: {{total}}', '🎯 Quêtes de la semaine terminées ! Badges : {{total}}'),
@@ -46,7 +45,6 @@ const TR_T = {
   rival_online: 'Rakibin {{name}} çevrim içi — bir maça var mısın? ⚔️',
   follow_playing: '{{name}} bir oyun başlattı — izle',
   league_ready: 'Lig oyunu: {{opponent}} seni bekliyor',
-  tournament_soon: '«{{name}}» turnuvası 1 dakika sonra başlıyor',
   prediction_won: 'Tahminin doğru çıktı! +{{points}} 🔮',
   achievement: 'Yeni başarı! 🏅',
   quests_done: '🎯 Haftalık görevler tamamlandı! Rozetler: {{total}}',
@@ -73,7 +71,6 @@ const KK_T = {
   rival_online: 'Қарсылас-досыңыз {{name}} желіде — бір ойнаймыз ба? ⚔️',
   follow_playing: '{{name}} ойын бастады — көріңіз',
   league_ready: 'Лига ойыны: {{opponent}} сізді күтуде',
-  tournament_soon: '«{{name}}» турнирі 1 минуттан кейін басталады',
   prediction_won: 'Болжамыңыз дұрыс шықты! +{{points}} 🔮',
   achievement: 'Жаңа жетістік! 🏅',
   quests_done: '🎯 Апталық тапсырмалар орындалды! Белгілер: {{total}}',
@@ -101,7 +98,6 @@ const MORE_T = {
   rival_online: ['Рақиби доимии шумо {{name}} онлайн аст — бозӣ мекунем? ⚔️', 'Атаандаш-досуңуз {{name}} онлайн — ойнойлубу? ⚔️', 'Garşydaş-dostuňyz {{name}} onlaýn — oýnalymy? ⚔️', 'Rəqib-dostun {{name}} onlayndır — bir oyun? ⚔️'],
   follow_playing: ['{{name}} бозӣ оғоз кард — тамошо кунед', '{{name}} оюн баштады — көрүңүз', '{{name}} oýun başlady — tomaşa ediň', '{{name}} oyuna başladı — izlə'],
   league_ready: ['Бозии лига: {{opponent}} шуморо интизор аст', 'Лига оюну: {{opponent}} сизди күтүүдө', 'Liga oýny: {{opponent}} size garaşýar', 'Liqa oyunu: {{opponent}} səni gözləyir'],
-  tournament_soon: ['Мусобиқаи «{{name}}» баъд аз 1 дақиқа оғоз мешавад', '«{{name}}» турнири 1 мүнөттөн кийин башталат', '«{{name}}» ýaryşy 1 minutdan soň başlaýar', '«{{name}}» turniri 1 dəqiqə sonra başlayır'],
   prediction_won: ['Пешгӯии шумо дуруст баромад! +{{points}} 🔮', 'Божомолуңуз туура чыкты! +{{points}} 🔮', 'Çaklamaňyz dogry çykdy! +{{points}} 🔮', 'Proqnozun doğru çıxdı! +{{points}} 🔮'],
   achievement: ['Дастоварди нав! 🏅', 'Жаңы жетишкендик! 🏅', 'Täze üstünlik! 🏅', 'Yeni nailiyyət! 🏅'],
   quests_done: ['🎯 Вазифаҳои ҳафтаина иҷро шуданд! Нишонҳо: {{total}}', '🎯 Апталык тапшырмалар аткарылды! Белгилер: {{total}}', '🎯 Hepdelik tabşyryklar ýerine ýetirildi! Nyşanlar: {{total}}', '🎯 Həftəlik tapşırıqlar tamamlandı! Nişanlar: {{total}}'],
@@ -140,7 +136,6 @@ function pushMessage(type, data, lang, ownName) {
     case 'friend_request': case 'friend_accepted': case 'invite_joined': case 'invite_waiting': url = prof(d.from); break;
     case 'rival_online': case 'follow_playing': url = type === 'follow_playing' ? '/jonli' : prof(d.name); break;
     case 'league_ready': url = '/ligalar'; break;
-    case 'tournament_soon': url = '/turnirlar'; break;
     case 'achievement': case 'rank_up': url = prof(ownName); break;
     case 'prediction_won': url = '/jonli'; break;
     case 'game_of_day': url = '/jonli'; break;

@@ -76,7 +76,7 @@
 
   // Stol: davom etayotgan o'yin (qora yuqorida, oq pastda)
   function gameTable(g) {
-    const kind = g.kind === 'swiss' ? `<span class="tea-kind">🏁 ${esc(g.label || tx('teaKindSwiss', 'Turnir'))}</span>` : g.kind === 'league' ? `<span class="tea-kind">🏆 ${esc(tx('teaKindLeague', 'Liga'))}</span>` : '';
+    const kind = g.kind === 'league' ? `<span class="tea-kind">🏆 ${esc(tx('teaKindLeague', 'Liga'))}</span>` : '';
     return `<div class="tea-table playing" data-room="${esc(g.roomId)}" title="${esc(tx('teaWatchHint', 'Bosing — tomosha qilish'))}">
       ${chair(g.black, {})}
       <div class="tea-desk">${miniBoard(g.fen, g.lastMove)}

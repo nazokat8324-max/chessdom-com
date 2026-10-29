@@ -1,4 +1,4 @@
-// 🔔 Bildirishnomalar markazi: chaqiruvlar, do'stlik, xabarlar, turnir, liga, klub yangiliklari, yangi daraja.
+// 🔔 Bildirishnomalar markazi: chaqiruvlar, do'stlik, xabarlar, liga, klub yangiliklari, yangi daraja.
 // Server: GET /api/notifications, POST /api/notifications/read|clear, socket 'notification' (darhol keladi).
 // Matn klientda turiga qarab yasaladi (til almashsa ham to'g'ri chiqadi).
 (function () {
@@ -34,8 +34,6 @@
             : tx('nfMessage', '{{name}}: {{text}}', { name: d.from, text: d.preview === '🎨' ? '🎨 ' + tx('msgSticker', 'Stiker') : d.preview }),
           go: () => window.openMessagesWith && window.openMessagesWith(d.from)
         };
-      case 'tournament_soon':
-        return { icon: '🏁', text: tx('nfTournamentSoon', '«{{name}}» turniri 1 daqiqadan keyin boshlanadi', { name: d.name }), go: () => { switchView('tournaments'); if (window.selectTournament) window.selectTournament(d.id); } };
       case 'league_ready':
         return { icon: '🏆', text: tx('nfLeagueReady', "Liga o'yini: {{name}} o'ynashga tayyor — sizni kutmoqda", { name: d.opponent }), go: () => switchView('leagues') };
       case 'club_news':

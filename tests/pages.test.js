@@ -42,8 +42,8 @@ test("Render manzili (*.onrender.com) rasmiy domenga yo'naltiriladi, API va rasm
 });
 
 test("Olib tashlangan eski API'lar yo'q, ishlatiladiganlari joyida", async () => {
-  for (const p of ['/api/tournaments', '/api/tournaments/arenas', '/api/clubs', '/api/clubs/abc', '/server-helpers.js']) assert.equal((await get(p)).status, 404, p);
-  for (const p of ['/api/clubs/leaderboard', '/api/swiss', '/api/tea', '/api/games/live']) assert.equal((await get(p)).status, 200, p);
+  for (const p of ['/api/tournaments', '/api/tournaments/arenas', '/api/clubs', '/api/clubs/abc', '/server-helpers.js', '/api/swiss', '/api/swiss/abc', '/swiss.js', '/tournaments.js']) assert.equal((await get(p)).status, 404, p);
+  for (const p of ['/api/clubs/leaderboard', '/api/tea', '/api/games/live']) assert.equal((await get(p)).status, 200, p);
 });
 
 test('Server fayllari va baza tashqariga berilmaydi', async () => {
@@ -59,7 +59,11 @@ test('Huquqiy sahifalar, sitemap va robots', async () => {
   assert.equal((await get('/shartlar')).status, 200);
   const sm = await (await get('/sitemap.xml')).text();
   for (const p of ['/choyxona', '/bayroqlar', '/maxfiylik', '/shartlar']) assert.ok(sm.includes(p), p);
-  assert.ok(!sm.includes('/turnirlar'), "to'xtatilgan turnirlar sitemap'da yo'q");
+  assert.ok(!sm.includes('/turnirlar'), "olib tashlangan turnirlar sitemap'da yo'q");
+  // Eski /turnirlar havolalari bosh sahifaga
+  const old = await get('/turnirlar?t=abc');
+  assert.equal(old.status, 301);
+  assert.equal(old.headers.get('location'), '/');
   assert.match(await (await get('/robots.txt')).text(), /Sitemap: /);
   assert.equal((await get('/mualliflar')).status, 200);
   assert.equal((await get('/credits')).headers.get('location'), '/mualliflar');

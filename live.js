@@ -19,9 +19,7 @@
     const s = Math.max(0, Math.ceil(ms / 1000));
     return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
   };
-  const kindTag = (g) => g.kind === 'swiss'
-    ? `<span class="lv-tag swiss">🏁 ${esc(g.label || tx('swAllTournaments', 'Turnir'))}</span>`
-    : (g.kind === 'league' ? `<span class="lv-tag league">🏆 ${esc(tx('lvLeague', 'Liga'))}</span>` : '');
+  const kindTag = (g) => g.kind === 'league' ? `<span class="lv-tag league">🏆 ${esc(tx('lvLeague', 'Liga'))}</span>` : '';
 
   // --- Ro'yxat ---
   async function loadList() {
@@ -227,7 +225,7 @@
     if (!clockTimer) clockTimer = setInterval(tickClock, 250);
   };
 
-  // Istalgan joydan: o'yinni tomosha qilish (masalan, turnir juftliklaridan)
+  // Istalgan joydan: o'yinni tomosha qilish (masalan, Choyxona stolidan)
   window.watchGame = function (roomId) {
     switchView('live');
     watch(roomId);

@@ -1,7 +1,7 @@
-// Admin paneli (faqat users.role = 'admin'): statistika (+ 💾 zaxira nusxa), shikoyatlar, o'yinchilarni bloklash, turnirlar, fair-play, chat, 🐞 xatolar, 📜 jurnal (admin amallari).
+// Admin paneli (faqat users.role = 'admin'): statistika (+ 💾 zaxira nusxa), shikoyatlar, o'yinchilarni bloklash, fair-play, chat, 🐞 xatolar, 📜 jurnal (admin amallari).
 // Server: /api/admin/* (adminMiddleware). Admin Render env ADMIN_USERNAMES orqali beriladi.
 (function () {
-  const st = { tab: 'stats', reportStatus: 'open', query: '', stats: null, reports: [], users: [], tournaments: [], fairplay: [], chat: { messages: [], words: [], club: '', user: '' }, errors: { list: [], counts: { server: 0, client: 0 }, status: 'open', source: '' }, audit: { list: [], action: '', q: '', page: 0, more: false }, library: { items: [], edit: null } };
+  const st = { tab: 'stats', reportStatus: 'open', query: '', stats: null, reports: [], users: [], fairplay: [], chat: { messages: [], words: [], club: '', user: '' }, errors: { list: [], counts: { server: 0, client: 0 }, status: 'open', source: '' }, audit: { list: [], action: '', q: '', page: 0, more: false }, library: { items: [], edit: null } };
   const esc = (v) => {
     const div = document.createElement('div');
     div.textContent = (v === null || v === undefined) ? '' : String(v);
@@ -23,7 +23,6 @@
     if (st.tab === 'stats') { const d = await api('/api/admin/stats'); st.stats = d && d.success ? d.stats : null; }
     if (st.tab === 'reports') { const d = await api('/api/admin/reports?status=' + st.reportStatus); st.reports = d && d.success ? d.reports : []; }
     if (st.tab === 'users') { const d = await api('/api/admin/users?q=' + encodeURIComponent(st.query)); st.users = d && d.success ? d.users : []; }
-    if (st.tab === 'tournaments') { const d = await api('/api/admin/tournaments'); st.tournaments = d && d.success ? d.tournaments : []; }
     if (st.tab === 'fairplay') { const d = await api('/api/admin/fairplay'); st.fairplay = d && d.success ? d.users : []; st.fairplayQueue = d && d.queue; }
     if (st.tab === 'errors') {
       const e = st.errors;
@@ -176,7 +175,6 @@
     club_news_delete: ['📰', () => tx('audClubNewsDelete', "Klub yangiligini o'chirdi")],
     club_news_pin: ['📌', () => tx('audClubNewsPin', 'Klub yangiligini mahkamladi')],
     chat_delete: ['💬', () => tx('audChatDelete', "Klub chatidagi xabarni o'chirdi")],
-    tournament_cancel: ['🏁', () => tx('audTournamentCancel', 'Turnirni bekor qildi')],
     backup_download: ['💾', () => tx('audBackup', 'Zaxira nusxani yuklab oldi')],
     errors_clear: ['🐞', () => tx('audErrorsClear', "Hal qilingan xatolarni o'chirdi")],
     library_add: ['📚', () => tx('audLibraryAdd', "Kutubxonaga material qo'shdi")],
@@ -202,7 +200,7 @@
     const a = st.audit;
     const filters = [['', tx('audAll', 'Barcha amallar')], ['ban', AUDIT.ban[1]()], ['unban', AUDIT.unban[1]()], ['mute', AUDIT.mute[1]()], ['unmute', AUDIT.unmute[1]()],
       ['report', AUDIT.report_resolve[1]()], ['fairplay', tx('admTabFairplay', 'Fair-play')], ['filter', tx('admBadWords', "Taqiqlangan so'zlar")], ['club', tx('audClubs', 'Klublar')],
-      ['chat_delete', AUDIT.chat_delete[1]()], ['tournament', AUDIT.tournament_cancel[1]()], ['backup', AUDIT.backup_download[1]()], ['errors', AUDIT.errors_clear[1]()], ['library', tx('libTitle', 'Kutubxona')]];
+      ['chat_delete', AUDIT.chat_delete[1]()], ['backup', AUDIT.backup_download[1]()], ['errors', AUDIT.errors_clear[1]()], ['library', tx('libTitle', 'Kutubxona')]];
     const bar = `<p class="adm-note">${esc(tx('audIntro', "Adminlarning barcha amallari shu yerda yoziladi: kim, qachon, kimga nima qildi. Yozuvlarni o'chirib bo'lmaydi."))}</p>
       <form class="adm-search" id="admAuditForm">
         <select class="set-input" id="admAuditAction">${filters.map(([id, l]) => `<option value="${id}"${a.action === id ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>
@@ -286,16 +284,6 @@
       }).join('') || `<div class="adm-empty">${esc(tx('lbNoMatch', 'Hech kim topilmadi'))}</div>`}</div>`;
   }
 
-  function tournamentsHtml() {
-    const live = st.tournaments.filter(t => t.status === 'registration' || t.status === 'active');
-    if (!live.length) return `<div class="adm-empty">${esc(tx('admNoTournaments', "Faol turnirlar yo'q"))}</div>`;
-    return `<div class="adm-list">${live.map(t => `
-      <div class="adm-item">
-        <div class="adm-item-main"><b>${esc(t.name)}</b><small>${esc(t.status === 'active' ? tx('swRoundOf', '{{round}}-tur / {{rounds}}', { round: t.round, rounds: t.rounds }) : tx('swRegOpen', "Ro'yxatga olish ochiq"))} · ${t.players} ${esc(tx('arCountPlayers', 'ishtirokchi'))} · ${esc(fmt(t.startsAt))}</small></div>
-        <div class="adm-actions"><button class="set-mini danger" data-cancel-t="${esc(t.id)}">✕ ${esc(tx('admCancelT', 'Bekor qilish'))}</button></div>
-      </div>`).join('')}</div>`;
-  }
-
   // Fair-play: shubhali o'yinlari bor o'yinchilar (fokus yo'qotish, mashinaga o'xshash bir xil yurish vaqtlari)
   function fairplayHtml() {
     const flagLabel = { flagged: ['🕵️', tx('fpFlagged', 'Shubhali')], cheater: ['⛔', tx('fpCheater', 'Qoidabuzar')], cleared: ['✓', tx('fpCleared', 'Toza')] };
@@ -361,10 +349,10 @@
     const el = root();
     if (!el) return;
     if (!window.currentUser || window.currentUser.role !== 'admin') { el.innerHTML = `<div class="adm-empty">${esc(tx('admNoAccess', "Bu bo'lim faqat adminlar uchun"))}</div>`; return; }
-    const tabs = [['stats', '📊', tx('admTabStats', 'Statistika')], ['reports', '⚠️', tx('admTabReports', 'Shikoyatlar')], ['users', '👥', tx('admTabUsers', "O'yinchilar")], ['tournaments', '🏁', tx('admTabTournaments', 'Turnirlar')], ['fairplay', '🕵️', tx('admTabFairplay', 'Fair-play')], ['chat', '💬', tx('admTabChat', 'Chat')], ['errors', '🐞', tx('admTabErrors', 'Xatolar')], ['library', '📚', tx('libTitle', 'Kutubxona')], ['audit', '📜', tx('admTabAudit', 'Jurnal')]];
-    const body = { stats: statsHtml, reports: reportsHtml, users: usersHtml, tournaments: tournamentsHtml, fairplay: fairplayHtml, chat: chatHtml, errors: errorsHtml, library: libraryHtml, audit: auditHtml }[st.tab]();
+    const tabs = [['stats', '📊', tx('admTabStats', 'Statistika')], ['reports', '⚠️', tx('admTabReports', 'Shikoyatlar')], ['users', '👥', tx('admTabUsers', "O'yinchilar")], ['fairplay', '🕵️', tx('admTabFairplay', 'Fair-play')], ['chat', '💬', tx('admTabChat', 'Chat')], ['errors', '🐞', tx('admTabErrors', 'Xatolar')], ['library', '📚', tx('libTitle', 'Kutubxona')], ['audit', '📜', tx('admTabAudit', 'Jurnal')]];
+    const body = { stats: statsHtml, reports: reportsHtml, users: usersHtml, fairplay: fairplayHtml, chat: chatHtml, errors: errorsHtml, library: libraryHtml, audit: auditHtml }[st.tab]();
     el.innerHTML = `
-      <header class="set-head"><div><h1>🛡️ ${esc(tx('admTitle', 'Admin paneli'))}</h1><p>${esc(tx('admSub', "Shikoyatlar, o'yinchilar va turnirlarni boshqarish"))}</p></div></header>
+      <header class="set-head"><div><h1>🛡️ ${esc(tx('admTitle', 'Admin paneli'))}</h1><p>${esc(tx('admSub', "Shikoyatlar, o'yinchilar va saytni boshqarish"))}</p></div></header>
       <div class="lb-seg adm-tabs">${tabs.map(([id, i, l]) => `<button class="${st.tab === id ? 'active' : ''}" data-atab="${id}">${i} ${esc(l)}</button>`).join('')}</div>
       <div class="adm-body">${body}</div>`;
     bind(el);
@@ -452,12 +440,6 @@
     const chatSearch = el.querySelector('#admChatSearch');
     if (chatSearch) chatSearch.addEventListener('submit', (e) => { e.preventDefault(); st.chat.club = el.querySelector('#admChatClub').value.trim(); st.chat.user = el.querySelector('#admChatUser').value.trim(); load(); });
     el.querySelectorAll('[data-unban]').forEach(b => b.addEventListener('click', async () => { await api('/api/admin/users/' + b.dataset.unban + '/unban', {}); load(); }));
-    el.querySelectorAll('[data-cancel-t]').forEach(b => b.addEventListener('click', async () => {
-      if (!confirm(tx('admCancelConfirm', 'Turnirni bekor qilasizmi?'))) return;
-      const d = await api('/api/admin/tournaments/' + b.dataset.cancelT + '/cancel', {});
-      showToast(d && d.success ? tx('admCancelled', 'Turnir bekor qilindi') : (tServer(d && d.message) || tx('errGeneric', 'Xatolik yuz berdi!')), d && d.success ? 'success' : 'warning');
-      load();
-    }));
   }
 
   window.renderAdminView = function () { render(); load(); };

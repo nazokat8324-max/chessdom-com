@@ -55,3 +55,38 @@ test("chat_reads: takroriy qatorlar startda tozalanadi va unique indeks bor", as
   const op = await q("SELECT name FROM sqlite_master WHERE type = 'index' AND name = 'idx_user_games_opponent'");
   assert.equal(op.length, 1);
 });
+
+test("Turnirlar olib tashlangan: eski bazadagi turnir jadvallari, \"Turnir g'olibi\" yutug'i va turnir bildirishnomalari startda o'chiriladi", async () => {
+  const os = require('os'), fs = require('fs');
+  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'chesscaravan-legacy-')), 'legacy.sqlite');
+  const run = (sqlText) => new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(file);
+    d.exec(sqlText, (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  const all = (sqlText) => new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(file);
+    d.all(sqlText, [], (err, rows) => d.close(() => (err ? reject(err) : resolve(rows))));
+  });
+  // 1) Oddiy baza yaratiladi va o'yinchi qo'shiladi
+  let s = await startServer({ SQLITE_FILE: file });
+  const u = await s.register('Leg');
+  await s.stop();
+  // 2) Eski versiyadagidek turnir jadvallari va yozuvlari qo'shiladi
+  await run(`CREATE TABLE clubs (id TEXT PRIMARY KEY, name TEXT);
+    CREATE TABLE tournaments (id TEXT PRIMARY KEY, name TEXT, club_id TEXT REFERENCES clubs(id));
+    CREATE TABLE tournament_participants (id TEXT PRIMARY KEY, tournament_id TEXT REFERENCES tournaments(id), user_id TEXT);
+    CREATE TABLE tournament_matches (id TEXT PRIMARY KEY, tournament_id TEXT REFERENCES tournaments(id));
+    INSERT INTO tournaments (id, name) VALUES ('t1', 'Swiss 3+2');
+    INSERT INTO tournament_participants (id, tournament_id, user_id) VALUES ('p1', 't1', '${u.id}');
+    INSERT INTO user_achievements (id, user_id, key, earned_at) VALUES ('a1', '${u.id}', 'tournament_win', '2026-10-01'), ('a2', '${u.id}', 'first_win', '2026-10-01');
+    INSERT INTO notifications (id, user_id, type, data, created_at) VALUES ('n1', '${u.id}', 'tournament_soon', '{}', '2026-10-01'), ('n2', '${u.id}', 'friend_request', '{}', '2026-10-01');`);
+  // 3) Yangi versiya ishga tushganda hammasi tozalanadi, boshqa ma'lumot qoladi
+  s = await startServer({ SQLITE_FILE: file });
+  try {
+    const tables = (await all("SELECT name FROM sqlite_master WHERE type = 'table'")).map((r) => r.name);
+    for (const t of ['clubs', 'tournaments', 'tournament_participants', 'tournament_matches']) assert.ok(!tables.includes(t), t);
+    assert.deepEqual((await all('SELECT key FROM user_achievements')).map((r) => r.key), ['first_win']);
+    assert.deepEqual((await all('SELECT type FROM notifications')).map((r) => r.type), ['friend_request']);
+    for (const p of ['/api/swiss', '/api/swiss/t1', '/api/admin/tournaments']) assert.equal((await fetch(s.base + p)).status, 404, p);
+  } finally { await s.stop(); }
+});

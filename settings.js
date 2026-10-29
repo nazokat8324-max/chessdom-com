@@ -16,7 +16,8 @@
   // Taxta ko'rinishlari: 'auto' — sayt mavzusiga mos; qolganlari style.css :root[data-board] (script.js BOARD_STYLES)
   const BOARDS = [['auto', 'boardAuto', 'Mavzuga mos'], ['marble', 'boardMarble', "Marmar"], ['wood', 'boardWood', "Yog'och"], ['tournament', 'boardTournament', "Turnir"], ['rishton', 'boardRishton', "Rishton"], ['atlas', 'boardAtlas', "Atlas"], ['teahouse', 'boardTeahouse', "Choyxona"], ['desert', 'boardDesert', "Cho'l"], ['night', 'boardNight', "Tun"], ['paper', 'boardPaper', "Qog'oz"], ['ice', 'boardIce', "Muz"]];
   // Faqat erkin litsenziyali to'plamlar (board.js PIECE_SETS); mualliflari /mualliflar sahifasida
-  const PIECES = [['karvon', 'Karvon'], ['classic', 'Klassik'], ['atlas', 'Atlas'], ['rishton', 'Rishton'], ['wood', "Yog'och"], ['royal', 'Shohona'], ['neon', 'Neon'], ['geo', 'Geometrik'], ['cute', 'Bolajon'], ['pixel', 'Piksel']];
+  // [id, nom, tarjima kaliti?] — nomlar brend sifatida tarjima qilinmaydi; 'Aniq' — tavsifiy nom, tarjima qilinadi
+  const PIECES = [['karvon', 'Karvon'], ['classic', 'Klassik'], ['clear', 'Aniq', 'pcClear'], ['atlas', 'Atlas'], ['rishton', 'Rishton'], ['wood', "Yog'och"], ['royal', 'Shohona'], ['neon', 'Neon'], ['geo', 'Geometrik'], ['cute', 'Bolajon'], ['pixel', 'Piksel']];
   // Namuna pozitsiya (Italyan o'yini): oxirgi yurish Bc4, tanlangan ot g1 va uning yurishlari
   const PREVIEW_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR';
 
@@ -151,10 +152,12 @@
             <div class="set-boards">${BOARDS.map(([id, key, fb]) => `
               <button class="set-board-opt bd-${id}${d.boardStyle === id ? ' active' : ''}" data-board-pick="${id}"><span class="bd-sw"><i class="l"></i><i class="d"></i><i class="d"></i><i class="l"></i></span><span>${esc(tx(key, fb))}</span></button>`).join('')}</div>
             <h3 class="mt">${esc(tx('setPiecesTitle', "Donalar to'plami"))}</h3>
-            <div class="set-pieces">${PIECES.map(([id, name]) => `
+            <div class="set-pieces">${PIECES.map(([id, name, key]) => `
               <button class="set-piece${d.pieceSet === id ? ' active' : ''}" data-piece-set="${id}">
-                <span class="set-piece-imgs"><img src="${esc(window.pieceUrl ? window.pieceUrl('wN', id) : '')}" alt=""><img src="${esc(window.pieceUrl ? window.pieceUrl('bK', id) : '')}" alt=""></span><span>${esc(name)}</span>
+                <span class="set-piece-imgs"><img src="${esc(window.pieceUrl ? window.pieceUrl('wN', id) : '')}" alt=""><img src="${esc(window.pieceUrl ? window.pieceUrl('bK', id) : '')}" alt=""></span><span>${esc(key ? tx(key, name) : name)}</span>
               </button>`).join('')}</div>
+            <p class="set-hint">${esc(tx('pcClearHint', "«Aniq» to'plami — yirik, qalin chiziqli oddiy donalar: ko'zi charchaydiganlar uchun qulay."))}</p>
+            <button type="button" class="set-mini pc-open" data-piece-guide>♟ ${esc(tx('pcGuideBtn', 'Donalar haqida'))}</button>
           </div>
           <div class="set-preview-wrap">
             <span class="set-preview-label">${esc(tx('setPreview', "Ko'rinishi"))}</span>
@@ -365,6 +368,7 @@
     el.querySelectorAll('[data-theme-pick]').forEach(b => b.addEventListener('click', () => change({ siteTheme: b.dataset.themePick })));
     el.querySelectorAll('[data-board-pick]').forEach(b => b.addEventListener('click', () => change({ boardStyle: b.dataset.boardPick })));
     el.querySelectorAll('[data-piece-set]').forEach(b => b.addEventListener('click', () => change({ pieceSet: b.dataset.pieceSet })));
+    el.querySelectorAll('[data-piece-guide]').forEach(b => b.addEventListener('click', () => window.openPieceGuide && window.openPieceGuide()));
     el.querySelectorAll('[data-clock]').forEach(b => b.addEventListener('click', () => change({ quickClock: b.dataset.clock.split(',').map(Number) })));
     el.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {
       const lang = b.dataset.lang;

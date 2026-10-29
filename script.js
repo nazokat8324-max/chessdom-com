@@ -940,7 +940,8 @@ window.setOpponentData = function(data) {
 
 // Update game player flags dynamically
 window.updateGameFlags = function() {
-  const DEFAULT_FLAG = 'uz';
+  // O'yinchi davlatini tanlamagan bo'lsa ham — xalqaro (BMT) bayrog'i (2026-10-29 gacha bu yerda 'uz' qolgan edi)
+  const DEFAULT_FLAG = 'un';
   // Raqib hali topilmagan yoki davlatini tanlamagan bo'lsa — xalqaro (BMT) bayrog'i
   const UNKNOWN_FLAG = 'un';
 

@@ -193,6 +193,42 @@ test("Shatranj: o'yin panelida tanlanadi, bir qurilmada qoidalari bilan o'ynalad
   assert.deepEqual(p.errors, []);
 });
 
+test("Donalar haqida: ❓ oynasi 6 ta donani nomi, chizmasi va qoidasi bilan ko'rsatadi, dona ustida nomi chiqadi, «Aniq» to'plami tanlanadi", opts, async () => {
+  const u = await srv.register('Pcg');
+  const p = await page(u);
+  await p.goto(srv.base + '/oyin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#pgPiecesBtn', { timeout: 10000 });
+  await sleep(500);
+  await p.click('#pgPiecesBtn');
+  await p.waitForSelector('#pieceGuide .pc-card');
+  const cards = await p.evaluate(() => [...document.querySelectorAll('#pieceGuide .pc-card')].map((c) => ({
+    piece: c.dataset.pc, name: c.querySelector('.pc-name b').textContent.trim(), cells: c.querySelectorAll('.pc-sq').length,
+    moves: c.querySelectorAll('.pc-sq.mv').length, caps: c.querySelectorAll('.pc-sq.cp').length, text: c.querySelector('.pc-move').textContent.trim()
+  })));
+  assert.deepEqual(cards.map((c) => c.piece), ['K', 'Q', 'R', 'B', 'N', 'P']);
+  assert.ok(cards.every((c) => c.cells === 49 && c.name && c.text.length > 15), JSON.stringify(cards));
+  // 7×7 chizmada markazdagi dona: shoh 8, farzin 24, rux 12, fil 12, ot 8 katak; piyoda — 2 yurish + 2 olish
+  assert.deepEqual(cards.map((c) => [c.moves, c.caps]), [[8, 0], [24, 0], [12, 0], [12, 0], [8, 0], [2, 2]]);
+  // Shatranj: farzin — 1 katak diagonal (4), fil — 2 katak sakraydi (4), piyoda — faqat 1 qadam
+  assert.deepEqual(await p.evaluate(() => ['Q', 'B', 'P'].map((k) => window.PieceGuide.moves(k, 'shatranj').move.length)), [4, 4, 1]);
+  await p.keyboard.press('Escape');
+  assert.equal(await p.evaluate(() => !!document.getElementById('pieceGuide')), false);
+  // Taxtadagi dona ustiga sichqoncha — nomi
+  await p.hover('#chessBoard img[data-piece="wN"]');
+  assert.match(await p.evaluate(() => document.querySelector('#chessBoard img[data-piece="wN"]').title), /Ot/);
+  // Sozlamalar: «Aniq» to'plami va "Donalar haqida" tugmasi
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('.set-nav [data-section="board"]', { timeout: 10000 });
+  await p.click('.set-nav [data-section="board"]');
+  await p.waitForSelector('[data-piece-set="clear"]', { timeout: 10000 });
+  await p.click('[data-piece-set="clear"]');
+  await sleep(200);
+  assert.match(await p.evaluate(() => document.querySelector('.set-preview-wrap img').src), /chesspieces\/clear\//);
+  await p.click('[data-piece-guide]');
+  await p.waitForSelector('#pieceGuide .pc-card img[src*="/clear/"]');
+  assert.deepEqual(p.errors, []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);
@@ -895,6 +931,12 @@ test("Barcha bo'limlar: kirgan foydalanuvchi har bir sahifani ochganda ushlanmag
 test("Davlat: yangi foydalanuvchida xalqaro (BMT) bayrog'i, tanlab saqlansa serverga yoziladi", opts, async () => {
   const u = await srv.register('Intl');
   const p = await page(u);
+  // O'yin panelida ham — o'z bayrog'imiz xalqaro
+  await p.goto(srv.base + '/oyin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#whitePlayerFlag', { timeout: 15000 });
+  await sleep(500);
+  const flags = await p.evaluate(() => [document.getElementById('whitePlayerFlag').src, document.getElementById('blackPlayerFlag').src]);
+  assert.ok(flags.every((f) => f.endsWith('/un.png')), flags.join(' '));
   await p.goto(srv.base + '/sozlamalar', { waitUntil: 'domcontentloaded' });
   await p.waitForSelector('#setCountry', { timeout: 15000 });
   const st = await p.evaluate(() => ({ me: window.currentUser.country, sel: document.getElementById('setCountry').value, first: document.querySelector('#setCountry option').textContent, flag: document.getElementById('setCountryFlag').src }));

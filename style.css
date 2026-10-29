@@ -14416,3 +14416,38 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
   .lib-example { grid-template-columns: minmax(0, 1fr); }
   .adm-lib-form { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ===== ♟ Donalar bilan tanishing (piece-guide.js) — keksalar uchun ham o'qishli: yirik shrift, katta rasm ===== */
+.ch-card.pc-guide { width: min(860px, 100%); text-align: left; }
+.pc-title { margin: 0 34px 4px 0; font-size: 24px; }
+.pc-sub { margin: 0 0 10px; font-size: 16px; opacity: 0.8; }
+.pc-note { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; font-size: 15px; background: rgba(var(--accent-rgb), 0.12); }
+.pc-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; margin: 0 0 12px; font-size: 15px; }
+.pc-legend span { display: inline-flex; align-items: center; gap: 8px; }
+.pc-legend .pc-dot, .pc-legend .pc-cap { position: static; transform: none; width: 16px; height: 16px; }
+.pc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.pc-card { padding: 12px; border-radius: 16px; background: var(--cd-surface-2, rgba(255, 255, 255, 0.04)); border: 1px solid var(--cd-border, rgba(255, 255, 255, 0.1)); }
+.pc-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.pc-imgs { display: flex; flex-shrink: 0; padding: 2px 4px; border-radius: 10px; background: var(--bd-light, var(--board-light, #eeeed2)); }
+.pc-imgs img { width: 46px; height: 46px; }
+.pc-name { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.pc-name b { font-size: 21px; }
+.pc-name small { font-size: 14px; opacity: 0.8; }
+.pc-board { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: repeat(7, minmax(0, 1fr)); width: 100%; max-width: 230px; aspect-ratio: 1; margin: 0 auto 10px; border-radius: 8px; overflow: hidden; }
+.pc-sq { position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 0; overflow: hidden; }
+.pc-sq.l { background-color: var(--bd-light, var(--board-light, #eeeed2)); }
+.pc-sq.d { background-color: var(--bd-dark, var(--board-dark, #769656)); }
+.pc-sq img { width: 92%; height: 92%; object-fit: contain; position: absolute; left: 4%; top: 4%; z-index: 1; }
+.pc-sq img.pc-enemy { opacity: 0.85; }
+.pc-dot { position: absolute; left: 50%; top: 50%; width: 34%; height: auto; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: rgba(var(--accent-rgb), 0.85); box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35); }
+.pc-cap { position: absolute; inset: 6%; z-index: 2; border-radius: 50%; border: 3px solid #e8594a; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.4); }
+.pc-legend .pc-dot { display: inline-block; }
+.pc-legend .pc-cap { display: inline-block; border-width: 3px; }
+.pc-move, .pc-extra { margin: 0 0 6px; font-size: 16px; line-height: 1.45; }
+.pc-extra { opacity: 0.85; font-size: 15px; }
+.pc-tip { margin: 12px 0 0; font-size: 14px; opacity: 0.8; }
+.pc-open { margin-top: 10px; }
+@media (max-width: 600px) {
+  .pc-title { font-size: 21px; }
+  .pc-grid { grid-template-columns: minmax(0, 1fr); }
+}

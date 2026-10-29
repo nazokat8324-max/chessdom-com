@@ -2,7 +2,7 @@
 // ChessCaravan dona to'plamlari → img/chesspieces/<to'plam>/{w,b}{K,Q,R,B,N,P}.svg
 //   node tools/make-pieces.js
 // Hammasi shu skriptda noldan chizilgan — begona rasm ishlatilmagan, mualliflik huquqi loyihaniki.
-// Tuzilishi: har to'plamning O'Z SHAKLLARI (karvon, classic, atlas, rishton, wood, royal, neon, geo, cute, pixel) × USLUBLAR (ranglar, naqsh, yaltiroqlik, nur) = SETS.
+// Tuzilishi: har to'plamning O'Z SHAKLLARI (karvon, classic, clear, atlas, rishton, wood, royal, neon, geo, cute, pixel) × USLUBLAR (ranglar, naqsh, yaltiroqlik, nur) = SETS.
 // Koordinatalar 45×45 maydonda. Shakl yoki rang o'zgarsa — shu yerda tahrirlab, qayta ishga tushiring.
 const fs = require('fs');
 const path = require('path');
@@ -121,6 +121,49 @@ const CLASSIC = {
     ['line', 'M17.2 13.4C20.5 12.4 24.5 12.4 27.8 13.4'],
     ['body', 'M21.4 9.8V6.6H23.6V9.8Z'],
     ['body', circ(22.5, 4.6, 2.3)]
+  ]
+};
+
+// --- Aniq: keksalar va ko'rish qiyin bo'lganlar uchun — odatdagi (Staunton) shakllar, yirikroq, qalin chiziq, mayda bezaksiz.
+// Shoh — eng baland, tepasida romb (xoch emas), farzin — sharchali toj, rux — qal'a, fil — kesikli mitra, ot — yirik bosh ---
+const CBASE = 'M7.5 41H37.5V38Q37.5 36 35.5 36H9.5Q7.5 36 7.5 38Z M10.5 36H34.5L33 32.5H12Z';
+const CBASE_S = 'M10 41H35V38.2Q35 36.5 33.3 36.5H11.7Q10 36.5 10 38.2Z';
+const CLEAR = {
+  P: [['body', CBASE_S], ['body', 'M14 36.5C15 31.5 17.5 28 19 24.5H26C27.5 28 30 31.5 31 36.5Z'], ['gold', 'M16.5 24.5H28.5C30 24.5 30 21.5 28.5 21.5H16.5C15 21.5 15 24.5 16.5 24.5Z'], ['body', circ(22.5, 15.4, 6.2)]],
+  R: [
+    ['body', CBASE],
+    ['body', 'M12.5 32.5L14 16H31L32.5 32.5Z'],
+    ['gold', 'M11.5 16H33.5V12.8H11.5Z'],
+    ['body', 'M11.5 12.8V5.5H16.6V9H20V5.5H25V9H28.4V5.5H33.5V12.8Z']
+  ],
+  B: [
+    ['body', CBASE_S],
+    ['body', 'M14 36.5C15.2 31.5 17.5 28 18.6 24.5H26.4C27.5 28 29.8 31.5 31 36.5Z'],
+    ['gold', 'M16.5 24.5H28.5Q30 22.6 28 21.5H17Q15 22.6 16.5 24.5Z'],
+    ['body', 'M17.2 21.5C13.8 17 15 11 22.5 5.9C30 11 31.2 17 27.8 21.5Z'],
+    ['line', 'M25.6 10.4L20 17.6'],
+    ['body', circ(22.5, 4, 2.2)]
+  ],
+  N: [
+    ['body', CBASE_S],
+    ['body', 'M13 36.5C13 31 15.5 27.5 20 25C16.5 25 13 26.6 10.5 26.3C8 26 7 23.6 8.2 21.6L14.2 12.2C14.7 9.6 16 7.5 17.6 6.2L18.6 3.6L20.8 6C28.5 5.8 34.5 11.6 35 20.4C35.4 27 33.6 32 33.6 36.5Z'],
+    ['line', 'M21.5 6.9C27 8.3 31.3 13 32.2 19'],
+    ['eye', circ(16.6, 12.4, 1.5)],
+    ['eye', circ(10.4, 22.8, 0.9)]
+  ],
+  Q: [
+    ['body', CBASE],
+    ['body', 'M13.5 32.5C15.2 26.5 17.6 22.5 18.2 19H26.8C27.4 22.5 29.8 26.5 31.5 32.5Z'],
+    ['gold', 'M15.5 19H29.5Q31 17 29 16H16Q14 17 15.5 19Z'],
+    ['body', 'M16 16L12 7.6L16.8 11.8L18.6 5.9L21.4 11L22.5 4.9L23.6 11L26.4 5.9L28.2 11.8L33 7.6L29 16Z'],
+    ['body', [[12, 7.6], [18.6, 5.9], [22.5, 4.9], [26.4, 5.9], [33, 7.6]].map(([x, y]) => circ(x, y, 1.9)).join(' ')]
+  ],
+  K: [
+    ['body', CBASE],
+    ['body', 'M13 32.5C14.8 26.5 17.2 22 17.8 18H27.2C27.8 22 30.2 26.5 32 32.5Z'],
+    ['gold', 'M15 18H30Q31.5 16 29.5 15H15.5Q13.5 16 15 18Z'],
+    ['body', 'M15.5 15C14 10.6 17.2 8.4 22.5 8.4C27.8 8.4 31 10.6 29.5 15Z'],
+    ['body', 'M22.5 1.6L25.6 5.1L22.5 8.6L19.4 5.1Z']
   ]
 };
 
@@ -361,6 +404,10 @@ const SETS = [
   { id: 'classic', shapes: CLASSIC,
     w: { fill: '#ffffff', stroke: '#1c1c1c', line: '#1c1c1c', gold: '#ffffff', eye: '#1c1c1c' },
     b: { fill: '#262626', stroke: '#000000', line: '#e2e2e2', gold: '#262626', eye: '#e2e2e2' } },
+  // Aniq: qalinroq chiziq (sw) va kuchli kontrast — kichik ekranda ham, ko'zi zaif odamga ham aniq ko'rinadi
+  { id: 'clear', shapes: CLEAR, sw: 2.2,
+    w: { fill: '#ffffff', stroke: '#000000', line: '#000000', gold: '#ffffff', eye: '#000000' },
+    b: { fill: '#161616', stroke: '#000000', line: '#ffffff', gold: '#161616', eye: '#ffffff' } },
   { id: 'atlas', shapes: ATLAS,
     w: { fill: 'url(#p)', stroke: '#24201b', line: '#24201b', gold: GOLD, eye: '#24201b',
       defs: '<pattern id="p" width="6" height="8" patternUnits="userSpaceOnUse"><rect width="6" height="8" fill="#fbf3e2"/><path d="M0 2L1.5 0.8L3 2L4.5 0.8L6 2" fill="none" stroke="#d6336c" stroke-width="0.9"/><path d="M0 6L1.5 4.8L3 6L4.5 4.8L6 6" fill="none" stroke="#2b7bd6" stroke-width="0.9"/><circle cx="1.5" cy="3.9" r="0.45" fill="#f2b632"/><circle cx="4.5" cy="7.9" r="0.45" fill="#2fa36b"/></pattern>' },
@@ -425,7 +472,7 @@ function svg(set, color, piece) {
   const c = set[color];
   const body = set.pixel
     ? pixelSvg(set.pixel[piece], c)
-    : `<g stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"${c.filter ? ' filter="url(#g)"' : ''}>${set.shapes[piece].map((l) => layerSvg(l, c)).join('')}</g>`;
+    : `<g stroke-width="${set.sw || 1.5}" stroke-linecap="round" stroke-linejoin="round"${c.filter ? ' filter="url(#g)"' : ''}>${set.shapes[piece].map((l) => layerSvg(l, c)).join('')}</g>`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="45" height="45" viewBox="0 0 45 45">${c.defs ? `<defs>${c.defs}</defs>` : ''}${body}</svg>\n`;
 }
 

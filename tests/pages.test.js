@@ -90,12 +90,13 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
   require(path.join(root, 'legal-content.js'));
   const credits = JSON.stringify(window.LEGAL_CREDITS);
   for (const name of ['Stockfish', 'Noto Emoji Animation', 'chessboard.js', 'gifenc']) assert.ok(credits.includes(name), name);
-  // Donalar — faqat o'zimiz chizgan 10 ta to'plam (tools/make-pieces.js), standart Karvon; begona to'plamlar yo'q
+  // Donalar — faqat o'zimiz chizgan 11 ta to'plam (tools/make-pieces.js), standart Karvon; begona to'plamlar yo'q
   const sets = JSON.parse(fs.readFileSync(path.join(root, 'board.js'), 'utf8').match(/window\.PIECE_SETS = (\[[^\]]*\])/)[1].replace(/'/g, '"'));
   const { execFileSync } = require('child_process');
   const generated = JSON.parse(execFileSync(process.execPath, ['-e', "process.stdout.write(JSON.stringify(require(process.argv[1]).SETS))", path.join(root, 'tools/make-pieces.js'), 'none']).toString());
   assert.deepEqual(sets, generated, "board.js PIECE_SETS = make-pieces.js SETS");
-  assert.equal(sets.length, 10);
+  assert.equal(sets.length, 11);
+  assert.ok(sets.includes('clear'), "«Aniq» to'plami (keksalar uchun)");
   assert.equal(sets[0], 'karvon');
   const settingsSrc = fs.readFileSync(path.join(root, 'settings.js'), 'utf8');
   assert.deepEqual([...settingsSrc.match(/const PIECES = \[(.*)\];/)[1].matchAll(/\['(\w+)'/g)].map((m) => m[1]), sets, "settings.js PIECES");

@@ -982,7 +982,7 @@ function onSnapEnd() {
 // --- Donalar to'plami (Sozlamalar → Taxta) ---
 // Hammasi o'zimiz chizgan SVG (tools/make-pieces.js → img/chesspieces/<to'plam>/), mualliflik huquqi loyihaniki.
 // 2026-10-23 da begona to'plamlar (wikipedia, cburnett, merida) olib tashlangan; saqlangan eski tanlov karvon ga qaytadi.
-window.PIECE_SETS = ['karvon', 'classic', 'atlas', 'rishton', 'wood', 'royal', 'neon', 'geo', 'cute', 'pixel'];
+window.PIECE_SETS = ['karvon', 'classic', 'clear', 'atlas', 'rishton', 'wood', 'royal', 'neon', 'geo', 'cute', 'pixel'];
 window.currentPieceSet = 'karvon'; // standart
 window.pieceUrl = function(code, set) {
   const s = set || window.currentPieceSet;

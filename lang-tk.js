@@ -1,6 +1,8 @@
 // Türkmençe (tk) — sayt matnlari. languages.js dan OLDIN yuklanadi va translations.tk bo'lib qo'shiladi.
 // Kalitlar inglizcha (en) bilan bir xil bo'lishi kerak — tests/lang.test.js tekshiradi. Yangi kalit qo'shilsa — shu yerga ham.
 window.TRANSLATIONS_TK = {
+  rtNavLabel: "Esasy bölümler",
+  rtAllStops: "Ähli bölümler",
   pcGuideBtn: "Daşlar barada",
   pcGuideTitle: "Daşlar bilen tanyşyň",
   pcGuideSub: "Her daş nähili görünýär we nähili ýöreýär",

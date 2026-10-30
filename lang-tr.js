@@ -1,6 +1,8 @@
 // Türkçe (tr) — sayt matnlari. languages.js dan OLDIN yuklanadi va translations.tr bo'lib qo'shiladi.
 // Kalitlar inglizcha (en) bilan bir xil bo'lishi kerak — tests/lang.test.js tekshiradi. Yangi kalit qo'shilsa — shu yerga ham.
 window.TRANSLATIONS_TR = {
+  rtNavLabel: "Ana bölümler",
+  rtAllStops: "Tüm bölümler",
   pcGuideBtn: "Taşlar hakkında",
   pcGuideTitle: "Taşlarla tanışın",
   pcGuideSub: "Her taş neye benzer ve nasıl hareket eder",

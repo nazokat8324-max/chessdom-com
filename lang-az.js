@@ -1,6 +1,8 @@
 // Azərbaycanca (az) — sayt matnlari. languages.js dan OLDIN yuklanadi va translations.az bo'lib qo'shiladi.
 // Kalitlar inglizcha (en) bilan bir xil bo'lishi kerak — tests/lang.test.js tekshiradi. Yangi kalit qo'shilsa — shu yerga ham.
 window.TRANSLATIONS_AZ = {
+  rtNavLabel: "Əsas bölmələr",
+  rtAllStops: "Bütün bölmələr",
   pcGuideBtn: "Fiqurlar haqqında",
   pcGuideTitle: "Fiqurlarla tanış ol",
   pcGuideSub: "Hər fiqur necə görünür və necə hərəkət edir",

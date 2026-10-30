@@ -14451,3 +14451,219 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
   .pc-title { font-size: 21px; }
   .pc-grid { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* ===== 🐪 Karvon yo'li — telefon navigatsiyasi (mobile-route.js; faqat tik holatdagi telefon, html.cv-route-on) ===== */
+.cvr-nav, .cvr-map { display: none; }
+@media (max-width: 768px) {
+  html.cv-route-on .menu-list { display: none !important; }
+  html.cv-route-on .main-wrapper { padding-bottom: calc(100px + env(safe-area-inset-bottom)); }
+  html.cv-route-on #messagesRoot { height: calc(100dvh - 184px); }
+  html.cv-route-on .cvr-nav {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    height: calc(88px + env(safe-area-inset-bottom));
+    /* --cd-sidebar biroz shaffof — ostiga to'liq fon, aks holda sahifa chiziqlari ko'rinib qoladi */
+    background:
+      radial-gradient(120% 90% at 50% 120%, rgba(var(--accent-rgb), 0.14), transparent 60%),
+      linear-gradient(var(--cd-sidebar), var(--cd-sidebar)),
+      var(--cd-bg, #0b1214);
+    border-top: 1px solid var(--cd-border-strong);
+    box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.38);
+    touch-action: pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .cvr-road { position: absolute; left: 0; top: 0; width: 100%; height: 64px; overflow: visible; pointer-events: none; }
+  .cvr-road path { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; }
+  .cvr-edge { stroke: rgba(0, 0, 0, 0.35); stroke-width: 17px; }
+  .cvr-sand { stroke: rgba(var(--accent-rgb), 0.22); stroke-width: 14px; }
+  .cvr-dash { stroke: rgba(var(--accent-rgb), 0.75); stroke-width: 1.6px; stroke-dasharray: 5 7; }
+  /* Joylashuv margin bilan: saytdagi umumiy tugma uslublari transform ni almashtiradi */
+  .cvr-nav .cvr-stop {
+    position: absolute;
+    height: 38px;
+    margin: -19px 0 0 -9.5%;
+    transform: none !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 19%;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--cd-muted, #9fb3b8);
+    font: inherit;
+    cursor: pointer;
+    touch-action: pan-y;
+  }
+  .cvr-dot {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--cd-surface-2);
+    border: 2px solid var(--cd-border-strong);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+    transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .cvr-ico { font-size: 18px; line-height: 1; }
+  .cvr-label {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: 92px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .cvr-nav .cvr-stop::before, .cvr-nav .cvr-stop::after { display: none !important; }
+  .cvr-stop.on .cvr-dot {
+    transform: scale(1.1);
+    background: var(--accent);
+    border-color: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0.22), 0 6px 16px rgba(0, 0, 0, 0.4);
+  }
+  .cvr-stop.on .cvr-label { color: #fff; }
+  .cvr-badge {
+    position: absolute;
+    top: -6px;
+    right: -9px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 9px;
+    background: #e8594a;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 18px;
+    text-align: center;
+    box-shadow: 0 0 0 2px var(--cd-sidebar);
+  }
+  .cvr-camel {
+    position: absolute;
+    z-index: 2;
+    width: 34px;
+    height: 26px;
+    margin-top: -22px;
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45));
+  }
+  .cvr-camel svg { display: block; width: 100%; height: 100%; }
+  .cvr-camel path, .cvr-map-camel path { fill: #e3c088; stroke: #5e3b1c; stroke-width: 1.4; stroke-linejoin: round; }
+  .cvr-camel .e, .cvr-map-camel .e { fill: #2b1c10; stroke: none; }
+  .cvr-camel.back svg { transform: scaleX(-1); }
+  .cvr-camel.walking svg { animation: cvrStep 0.32s ease-in-out infinite alternate; }
+  @keyframes cvrStep { from { translate: 0 0; rotate: -3deg; } to { translate: 0 -3px; rotate: 3deg; } }
+
+  /* Sahifa karvon yurgan tomondan kirib keladi */
+  .view-section.cvr-in-right { animation: cvrInRight 0.32s ease both; }
+  .view-section.cvr-in-left { animation: cvrInLeft 0.32s ease both; }
+  @keyframes cvrInRight { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+  @keyframes cvrInLeft { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
+  /* "Barcha bo'limlar" — yo'l bo'yidagi bekatlar */
+  html.cv-route-on body.mobile-menu-open .cvr-map {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: calc(88px + env(safe-area-inset-bottom));
+    z-index: 999;
+    max-height: calc(100dvh - 160px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 14px 14px 18px;
+    border-radius: 24px 24px 0 0;
+    background: linear-gradient(var(--cd-sidebar), var(--cd-sidebar)), var(--cd-bg, #0b1214);
+    border-top: 1px solid var(--cd-border-strong);
+    box-shadow: 0 -16px 40px rgba(0, 0, 0, 0.45);
+    animation: cvrMapIn 0.26s ease;
+  }
+  @keyframes cvrMapIn { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+  .cvr-map-head { display: flex; align-items: center; justify-content: space-between; margin: 0 2px 10px; font-size: 16px; }
+  .cvr-map-x { width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--cd-border-strong); background: var(--cd-surface-2); color: inherit; font-size: 15px; }
+  .cvr-map-list { position: relative; list-style: none; margin: 0; padding: 6px 0; }
+  .cvr-map-list::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 14px;
+    transform: translateX(-50%);
+    border-radius: 7px;
+    background: rgba(var(--accent-rgb), 0.2);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.25);
+  }
+  .cvr-map-list::after {
+    content: "";
+    position: absolute;
+    left: calc(50% - 0.8px);
+    top: 4px;
+    bottom: 4px;
+    border-left: 1.6px dashed rgba(var(--accent-rgb), 0.75);
+  }
+  .cvr-map-list li { position: relative; width: 50%; margin: 4px 0; }
+  .cvr-map-list li.l { padding-right: 22px; }
+  .cvr-map-list li.r { margin-left: 50%; padding-left: 22px; }
+  .cvr-map-list li::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    z-index: 1;
+    box-sizing: border-box;
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+    border-radius: 50%;
+    background: var(--cd-surface-2);
+    border: 2px solid rgba(var(--accent-rgb), 0.8);
+  }
+  .cvr-map-list li.l::before { right: -7px; }
+  .cvr-map-list li.r::before { left: -7px; }
+  .cvr-map-list li.on::before { background: var(--accent); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.25); }
+  .cvr-map-list button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 50px;
+    padding: 9px 12px;
+    border-radius: 16px;
+    border: 1px solid var(--cd-border-strong);
+    background: var(--cd-surface-2);
+    color: inherit;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+  }
+  .cvr-map-list li.l button { flex-direction: row-reverse; text-align: right; }
+  .cvr-map-list li.on button { border-color: var(--accent); background: rgba(var(--accent-rgb), 0.16); }
+  .cvr-map-ico { font-size: 20px; line-height: 1; flex-shrink: 0; }
+  .cvr-map-name { min-width: 0; overflow-wrap: anywhere; }
+  .cvr-map-list .cvr-badge { position: static; margin-left: auto; box-shadow: none; }
+  .cvr-map-list li.l .cvr-badge { margin-left: 0; margin-right: auto; }
+  .cvr-map-camel { position: absolute; top: -16px; width: 28px; height: 22px; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.45)); }
+  .cvr-map-list li.l .cvr-map-camel { right: -36px; }
+  .cvr-map-list li.r .cvr-map-camel { left: -36px; }
+  .cvr-map-camel svg { width: 100%; height: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cvr-camel.walking svg, .view-section.cvr-in-right, .view-section.cvr-in-left, .cvr-map { animation: none !important; }
+}

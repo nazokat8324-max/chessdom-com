@@ -1,6 +1,8 @@
 // Қазақша (kk) — sayt matnlari. languages.js dan OLDIN yuklanadi va translations.kk bo'lib qo'shiladi.
 // Kalitlar inglizcha (en) bilan bir xil bo'lishi kerak — tests/lang.test.js tekshiradi. Yangi kalit qo'shilsa — shu yerga ham.
 window.TRANSLATIONS_KK = {
+  rtNavLabel: "Негізгі бөлімдер",
+  rtAllStops: "Барлық бөлімдер",
   pcGuideBtn: "Фигуралар туралы",
   pcGuideTitle: "Фигуралармен танысыңыз",
   pcGuideSub: "Әр фигура қалай көрінеді және қалай жүреді",

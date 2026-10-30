@@ -551,11 +551,59 @@ test('Telefon: pastki menyu va gorizontal aylantirish yo\'q', opts, async () => 
   await sleep(1000);
   const r = await p.evaluate(() => ({
     sw: document.documentElement.scrollWidth,
-    nav: [...document.querySelectorAll('.menu-list .menu-item.mobile-main')].filter((e) => getComputedStyle(e).display !== 'none').length
+    nav: [...document.querySelectorAll('#cvRoute .cvr-stop')].filter((e) => e.getBoundingClientRect().width > 0).length
   }));
   assert.ok(r.sw <= 390, 'kenglik ' + r.sw);
   assert.equal(r.nav, 5);
   assert.deepEqual(p.errors, []);
+});
+
+test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar' xaritasi, kompyuterda yo'q", opts, async () => {
+  const u = await srv.register('Urt');
+  const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await p.waitForSelector('#cvRoute .cvr-stop.on');
+  const camelX = () => p.evaluate(() => document.querySelector('#cvRoute .cvr-camel').getBoundingClientRect().left);
+  const st0 = await p.evaluate(() => ({ menu: getComputedStyle(document.querySelector('.menu-list')).display, on: document.querySelector('#cvRoute .cvr-stop.on').dataset.i, labels: [...document.querySelectorAll('#cvRoute .cvr-label')].map((l) => l.textContent) }));
+  assert.equal(st0.menu, 'none', 'eski pastki menyu yashirin');
+  assert.equal(st0.on, '0');
+  assert.ok(st0.labels.every(Boolean), JSON.stringify(st0.labels));
+  const x0 = await camelX();
+  // O'yin bekati — sahifa ochiladi, tuya o'ngga yuradi
+  await p.tap('#cvRoute .cvr-stop[data-i="1"]');
+  await sleep(900);
+  assert.equal(await p.evaluate(() => location.pathname), '/oyin');
+  assert.equal(await p.evaluate(() => document.querySelector('#cvRoute .cvr-stop.on').dataset.i), '1');
+  assert.ok((await camelX()) > x0 + 40, 'tuya yurdi');
+  // Barmoq bilan surish: Xabarlar bekatigacha
+  const box = await p.evaluate(() => { const r = document.getElementById('cvRoute').getBoundingClientRect(); return { left: r.left, width: r.width, top: r.top }; });
+  const y = box.top + 30;
+  const cdp = await p.target().createCDPSession();
+  const touch = (type, x) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+  await touch('touchStart', box.left + box.width * 0.3);
+  for (let k = 1; k <= 8; k++) { await touch('touchMove', box.left + box.width * (0.3 + 0.4 * k / 8)); await sleep(20); }
+  await touch('touchEnd');
+  await sleep(900);
+  assert.equal(await p.evaluate(() => location.pathname), '/xabarlar', 'surib Xabarlar ochildi');
+  // 5-bekat: Barcha bo'limlar xaritasi → Reyting; 5-bekat endi shu bo'lim nomi bilan
+  await p.tap('#cvRoute .cvr-stop[data-i="4"]');
+  await p.waitForSelector('#cvRouteMap .cvr-map-list button');
+  const stops = await p.evaluate(() => [...document.querySelectorAll('#cvRouteMap [data-cvr-go]')].map((b) => b.dataset.cvrGo));
+  assert.ok(stops.includes('navLeaderboard') && stops.includes('navLibrary') && !stops.includes('navAdmin'), stops.join(','));
+  await p.tap('#cvRouteMap [data-cvr-go="navLeaderboard"]');
+  await sleep(700);
+  assert.equal(await p.evaluate(() => location.pathname), '/reyting');
+  const st1 = await p.evaluate(() => ({ open: document.body.classList.contains('mobile-menu-open'), on: document.querySelector('#cvRoute .cvr-stop.on').dataset.i, label: document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-label').textContent, ref: document.querySelector('#navLeaderboard span:not(.icon)').textContent }));
+  assert.deepEqual([st1.open, st1.on, st1.label], [false, '4', st1.ref]);
+  // Karvon yo'li sahifasining o'z yo'li (.cv-route) yashirinib qolmaydi
+  await p.goto(srv.base + '/karvon', { waitUntil: 'load' });
+  await p.waitForSelector('.cv-route', { visible: true, timeout: 15000 });
+  // Kompyuterda — oddiy yon menyu
+  const d = await page(u, { width: 1280, height: 800 });
+  await d.goto(srv.base + '/', { waitUntil: 'load' });
+  await sleep(800);
+  assert.deepEqual(await d.evaluate(() => [getComputedStyle(document.getElementById('cvRoute') || document.body).display === 'none' || !document.getElementById('cvRoute'), getComputedStyle(document.querySelector('.menu-list')).display !== 'none']), [true, true]);
+  assert.deepEqual([...p.errors, ...d.errors], []);
 });
 
 test("Brauzer xatosi admin panelidagi Xatolar bo'limida ko'rinadi", opts, async () => {

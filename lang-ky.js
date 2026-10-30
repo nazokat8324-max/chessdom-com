@@ -1,6 +1,8 @@
 // Кыргызча (ky) — sayt matnlari. languages.js dan OLDIN yuklanadi va translations.ky bo'lib qo'shiladi.
 // Kalitlar inglizcha (en) bilan bir xil bo'lishi kerak — tests/lang.test.js tekshiradi. Yangi kalit qo'shilsa — shu yerga ham.
 window.TRANSLATIONS_KY = {
+  rtNavLabel: "Негизги бөлүмдөр",
+  rtAllStops: "Бардык бөлүмдөр",
   pcGuideBtn: "Фигуралар жөнүндө",
   pcGuideTitle: "Фигуралар менен таанышыңыз",
   pcGuideSub: "Ар бир фигура кандай көрүнөт жана кандай жүрөт",

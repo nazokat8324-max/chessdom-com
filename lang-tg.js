@@ -1,6 +1,8 @@
 // Тоҷикӣ (tg) — sayt matnlari. languages.js dan OLDIN yuklanadi va translations.tg bo'lib qo'shiladi.
 // Kalitlar inglizcha (en) bilan bir xil bo'lishi kerak — tests/lang.test.js tekshiradi. Yangi kalit qo'shilsa — shu yerga ham.
 window.TRANSLATIONS_TG = {
+  rtNavLabel: "Бахшҳои асосӣ",
+  rtAllStops: "Ҳамаи бахшҳо",
   pcGuideBtn: "Дар бораи донаҳо",
   pcGuideTitle: "Бо донаҳо шинос шавед",
   pcGuideSub: "Ҳар як дона чӣ гуна менамояд ва чӣ гуна мегардад",

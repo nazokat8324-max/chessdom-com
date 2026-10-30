@@ -1456,6 +1456,8 @@ const translations = {
 // Qo'shimcha tarjimalar: avval qattiq yozilgan matnlar uchun (har 6 tilda bir xil kalitlar)
 const translationsExtra = {
   uz: {
+    rtNavLabel: "Asosiy bo'limlar",
+    rtAllStops: "Barcha bo'limlar",
     pcGuideBtn: "Donalar haqida",
     pcGuideTitle: "Donalar bilan tanishing",
     pcGuideSub: "Har bir dona qanday ko'rinadi va qanday yuradi",
@@ -2974,6 +2976,8 @@ const translationsExtra = {
     searchNoResults: "Hech narsa topilmadi"
   },
   en: {
+    rtNavLabel: "Main sections",
+    rtAllStops: "All sections",
     pcGuideBtn: "About the pieces",
     pcGuideTitle: "Meet the pieces",
     pcGuideSub: "What each piece looks like and how it moves",
@@ -4492,6 +4496,8 @@ const translationsExtra = {
     searchNoResults: "Nothing found"
   },
   ru: {
+    rtNavLabel: "Основные разделы",
+    rtAllStops: "Все разделы",
     pcGuideBtn: "О фигурах",
     pcGuideTitle: "Знакомство с фигурами",
     pcGuideSub: "Как выглядит и как ходит каждая фигура",
@@ -6010,6 +6016,8 @@ const translationsExtra = {
     searchNoResults: "Ничего не найдено"
   },
   es: {
+    rtNavLabel: "Secciones principales",
+    rtAllStops: "Todas las secciones",
     pcGuideBtn: "Sobre las piezas",
     pcGuideTitle: "Conoce las piezas",
     pcGuideSub: "Cómo es cada pieza y cómo se mueve",
@@ -7528,6 +7536,8 @@ const translationsExtra = {
     searchNoResults: "No se encontró nada"
   },
   de: {
+    rtNavLabel: "Hauptbereiche",
+    rtAllStops: "Alle Bereiche",
     pcGuideBtn: "Über die Figuren",
     pcGuideTitle: "Die Figuren kennenlernen",
     pcGuideSub: "Wie jede Figur aussieht und wie sie zieht",
@@ -9046,6 +9056,8 @@ const translationsExtra = {
     searchNoResults: "Nichts gefunden"
   },
   fr: {
+    rtNavLabel: "Sections principales",
+    rtAllStops: "Toutes les sections",
     pcGuideBtn: "À propos des pièces",
     pcGuideTitle: "Découvrez les pièces",
     pcGuideSub: "À quoi ressemble chaque pièce et comment elle se déplace",

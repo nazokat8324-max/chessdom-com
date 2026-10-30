@@ -14495,6 +14495,8 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
   html.cv-route-on.cvr-compact sidebar { margin-top: calc(-1 * var(--cvr-head, 60px)); }
   /* ⚙️ va 🔔 (sarlavhadan alohida, fixed) — sarlavha bilan birga yashirinadi */
   html.cv-route-on .nf-wrap { transition: transform 0.28s ease, opacity 0.2s ease; }
+  /* Bildirishnomalar paneli pastki yo'l ostida qolmasin */
+  html.cv-route-on .nf-panel { max-height: min(520px, calc(100dvh - 180px)); }
   html.cv-route-on.cvr-compact .nf-wrap { transform: translateY(calc(-1 * var(--cvr-head, 60px) - 10px)); opacity: 0; pointer-events: none; }
   html.cv-route-on .cvr-nav { transition: transform 0.28s ease; }
   html.cv-route-on.cvr-compact .cvr-nav { transform: translateY(22px); }

@@ -607,6 +607,24 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   await p.evaluate(() => { document.querySelector('.main-wrapper').scrollTop = 400; });
   await sleep(450);
   assert.equal(await p.evaluate(() => window.cvRoute.state().compact), false);
+  // Menyuda bandi yo'q sahifa — 5-bekat o'sha sahifa nomi bilan
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
+  await p.waitForSelector('#settingsRoot .set-nav', { timeout: 15000 });
+  await sleep(400);
+  assert.deepEqual(await p.evaluate(() => [document.querySelector('#cvRoute .cvr-stop.on').dataset.i, document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-ico').textContent]), ['4', '⚙️']);
+  // O'yin paytida — ixcham (sarlavha yashirin), o'yin tugagach qaytadi
+  await p.goto(srv.base + '/oyin', { waitUntil: 'load' });
+  await p.waitForSelector('#btnLocalGame', { timeout: 15000 });
+  await sleep(400);
+  assert.equal(await p.evaluate(() => window.cvRoute.state().compact), false);
+  await p.evaluate(() => window.startLocalGame());
+  await sleep(500);
+  await p.evaluate(() => window.setGamePanelMode && window.setGamePanelMode('in'));
+  await sleep(450);
+  assert.equal(await p.evaluate(() => window.cvRoute.state().compact), true, "o'yin paytida ixcham");
+  await p.evaluate(() => window.setGamePanelMode('over'));
+  await sleep(450);
+  assert.equal(await p.evaluate(() => window.cvRoute.state().compact), false, "o'yin tugagach qaytadi");
   // Karvon yo'li sahifasining o'z yo'li (.cv-route) yashirinib qolmaydi
   await p.goto(srv.base + '/karvon', { waitUntil: 'load' });
   await p.waitForSelector('.cv-route', { visible: true, timeout: 15000 });

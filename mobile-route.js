@@ -133,6 +133,17 @@
     el.addEventListener('pointercancel', (e) => { end(e); sync(true); });
   }
 
+  // Menyuda bandi yo'q sahifalar: 5-bekat shu sahifa nomi va belgisi bilan
+  const EXTRA_VIEWS = {
+    settingsView: ['⚙️', 'settingsTitle', 'Sozlamalar'], historyView: ['📜', 'ghTitle', "O'yinlar tarixi"],
+    teamView: ['🤝', 'tmShort', '2 ga 2'], profsecView: ['👤', 'profileText', 'Profil']
+  };
+  function extraView() {
+    const v = document.querySelector('.main-wrapper .view-section.active-view');
+    const e = v && EXTRA_VIEWS[v.id];
+    return e ? { icon: e[0], label: tx(e[1], e[2]) } : null;
+  }
+
   // Yon menyudagi holatni yo'lga ko'chirish: nomlar, belgilar, nishonlar, faol bekat
   function sync(force) {
     if (!st.el) return;
@@ -146,6 +157,7 @@
       let label = labelOf(item), icon = iconOf(item);
       // Asosiy bo'lim bo'lmagan sahifada 5-bekat o'sha bo'lim nomi va belgisi bilan
       if (i === 4 && active && !MAIN.includes(active.id)) { label = labelOf(active); icon = iconOf(active); }
+      else if (i === 4 && !active && extraView()) ({ label, icon } = extraView());
       if (i === 4 && document.body.classList.contains('mobile-menu-open')) icon = '🗺️';
       b.querySelector('.cvr-ico').textContent = icon;
       b.querySelector('.cvr-label').textContent = label;
@@ -159,7 +171,7 @@
     });
     if (idx !== st.idx || force) {
       const prev = st.idx;
-      setCompact(false);
+      setCompact(inGame());
       st.idx = idx;
       if (!st.drag || !st.drag.moved) travel(st.lens[idx]);
       if (prev >= 0 && prev !== idx && !reduce.matches) enterPage(idx > prev ? 1 : -1);
@@ -209,11 +221,15 @@
     if (head) root.style.setProperty('--cvr-head', head.getBoundingClientRect().height + 'px');
     root.classList.toggle('cvr-compact', on);
   }
+  // O'yin davom etayotganda karvon dam oladi: taxta va soatlarga ko'proq joy
+  const inGame = () => !!document.querySelector('#gameView.active-view.pg-mode-in');
+  function gameCompact() { if (enabled() && !document.body.classList.contains('mobile-menu-open')) setCompact(inGame()); }
   function onScroll(e) {
     const box = e.currentTarget;
     const y = box.scrollTop, dy = y - lastY;
     lastY = y;
-    if (!enabled() || document.body.classList.contains('mobile-menu-open') || document.querySelector('#gameView.active-view')) return setCompact(false);
+    if (!enabled() || document.body.classList.contains('mobile-menu-open')) return setCompact(false);
+    if (document.querySelector('#gameView.active-view')) return setCompact(inGame());
     if (y < 40) setCompact(false);
     else if (dy > 6) setCompact(true);
     else if (dy < -6) setCompact(false);
@@ -229,6 +245,11 @@
   document.addEventListener('DOMContentLoaded', () => {
     apply();
     [wide, landscape].forEach((mq) => (mq.addEventListener ? mq.addEventListener('change', apply) : mq.addListener(apply)));
+    const gv = document.getElementById('gameView');
+    if (gv) new MutationObserver(() => { gameCompact(); sync(); }).observe(gv, { attributes: true, attributeFilter: ['class'] });
+    // Bo'lim almashuvi (menyuda bandi yo'q sahifalar uchun ham): faqat .view-section klasslari
+    new MutationObserver((list) => { if (list.some((m) => m.target.classList && m.target.classList.contains('view-section'))) sync(); })
+      .observe(document.querySelector('.main-wrapper') || document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
     const wrap = document.querySelector('.main-wrapper');
     if (wrap) wrap.addEventListener('scroll', onScroll, { passive: true });
     const list = document.querySelector('.menu-list');

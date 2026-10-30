@@ -595,6 +595,18 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   assert.equal(await p.evaluate(() => location.pathname), '/reyting');
   const st1 = await p.evaluate(() => ({ open: document.body.classList.contains('mobile-menu-open'), on: document.querySelector('#cvRoute .cvr-stop.on').dataset.i, label: document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-label').textContent, ref: document.querySelector('#navLeaderboard span:not(.icon)').textContent }));
   assert.deepEqual([st1.open, st1.on, st1.label], [false, '4', st1.ref]);
+  // Pastga aylantirilganda sarlavha va ⚙️/🔔 yashirinadi, yo'l ixchamlashadi; tepaga — qaytadi; sarlavha ostida atlas lentasi
+  await p.goto(srv.base + '/kutubxona', { waitUntil: 'load' });
+  await p.waitForSelector('.lib-card, .lib-shelf, #libraryRoot *', { timeout: 15000 });
+  await sleep(600);
+  assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('sidebar'), '::after').backgroundImage), /atlas.svg/);
+  for (let yy = 100; yy <= 700; yy += 100) { await p.evaluate((v) => { document.querySelector('.main-wrapper').scrollTop = v; }, yy); await sleep(60); }
+  await sleep(450);
+  const down = await p.evaluate(() => ({ c: window.cvRoute.state().compact, head: document.querySelector('sidebar').getBoundingClientRect().bottom, bell: getComputedStyle(document.querySelector('.nf-wrap')).opacity }));
+  assert.deepEqual([down.c, down.head <= 1, down.bell], [true, true, '0'], JSON.stringify(down));
+  await p.evaluate(() => { document.querySelector('.main-wrapper').scrollTop = 400; });
+  await sleep(450);
+  assert.equal(await p.evaluate(() => window.cvRoute.state().compact), false);
   // Karvon yo'li sahifasining o'z yo'li (.cv-route) yashirinib qolmaydi
   await p.goto(srv.base + '/karvon', { waitUntil: 'load' });
   await p.waitForSelector('.cv-route', { visible: true, timeout: 15000 });

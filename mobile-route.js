@@ -2,7 +2,8 @@
 // 5 bekat (Bosh sahifa, O'yin, Choyxona, Xabarlar, "Ko'proq"), faol bekat ustida tuya. Bo'lim almashganda tuya yo'l bo'ylab
 // yurib boradi, sahifa karvon yurgan tomondan kirib keladi. Barmoq bilan yo'l bo'ylab surish — tuya ergashadi, qo'yib
 // yuborilganda eng yaqin bekat ochiladi. 5-bekat — "Barcha bo'limlar" xaritasi (#cvRouteMap): qolgan bo'limlar
-// ilonizi yo'l bo'yidagi bekatlar. Ma'lumot manbai — mavjud yon menyu (.menu-list): nomlar (tarjima), belgilar, faol bo'lim,
+// ilonizi yo'l bo'yidagi bekatlar. Pastga aylantirilganda sarlavha yashirinadi, yo'l ixchamlashadi (html.cvr-compact);
+// sarlavha ostida yupqa atlas lentasi. Ma'lumot manbai — mavjud yon menyu (.menu-list): nomlar (tarjima), belgilar, faol bo'lim,
 // nishonlar shu yerdan olinadi, shuning uchun router/switchView o'zgarmaydi. Kompyuter va yon holatdagi telefon — eski menyu.
 (function () {
   const MAIN = ['navHome', 'navPlay', 'navTea', 'navMessages', 'navMore'];
@@ -88,7 +89,8 @@
       const k = Math.min(1, (now - t0) / dur);
       const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
       placeCamel(from + (to - from) * e, dir);
-      if (k < 1) st.raf = requestAnimationFrame(step); else c.classList.remove('walking');
+      if (k < 1) st.raf = requestAnimationFrame(step);
+      else { c.classList.remove('walking'); if (typeof window.haptic === 'function') window.haptic(12); }
     };
     st.raf = requestAnimationFrame(step);
   }
@@ -157,6 +159,7 @@
     });
     if (idx !== st.idx || force) {
       const prev = st.idx;
+      setCompact(false);
       st.idx = idx;
       if (!st.drag || !st.drag.moved) travel(st.lens[idx]);
       if (prev >= 0 && prev !== idx && !reduce.matches) enterPage(idx > prev ? 1 : -1);
@@ -196,6 +199,26 @@
         <button type="button" data-cvr-go="${esc(m.id)}"><span class="cvr-map-ico">${esc(iconOf(m))}</span><span class="cvr-map-name">${esc(labelOf(m))}</span>${badgeOf(m) ? `<span class="cvr-badge">${badgeOf(m)}</span>` : ''}${m === active ? `<span class="cvr-map-camel">${CAMEL}</span>` : ''}</button></li>`).join('')}</ol>`;
   }
 
+  // Pastga aylantirilganda sarlavha yashirinadi va yo'l ixchamlashadi (kontentga joy), tepaga — qaytadi.
+  // O'yin sahifasida yo'q: taxta bilan ishlashda menyu siljib ketmasin.
+  let lastY = 0;
+  function setCompact(on) {
+    const root = document.documentElement;
+    if (on === root.classList.contains('cvr-compact')) return;
+    const head = document.querySelector('sidebar');
+    if (head) root.style.setProperty('--cvr-head', head.getBoundingClientRect().height + 'px');
+    root.classList.toggle('cvr-compact', on);
+  }
+  function onScroll(e) {
+    const box = e.currentTarget;
+    const y = box.scrollTop, dy = y - lastY;
+    lastY = y;
+    if (!enabled() || document.body.classList.contains('mobile-menu-open') || document.querySelector('#gameView.active-view')) return setCompact(false);
+    if (y < 40) setCompact(false);
+    else if (dy > 6) setCompact(true);
+    else if (dy < -6) setCompact(false);
+  }
+
   function apply() {
     const on = enabled();
     document.documentElement.classList.toggle('cv-route-on', on);
@@ -206,15 +229,17 @@
   document.addEventListener('DOMContentLoaded', () => {
     apply();
     [wide, landscape].forEach((mq) => (mq.addEventListener ? mq.addEventListener('change', apply) : mq.addListener(apply)));
+    const wrap = document.querySelector('.main-wrapper');
+    if (wrap) wrap.addEventListener('scroll', onScroll, { passive: true });
     const list = document.querySelector('.menu-list');
     if (list) new MutationObserver(() => sync()).observe(list, { subtree: true, attributes: true, attributeFilter: ['class', 'style'], childList: true, characterData: true });
     // "Ko'proq" ochilganda — xarita
     new MutationObserver(() => {
       const open = document.body.classList.contains('mobile-menu-open');
-      if (open && enabled()) renderMap();
+      if (open && enabled()) { setCompact(false); renderMap(); }
       sync();
     }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   });
 
-  window.cvRoute = { sync, state: () => ({ idx: st.idx, on: !!st.el && enabled() }) };
+  window.cvRoute = { sync, state: () => ({ idx: st.idx, on: !!st.el && enabled(), compact: document.documentElement.classList.contains('cvr-compact') }) };
 })();

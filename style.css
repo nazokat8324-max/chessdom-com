@@ -14478,6 +14478,28 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
     -webkit-user-select: none;
     -webkit-tap-highlight-color: transparent;
   }
+  /* Sarlavha ostida yupqa atlas lentasi — milliy belgi, faqat telefon menyusida */
+  /* sticky emas: sahifa .main-wrapper ichida aylanadi, sticky esa manfiy margin bilan yashirishga qo'ymaydi */
+  html.cv-route-on sidebar { position: relative; transition: margin-top 0.28s ease; }
+  html.cv-route-on sidebar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 3px;
+    background: url('img/atlas.svg') 0 0 / auto 120px repeat-x;
+    pointer-events: none;
+  }
+  /* Pastga aylantirilganda: sarlavha yuqoriga yashirinadi, yo'l ixchamlashadi (yozuvlarsiz) */
+  html.cv-route-on.cvr-compact sidebar { margin-top: calc(-1 * var(--cvr-head, 60px)); }
+  /* ⚙️ va 🔔 (sarlavhadan alohida, fixed) — sarlavha bilan birga yashirinadi */
+  html.cv-route-on .nf-wrap { transition: transform 0.28s ease, opacity 0.2s ease; }
+  html.cv-route-on.cvr-compact .nf-wrap { transform: translateY(calc(-1 * var(--cvr-head, 60px) - 10px)); opacity: 0; pointer-events: none; }
+  html.cv-route-on .cvr-nav { transition: transform 0.28s ease; }
+  html.cv-route-on.cvr-compact .cvr-nav { transform: translateY(22px); }
+  .cvr-label { transition: opacity 0.2s ease; }
+  html.cvr-compact .cvr-label { opacity: 0; }
   .cvr-road { position: absolute; left: 0; top: 0; width: 100%; height: 64px; overflow: visible; pointer-events: none; }
   .cvr-road path { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; }
   .cvr-edge { stroke: rgba(0, 0, 0, 0.35); stroke-width: 17px; }

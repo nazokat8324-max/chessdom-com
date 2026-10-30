@@ -229,6 +229,23 @@ test("Donalar haqida: ❓ oynasi 6 ta donani nomi, chizmasi va qoidasi bilan ko'
   assert.deepEqual(p.errors, []);
 });
 
+test("Onlayn o'ynash: skriptlar yuklanguncha tugma bosilsa ham xato yo'q — yuklangach raqib qidiruvi boshlanadi", opts, async () => {
+  // Admin panelida qayd etilgan: "window.quickPlayOnline is not a function" (sekin internetda online.js hali yuklanmagan)
+  const u = await srv.register('Qp');
+  const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  let release;
+  const released = new Promise((r) => { release = r; });
+  p.on('request', (req) => { if (req.url().endsWith('/online.js')) req.enqueueInterceptAction(() => released); });
+  const nav = p.goto(srv.base + '/', { waitUntil: 'load' });
+  await p.waitForFunction(() => !!document.getElementById('playOnlineBtn'), { timeout: 30000 });
+  await p.evaluate(() => document.getElementById('playOnlineBtn').click());
+  release();
+  await nav;
+  await p.waitForFunction(() => location.pathname === '/oyin' && window.isSearchingOpponent === true, { timeout: 15000 });
+  assert.deepEqual(p.errors, []);
+  await p.evaluate(() => window.cancelSearch && window.cancelSearch());
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

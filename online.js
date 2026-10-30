@@ -333,6 +333,13 @@ window.quickPlayOnline = function() {
   if (busy || !window.currentUser) { switchView('game'); return; }
   startMatchmaking();
 };
+// Sahifa yuklanayotganda (sekin internet, server uyg'onishi) tugma bosilgan bo'lsa — index.html dagi o'rinbosar eslab qolgan
+if (window.__quickPlayQueued) {
+  window.__quickPlayQueued = false;
+  // router.js boshlang'ich manzilni sahifa yuklangach o'rnatadi — undan keyin bajariladi, aks holda manzil / ga qaytadi
+  const runQueued = () => setTimeout(() => window.quickPlayOnline(), 150);
+  if (document.readyState === 'complete') runQueued(); else window.addEventListener('load', runQueued, { once: true });
+}
 
 // Sozlamalarda tanlangan davlat ustun; bo'lmasa akkauntdagisi
 function getMyCountry() {

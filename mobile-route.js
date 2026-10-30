@@ -13,7 +13,7 @@
   const wide = window.matchMedia('(max-width: 768px)');
   const landscape = window.matchMedia('(orientation: landscape) and (max-height: 500px)');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const st = { el: null, map: null, path: null, lens: [], idx: -1, len: null, raf: 0, drag: null };
+  const st = { el: null, map: null, path: null, lens: [], idx: -1, len: null, raf: 0, drag: null, userGo: false };
 
   const esc = (v) => {
     const div = document.createElement('div');
@@ -26,7 +26,8 @@
     return s ? s.textContent.trim() : '';
   };
   const iconOf = (item) => { const s = item && item.querySelector('.icon'); return s ? s.textContent.trim() : ''; };
-  const badgeOf = (item) => { const b = item && item.querySelector('.lg-nav-badge'); return b && b.style.display !== 'none' ? Number(b.textContent) || 0 : 0; };
+  // '99+' ham son sifatida (parseInt) — avval Number('99+') = NaN bo'lib, nishon umuman ko'rinmasdi
+  const badgeOf = (item) => { const b = item && item.querySelector('.lg-nav-badge'); if (!b || b.style.display === 'none') return 0; const n = parseInt(b.textContent, 10) || 0; return b.textContent.includes('+') ? Math.max(n, 100) : n; };
 
   // Tuya — o'zimiz chizgan siluet (emoji har telefonda boshqacha ko'rinadi)
   const CAMEL = '<svg viewBox="0 0 48 36" aria-hidden="true"><path d="M5 31V22.5C5 17 8.2 13.4 12.6 13.4C14.4 7.6 20.4 6.8 22.6 12C24.8 8.4 29.6 8.6 31.2 13.2C32.4 13.6 33.4 14.4 34 15.4L37.4 8.6C38.2 6.4 40.6 5.4 42.6 6.4L44.6 7.6L43.4 9.4H41.2L38.6 17.6C37.8 20.6 35.8 22.6 33.2 23.2V31H30.6L29.6 24.2H15.2L14.4 31H11.8L11.6 24C9.4 24.4 8 26.4 7.8 31Z"/><circle cx="41.4" cy="8" r="0.9" class="e"/></svg>';
@@ -90,12 +91,18 @@
       const e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
       placeCamel(from + (to - from) * e, dir);
       if (k < 1) st.raf = requestAnimationFrame(step);
-      else { c.classList.remove('walking'); if (typeof window.haptic === 'function') window.haptic(12); }
+      else {
+        c.classList.remove('walking');
+        // Faqat foydalanuvchi o'zi bekat tanlaganda (o'yin topilganda sahifa o'zi almashadi — u yerda o'z tebranishi bor)
+        if (st.userGo && typeof window.haptic === 'function') window.haptic(12);
+        st.userGo = false;
+      }
     };
     st.raf = requestAnimationFrame(step);
   }
 
   function go(i) {
+    st.userGo = i !== 4;
     if (i === 4) { window.toggleMobileMenu && window.toggleMobileMenu(); return; }
     if (typeof window.switchView === 'function') window.switchView(VIEWS[i]);
   }
@@ -238,6 +245,7 @@
   function apply() {
     const on = enabled();
     document.documentElement.classList.toggle('cv-route-on', on);
+    if (!on) { setCompact(false); document.documentElement.classList.remove('cvr-typing'); }
     if (on && !st.el) build();
     if (on) sync(true);
   }
@@ -252,6 +260,14 @@
       .observe(document.querySelector('.main-wrapper') || document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
     const wrap = document.querySelector('.main-wrapper');
     if (wrap) wrap.addEventListener('scroll', onScroll, { passive: true });
+    // Telefon klaviaturasi ochilganda (matn maydonida yozish) yo'l yashirinadi — aks holda klaviatura ustida qolib,
+    // Xabarlar/chatdagi yozish maydonini yopardi
+    const TYPING = /^(text|search|email|password|number|tel|url)$/;
+    const isField = (el) => el && (el.tagName === 'TEXTAREA' || el.isContentEditable || (el.tagName === 'INPUT' && TYPING.test(el.type || 'text')));
+    document.addEventListener('focusin', (e) => { if (enabled() && isField(e.target)) document.documentElement.classList.add('cvr-typing'); });
+    document.addEventListener('focusout', () => setTimeout(() => {
+      if (!isField(document.activeElement)) document.documentElement.classList.remove('cvr-typing');
+    }, 60));
     const list = document.querySelector('.menu-list');
     if (list) new MutationObserver(() => sync()).observe(list, { subtree: true, attributes: true, attributeFilter: ['class', 'style'], childList: true, characterData: true });
     // "Ko'proq" ochilganda — xarita

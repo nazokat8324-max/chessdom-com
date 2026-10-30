@@ -624,6 +624,36 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   await p.evaluate(() => { document.querySelector('.main-wrapper').scrollTop = 400; });
   await sleep(450);
   assert.equal(await p.evaluate(() => window.cvRoute.state().compact), false);
+  // Tekshiruv (2026-10-30): '99+' nishoni ham ko'rinadi; yozish paytida yo'l yashirinadi; pastki panel yo'l ustida;
+  // tebranish faqat foydalanuvchi bekat tanlaganda (sahifa o'zi almashganda emas)
+  await p.evaluate(() => { const n = document.getElementById('navMessages'); const b = document.createElement('span'); b.className = 'lg-nav-badge'; b.textContent = '99+'; n.appendChild(b); });
+  await sleep(200);
+  assert.equal(await p.evaluate(() => { const b = document.querySelector('#cvRoute .cvr-stop[data-i="3"] .cvr-badge'); return b.hidden ? '' : b.textContent; }), '99+');
+  await p.evaluate(() => document.querySelector('#navMessages .lg-nav-badge').remove());
+  await p.evaluate(() => { window.__vib = 0; navigator.vibrate = () => { window.__vib++; return true; }; });
+  await p.evaluate(() => window.switchView('tea'));
+  await sleep(1000);
+  assert.equal(await p.evaluate(() => window.__vib), 0, "sahifa o'zi almashganda tebranmaydi");
+  await p.tap('#cvRoute .cvr-stop[data-i="0"]');
+  await sleep(1000);
+  assert.equal(await p.evaluate(() => window.__vib), 1, 'bekat bosilganda bir marta');
+  await p.goto(srv.base + '/xabarlar', { waitUntil: 'load' });
+  await p.waitForSelector('#messagesRoot input[type="text"], #messagesRoot input:not([type])', { timeout: 15000 });
+  await p.focus('#messagesRoot input[type="text"], #messagesRoot input:not([type])');
+  await sleep(400);
+  assert.equal(await p.evaluate(() => document.getElementById('cvRoute').getBoundingClientRect().top >= innerHeight - 2), true, "yozishda yo'l yashirin");
+  await p.evaluate(() => document.activeElement.blur());
+  await sleep(500);
+  assert.equal(await p.evaluate(() => document.documentElement.classList.contains('cvr-typing')), false);
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
+  await p.waitForSelector('.set-nav [data-section="board"]', { timeout: 15000 });
+  await p.click('.set-nav [data-section="board"]');
+  await p.waitForSelector('[data-piece-set="clear"]');
+  await p.click('[data-piece-set="clear"]');
+  await sleep(400);
+  const bar = await p.evaluate(() => [document.querySelector('.set-bar.show').getBoundingClientRect().bottom, document.getElementById('cvRoute').getBoundingClientRect().top]);
+  assert.ok(bar[0] <= bar[1] - 20, "saqlash paneli yo'l ustida: " + JSON.stringify(bar));
+  await p.evaluate(() => { const c = document.querySelector('[data-cancel], .set-bar button'); if (c) c.click(); });
   // Menyuda bandi yo'q sahifa — 5-bekat o'sha sahifa nomi bilan
   await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
   await p.waitForSelector('#settingsRoot .set-nav', { timeout: 15000 });

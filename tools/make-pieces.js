@@ -2,7 +2,7 @@
 // ChessCaravan dona to'plamlari → img/chesspieces/<to'plam>/{w,b}{K,Q,R,B,N,P}.svg
 //   node tools/make-pieces.js
 // Hammasi shu skriptda noldan chizilgan — begona rasm ishlatilmagan, mualliflik huquqi loyihaniki.
-// Tuzilishi: har to'plamning O'Z SHAKLLARI (karvon, classic, clear, atlas, rishton, wood, royal, neon, geo, cute, pixel) × USLUBLAR (ranglar, naqsh, yaltiroqlik, nur) = SETS.
+// Tuzilishi: har to'plamning O'Z SHAKLLARI (karvon, classic, clear, atlas, rishton, wood, royal, neon, geo, cute, pixel, tanga, samarqand, origami, kosmos) × USLUBLAR (ranglar, naqsh, yaltiroqlik, nur) = SETS.
 // Koordinatalar 45×45 maydonda. Shakl yoki rang o'zgarsa — shu yerda tahrirlab, qayta ishga tushiring.
 const fs = require('fs');
 const path = require('path');
@@ -393,6 +393,56 @@ const PIX = {
   K: ['......###', '.....#####', '......###', '....#######', '...#########', '...###+###', '....#######', '.....#####', '.....#####', '.....#####', '....#######', '...#########', '..###########']
 };
 
+// --- Tanga: Ipak yo'li tangalari — har dona tanga, ichida o'z belgisi: shoh — toj, farzin — sakkiz qirrali yulduz,
+// rux — minora, fil — yarim oy, ot — taqa, piyoda — nuqta; tanga kattaligi donaning qiymatiga qarab ---
+const star8 = (cx, cy, ro, ri) => 'M' + Array.from({ length: 16 }, (_, k) => { const a = (-90 + k * 22.5) * Math.PI / 180; const r = k % 2 ? ri : ro; return `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`; }).join('L') + 'Z';
+const TSTAND = 'M15.5 39.5H29.5L27.8 37H17.2Z';
+const coin = (r) => [['body', TSTAND], ['body', circ(22.5, 37.5 - r, r)], ['line', circ(22.5, 37.5 - r, r - 2.2)]];
+const TANGA = {
+  K: [...coin(15), ['gold', 'M15.5 29.5H29.5L31 18.5L26.8 22.5L22.5 15.5L18.2 22.5L14 18.5Z'], ['eye', circ(22.5, 13.6, 1.5)]],
+  Q: [...coin(14.5), ['gold', star8(22.5, 23, 8.5, 4.2)]],
+  R: [...coin(13.5), ['gold', 'M17.5 30V19.5H19.8V21.8H21.5V19.5H23.5V21.8H25.2V19.5H27.5V30Z']],
+  B: [...coin(13.5), ['gold', 'M25.5 15.5A8.6 8.6 0 1 0 25.5 32.5A6.8 6.8 0 1 1 25.5 15.5Z']],
+  N: [...coin(13.5), ['gold', 'M17 30V22.5A5.5 5.5 0 0 1 28 22.5V30H25.2V22.5A2.7 2.7 0 0 0 19.8 22.5V30Z']],
+  P: [...coin(11), ['gold', circ(22.5, 26.5, 3.4)]]
+};
+
+// --- Samarqand: me'morchilik — shoh — Go'ri Amir qovurg'ali gumbazi, farzin — peshtoq (ravoqli darvoza), rux — minora,
+// fil — o'tkir ravoq, ot — koshin uslubidagi ot boshi, piyoda — kichik gumbaz ---
+const SBASE = 'M10 39.5H35V36.5H33V35H12V36.5H10Z';
+const SAMARQAND = {
+  K: [['body', SBASE], ['body', 'M15 35V27H30V35Z'], ['body', 'M14.5 27C13.5 19 17.5 13.5 22.5 12.5C27.5 13.5 31.5 19 30.5 27Z'], ['line', 'M18.5 26.5C17.5 21 19 16 22.5 13M26.5 26.5C27.5 21 26 16 22.5 13M22.5 13V26.5'], ['gold', 'M15 30.5H30'], ['body', 'M21.9 12.8L22.5 6.8L23.1 12.8Z'], ['gold', circ(22.5, 9.4, 1.5)]],
+  Q: [['body', SBASE], ['body', 'M12.5 35V13H32.5V35Z'], ['gold', 'M17 35V24C17 19.5 20 17 22.5 15.5C25 17 28 19.5 28 24V35Z'], ['body', 'M11.5 13V10.5L13.5 8L15.5 10.5V13Z'], ['body', 'M29.5 13V10.5L31.5 8L33.5 10.5V13Z'], ['line', 'M14.5 16.5H30.5']],
+  R: [['body', SBASE], ['body', 'M17.5 35L19 14H26L27.5 35Z'], ['body', 'M16.5 14H28.5V11.5H16.5Z'], ['body', 'M18.5 11.5V8.5L22.5 5.5L26.5 8.5V11.5Z'], ['gold', 'M18.4 21.5H26.6M18 28H27']],
+  B: [['body', SBASE], ['body', 'M15.5 35V22C15.5 16.5 19 13.5 22.5 10.5C26 13.5 29.5 16.5 29.5 22V35Z'], ['line', 'M18.5 33V22.5C18.5 19 20.5 16.8 22.5 15C24.5 16.8 26.5 19 26.5 22.5V33'], ['gold', circ(22.5, 24.5, 2.2)]],
+  N: [['body', SBASE], ['body', 'M14.5 35C15 30 17.5 27 20 25.5L14.5 23.5C13 23 12.5 21.5 13.5 20.5L20 14.5L21.5 9.5L24 12.5C29.5 13.5 32.5 19 32 26C31.8 29.5 31 32.5 30.5 35Z'], ['eye', circ(19.5, 17.8, 1.1)], ['gold', 'M24.5 13.8C27.5 15.8 29 19.8 29 24.5'], ['line', 'M22 29.5H29.5']],
+  P: [['body', SBASE], ['body', 'M16.5 35V29H28.5V35Z'], ['body', 'M15.5 29C15.5 23.5 19 20.5 22.5 20.5C26 20.5 29.5 23.5 29.5 29Z'], ['gold', circ(22.5, 18.4, 1.5)]]
+};
+
+// --- Origami: buklangan qog'oz — qirrali shakllar, buklama chiziqlari; shoh — bitta o'tkir cho'qqi, farzin — uch cho'qqi ---
+const OBASE = 'M11 39.5L14 36H31L34 39.5Z';
+const ORIGAMI = {
+  K: [['body', OBASE], ['body', 'M14 36L15.5 20L19 16L22.5 6.5L26 16L29.5 20L31 36Z'], ['line', 'M15.5 20H29.5M19 16L22.5 20L26 16M22.5 6.5V20'], ['gold', 'M22.5 23.5L25.2 27L22.5 30.5L19.8 27Z']],
+  Q: [['body', OBASE], ['body', 'M13 36L14.5 21L11.5 13L18 18.5L22.5 9.5L27 18.5L33.5 13L30.5 21L32 36Z'], ['line', 'M14.5 21H30.5M18 18.5L22.5 21L27 18.5M22.5 9.5V21'], ['gold', 'M20.5 27.5H24.5L22.5 31Z']],
+  R: [['body', OBASE], ['body', 'M15 36L16.5 15H20V18.5H25V15H28.5L30 36Z'], ['line', 'M16 25L22.5 22L29 25M22.5 22V36']],
+  B: [['body', OBASE], ['body', 'M22.5 9L29.5 24L25 36H20L15.5 24Z'], ['line', 'M22.5 9V36M15.5 24L22.5 28L29.5 24']],
+  N: [['body', OBASE], ['body', 'M14 36L17 25L13 21L21 11L24 15L30.5 20L31.5 36Z'], ['line', 'M21 11L22.5 25L17 25M24 15L22.5 25L31.5 36'], ['eye', 'M18.8 17.6L20.6 16.8L20.6 18.6Z']],
+  P: [['body', OBASE], ['body', 'M22.5 17L28 25L25.5 36H19.5L17 25Z'], ['line', 'M22.5 17V36M17 25H28']]
+};
+
+// --- Kosmos: shoh — halqali sayyora, farzin — quyosh, rux — raketa, fil — sun'iy yo'ldosh antennasi,
+// ot — skafandr ichidagi ot boshi, piyoda — kraterli oy ---
+const KBASE = 'M11 39.5H34L32 36.5H13Z';
+const STEM = 'M20.5 36.5V29H24.5V36.5Z';
+const KOSMOS = {
+  K: [['body', KBASE], ['body', STEM], ['body', circ(22.5, 21, 8.5)], ['gold', 'M10.5 24.5C9 21 36 13.5 34.5 17.5C33.5 20 13 28 10.5 24.5'], ['line', 'M16.5 18.5C19 17.8 23 17 27.5 15.7']],
+  Q: [['body', KBASE], ['body', STEM], ['body', circ(22.5, 20.5, 6.8)], ['gold', 'M22.5 8.5V11.5M22.5 29.5V31.5M10.5 20.5H13.5M31.5 20.5H34.5M14 12L16.2 14.2M28.8 26.8L30.6 28.6M31 12L28.8 14.2M16.2 26.8L14.4 28.6'], ['eye', circ(22.5, 20.5, 2.4)]],
+  R: [['body', KBASE], ['body', 'M17 25L13 31V35.5H17Z'], ['body', 'M28 25L32 31V35.5H28Z'], ['body', 'M22.5 7.5C26.5 11 28 16 28 22V32H17V22C17 16 18.5 11 22.5 7.5Z'], ['gold', circ(22.5, 18, 2.7)], ['body', 'M19 32H26L25 35.5H20Z']],
+  B: [['body', KBASE], ['body', 'M20.5 36.5L21.5 23H23.5L24.5 36.5Z'], ['body', 'M13.5 17.5C16.5 26.5 28.5 26.5 31.5 17.5Z'], ['gold', 'M22.5 21V10.5'], ['eye', circ(22.5, 9.8, 1.7)]],
+  N: [['body', KBASE], ['body', 'M14.5 36.5H30.5V32.5H14.5Z'], ['body', 'M17 32.5C17.5 28.5 19 26.5 21 25.5L16.5 24C15.5 23.5 15.3 22.5 16 21.8L21 17L22 13.5L24 16C28 17 30 21 29.5 26C29.3 28.5 28.8 30.5 28.5 32.5Z'], ['eye', circ(20, 19, 0.95)], ['gold', 'M12 32C9.5 26 10 15.5 17 10.5C22 7 29 8 32.5 12.5C36.5 18 35.5 27 33 32']],
+  P: [['body', KBASE], ['body', STEM], ['body', circ(22.5, 21.5, 7.6)], ['line', circ(20, 19.5, 1.9)], ['line', circ(25.2, 24.2, 1.3)], ['line', circ(24.6, 17.8, 0.9)]]
+};
+
 // --- Uslublar ---
 const GOLD = '#d9a73c';
 const glow = '<filter id="g" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="0.8" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
@@ -439,7 +489,21 @@ const SETS = [
     b: { fill: '#4b3f86', stroke: '#1f1940', line: '#e6defc', gold: '#ffcf5c', eye: '#ffffff', cheek: '#ff8fb0' } },
   { id: 'pixel', pixel: PIX,
     w: { fill: '#f7f7f7', stroke: '#1a1a1a', gold: '#e0a030' },
-    b: { fill: '#2e2e3e', stroke: '#000000', gold: '#e0a030' } }
+    b: { fill: '#2e2e3e', stroke: '#000000', gold: '#e0a030' } },
+  // Oq — kumush tanga, qora — bronza tanga
+  { id: 'tanga', shapes: TANGA,
+    w: { fill: 'url(#m)', stroke: '#4a4f57', line: '#9aa1aa', gold: '#4a4f57', eye: '#4a4f57', defs: grad('m', [[0, '#ffffff'], [0.6, '#d5dade'], [1, '#eef1f3']]) },
+    b: { fill: 'url(#m)', stroke: '#1e1208', line: '#c98e4b', gold: '#f0c060', eye: '#f0c060', defs: grad('m', [[0, '#8a5a2b'], [0.6, '#4a2e15'], [1, '#6b4420']]) } },
+  // Oq — qumtosh va firuza koshin, qora — lojuvard koshin va oltin
+  { id: 'samarqand', shapes: SAMARQAND,
+    w: { fill: '#f3ede0', stroke: '#2a3b4f', line: '#2b7f99', gold: '#2fa3c4', eye: '#2a3b4f' },
+    b: { fill: '#1f3b5c', stroke: '#0b1624', line: '#e6c56a', gold: '#3cc4d6', eye: '#e6c56a' } },
+  { id: 'origami', shapes: ORIGAMI,
+    w: { fill: '#fdfaf3', stroke: '#3b3b3b', line: '#c2b39b', gold: '#e86a5c', eye: '#3b3b3b' },
+    b: { fill: '#2f3e57', stroke: '#10161f', line: '#7e95b8', gold: '#f2c14e', eye: '#f2c14e' } },
+  { id: 'kosmos', shapes: KOSMOS,
+    w: { fill: '#eef3ff', stroke: '#1b2a4a', line: '#5b7bd5', gold: '#ff9f43', eye: '#1b2a4a' },
+    b: { fill: '#1b1f3b', stroke: '#05060f', line: '#9db4ff', gold: '#ffb84d', eye: '#ffffff' } }
 ];
 
 function layerSvg([kind, d], c) {

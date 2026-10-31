@@ -17,7 +17,7 @@
   const BOARDS = [['auto', 'boardAuto', 'Mavzuga mos'], ['marble', 'boardMarble', "Marmar"], ['wood', 'boardWood', "Yog'och"], ['tournament', 'boardTournament', "Turnir"], ['rishton', 'boardRishton', "Rishton"], ['atlas', 'boardAtlas', "Atlas"], ['teahouse', 'boardTeahouse', "Choyxona"], ['desert', 'boardDesert', "Cho'l"], ['night', 'boardNight', "Tun"], ['paper', 'boardPaper', "Qog'oz"], ['ice', 'boardIce', "Muz"], ['suzani', 'boardSuzani', "Suzana"], ['malachite', 'boardMalachite', "Malaxit"], ['koshin', 'boardKoshin', "Koshin"], ['felt', 'boardFelt', "Kigiz"], ['silk', 'boardSilk', "Ipak"]];
   // Faqat erkin litsenziyali to'plamlar (board.js PIECE_SETS); mualliflari /mualliflar sahifasida
   // [id, nom, tarjima kaliti?] — nomlar brend sifatida tarjima qilinmaydi; 'Aniq' — tavsifiy nom, tarjima qilinadi
-  const PIECES = [['karvon', 'Karvon'], ['classic', 'Klassik'], ['clear', 'Aniq', 'pcClear'], ['atlas', 'Atlas'], ['rishton', 'Rishton'], ['wood', "Yog'och"], ['royal', 'Shohona'], ['neon', 'Neon'], ['geo', 'Geometrik'], ['cute', 'Bolajon'], ['pixel', 'Piksel']];
+  const PIECES = [['karvon', 'Karvon'], ['classic', 'Klassik'], ['clear', 'Aniq', 'pcClear'], ['atlas', 'Atlas'], ['rishton', 'Rishton'], ['wood', "Yog'och"], ['royal', 'Shohona'], ['neon', 'Neon'], ['geo', 'Geometrik'], ['cute', 'Bolajon'], ['pixel', 'Piksel'], ['tanga', 'Tanga'], ['samarqand', 'Samarqand'], ['origami', 'Origami'], ['kosmos', 'Kosmos']];
   // Namuna pozitsiya (Italyan o'yini): oxirgi yurish Bc4, tanlangan ot g1 va uning yurishlari
   const PREVIEW_FEN = 'r1bqkbnr/pppp1ppp/2n5/4p3/2B1P3/8/PPPP1PPP/RNBQK1NR';
 

@@ -22,7 +22,7 @@ window.LEGAL_TEXT = {
         ]],
         ["Uchinchi tomon xizmatlari", [
           ["Render — sayt serveri (hosting).", "Neon — PostgreSQL ma'lumotlar bazasi.", "Brevo — parolni tiklash xatlarini yuborish.", "Cloudflare — chesscaravan.com domeni va DNS (manzilni sayt serveriga yo'naltirish).", "Telegram — faqat botni ulasangiz: chat ID va bildirishnoma matnlari yuboriladi.", "Push-bildirishnomalar — faqat yoqsangiz, brauzeringiz xizmati (Google, Apple, Mozilla) orqali.", "Ovoz bilan yurish — faqat yoqsangiz: gapingizni brauzeringizning nutqni aniqlash xizmati (masalan, Chrome'da Google) matnga aylantiradi; biz ovoz yozuvini olmaymiz va saqlamaymiz.",
-           "Kutubxona va shriftlar uchun CDN'lar: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; bayroqlar — flagcdn.com; stikerlar — Google Noto Emoji.",
+           "Kutubxona va shriftlar uchun CDN'lar: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; bayroqlar — flagcdn.com; stikerlar — Google Noto Emoji.",
            "Bu xizmatlar texnik sabablarga ko'ra IP manzilingizni ko'rishi mumkin. O'yin tahlili (Stockfish) to'liq brauzeringizda ishlaydi."]
         ]],
         ["Saqlash muddati", [
@@ -100,7 +100,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Third-party services', [
           ['Render — web hosting.', 'Neon — PostgreSQL database.', 'Brevo — sending password-reset emails.', 'Cloudflare — the chesscaravan.com domain and DNS (points the address to the server).', 'Telegram — only if you link the bot: your chat ID and notification texts are sent.', 'Push notifications — only if you enable them, via your browser vendor (Google, Apple, Mozilla).', "Voice moves — only if you turn them on: your speech is turned into text by your browser’s speech recognition service (for example Google in Chrome); we never receive or store recordings.",
-           'CDNs for libraries and fonts: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; flags — flagcdn.com; stickers — Google Noto Emoji.',
+           'CDNs for libraries and fonts: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; flags — flagcdn.com; stickers — Google Noto Emoji.',
            'For technical reasons these services may see your IP address. Game analysis (Stockfish) runs entirely in your browser.']
         ]],
         ['How long we keep data', [
@@ -178,7 +178,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Сторонние сервисы', [
           ['Render — хостинг сайта.', 'Neon — база данных PostgreSQL.', 'Brevo — отправка писем для сброса пароля.', 'Cloudflare — домен chesscaravan.com и DNS (направляет адрес на сервер).', 'Telegram — только если вы подключите бота: передаются ID чата и тексты уведомлений.', 'Push-уведомления — только если вы их включите, через сервис браузера (Google, Apple, Mozilla).', "Ходы голосом — только если вы их включите: речь распознаёт сервис вашего браузера (например, Google в Chrome); мы не получаем и не храним записи.",
-           'CDN для библиотек и шрифтов: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; флаги — flagcdn.com; стикеры — Google Noto Emoji.',
+           'CDN для библиотек и шрифтов: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; флаги — flagcdn.com; стикеры — Google Noto Emoji.',
            'По техническим причинам эти сервисы могут видеть ваш IP-адрес. Анализ партий (Stockfish) полностью работает в вашем браузере.']
         ]],
         ['Сроки хранения', [
@@ -256,7 +256,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Servicios de terceros', [
           ['Render — alojamiento web.', 'Neon — base de datos PostgreSQL.', 'Brevo — envío de emails de restablecimiento de contraseña.', 'Cloudflare — el dominio chesscaravan.com y el DNS (dirige la dirección al servidor).', 'Telegram — solo si conectas el bot: se envían tu ID de chat y los textos de las notificaciones.', 'Notificaciones push — solo si las activas, a través del servicio de tu navegador (Google, Apple, Mozilla).', "Jugadas por voz — solo si las activas: el servicio de reconocimiento de voz de tu navegador (p. ej. Google en Chrome) convierte tu voz en texto; no recibimos ni guardamos grabaciones.",
-           'CDN de bibliotecas y fuentes: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; banderas — flagcdn.com; stickers — Google Noto Emoji.',
+           'CDN de bibliotecas y fuentes: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; banderas — flagcdn.com; stickers — Google Noto Emoji.',
            'Por motivos técnicos estos servicios pueden ver tu IP. El análisis de partidas (Stockfish) funciona por completo en tu navegador.']
         ]],
         ['Cuánto tiempo los guardamos', [
@@ -334,7 +334,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Dienste von Drittanbietern', [
           ['Render — Webhosting.', 'Neon — PostgreSQL-Datenbank.', 'Brevo — Versand von E-Mails zum Zurücksetzen des Passworts.', 'Cloudflare — die Domain chesscaravan.com und DNS (leitet die Adresse zum Server).', 'Telegram — nur wenn du den Bot verbindest: Chat-ID und Benachrichtigungstexte werden gesendet.', 'Push-Benachrichtigungen — nur wenn du sie aktivierst, über den Dienst deines Browsers (Google, Apple, Mozilla).', "Sprachzüge — nur wenn du sie aktivierst: deine Sprache wird vom Spracherkennungsdienst deines Browsers (z. B. Google in Chrome) in Text umgewandelt; wir erhalten oder speichern keine Aufnahmen.",
-           'CDNs für Bibliotheken und Schriften: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; Flaggen — flagcdn.com; Sticker — Google Noto Emoji.',
+           'CDNs für Bibliotheken und Schriften: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; Flaggen — flagcdn.com; Sticker — Google Noto Emoji.',
            'Aus technischen Gründen können diese Dienste deine IP-Adresse sehen. Die Partieanalyse (Stockfish) läuft vollständig in deinem Browser.']
         ]],
         ['Speicherdauer', [
@@ -412,7 +412,7 @@ window.LEGAL_TEXT = {
         ]],
         ['Services tiers', [
           ['Render — hébergement.', 'Neon — base de données PostgreSQL.', 'Brevo — envoi des emails de réinitialisation du mot de passe.', 'Cloudflare — le domaine chesscaravan.com et le DNS (dirige l’adresse vers le serveur).', 'Telegram — uniquement si vous connectez le bot : votre ID de chat et les textes des notifications sont envoyés.', 'Notifications push — uniquement si vous les activez, via le service de votre navigateur (Google, Apple, Mozilla).', "Coups à la voix — uniquement si vous les activez : votre voix est transcrite par le service de reconnaissance vocale de votre navigateur (par ex. Google dans Chrome) ; nous ne recevons ni ne conservons d’enregistrement.",
-           'CDN pour les bibliothèques et les polices : cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts ; drapeaux — flagcdn.com ; stickers — Google Noto Emoji.',
+           'CDN pour les bibliothèques et les polices : cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts ; drapeaux — flagcdn.com ; stickers — Google Noto Emoji.',
            "Pour des raisons techniques, ces services peuvent voir votre adresse IP. L'analyse des parties (Stockfish) s'exécute entièrement dans votre navigateur."]
         ]],
         ['Durée de conservation', [
@@ -492,7 +492,7 @@ window.LEGAL_TEXT.tr = {
       ]],
       ['Üçüncü taraf hizmetler', [
         ['Render — web barındırma.', 'Neon — PostgreSQL veritabanı.', 'Brevo — şifre sıfırlama e-postalarının gönderimi.', 'Cloudflare — chesscaravan.com alan adı ve DNS (adresi sunucuya yönlendirir).', 'Telegram — yalnızca botu bağlarsan: sohbet kimliğin ve bildirim metinleri gönderilir.', 'Anlık bildirimler — yalnızca açarsan, tarayıcı sağlayıcın (Google, Apple, Mozilla) üzerinden.', 'Sesle hamle — yalnızca açarsan: konuşman tarayıcının konuşma tanıma hizmeti (örneğin Chrome’da Google) tarafından metne çevrilir; kayıtları asla almayız ve saklamayız.',
-         'Kütüphaneler ve yazı tipleri için CDN’ler: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; bayraklar — flagcdn.com; çıkartmalar — Google Noto Emoji.',
+         'Kütüphaneler ve yazı tipleri için CDN’ler: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; bayraklar — flagcdn.com; çıkartmalar — Google Noto Emoji.',
          'Teknik nedenlerle bu hizmetler IP adresini görebilir. Oyun analizi (Stockfish) tamamen tarayıcında çalışır.']
       ]],
       ['Verileri ne kadar saklıyoruz', [
@@ -571,7 +571,7 @@ window.LEGAL_TEXT.kk = {
       ]],
       ['Бөгде қызметтер', [
         ['Render — веб-хостинг.', 'Neon — PostgreSQL дерекқоры.', 'Brevo — құпиясөзді қалпына келтіру хаттарын жіберу.', 'Cloudflare — chesscaravan.com домені және DNS (мекенжайды серверге бағыттайды).', 'Telegram — тек ботты қоссаңыз: чат ID-іңіз және хабарландыру мәтіндері жіберіледі.', 'Push-хабарландырулар — тек қоссаңыз, браузер жеткізушісі (Google, Apple, Mozilla) арқылы.', 'Дауыспен жүру — тек қоссаңыз: сөзіңізді браузеріңіздің сөйлеуді тану қызметі (мысалы, Chrome-да Google) мәтінге айналдырады; біз жазбаларды ешқашан алмаймыз және сақтамаймыз.',
-         'Кітапханалар мен қаріптерге арналған CDN-дер: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; тулар — flagcdn.com; стикерлер — Google Noto Emoji.',
+         'Кітапханалар мен қаріптерге арналған CDN-дер: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; тулар — flagcdn.com; стикерлер — Google Noto Emoji.',
          'Техникалық себептермен бұл қызметтер IP мекенжайыңызды көре алады. Ойын талдауы (Stockfish) толығымен браузеріңізде жұмыс істейді.']
       ]],
       ['Деректерді қанша уақыт сақтаймыз', [
@@ -650,7 +650,7 @@ window.LEGAL_TEXT.tg = {
       ]],
       ['Хидматҳои беруна', [
         ['Render — хостинги веб.', 'Neon — пойгоҳи додаҳои PostgreSQL.', 'Brevo — фиристодани мактубҳои барқарорсозии парол.', 'Cloudflare — домени chesscaravan.com ва DNS (суроғаро ба сервер равона мекунад).', 'Telegram — танҳо агар ботро пайваст кунед: ID-и чат ва матни огоҳиномаҳо фиристода мешаванд.', 'Огоҳиномаҳои push — танҳо агар фаъол кунед, тавассути таъминкунандаи браузер (Google, Apple, Mozilla).', 'Юриш бо овоз — танҳо агар фаъол кунед: нутқи шуморо хидмати шинохти нутқи браузер (масалан, Google дар Chrome) ба матн табдил медиҳад; мо сабтҳоро ҳеҷ гоҳ намегирем ва нигоҳ намедорем.',
-         'CDN-ҳо барои китобхонаҳо ва ҳуруфот: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; парчамҳо — flagcdn.com; стикерҳо — Google Noto Emoji.',
+         'CDN-ҳо барои китобхонаҳо ва ҳуруфот: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; парчамҳо — flagcdn.com; стикерҳо — Google Noto Emoji.',
          'Бо сабабҳои техникӣ ин хидматҳо метавонанд суроғаи IP-и шуморо бинанд. Таҳлили бозӣ (Stockfish) пурра дар браузери шумо кор мекунад.']
       ]],
       ['Маълумотро то кай нигоҳ медорем', [
@@ -729,7 +729,7 @@ window.LEGAL_TEXT.ky = {
       ]],
       ['Тышкы кызматтар', [
         ['Render — веб-хостинг.', 'Neon — PostgreSQL маалымат базасы.', 'Brevo — сырсөздү калыбына келтирүү каттарын жөнөтүү.', 'Cloudflare — chesscaravan.com домени жана DNS (даректи серверге багыттайт).', 'Telegram — ботту туташтырсаңыз гана: чат ID жана билдирме тексттери жөнөтүлөт.', 'Push-билдирмелер — күйгүзсөңүз гана, браузериңиздин камсыздоочусу (Google, Apple, Mozilla) аркылуу.', 'Үн менен жүрүү — күйгүзсөңүз гана: сөзүңүздү браузериңиздин сүйлөөнү таануу кызматы (мисалы, Chrome’до Google) текстке айлантат; биз жазууларды эч качан албайбыз жана сактабайбыз.',
-         'Китепканалар жана арип үчүн CDN’дер: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; желектер — flagcdn.com; стикерлер — Google Noto Emoji.',
+         'Китепканалар жана арип үчүн CDN’дер: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; желектер — flagcdn.com; стикерлер — Google Noto Emoji.',
          'Техникалык себептерден бул кызматтар IP дарегиңизди көрүшү мүмкүн. Оюн талдоосу (Stockfish) толугу менен браузериңизде иштейт.']
       ]],
       ['Маалыматты канча убакыт сактайбыз', [
@@ -808,7 +808,7 @@ window.LEGAL_TEXT.tk = {
       ]],
       ['Daşary hyzmatlar', [
         ['Render — web hosting.', 'Neon — PostgreSQL maglumatlar binasy.', 'Brevo — açar sözi dikeltmek hatlaryny ibermek.', 'Cloudflare — chesscaravan.com domeni we DNS (salgyny serwere ugrukdyrýar).', 'Telegram — diňe boty birikdirseňiz: çat ID-iňiz we bildiriş tekstleri iberilýär.', 'Push bildirişleri — diňe ýaksaňyz, brauzeriňiziň üpjün edijisi (Google, Apple, Mozilla) arkaly.', 'Ses bilen ýöriş — diňe ýaksaňyz: sözüňizi brauzeriňiziň gürlemäni tanaýyş hyzmaty (meselem, Chrome-da Google) tekste öwürýär; biz ýazgylary hiç haçan almaýarys we saklamaýarys.',
-         'Kitaphanalar we şriftler üçin CDN-ler: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; baýdaklar — flagcdn.com; stikerler — Google Noto Emoji.',
+         'Kitaphanalar we şriftler üçin CDN-ler: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; baýdaklar — flagcdn.com; stikerler — Google Noto Emoji.',
          'Tehniki sebäplere görä bu hyzmatlar IP salgyňyzy görüp biler. Oýun derňewi (Stockfish) doly brauzeriňizde işleýär.']
       ]],
       ['Maglumatlary näçe wagt saklaýarys', [
@@ -887,7 +887,7 @@ window.LEGAL_TEXT.az = {
       ]],
       ['Kənar xidmətlər', [
         ['Render — veb hostinq.', 'Neon — PostgreSQL verilənlər bazası.', 'Brevo — şifrə bərpası məktublarının göndərilməsi.', 'Cloudflare — chesscaravan.com domeni və DNS (ünvanı serverə yönləndirir).', 'Telegram — yalnız botu qoşsan: çat ID-n və bildiriş mətnləri göndərilir.', 'Push bildirişləri — yalnız aktiv etsən, brauzer təminatçısı (Google, Apple, Mozilla) vasitəsilə.', 'Səslə gediş — yalnız aktiv etsən: nitqini brauzerinin nitq tanıma xidməti (məsələn, Chrome-da Google) mətnə çevirir; biz səs yazılarını heç vaxt almırıq və saxlamırıq.',
-         'Kitabxanalar və şriftlər üçün CDN-lər: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, cdn.socket.io, Google Fonts; bayraqlar — flagcdn.com; stikerlər — Google Noto Emoji.',
+         'Kitabxanalar və şriftlər üçün CDN-lər: cdnjs (Cloudflare), jsDelivr, unpkg, code.jquery.com, Google Fonts; bayraqlar — flagcdn.com; stikerlər — Google Noto Emoji.',
          'Texniki səbəblərdən bu xidmətlər IP ünvanını görə bilər. Oyun təhlili (Stockfish) tamamilə brauzerində işləyir.']
       ]],
       ['Məlumatları nə qədər saxlayırıq', [
@@ -944,7 +944,7 @@ window.LEGAL_TEXT.az = {
     ]
   }
 };
-window.LEGAL_UPDATED = '2026-10-29';
+window.LEGAL_UPDATED = '2026-10-31';
 
 // 📜 Mualliflar va litsenziyalar (/mualliflar): [nomi, havola, muallif, litsenziya, litsenziya havolasi]
 // Yangi begona resurs (kutubxona, rasm, ovoz, shrift) qo'shilsa — shu yerga ham. Litsenziyasi noaniq yoki tijoratni
@@ -954,7 +954,7 @@ window.LEGAL_CREDITS = {
     ['jQuery 3.5.1', 'https://jquery.com', 'OpenJS Foundation', 'MIT', 'https://opensource.org/license/mit'],
     ['chess.js 0.10.3', 'https://github.com/jhlywa/chess.js', 'Jeff Hlywa', 'BSD-2-Clause', 'https://opensource.org/license/bsd-2-clause'],
     ['chessboard.js 1.0.0', 'https://chessboardjs.com', 'Chris Oakman', 'MIT', 'https://opensource.org/license/mit'],
-    ['Socket.IO 4.7.2', 'https://socket.io', 'Guillermo Rauch & contributors', 'MIT', 'https://opensource.org/license/mit'],
+    ['Socket.IO 4.8', 'https://socket.io', 'Guillermo Rauch & contributors', 'MIT', 'https://opensource.org/license/mit'],
     ['howler.js 2.2.4', 'https://howlerjs.com', 'James Simpson (GoldFire Studios)', 'MIT', 'https://opensource.org/license/mit'],
     ['Chart.js 4.6.1', 'https://www.chartjs.org', 'Chart.js contributors', 'MIT', 'https://opensource.org/license/mit'],
     ['canvas-confetti 1.9.3', 'https://github.com/catdad/canvas-confetti', 'Kiril Vatev', 'ISC', 'https://opensource.org/license/isc-license-txt'],

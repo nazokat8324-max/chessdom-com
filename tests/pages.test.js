@@ -18,6 +18,16 @@ test('Bosh sahifa va bo\'limlar sarlavhasi bilan beriladi', async () => {
   assert.match(lb, /rel="canonical"/);
 });
 
+test("socket.io mijozi o'z serverimizdan (CDN yuklanmasa butun sayt ishlamasdi — admin 'Xatolar': socket is not defined)", async () => {
+  const html = await (await get('/')).text();
+  assert.match(html, /<script src="\/socket\.io\/socket\.io\.min\.js"><\/script>/);
+  assert.doesNotMatch(html, /cdn\.socket\.io/);
+  const js = await get('/socket.io/socket.io.min.js');
+  assert.equal(js.status, 200);
+  assert.match(js.headers.get('content-type'), /javascript/);
+  assert.match(await js.text(), /Socket\.IO v4\./);
+});
+
 test('Kanonik manzillar va eski manzillar yo\'naltiriladi', async () => {
   for (const [from, to] of [['/Reyting', '/reyting'], ['/reyting/', '/reyting'], ['/urush', '/bayroqlar'], ['/privacy', '/maxfiylik'], ['/terms', '/shartlar'], ['/dostlar', '/xabarlar'], ['/chat', '/xabarlar']]) {
     const r = await get(from);

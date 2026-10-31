@@ -3,6 +3,8 @@
 window.TRANSLATIONS_TK = {
   rtNavLabel: "Esasy bölümler",
   rtAllStops: "Ähli bölümler",
+  tgChannel: "Telegram kanaly",
+  tgChannelFollow: "Täzeliklerimizi Telegram kanalymyzda yzarlaň",
   pcGuideBtn: "Daşlar barada",
   pcGuideTitle: "Daşlar bilen tanyşyň",
   pcGuideSub: "Her daş nähili görünýär we nähili ýöreýär",

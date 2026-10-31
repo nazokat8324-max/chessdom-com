@@ -3,6 +3,8 @@
 window.TRANSLATIONS_TG = {
   rtNavLabel: "Бахшҳои асосӣ",
   rtAllStops: "Ҳамаи бахшҳо",
+  tgChannel: "Канали Telegram",
+  tgChannelFollow: "Хабарҳоро дар канали Telegram-и мо пайгирӣ кунед",
   pcGuideBtn: "Дар бораи донаҳо",
   pcGuideTitle: "Бо донаҳо шинос шавед",
   pcGuideSub: "Ҳар як дона чӣ гуна менамояд ва чӣ гуна мегардад",

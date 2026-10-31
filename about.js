@@ -120,6 +120,7 @@
       <section class="ab-cta ab-reveal">
         <h2>${esc(t('aboutCtaTitle', 'Birinchi yurish sizdan!'))}</h2>
         <button class="ab-cta-btn" data-view="game">⚡ ${esc(t('aboutCta', "O'ynashni boshlash"))}</button>
+        ${window.telegramChannelLink(t('tgChannelFollow', 'Yangiliklarni Telegram kanalimizda kuzatib boring'), 'ab-cta-tg')}
       </section>
       <section class="ab-credits">
         <h3>${esc(t('aboutCreditsTitle', 'Foydalanilgan ochiq resurslar'))}</h3>
@@ -134,7 +135,7 @@
         </ul>
         <p><a href="/mualliflar" target="_blank" rel="noopener">${esc(t('abCreditsAll', "To'liq ro'yxat: Mualliflar va litsenziyalar"))} ↗</a></p>
       </section>
-      <footer class="ab-footer">© 2026 ChessCaravan · <a href="/shartlar" target="_blank" rel="noopener">${esc(t('legalTerms', 'Foydalanish shartlari'))}</a> · <a href="/maxfiylik" target="_blank" rel="noopener">${esc(t('legalPrivacy', 'Maxfiylik siyosati'))}</a> · <a href="/mualliflar" target="_blank" rel="noopener">${esc(t('legalCredits', 'Mualliflar va litsenziyalar'))}</a></footer>`;
+      <footer class="ab-footer">© 2026 ChessCaravan · <a href="/shartlar" target="_blank" rel="noopener">${esc(t('legalTerms', 'Foydalanish shartlari'))}</a> · <a href="/maxfiylik" target="_blank" rel="noopener">${esc(t('legalPrivacy', 'Maxfiylik siyosati'))}</a> · <a href="/mualliflar" target="_blank" rel="noopener">${esc(t('legalCredits', 'Mualliflar va litsenziyalar'))}</a> · ${window.telegramChannelLink(t('tgChannel', 'Telegram kanal'))}</footer>`;
 
     bindInteractions(root);
   }

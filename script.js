@@ -21,6 +21,18 @@ window.scrollWithin = function(el, box) {
   else if (r.bottom > c.bottom) box.scrollTop += r.bottom - c.bottom;
 };
 
+// ✈️ Rasmiy Telegram kanal — manzil faqat shu yerda (Sayt haqida, Sozlamalar → Hisob havolalari shundan oladi)
+window.TELEGRAM_CHANNEL_URL = 'https://t.me/chesscaravan';
+// Telegram belgisi (inline SVG, rangi — matn rangi)
+window.telegramIcon = function() {
+  return '<svg class="tg-ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.1.9.8.9.5 0 .7-.2 1-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.8c.3-1.3-.5-1.9-1.5-1.4ZM9.3 14l8.3-7.4c.4-.3-.1-.5-.6-.2L6.9 13l-.1.1L9 19.7l.3-5.7Z"/></svg>';
+};
+// Kanal havolasi (yangi tabda); cls — joyga mos klass
+window.telegramChannelLink = function(label, cls) {
+  const safe = String(label).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  return `<a class="tg-channel${cls ? ' ' + cls : ''}" href="${window.TELEGRAM_CHANNEL_URL}" target="_blank" rel="noopener noreferrer">${window.telegramIcon()}<span>${safe}</span></a>`;
+};
+
 // 🎉 Konfetti (canvas-confetti) faqat birinchi kerak bo'lganda yuklanadi (g'alaba, bahs, bashorat). Avval index.html da
 // har sahifa ochilishida yuklanardi va telefonda asosiy oqimni ~0.9 s band qilardi — sahifa shu vaqt chizilmasdi.
 (function () {

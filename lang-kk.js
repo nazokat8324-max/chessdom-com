@@ -3,6 +3,8 @@
 window.TRANSLATIONS_KK = {
   rtNavLabel: "Негізгі бөлімдер",
   rtAllStops: "Барлық бөлімдер",
+  tgChannel: "Telegram арнасы",
+  tgChannelFollow: "Жаңалықтарды Telegram арнамыздан қадағалаңыз",
   pcGuideBtn: "Фигуралар туралы",
   pcGuideTitle: "Фигуралармен танысыңыз",
   pcGuideSub: "Әр фигура қалай көрінеді және қалай жүреді",

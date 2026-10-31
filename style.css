@@ -12326,6 +12326,11 @@ button.tea-chair:not([disabled]):hover {
   color: var(--accent);
   text-decoration: none;
 }
+/* ✈️ Telegram kanal havolasi (script.js telegramChannelLink) — atrofdagi havola rangi va shrifti */
+.tg-channel { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
+.tg-channel .tg-ic { flex: none; }
+.ab-cta .ab-cta-tg { display: flex; justify-content: center; width: fit-content; max-width: 100%; margin: 16px auto 0; font-size: 14px; font-weight: 700; color: var(--accent-light); text-decoration: none; text-align: center; }
+.ab-cta .ab-cta-tg:hover { text-decoration: underline; }
 .set-del-form {
   display: flex;
   flex-direction: column;

@@ -391,6 +391,38 @@ test("4-sinov o'tishi: Karvon yo'li — surishdan keyin darhol bosilgan bekat yo
   assert.deepEqual(p.errors, []);
 });
 
+test("Telegram kanal: Sayt haqida (taklif + pastki qator) va Sozlamalar → Hisob; yangi tabda, tarjima qilingan, telefonda sig'adi", opts, async () => {
+  const u = await srv.register('Tgc');
+  for (const [vp, lang] of [[{ width: 1366, height: 860 }, 'uz'], [{ width: 360, height: 740, isMobile: true, hasTouch: true }, 'kk']]) {
+    const p = await page(u, vp);
+    await p.evaluateOnNewDocument((l) => localStorage.setItem('justChessLang', l), lang);
+    await p.goto(srv.base + '/', { waitUntil: 'load' });
+    await sleep(800);
+    await p.evaluate(() => window.openAboutPage());
+    await p.waitForSelector('#aboutPageContent .ab-cta .tg-channel', { timeout: 5000 });
+    const links = (sel) => p.evaluate((s) => [...document.querySelectorAll(s)].map((a) => { const r = a.getBoundingClientRect(); return { href: a.href, target: a.target, rel: a.rel, text: a.textContent.trim(), svg: !!a.querySelector('svg'), left: r.left, right: r.right, vw: innerWidth }; }), sel);
+    const about = await links('#aboutPageContent .ab-cta .tg-channel, #aboutPageContent .ab-footer .tg-channel');
+    assert.equal(about.length, 2, 'taklif va pastki qator');
+    const url = await p.evaluate(() => window.TELEGRAM_CHANNEL_URL);
+    assert.equal(url, 'https://t.me/chesscaravan');
+    const want = lang === 'kk' ? ['Жаңалықтарды Telegram арнамыздан қадағалаңыз', 'Telegram арнасы'] : ['Yangiliklarni Telegram kanalimizda kuzatib boring', 'Telegram kanal'];
+    about.forEach((a, i) => {
+      assert.deepEqual([a.href, a.target, a.rel, a.svg, a.text], [url, '_blank', 'noopener noreferrer', true, want[i]]);
+      assert.ok(a.left >= 0 && a.right <= a.vw + 1, 'ekranda: ' + JSON.stringify(a));
+    });
+    await p.evaluate(() => window.closeAboutPage ? window.closeAboutPage() : document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' })));
+    await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
+    await p.waitForSelector('.set-nav [data-section="account"]', { timeout: 15000 });
+    await p.click('.set-nav [data-section="account"]');
+    await p.waitForSelector('.set-legal .tg-channel', { timeout: 5000 });
+    const set = await links('.set-legal .tg-channel');
+    assert.deepEqual([set.length, set[0].href, set[0].target, set[0].rel, set[0].text], [1, url, '_blank', 'noopener noreferrer', want[1]]);
+    assert.ok(set[0].right <= set[0].vw + 1, 'Sozlamalarda ekranda');
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1), true, "gorizontal toshish yo'q");
+    assert.deepEqual(p.errors, []);
+  }
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

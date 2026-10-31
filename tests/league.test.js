@@ -20,7 +20,7 @@ const tx = (sqlText) => new Promise((resolve, reject) => {
   const d = open();
   d.exec('BEGIN IMMEDIATE; ' + sqlText + '; COMMIT;', (err) => d.close(() => (err ? reject(err) : resolve())));
 });
-async function waitFor(fn, ms = 8000) {
+async function waitFor(fn, ms = 20000) { // band kompyuterda (parallel testlar) 8 s ba'zan yetmasdi
   const end = Date.now() + ms;
   for (;;) { const v = await fn(); if (v) return v; if (Date.now() > end) throw new Error('kutish tugadi'); await sleep(150); }
 }

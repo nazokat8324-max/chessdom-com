@@ -1458,6 +1458,8 @@ const translationsExtra = {
   uz: {
     rtNavLabel: "Asosiy bo'limlar",
     rtAllStops: "Barcha bo'limlar",
+    tgChannel: "Telegram kanal",
+    tgChannelFollow: "Yangiliklarni Telegram kanalimizda kuzatib boring",
     pcGuideBtn: "Donalar haqida",
     pcGuideTitle: "Donalar bilan tanishing",
     pcGuideSub: "Har bir dona qanday ko'rinadi va qanday yuradi",
@@ -2978,6 +2980,8 @@ const translationsExtra = {
   en: {
     rtNavLabel: "Main sections",
     rtAllStops: "All sections",
+    tgChannel: "Telegram channel",
+    tgChannelFollow: "Follow our news on our Telegram channel",
     pcGuideBtn: "About the pieces",
     pcGuideTitle: "Meet the pieces",
     pcGuideSub: "What each piece looks like and how it moves",
@@ -4498,6 +4502,8 @@ const translationsExtra = {
   ru: {
     rtNavLabel: "Основные разделы",
     rtAllStops: "Все разделы",
+    tgChannel: "Telegram-канал",
+    tgChannelFollow: "Следите за новостями в нашем Telegram-канале",
     pcGuideBtn: "О фигурах",
     pcGuideTitle: "Знакомство с фигурами",
     pcGuideSub: "Как выглядит и как ходит каждая фигура",
@@ -6018,6 +6024,8 @@ const translationsExtra = {
   es: {
     rtNavLabel: "Secciones principales",
     rtAllStops: "Todas las secciones",
+    tgChannel: "Canal de Telegram",
+    tgChannelFollow: "Sigue nuestras novedades en nuestro canal de Telegram",
     pcGuideBtn: "Sobre las piezas",
     pcGuideTitle: "Conoce las piezas",
     pcGuideSub: "Cómo es cada pieza y cómo se mueve",
@@ -7538,6 +7546,8 @@ const translationsExtra = {
   de: {
     rtNavLabel: "Hauptbereiche",
     rtAllStops: "Alle Bereiche",
+    tgChannel: "Telegram-Kanal",
+    tgChannelFollow: "Folge unseren Neuigkeiten in unserem Telegram-Kanal",
     pcGuideBtn: "Über die Figuren",
     pcGuideTitle: "Die Figuren kennenlernen",
     pcGuideSub: "Wie jede Figur aussieht und wie sie zieht",
@@ -9058,6 +9068,8 @@ const translationsExtra = {
   fr: {
     rtNavLabel: "Sections principales",
     rtAllStops: "Toutes les sections",
+    tgChannel: "Chaîne Telegram",
+    tgChannelFollow: "Suivez nos actualités sur notre chaîne Telegram",
     pcGuideBtn: "À propos des pièces",
     pcGuideTitle: "Découvrez les pièces",
     pcGuideSub: "À quoi ressemble chaque pièce et comment elle se déplace",

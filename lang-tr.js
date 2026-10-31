@@ -3,6 +3,8 @@
 window.TRANSLATIONS_TR = {
   rtNavLabel: "Ana bölümler",
   rtAllStops: "Tüm bölümler",
+  tgChannel: "Telegram kanalı",
+  tgChannelFollow: "Haberlerimizi Telegram kanalımızdan takip edin",
   pcGuideBtn: "Taşlar hakkında",
   pcGuideTitle: "Taşlarla tanışın",
   pcGuideSub: "Her taş neye benzer ve nasıl hareket eder",

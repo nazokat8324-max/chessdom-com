@@ -3,6 +3,8 @@
 window.TRANSLATIONS_AZ = {
   rtNavLabel: "Əsas bölmələr",
   rtAllStops: "Bütün bölmələr",
+  tgChannel: "Telegram kanalı",
+  tgChannelFollow: "Yeniliklərimizi Telegram kanalımızda izlə",
   pcGuideBtn: "Fiqurlar haqqında",
   pcGuideTitle: "Fiqurlarla tanış ol",
   pcGuideSub: "Hər fiqur necə görünür və necə hərəkət edir",

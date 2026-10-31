@@ -87,6 +87,7 @@ test("O'yinlar tarixi, qayta ko'rish va PGN", async () => {
   assert.match(pgn, /\[Site "https:\/\/chesscaravan\.com"\]/);
   assert.match(pgn, /1\. f3 e5 2\. g4 Qh4#/);
   assert.match(pgn, /\[Result "0-1"\]/);
+  assert.match(pgn, /\[TimeControl "180\+2"\]/, 'PGN standarti: soniyalarda (avval "3+2" — 3 soniya deb o\'qilardi)');
   const own = await srv.api(g.white, '/api/users/' + white + '/games');
   assert.equal(own.games.length, 1);
   assert.deepEqual(own.games[0].moves, ['f3', 'e5', 'g4', 'Qh4#']);

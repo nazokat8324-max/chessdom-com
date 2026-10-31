@@ -41,7 +41,7 @@
     }
     el.innerHTML = st.games.map(g => `
       <button class="lv-item${st.watching === g.roomId ? ' active' : ''}" data-watch="${esc(g.roomId)}">
-        <div class="lv-item-top">${modeIcon(g.mode)} <b>${esc(g.clock.initial / 60)}+${esc(g.clock.increment)}</b>${g.variant === 'chess960' ? '<span class="lv-tag v960">🎲 960</span>' : g.variant === 'shatranj' ? '<span class="lv-tag v960">🏺 Shatranj</span>' : ''}${kindTag(g)}<small>${g.watchers ? '👁 ' + g.watchers : ''}</small></div>
+        <div class="lv-item-top">${modeIcon(g.mode)} <b>${esc(window.clockText(g.clock.initial, g.clock.increment))}</b>${g.variant === 'chess960' ? '<span class="lv-tag v960">🎲 960</span>' : g.variant === 'shatranj' ? '<span class="lv-tag v960">🏺 Shatranj</span>' : ''}${kindTag(g)}<small>${g.watchers ? '👁 ' + g.watchers : ''}</small></div>
         <div class="lv-item-player"><i class="lv-dot w"></i>${flag(g.white.country)}<span>${esc(g.white.username)}</span><em>${g.white.rating}</em></div>
         <div class="lv-item-player"><i class="lv-dot b"></i>${flag(g.black.country)}<span>${esc(g.black.username)}</span><em>${g.black.rating}</em></div>
       </button>`).join('');
@@ -59,7 +59,7 @@
     return `
       <div class="lv-stage-head">
         <button class="lv-back" data-back="1">←</button>
-        <div>${modeIcon(info.mode)} <b>${esc(info.clock.initial / 60)}+${esc(info.clock.increment)}</b> ${kindTag(info)}</div>
+        <div>${modeIcon(info.mode)} <b>${esc(window.clockText(info.clock.initial, info.clock.increment))}</b> ${kindTag(info)}</div>
         <span class="lv-live"><span class="ar-dot"></span>${esc(tx('lvLiveTag', 'Jonli'))}</span>
       </div>
       ${bar('b', info.black)}

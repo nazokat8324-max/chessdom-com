@@ -33,7 +33,7 @@
         <span class="gh-date">${esc(g.date ? new Date(g.date).toLocaleDateString() : '—')}</span>
         <span class="gh-res ${esc(g.result)}">${esc(resultLabel[g.result] || g.result)}</span>
         <span class="gh-opp"><i class="gh-color ${g.color === 'b' ? 'b' : 'w'}" title="${esc(g.color === 'b' ? tx('blackText', 'Qora') : tx('whiteText', 'Oq'))}"></i><b class="player-link" data-username="${esc(g.opponent || '')}">${esc(g.opponent || '—')}</b></span>
-        <span class="gh-mode">${modeIcon(g.variant && g.variant !== 'standard' ? g.variant : g.timeControl)} ${esc(g.clock || g.timeControl || '')}</span>
+        <span class="gh-mode">${modeIcon(g.variant && g.variant !== 'standard' ? g.variant : g.timeControl)} ${esc(g.clock ? window.clockText(g.clock) : g.timeControl || '')}</span>
         <span class="gh-reason">${esc(reasons[g.reason] || '')}</span>
         <span class="gh-moves">${g.moves ? esc(tx('ghMovesN', '{{n}} yurish', { n: g.moves })) : ''}</span>
         <span class="gh-act">${g.hasMoves && g.id ? `<button class="set-mini" data-replay="${esc(g.id)}" title="${esc(tx('ghReplay', "Qayta ko'rish"))}">▶</button>` : ''}</span>
@@ -146,7 +146,7 @@
       window.showReplayGame({
         id: null, player: headers.White || '?', opponent: headers.Black || '?', color: 'w',
         result: res === '1-0' ? 'win' : (res === '0-1' ? 'loss' : (res === '1/2-1/2' ? 'draw' : null)),
-        clock: headers.TimeControl || null, date: headers.Date ? headers.Date.replace(/\./g, '-') : null,
+        clock: window.clockFromPgn(headers.TimeControl), date: headers.Date ? headers.Date.replace(/\./g, '-') : null,
         moves: sans, variant, startFen, imported: true
       });
     });

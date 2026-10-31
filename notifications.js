@@ -21,7 +21,7 @@
     const d = n.data || {};
     switch (n.type) {
       case 'challenge':
-        return { icon: '⚔️', text: tx('nfChallenge', '{{name}} sizni o\'yinga chaqirdi ({{clock}})', { name: d.from, clock: d.clock + (d.variant === 'chess960' ? ' · Chess960' : d.variant === 'shatranj' ? ' · Shatranj' : '') }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
+        return { icon: '⚔️', text: tx('nfChallenge', '{{name}} sizni o\'yinga chaqirdi ({{clock}})', { name: d.from, clock: (d.clock ? window.clockText(d.clock) : '') + (d.variant === 'chess960' ? ' · Chess960' : d.variant === 'shatranj' ? ' · Shatranj' : '') }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
       case 'friend_request':
         return { icon: '🤝', text: tx('nfFriendRequest', "{{name}} sizga do'stlik so'rovi yubordi", { name: d.from }), go: () => window.openPlayerProfile && window.openPlayerProfile(d.from) };
       case 'friend_accepted':

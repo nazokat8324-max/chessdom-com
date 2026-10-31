@@ -423,6 +423,48 @@ test("Telegram kanal: Sayt haqida (taklif + pastki qator) va Sozlamalar → Hiso
   }
 });
 
+test("5-sinov o'tishi: 45 s chaqiruv '¾+0', PGN TimeControl soniyalarda (eksport/yuklash), sahifaga tegilmaganda tebranish konsolga xato yozmaydi", opts, async () => {
+  const H = require('./helpers');
+  const a = await srv.register('Clka'), b = await srv.register('Clkb');
+  const p = await page(b, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  const cons = [];
+  p.on('console', (m) => { if (m.type() === 'error') cons.push(m.text()); });
+  // Tebranish sahifaning o'z taymeridan (raqib yurishi kabi) — puppeteer evaluate esa foydalanuvchi bosishi hisoblanardi
+  await p.evaluateOnNewDocument(() => window.addEventListener('load', () => setTimeout(() => { window.__hasAct = navigator.userActivation.hasBeenActive; window.haptic(30); }, 400)));
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await sleep(1000);
+  assert.equal(await p.evaluate(() => window.__hasAct), false, "sahifaga hali tegilmagan");
+  assert.deepEqual(await p.evaluate(() => [window.clockText(45, 0), window.clockText(30, 0), window.clockText(90, 1), window.clockText(180, 2), window.clockText('0.75+0'), window.clockText('10+5'),
+    window.pgnTimeControl('3+2'), window.pgnTimeControl('0.75+0'), window.clockFromPgn('180+2'), window.clockFromPgn('45+0'), window.clockFromPgn('3+2'), window.clockFromPgn('-')]),
+    ['¾+0', '½+0', '1½+1', '3+2', '¾+0', '10+5', '180+2', '45+0', '3+2', '0.75+0', '3+2', null]);
+  // Tebranish: foydalanuvchi sahifaga hali tegmagan — brauzer bloklaydi, konsolga xato yozilmasin
+  assert.deepEqual(cons.filter((t) => /vibrate/.test(t)), [], 'tebranish xatosi yo\'q');
+  // 45 s chaqiruv oynasida "¾+0"
+  const sa = await srv.connect(a);
+  sa.emit('challenge-send', { username: b.name, initial: 45, increment: 0, rated: false });
+  await p.waitForSelector('[data-accept]', { visible: true, timeout: 8000 });
+  assert.match(await p.evaluate(() => document.getElementById('challengeModal').innerText), /¾\+0/);
+  sa.close();
+  // Qayta ko'rish oynasidan PGN: TimeControl soniyalarda
+  const g = await H.startGame(srv, a, b, { initial: 180, increment: 2 });
+  await H.play(g, ['f2f3', 'e7e5', 'g2g4', 'd8h4']);
+  await sleep(500);
+  H.closeAll(a, b);
+  const hist = await srv.api(b, '/api/users/' + encodeURIComponent(b.name) + '/history');
+  await p.evaluate((n, id) => window.openReplay(n, id), b.name, hist.games[0].id);
+  await p.waitForSelector('#replayModal .rp-x');
+  await sleep(500);
+  assert.match(await p.evaluate(() => document.querySelector('#replayModal .rp-meta').textContent), /3\+2/);
+  const pgnText = await p.evaluate(() => new Promise((res) => {
+    const orig = URL.createObjectURL;
+    URL.createObjectURL = (blob) => { blob.text().then(res); URL.createObjectURL = orig; return orig.call(URL, blob); };
+    const btn = [...document.querySelectorAll('#replayModal button')].find((x) => /PGN/.test(x.textContent));
+    btn.click();
+  }));
+  assert.match(pgnText, /\[TimeControl "180\+2"\]/);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

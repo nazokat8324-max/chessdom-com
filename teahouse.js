@@ -13,7 +13,7 @@
   const POT = '<svg class="tea-pot" viewBox="0 0 48 40" aria-hidden="true"><path d="M14 13h18l2 4c5 0 9 3 9 8s-4 8-9 8h-1c-2 3-6 5-11 5s-9-2-11-5L4 24c-2-1-3-3-1-4l6 3 1-6z" fill="#f4e3c3"/><path d="M34 21c3 0 5 2 5 4s-2 4-5 4" stroke="#b8865a" stroke-width="3" fill="none"/><rect x="18" y="8" width="10" height="5" rx="2" fill="#d9b88a"/><circle cx="23" cy="6" r="2.5" fill="#d9b88a"/><path d="M11 25c4 2 20 2 24 0" stroke="#1f6fb2" stroke-width="2.5" fill="none"/><circle cx="23" cy="29" r="2.2" fill="#c0392b"/></svg>';
   const st = { seats: [], games: [], online: 0, mine: null, active: false, tick: null, picker: null, sig: '' };
   const me = () => window.currentUser && window.currentUser.username;
-  const clockLabel = (c) => (c.initial || c[0]) / 60 + '+' + (c.increment != null ? c.increment : c[1]);
+  const clockLabel = (c) => window.clockText(c.initial || c[0], c.increment != null ? c.increment : c[1]);
   const flag = (code) => code ? `<img class="tea-flag" src="https://flagcdn.com/w40/${esc(String(code).toLowerCase())}.png" alt="" onerror="this.remove()">` : '';
   const settings = () => { try { return JSON.parse(localStorage.getItem('justChessSettings') || '{}'); } catch (e) { return {}; } };
 

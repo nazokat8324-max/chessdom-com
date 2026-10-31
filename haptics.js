@@ -7,6 +7,9 @@
   };
   window.haptic = function (pattern) {
     if (!enabled() || typeof navigator === 'undefined' || typeof navigator.vibrate !== 'function') return;
+    // Sahifaga hali tegilmagan bo'lsa (masalan, o'yin o'rtasida sahifa yangilangach raqib yurdi) brauzer tebranishni
+    // baribir bloklaydi va konsolga xato yozadi — chaqirmaymiz
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
     try { navigator.vibrate(pattern); } catch (e) {}
   };
 

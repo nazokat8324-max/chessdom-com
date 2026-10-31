@@ -126,7 +126,7 @@
     const head = [
       `[Event "ChessCaravan"]`, `[Site "chesscaravan.com"]`, `[Date "${d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
       `[White "${white || '?'}"]`, `[Black "${black || '?'}"]`, `[Result "${g.color ? result : '*'}"]`
-    ].concat(g.clock ? [`[TimeControl "${g.clock}"]`] : [])
+    ].concat(window.pgnTimeControl(g.clock) ? [`[TimeControl "${window.pgnTimeControl(g.clock)}"]`] : [])
       .concat(window.variantPgnTags ? window.variantPgnTags(g.variant, g.startFen).split('\n').filter(Boolean) : []);
     let body = '';
     st.sans.forEach((s, i) => { body += (i % 2 === 0 ? (i / 2 + 1) + '. ' : '') + s + ' '; });
@@ -185,7 +185,7 @@
         </div>
         <div class="rp-side">
           <h3>${esc(g.player)} <small>vs</small> ${esc(g.opponent || '—')}</h3>
-          <p class="rp-meta"><span class="profile-game-result ${esc(g.result)}">${esc(resultText)}</span> ${esc(g.clock || g.timeControl || '')} · ${esc(d0 && !isNaN(d0) ? d0.toLocaleString() : '')}</p>
+          <p class="rp-meta"><span class="profile-game-result ${esc(g.result)}">${esc(resultText)}</span> ${esc(g.clock ? window.clockText(g.clock) : g.timeControl || '')} · ${esc(d0 && !isNaN(d0) ? d0.toLocaleString() : '')}</p>
           <p class="rp-opening" id="rpOpening" hidden></p>
           ${st.moves.length >= 2 && (!window.variantAnalysable || window.variantAnalysable(g.variant)) ? `<div class="rp-analysis" id="rpAnalysis">${anButton()}</div>` : ''}
           <div class="rp-moves">${moves || `<p class="rp-meta">${esc(tx('lvNoMoves', 'Hali yurish qilinmadi'))}</p>`}</div>

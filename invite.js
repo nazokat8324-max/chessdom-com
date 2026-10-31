@@ -9,7 +9,7 @@
   const st = { clock: [300, 0], rated: false, data: null, inviter: null };
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
   const auth = () => (window.authToken ? { Authorization: 'Bearer ' + window.authToken } : {});
-  const clockLabel = (c) => (c[0] / 60) + '+' + c[1];
+  const clockLabel = (c) => window.clockText(c[0], c[1]);
 
   // --- Saqlangan taklif (ro'yxatdan o'tish/kirish orasida yo'qolmasin) ---
   function readPending() {

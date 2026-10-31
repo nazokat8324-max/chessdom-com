@@ -21,6 +21,29 @@ window.scrollWithin = function(el, box) {
   else if (r.bottom > c.bottom) box.scrollTop += r.bottom - c.bottom;
 };
 
+// ⏱ Vaqt nazorati yorlig'i. O'yin yozuvida daqiqa bilan ("3+2", 45 s → "0.75+0"); ekranda kasr belgilari bilan ("¾+0", "1½+0").
+// clockText(initialSec, inc) yoki clockText("0.75+0")
+window.clockText = function(a, inc) {
+  let min = a;
+  if (typeof a === 'string') { const m = /^(\d+(?:\.\d+)?)\+(\d+)$/.exec(a); if (!m) return a; min = Number(m[1]); inc = m[2]; }
+  else min = Number(a) / 60;
+  const whole = Math.floor(min), frac = { 0.25: '¼', 0.5: '½', 0.75: '¾' }[Math.round((min - whole) * 100) / 100];
+  const text = min === whole ? String(whole) : frac ? (whole || '') + frac : String(Math.round(min * 10) / 10);
+  return text + '+' + inc;
+};
+// PGN: TimeControl soniyalarda ("3+2" → "180+2") va teskarisi (yuklangan PGN → bizning yorliq)
+window.pgnTimeControl = function(label) {
+  const m = /^(\d+(?:\.\d+)?)\+(\d+)$/.exec(String(label || ''));
+  return m ? Math.round(Number(m[1]) * 60) + '+' + m[2] : null;
+};
+window.clockFromPgn = function(tc) {
+  const m = /^(\d+(?:\.\d+)?)\+(\d+)$/.exec(String(tc || '').trim());
+  if (!m) return null;
+  const v = Number(m[1]);
+  // 2026-10-31 gacha saytdan yuklangan PGN da daqiqa edi ("3+2", "0.75+0") — o'yin 30 s dan qisqa bo'lmaydi
+  return (v < 30 || !Number.isInteger(v) ? v : Math.round(v / 60 * 100) / 100) + '+' + m[2];
+};
+
 // ✈️ Rasmiy Telegram kanal — manzil faqat shu yerda (Sayt haqida, Sozlamalar → Hisob havolalari shundan oladi)
 window.TELEGRAM_CHANNEL_URL = 'https://t.me/chesscaravan';
 // Telegram belgisi (inline SVG, rangi — matn rangi)

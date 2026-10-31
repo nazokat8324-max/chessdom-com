@@ -59,7 +59,7 @@
     const opening = g.variant === 'chess960' || g.variant === 'shatranj' ? { name: window.variantLabel(g.variant) } : (typeof window.openingFor === 'function' ? window.openingFor(g.moves) : null);
     const moves = Math.ceil((g.moves || []).length / 2);
     const date = g.playedAt ? new Date(g.playedAt).toLocaleDateString() : g.day;
-    const detail = [reasonLabel(g.reason), tx('gdMoves', '{{n}} yurish', { n: moves }), g.clock].filter(Boolean).join(' · ');
+    const detail = [reasonLabel(g.reason), tx('gdMoves', '{{n}} yurish', { n: moves }), g.clock && window.clockText(g.clock)].filter(Boolean).join(' · ');
     box.innerHTML = `<div class="gd-card">
       ${miniBoard(pos.fen, pos.last)}
       <div class="gd-info">

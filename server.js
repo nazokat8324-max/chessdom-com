@@ -1131,6 +1131,12 @@ async function holidayProgress(userId, now) {
 }
 
 // "3+2" → rejim (clockMode bilan bir xil qoida)
+// PGN standartida TimeControl soniyalarda ("180+2"); bizning yorliq daqiqada ("3+2", "0.75+0")
+function pgnTimeControl(label) {
+  const m = /^(\d+(?:\.\d+)?)\+(\d+)$/.exec(String(label || ''));
+  return m ? Math.round(Number(m[1]) * 60) + '+' + m[2] : null;
+}
+
 function clockModeOfLabel(label) {
   const m = /^(\d+(?:\.\d+)?)\+(\d+)$/.exec(String(label || ''));
   return m ? clockMode({ initial: Math.round(Number(m[1]) * 60), increment: Number(m[2]) }) : null;
@@ -2876,7 +2882,7 @@ async function start() {
         const d = new Date(g.timestamp || Date.now());
         const head = [`[Event "ChessCaravan"]`, `[Site "${SITE_URL}"]`, `[Date "${isNaN(d) ? '????.??.??' : d.toISOString().slice(0, 10).replace(/-/g, '.')}"]`,
           `[White "${white}"]`, `[Black "${black}"]`, `[Result "${g.color ? res1 : '*'}"]`]
-          .concat(g.clock ? [`[TimeControl "${g.clock}"]`] : [])
+          .concat(pgnTimeControl(g.clock) ? [`[TimeControl "${pgnTimeControl(g.clock)}"]`] : [])
           .concat(g.variant === 'chess960' && g.startFen ? ['[Variant "Chess960"]', '[SetUp "1"]', `[FEN "${g.startFen}"]`] : [])
           .concat(g.variant === 'shatranj' ? ['[Variant "Shatranj"]', '[SetUp "1"]', `[FEN "${Shatranj.START_FEN}"]`] : []);
         let body = '';

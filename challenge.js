@@ -14,7 +14,7 @@
   };
   const modeOf = (i, inc) => { const e = i + 40 * inc; return e < 180 ? 'bullet' : (e < 480 ? 'blitz' : 'rapid'); };
   const modeIcon = (m) => ({ bullet: '🔥', blitz: '⚡', rapid: '⏱️' }[m] || '♟');
-  const clockLabel = (i, inc) => `${i / 60}+${inc}`;
+  const clockLabel = (i, inc) => window.clockText(i, inc);
   const flag = (code) => code ? `<img class="ar-flag" src="https://flagcdn.com/w40/${esc(code)}.png" alt="" onerror="this.remove()">` : '';
 
   function modal() {

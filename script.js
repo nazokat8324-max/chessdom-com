@@ -1901,7 +1901,7 @@ window.applySiteTheme = function(theme) {
 };
 
 // Taxta ko'rinishi: 'auto' (sayt mavzusiga mos — standart) yoki o'zimizning 10 ta taxtadan biri (<html data-board>)
-window.BOARD_STYLES = ['marble', 'wood', 'tournament', 'rishton', 'atlas', 'teahouse', 'desert', 'night', 'paper', 'ice'];
+window.BOARD_STYLES = ['marble', 'wood', 'tournament', 'rishton', 'atlas', 'teahouse', 'desert', 'night', 'paper', 'ice', 'suzani', 'malachite', 'koshin', 'felt', 'silk'];
 window.applyBoardStyle = function(style) {
   const name = window.BOARD_STYLES.includes(style) ? style : 'auto';
   if (name === 'auto') document.documentElement.removeAttribute('data-board');

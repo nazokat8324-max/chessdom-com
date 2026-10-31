@@ -4,7 +4,7 @@
 // assets/geo-codes.json (raqamli id → davlat kodi, qo'shnilar).
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
-  const LIBS = ['https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js', 'https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js'];
+  const LIBS = ['/vendor/d3-7.9.0.min.js', '/vendor/topojson-client-3.1.0.min.js'];
   const st = { data: null, geo: null, world: null, loading: null, timer: null, season: null };
   const flag = (code) => code ? `<img class="war-flag" src="https://flagcdn.com/w40/${esc(String(code).toLowerCase())}.png" alt="" onerror="this.remove()">` : '';
   const clubName = (c) => c ? (window.countryName ? window.countryName(c.country, c.code) : c.country) : '';

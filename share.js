@@ -1,9 +1,9 @@
 // 🎬 O'yinni ulashish: tugagan o'yin GIF animatsiya (barcha yurishlar) yoki rasm (yakuniy pozitsiya, Instagram uchun 4:5) bo'lib
 // brauzerda yasaladi va Telegram/Instagram'ga yuboriladi. Ulashish matnida o'yinchining taklif havolasi (/?invite=...).
 // window.openGameShare({ moves: [SAN], variant, startFen, white: {name, rating}, black: {...}, result: '1-0'|'0-1'|'1/2-1/2'|'*', reason, myColor })
-// Server ishtirok etmaydi. GIF kodlovchi — gifenc@1.0.3 (jsdelivr, faqat kerak bo'lganda yuklanadi).
+// Server ishtirok etmaydi. GIF kodlovchi — gifenc@1.0.3 (vendor/, faqat kerak bo'lganda yuklanadi).
 (function () {
-  const GIFENC = 'https://cdn.jsdelivr.net/npm/gifenc@1.0.3/dist/gifenc.esm.js';
+  const GIFENC = '/vendor/gifenc-1.0.3.esm.js';
   const MAX_PLIES = 240;
   let libPromise = null;
   const loadLib = () => libPromise || (libPromise = import(GIFENC).catch((e) => { libPromise = null; throw e; }));

@@ -28,6 +28,27 @@ test("socket.io mijozi o'z serverimizdan (CDN yuklanmasa butun sayt ishlamasdi �
   assert.match(await js.text(), /Socket\.IO v4\./);
 });
 
+test("Kutubxonalar (jQuery, chess.js, taxta, i18next, Chart.js, Stockfish, d3…) o'z serverimizdan — tashqi CDN ga bog'liq emas", async () => {
+  const fs = require('fs'), path = require('path');
+  const ROOT = path.join(__dirname, '..');
+  const CDN = /https:\/\/(cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|unpkg\.com|code\.jquery\.com|cdn\.socket\.io)\//;
+  const html = await (await get('/')).text();
+  assert.doesNotMatch(html, CDN, 'index.html');
+  for (const f of fs.readdirSync(ROOT).filter((n) => n.endsWith('.js') || n.endsWith('.html'))) {
+    assert.doesNotMatch(fs.readFileSync(path.join(ROOT, f), 'utf8').replace(/(^|\s)\/\/.*$/gm, '$1'), CDN, f);
+  }
+  // index.html dagi har bir vendor/ fayli va JS ichida dinamik yuklanadiganlari beriladi
+  const refs = [...html.matchAll(/(?:src|href)="(vendor\/[^"]+)"/g)].map((m) => m[1]);
+  assert.ok(refs.length >= 8, refs.join(','));
+  const lazy = ['vendor/stockfish-10.0.2.js', 'vendor/confetti-1.9.3.browser.min.js', 'vendor/gifenc-1.0.3.esm.js', 'vendor/d3-7.9.0.min.js', 'vendor/topojson-client-3.1.0.min.js'];
+  for (const r of refs.concat(lazy)) {
+    const res = await get('/' + r);
+    assert.equal(res.status, 200, r);
+    assert.match(res.headers.get('content-type'), r.endsWith('.css') ? /text\/css/ : /javascript/, r);
+    assert.doesNotMatch(await res.text(), /sourceMappingURL/, r + ' (yo\'q .map so\'rovi)');
+  }
+});
+
 test('Kanonik manzillar va eski manzillar yo\'naltiriladi', async () => {
   for (const [from, to] of [['/Reyting', '/reyting'], ['/reyting/', '/reyting'], ['/urush', '/bayroqlar'], ['/privacy', '/maxfiylik'], ['/terms', '/shartlar'], ['/dostlar', '/xabarlar'], ['/chat', '/xabarlar']]) {
     const r = await get(from);

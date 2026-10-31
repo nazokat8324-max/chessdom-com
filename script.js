@@ -59,7 +59,7 @@ window.telegramChannelLink = function(label, cls) {
 // 🎉 Konfetti (canvas-confetti) faqat birinchi kerak bo'lganda yuklanadi (g'alaba, bahs, bashorat). Avval index.html da
 // har sahifa ochilishida yuklanardi va telefonda asosiy oqimni ~0.9 s band qilardi — sahifa shu vaqt chizilmasdi.
 (function () {
-  const SRC = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
+  const SRC = '/vendor/confetti-1.9.3.browser.min.js';
   let loading = null;
   const lazy = function (opts) {
     if (!loading) {

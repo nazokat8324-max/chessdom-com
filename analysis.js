@@ -1,8 +1,9 @@
-// O'yindan keyingi tahlil: Stockfish 10 (cdnjs, brauzerda Web Worker ichida) har bir pozitsiyani baholaydi.
+// O'yindan keyingi tahlil: Stockfish 10 (vendor/, brauzerda Web Worker ichida) har bir pozitsiyani baholaydi.
 // Natija: baho chizig'i (#pgEvalBar), yurish belgilari (?! noaniqlik, ? xato, ?? qo'pol xato), aniqlik foizi,
 // ko'rilayotgan yurish uchun eng yaxshi yurish. Server ishtirok etmaydi. board.js: showPly → onAnalysisPly.
 (function () {
-  const ENGINE_URL = 'https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js';
+  // Blob worker ichida importScripts to'liq manzil talab qiladi
+  const ENGINE_URL = location.origin + '/vendor/stockfish-10.0.2.js';
   const DEPTH = 12;
   const st = { worker: null, running: false, token: 0, done: 0, total: 0, result: null };
   window.gameAnalysis = null;

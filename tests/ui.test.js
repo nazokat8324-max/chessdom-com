@@ -263,7 +263,7 @@ test("1-sinov o'tishi: huquqiy sahifa tablari so'z o'rtasidan bo'linmaydi, chetd
   // Konfetti sahifa ochilganda yuklanmaydi; chaqirilganda yuklanib, haqiqiy funksiya o'rnini egallaydi
   const reqs = [];
   const g = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
-  g.on('request', (r) => { if (/canvas-confetti/.test(r.url())) reqs.push(r.url()); });
+  g.on('request', (r) => { if (/confetti/.test(r.url())) reqs.push(r.url()); });
   await g.goto(srv.base + '/bayroqlar', { waitUntil: 'load' });
   await g.waitForSelector('#cvRoute .cvr-stop.on');
   await sleep(800);

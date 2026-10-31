@@ -187,13 +187,14 @@ test("Xochli ♔/♚ matn belgilari sayt kodida yo'q (o'rniga kingIcon rasm)", (
   }
 });
 
-test("Taxta ko'rinishlari: 15 ta + 'Mavzuga mos', barcha ro'yxatlar, CSS va 6 tildagi nomlar bir xil", () => {
+test("Taxta ko'rinishlari: 14 ta + 'Mavzuga mos', barcha ro'yxatlar, CSS va 6 tildagi nomlar bir xil", () => {
   const fs = require('fs');
   const path = require('path');
   const read = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
   const list = (src, re) => JSON.parse(src.match(re)[1].replace(/'/g, '"'));
   const styles = list(read('script.js'), /window\.BOARD_STYLES = (\[[^\]]*\])/);
-  assert.equal(styles.length, 15);
+  assert.equal(styles.length, 14);
+  assert.ok(!styles.includes('atlas'), "Atlas taxtasi olib tashlangan (2026-11-01)");
   assert.deepEqual(list(headHtml(read), /(\["marble"[^\]]*\])\.indexOf\(cdSettings\.boardStyle\)/), styles, 'index.html <head>');
   const settings = [...read('settings.js').match(/const BOARDS = \[(.*)\];/)[1].matchAll(/\['(\w+)', '(\w+)'/g)];
   assert.deepEqual(settings.map((m) => m[1]), ['auto', ...styles], 'settings.js BOARDS');

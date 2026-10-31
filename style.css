@@ -3068,6 +3068,107 @@
   --cd-accent-soft: rgba(163, 175, 189, 0.14);
 }
 
+:root[data-theme="olive"] {
+  --accent: #99aa30;
+  --accent-rgb: 153, 170, 48;
+  --accent-light: #b8c65a;
+  --accent-dark: #8e9d2c;
+  --accent-hover: #c4d070;
+  --accent-deep: #6b771f;
+  --cd-bg: #10120a;
+  --cd-bg-2: #14170d;
+  --cd-sidebar: #12140b;
+  --cd-surface: #191c11;
+  --cd-surface-2: #1f2316;
+  --cd-surface-3: #272c1c;
+  --cd-border-strong: #2f3522;
+  --cd-hero: #232a12;
+  --cd-hero-2: #14170b;
+  --cd-accent: #99aa30;
+  --cd-accent-hover: #c4d070;
+  --cd-accent-soft: rgba(153, 170, 48, 0.14);
+}
+:root[data-theme="copper"] {
+  --accent: #d9784a;
+  --accent-rgb: 217, 120, 74;
+  --accent-light: #e28d64;
+  --accent-dark: #c0623a;
+  --accent-hover: #e9a17e;
+  --accent-deep: #94472a;
+  --cd-bg: #130e0b;
+  --cd-bg-2: #18120e;
+  --cd-sidebar: #16100c;
+  --cd-surface: #1e1712;
+  --cd-surface-2: #251c16;
+  --cd-surface-3: #2e231c;
+  --cd-border-strong: #382a21;
+  --cd-hero: #2c1c13;
+  --cd-hero-2: #18100b;
+  --cd-accent: #d9784a;
+  --cd-accent-hover: #e9a17e;
+  --cd-accent-soft: rgba(217, 120, 74, 0.14);
+}
+:root[data-theme="plum"] {
+  --accent: #c062d8;
+  --accent-rgb: 192, 98, 216;
+  --accent-light: #cc7ee0;
+  --accent-dark: #a74bbf;
+  --accent-hover: #d697e7;
+  --accent-deep: #7d3192;
+  --cd-bg: #110c13;
+  --cd-bg-2: #160f19;
+  --cd-sidebar: #140e17;
+  --cd-surface: #1c1520;
+  --cd-surface-2: #231a28;
+  --cd-surface-3: #2c2132;
+  --cd-border-strong: #35283c;
+  --cd-hero: #2a1833;
+  --cd-hero-2: #170e1c;
+  --cd-accent: #c062d8;
+  --cd-accent-hover: #d697e7;
+  --cd-accent-soft: rgba(192, 98, 216, 0.14);
+}
+:root[data-theme="sand"] {
+  --accent: #b88e60;
+  --accent-rgb: 184, 142, 96;
+  --accent-light: #cfab83;
+  --accent-dark: #ab8255;
+  --accent-hover: #d9bb98;
+  --accent-deep: #86623c;
+  --cd-bg: #12100d;
+  --cd-bg-2: #171411;
+  --cd-sidebar: #15120f;
+  --cd-surface: #1d1915;
+  --cd-surface-2: #24201b;
+  --cd-surface-3: #2d2822;
+  --cd-border-strong: #37302a;
+  --cd-hero: #2a2319;
+  --cd-hero-2: #17130e;
+  --cd-accent: #b88e60;
+  --cd-accent-hover: #d9bb98;
+  --cd-accent-soft: rgba(184, 142, 96, 0.14);
+}
+:root[data-theme="jasper"] {
+  --accent: #1fbf95;
+  --accent-rgb: 31, 191, 149;
+  --accent-light: #45cca8;
+  --accent-dark: #17a37f;
+  --accent-hover: #66d6b8;
+  --accent-deep: #117a5f;
+  --cd-bg: #0a1210;
+  --cd-bg-2: #0d1714;
+  --cd-sidebar: #0b1512;
+  --cd-surface: #111c19;
+  --cd-surface-2: #16231f;
+  --cd-surface-3: #1c2c27;
+  --cd-border-strong: #22352f;
+  --cd-hero: #112a23;
+  --cd-hero-2: #0b1714;
+  --cd-accent: #1fbf95;
+  --cd-accent-hover: #66d6b8;
+  --cd-accent-soft: rgba(31, 191, 149, 0.14);
+}
+
 /* Shaxmat taxtasi ranglari ham sayt mavzusiga mos (chessboard.js katak klasslari) */
 :root,
 :root[data-theme="turquoise"] {
@@ -3109,6 +3210,26 @@
 :root[data-theme="graphite"] {
   --board-light: #e8e9eb;
   --board-dark: #8b9199;
+}
+:root[data-theme="olive"] {
+  --board-light: #eef0d8;
+  --board-dark: #8f9a5a;
+}
+:root[data-theme="copper"] {
+  --board-light: #f3e3d6;
+  --board-dark: #b07a5c;
+}
+:root[data-theme="plum"] {
+  --board-light: #f1e4f5;
+  --board-dark: #a57bb5;
+}
+:root[data-theme="sand"] {
+  --board-light: #f3ebdf;
+  --board-dark: #b59a7a;
+}
+:root[data-theme="jasper"] {
+  --board-light: #e2f2ec;
+  --board-dark: #4f9e86;
 }
 :root .white-1e1d7 {
   background-color: var(--board-light);
@@ -7621,6 +7742,11 @@ html.hide-last-move #chessBoard .sq-last {
 .set-theme.t-gold i { background: linear-gradient(135deg, #ffe48a, #c79a1e); }
 .set-theme.t-lapis i { background: linear-gradient(135deg, #a3afff, #3d4fd6); }
 .set-theme.t-graphite i { background: linear-gradient(135deg, #eef1f4, #7a8390); }
+.set-theme.t-olive i { background: linear-gradient(135deg, #d6e27a, #7d8b22); }
+.set-theme.t-copper i { background: linear-gradient(135deg, #f2a77f, #a9512c); }
+.set-theme.t-plum i { background: linear-gradient(135deg, #e2a2f2, #8b37a6); }
+.set-theme.t-sand i { background: linear-gradient(135deg, #ead2b2, #9c7546); }
+.set-theme.t-jasper i { background: linear-gradient(135deg, #6ee8c6, #0f8a68); }
 .set-theme.active {
   color: #fff;
   border-color: var(--accent);

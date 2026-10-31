@@ -1889,7 +1889,7 @@ window.kingIcon = function(color) {
 };
 
 // --- Sayt rangi va koordinatalar (Sozlamalar → Dizayn) ---
-window.SITE_THEMES = ['turquoise', 'ocean', 'amethyst', 'sunset', 'jade', 'ruby', 'rose', 'gold', 'lapis', 'graphite'];
+window.SITE_THEMES = ['turquoise', 'ocean', 'amethyst', 'sunset', 'jade', 'ruby', 'rose', 'gold', 'lapis', 'graphite', 'olive', 'copper', 'plum', 'sand', 'jasper'];
 
 window.applySiteTheme = function(theme) {
   const name = window.SITE_THEMES.includes(theme) ? theme : 'turquoise';

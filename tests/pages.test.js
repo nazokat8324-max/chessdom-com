@@ -155,13 +155,13 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
 // index.html <head> ro'yxatlari: muharrir (Prettier) qatorlarga bo'lsa ham bir xil o'qiladi
 const headHtml = (read) => read('index.html').replace(/\s+/g, '').replace(/,\]/g, ']');
 
-test("Sayt rang mavzulari: 10 ta, barcha ro'yxatlar, CSS va 6 tildagi nomlar bir xil", () => {
+test("Sayt rang mavzulari: 15 ta, barcha ro'yxatlar, CSS va 6 tildagi nomlar bir xil", () => {
   const fs = require('fs');
   const path = require('path');
   const read = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
   const list = (src, re) => JSON.parse(src.match(re)[1].replace(/'/g, '"'));
   const site = list(read('script.js'), /window\.SITE_THEMES = (\[[^\]]*\])/);
-  assert.equal(site.length, 10);
+  assert.equal(site.length, 15);
   assert.deepEqual(list(headHtml(read), /(\["turquoise"[^\]]*\])\.indexOf\(cdTheme\)/), site, "index.html <head> ro'yxati");
   const settings = [...read('settings.js').match(/const THEMES = \[(.*)\];/)[1].matchAll(/\['(\w+)', '(\w+)'/g)];
   assert.deepEqual(settings.map((m) => m[1]), site, "settings.js ro'yxati");

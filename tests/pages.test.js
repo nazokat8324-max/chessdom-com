@@ -120,6 +120,7 @@ test("Litsenziya: begona serverdagi ovoz/dona yo'q, faqat erkin to'plamlar, mual
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(root, 'sound.js'), 'utf8').match(/window\.SOUND_PACKS = (\[[^\]]*\])/)[1].replace(/'/g, '"')), packs, 'sound.js');
   assert.deepEqual([...fs.readFileSync(path.join(root, 'settings.js'), 'utf8').match(/const SOUND_PACKS = \[(.*)\];/)[1].matchAll(/\['(\w+)'/g)].map((m) => m[1]), packs, 'settings.js');
   assert.equal(packs[0], 'wood');
+  assert.equal(packs.length, 15, "15 ta ovoz to'plami");
   for (const pk of packs) for (const s of ['move', 'capture', 'check', 'game-end']) assert.equal((await get('/assets/sounds/' + pk + '/' + s + '.wav')).status, 200, pk + '/' + s);
   global.window = {};
   require(path.join(root, 'legal-content.js'));

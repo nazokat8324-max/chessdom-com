@@ -1,7 +1,7 @@
 // Ovozlar saytning o'zida: tools/make-sounds.js bilan sintez qilingan (mualliflik huquqi loyihaniki).
 // 2026-10-22 gacha lichess.org "standard" ovozlari ishlatilardi — ular lichess litsenziyasida "non-free".
 // To'plamlar: assets/sounds/<to'plam>/ (tools/make-sounds.js PACKS bilan bir xil); standart — yog'och
-window.SOUND_PACKS = ['wood', 'teahouse', 'marble', 'doira', 'retro', 'soft'];
+window.SOUND_PACKS = ['wood', 'teahouse', 'marble', 'doira', 'retro', 'soft', 'dutor', 'karnay', 'nay', 'glass', 'water', 'gong', 'chime', 'keys', 'caravan'];
 const SOUND_FILES = { move: 'move', capture: 'capture', check: 'check', gameEnd: 'game-end' };
 const sounds = {};
 window.currentSoundPack = null;

@@ -74,6 +74,73 @@ function square(buf, at, freq, dur, gain = 0.25) {
   }
 }
 
+// Tortilgan tor (Karplus–Strong): shovqin bilan to'ldirilgan halqa, har aylanishda o'rtacha olinib so'nadi — dutor, rubob
+function pluck(buf, at, freq, { gain = 0.5, decay = 0.996, length = 1.2 } = {}) {
+  const start = Math.floor(at * RATE);
+  const N = Math.max(2, Math.round(RATE / freq));
+  const ring = Array.from({ length: N }, () => rand());
+  const n = Math.floor(length * RATE);
+  for (let i = 0; i < n && start + i < buf.length; i++) {
+    const k = i % N;
+    const y = ring[k];
+    ring[k] = decay * 0.5 * (ring[k] + ring[(k + 1) % N]);
+    buf[start + i] += gain * y * Math.min(1, (n - i) / (0.05 * RATE));
+  }
+}
+
+// Mis surnay (karnay): arra to'lqini garmonikalari, sekin kirish, yengil vibrato
+function brass(buf, at, freq, dur, gain = 0.3) {
+  const start = Math.floor(at * RATE);
+  const n = Math.floor(dur * RATE);
+  for (let i = 0; i < n && start + i < buf.length; i++) {
+    const t = i / RATE;
+    const env = Math.min(1, t / 0.03) * Math.min(1, (dur - t) / 0.05);
+    const f = freq * (1 + 0.006 * Math.sin(2 * Math.PI * 5.5 * t));
+    let s = 0;
+    for (let h = 1; h <= 8; h++) s += Math.sin(2 * Math.PI * f * h * t) / h * Math.exp(-h * 0.12);
+    buf[start + i] += gain * env * s * 0.6;
+  }
+}
+
+// Nay: toza ohang + nafas shovqini
+function flute(buf, at, freq, dur, gain = 0.3) {
+  const start = Math.floor(at * RATE);
+  const n = Math.floor(dur * RATE);
+  let lp = 0;
+  for (let i = 0; i < n && start + i < buf.length; i++) {
+    const t = i / RATE;
+    const env = Math.min(1, t / 0.04) * Math.min(1, (dur - t) / 0.06);
+    lp += 0.2 * (rand() - lp);
+    const f = freq * (1 + 0.004 * Math.sin(2 * Math.PI * 4.5 * t));
+    buf[start + i] += gain * env * (Math.sin(2 * Math.PI * f * t) + 0.18 * Math.sin(4 * Math.PI * f * t) + lp * 0.35);
+  }
+}
+
+// Suv tomchisi: ohang tez ko'tariladi ("plip")
+function drop(buf, at, f0, f1, { gain = 0.45, dur = 0.12 } = {}) {
+  const start = Math.floor(at * RATE);
+  const n = Math.floor(dur * RATE);
+  let ph = 0;
+  for (let i = 0; i < n && start + i < buf.length; i++) {
+    const t = i / RATE;
+    const f = f0 * Math.pow(f1 / f0, Math.min(1, t / 0.05));
+    ph += 2 * Math.PI * f / RATE;
+    buf[start + i] += gain * Math.min(1, t / 0.002) * Math.exp(-t * 32) * Math.sin(ph);
+  }
+}
+
+// Metall (gong, qo'ng'iroqcha, billur, tuya qo'ng'irog'i): garmonik bo'lmagan qisman tonlar, yuqorilari tezroq so'nadi
+function metal(buf, at, freq, ratios, { gain = 0.3, decay = 4, length = 1.2 } = {}) {
+  const start = Math.floor(at * RATE);
+  const n = Math.floor(length * RATE);
+  for (let i = 0; i < n && start + i < buf.length; i++) {
+    const t = i / RATE;
+    let s = 0;
+    ratios.forEach((r, k) => { s += Math.sin(2 * Math.PI * freq * r * t + k) * Math.exp(-t * decay * (1 + k * 0.6)) / Math.pow(k + 1, 0.7); });
+    buf[start + i] += gain * Math.min(1, t / 0.002) * s * Math.min(1, (n - i) / (0.03 * RATE));
+  }
+}
+
 function wav(buf, peakTo) {
   // Cho'qqini normallash (to'plam ovoz balandligi — peakTo)
   let peak = 0;
@@ -143,6 +210,78 @@ const PACKS = {
     capture() { const b = buffer(0.3); knock(b, 0, { freq: 140, decay: 26, noise: 0.15, bright: 0.08 }); knock(b, 0.06, { freq: 175, gain: 0.6, decay: 32, noise: 0.15, bright: 0.08 }); return b; },
     check() { const b = buffer(0.6); knock(b, 0, { freq: 150, decay: 28, noise: 0.12, bright: 0.08 }); bell(b, 0.03, 659.25, { gain: 0.18, decay: 6, length: 0.55 }); return b; },
     'game-end'() { const b = buffer(1.9); [440, 554.37, 659.25].forEach((f, i) => bell(b, i * 0.16, f, { gain: 0.25, decay: 2.2, length: 1.7 })); return b; }
+  },
+  // 🎸 Dutor — tortilgan tor
+  dutor: {
+    peak: 0.8,
+    move() { const b = buffer(0.7); pluck(b, 0, 196, { length: 0.65 }); return b; },
+    capture() { const b = buffer(0.8); pluck(b, 0, 196, { length: 0.7 }); pluck(b, 0.06, 147, { gain: 0.45, length: 0.7 }); return b; },
+    check() { const b = buffer(0.9); pluck(b, 0, 392, { length: 0.8 }); pluck(b, 0.07, 523.25, { gain: 0.45, length: 0.8 }); return b; },
+    'game-end'() { const b = buffer(2); [196, 246.94, 293.66, 392].forEach((f, i) => pluck(b, i * 0.13, f, { gain: 0.45, decay: 0.998, length: 1.5 })); return b; }
+  },
+  // 🎺 Karnay — mis surnay (qisqa va yumshoq; yakunda tantanali ohang)
+  karnay: {
+    peak: 0.6,
+    move() { const b = buffer(0.14); brass(b, 0, 233.08, 0.1); return b; },
+    capture() { const b = buffer(0.26); brass(b, 0, 233.08, 0.08); brass(b, 0.1, 174.61, 0.13); return b; },
+    check() { const b = buffer(0.36); brass(b, 0, 349.23, 0.12); brass(b, 0.14, 466.16, 0.18); return b; },
+    'game-end'() { const b = buffer(1.3); [[233.08, 0.13], [293.66, 0.13], [349.23, 0.13], [466.16, 0.6]].forEach(([f, d], i) => brass(b, i * 0.15, f, d)); return b; }
+  },
+  // 🎶 Nay — nafasli ohang
+  nay: {
+    peak: 0.6,
+    move() { const b = buffer(0.18); flute(b, 0, 783.99, 0.14); return b; },
+    capture() { const b = buffer(0.3); flute(b, 0, 783.99, 0.11); flute(b, 0.11, 659.25, 0.16); return b; },
+    check() { const b = buffer(0.36); flute(b, 0, 987.77, 0.13); flute(b, 0.13, 1174.66, 0.2); return b; },
+    'game-end'() { const b = buffer(1.5); [[659.25, 0.2], [783.99, 0.2], [987.77, 0.2], [1318.51, 0.7]].forEach(([f, d], i) => flute(b, i * 0.21, f, d)); return b; }
+  },
+  // 🥂 Billur — shisha qadahlar jarangi
+  glass: {
+    peak: 0.65,
+    move() { const b = buffer(0.6); metal(b, 0, 2093, [1, 2.32, 4.25, 6.63], { gain: 0.3, decay: 7, length: 0.55 }); return b; },
+    capture() { const b = buffer(0.7); metal(b, 0, 2093, [1, 2.32, 4.25], { gain: 0.3, decay: 7, length: 0.6 }); metal(b, 0.06, 2637, [1, 2.32, 4.25], { gain: 0.25, decay: 7, length: 0.6 }); return b; },
+    check() { const b = buffer(0.9); metal(b, 0, 3136, [1, 2.32, 4.25], { gain: 0.3, decay: 5, length: 0.8 }); metal(b, 0.1, 3520, [1, 2.32], { gain: 0.25, decay: 5, length: 0.8 }); return b; },
+    'game-end'() { const b = buffer(2); [1568, 1975.5, 2349.3, 3136].forEach((f, i) => metal(b, i * 0.14, f, [1, 2.32, 4.25], { gain: 0.25, decay: 2.5, length: 1.6 })); return b; }
+  },
+  // 💧 Tomchi — suv tomchilari
+  water: {
+    peak: 0.7,
+    move() { const b = buffer(0.14); drop(b, 0, 700, 1500); return b; },
+    capture() { const b = buffer(0.22); drop(b, 0, 600, 1300); drop(b, 0.07, 900, 1900, { gain: 0.35 }); return b; },
+    check() { const b = buffer(0.26); drop(b, 0, 1200, 2600); drop(b, 0.09, 1500, 3100, { gain: 0.35 }); return b; },
+    'game-end'() { const b = buffer(1); [500, 700, 900, 1200, 1600].forEach((f, i) => drop(b, i * 0.11, f, f * 2.1, { gain: 0.4, dur: 0.16 })); return b; }
+  },
+  // 🔔 Gong — kichik metall zarba; yakunda katta gong
+  gong: {
+    peak: 0.7,
+    move() { const b = buffer(0.45); metal(b, 0, 520, [1, 1.56, 2.24, 2.92], { gain: 0.3, decay: 9, length: 0.4 }); return b; },
+    capture() { const b = buffer(0.55); metal(b, 0, 520, [1, 1.56, 2.24], { gain: 0.3, decay: 9, length: 0.45 }); metal(b, 0.07, 415, [1, 1.56, 2.24], { gain: 0.28, decay: 9, length: 0.45 }); return b; },
+    check() { const b = buffer(0.9); metal(b, 0, 880, [1, 1.56, 2.24, 2.92], { gain: 0.3, decay: 4.5, length: 0.85 }); return b; },
+    'game-end'() { const b = buffer(2.4); knock(b, 0, { freq: 90, gain: 0.5, decay: 10, noise: 0.3, bright: 0.1 }); metal(b, 0, 98, [1, 1.48, 2.1, 2.74, 3.5, 4.3], { gain: 0.45, decay: 1.2, length: 2.3 }); return b; }
+  },
+  // 🎐 Qo'ng'iroqcha — shamol qo'ng'iroqchalari (metall naychalar)
+  chime: {
+    peak: 0.6,
+    move() { const b = buffer(0.7); metal(b, 0, 1318.5, [1, 2.76, 5.4], { gain: 0.3, decay: 6, length: 0.65 }); return b; },
+    capture() { const b = buffer(0.8); metal(b, 0, 1318.5, [1, 2.76, 5.4], { gain: 0.3, decay: 6, length: 0.7 }); metal(b, 0.08, 1568, [1, 2.76, 5.4], { gain: 0.26, decay: 6, length: 0.7 }); return b; },
+    check() { const b = buffer(1); metal(b, 0, 1760, [1, 2.76, 5.4], { gain: 0.3, decay: 4, length: 0.9 }); metal(b, 0.09, 2093, [1, 2.76, 5.4], { gain: 0.26, decay: 4, length: 0.9 }); return b; },
+    'game-end'() { const b = buffer(2.2); [1318.5, 1480, 1760, 1975.5, 2217.5, 2637].forEach((f, i) => metal(b, i * 0.09 + (i % 2) * 0.02, f, [1, 2.76, 5.4], { gain: 0.22, decay: 2.2, length: 1.6 })); return b; }
+  },
+  // ⌨️ Klaviatura — qisqa mexanik chertish
+  keys: {
+    peak: 0.6,
+    move() { const b = buffer(0.06); knock(b, 0, { freq: 1800, gain: 0.6, decay: 140, noise: 1, bright: 0.9 }); return b; },
+    capture() { const b = buffer(0.12); knock(b, 0, { freq: 1800, gain: 0.6, decay: 140, noise: 1, bright: 0.9 }); knock(b, 0.05, { freq: 1300, gain: 0.55, decay: 120, noise: 1, bright: 0.85 }); return b; },
+    check() { const b = buffer(0.3); knock(b, 0, { freq: 1800, gain: 0.6, decay: 140, noise: 1, bright: 0.9 }); bell(b, 0.02, 1500, { gain: 0.16, decay: 14, length: 0.25 }); return b; },
+    'game-end'() { const b = buffer(1.2); bell(b, 0, 1046.5, { gain: 0.25, decay: 4, length: 1 }); bell(b, 0.12, 1568, { gain: 0.22, decay: 4, length: 1 }); return b; }
+  },
+  // 🐫 Karvon qo'ng'irog'i — tuya bo'ynidagi qo'ng'iroq (past, taqillagan)
+  caravan: {
+    peak: 0.7,
+    move() { const b = buffer(0.45); knock(b, 0, { freq: 330, gain: 0.35, decay: 50, noise: 0.6, bright: 0.4 }); metal(b, 0, 330, [1, 1.62, 2.31, 3.05], { gain: 0.3, decay: 9, length: 0.4 }); return b; },
+    capture() { const b = buffer(0.6); metal(b, 0, 330, [1, 1.62, 2.31, 3.05], { gain: 0.3, decay: 9, length: 0.45 }); knock(b, 0.07, { freq: 262, gain: 0.35, decay: 45, noise: 0.6, bright: 0.4 }); metal(b, 0.07, 262, [1, 1.62, 2.31, 3.05], { gain: 0.28, decay: 9, length: 0.45 }); return b; },
+    check() { const b = buffer(0.9); knock(b, 0, { freq: 440, gain: 0.35, decay: 50, noise: 0.6, bright: 0.4 }); metal(b, 0, 440, [1, 1.62, 2.31, 3.05], { gain: 0.32, decay: 4.5, length: 0.85 }); return b; },
+    'game-end'() { const b = buffer(2.1); [262, 330, 262, 392].forEach((f, i) => { knock(b, i * 0.3, { freq: f, gain: 0.3, decay: 50, noise: 0.5, bright: 0.4 }); metal(b, i * 0.3, f, [1, 1.62, 2.31, 3.05], { gain: 0.28, decay: 3, length: 1 }); }); return b; }
   }
 };
 

@@ -292,6 +292,8 @@ function getStreakText(n) {
   if (lang === 'kk' || lang === 'ky') return count + ' күн';
   if (lang === 'tg') return count + ' рӯз';
   if (lang === 'tk' || lang === 'az') return count + ' gün';
+  if (lang === 'zh') return count + ' 天';
+  if (lang === 'it') return count === 1 ? '1 giorno' : count + ' giorni';
   return count === 1 ? '1 day' : count + ' days';
 }
 
@@ -1407,7 +1409,9 @@ window.LANGUAGES = [
   { code: 'TG', name: 'Тоҷикӣ', english: 'Tajik', flag: '🇹🇯' },
   { code: 'KY', name: 'Кыргызча', english: 'Kyrgyz', flag: '🇰🇬' },
   { code: 'TK', name: 'Türkmençe', english: 'Turkmen', flag: '🇹🇲' },
-  { code: 'AZ', name: 'Azərbaycanca', english: 'Azerbaijani', flag: '🇦🇿' }
+  { code: 'AZ', name: 'Azərbaycanca', english: 'Azerbaijani', flag: '🇦🇿' },
+  { code: 'ZH', name: '中文', english: 'Chinese', flag: '🇨🇳' },
+  { code: 'IT', name: 'Italiano', english: 'Italian', flag: '🇮🇹' }
 ];
 
 // --- Leagues Data ---

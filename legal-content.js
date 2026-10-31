@@ -1,4 +1,4 @@
-// Maxfiylik siyosati va Foydalanish shartlari matnlari (legal.html ko'rsatadi). 7 til: uz, en, ru, es, de, fr, tr (uzc — legal.html da uz dan avtomatik).
+// Maxfiylik siyosati va Foydalanish shartlari matnlari (legal.html ko'rsatadi). 14 til: uz, en, ru, es, de, fr, tr, kk, tg, ky, tk, az, zh, it (uzc — legal.html da uz dan avtomatik).
 // Har hujjat: title, updated, intro, sections: [[sarlavha, [paragraf yoki ["ro'yxat", ...]] ...]]. {{contact}} — aloqa manzili.
 window.LEGAL_TEXT = {
   uz: {
@@ -940,6 +940,164 @@ window.LEGAL_TEXT.az = {
       ]],
       ['Dəyişikliklər və əlaqə', [
         'Bu şərtlər dəyişsə, bu səhifədəki tarix yenilənir; dəyişiklikdən sonra saytdan istifadə yeni şərtləri qəbul etdiyin mənasına gəlir. Suallar: {{contact}}.'
+      ]]
+    ]
+  }
+};
+// 中文 (inglizcha matndan tarjima)
+window.LEGAL_TEXT.zh = {
+  ui: { credits: '致谢与许可证', privacy: '隐私政策', terms: '使用条款', back: '返回网站', updated: '最后更新', contactNone: '使用网站上的“举报”按钮联系管理员' },
+  credits: {"intro":"ChessCaravan 建立在开源库和自由许可的资源之上。感谢它们的作者！下面列出了本站使用的所有第三方资源及其作者和许可证。","code":"软件库（在浏览器中）","assets":"图片、字体和数据","own":"由 ChessCaravan 制作","server":"服务器：Node.js、Express、Socket.IO、PostgreSQL / SQLite 及其他开源软件包（MIT、BSD、ISC、MPL-2.0 许可证）——这些不会发送给用户。","gpl":"采用 GPL 许可证的部分（Stockfish 分析引擎）未经修改使用；其源代码可通过上方链接获取。","ownText":"全部 15 套棋子（Karvon、Classic、Clear、Atlas、Rishton、Wood、Royal、Neon、Geometric、Bolajon、Pixel、Tanga、Samarqand、Origami、Kosmos）、走棋音效（用代码合成）、标志、图标、atlas 花纹和链接预览图片。"},
+  privacy: {
+    intro: 'ChessCaravan 是一个在线国际象棋网站。本页说明我们存储哪些数据、为什么存储以及如何保护这些数据。使用本网站即表示你同意本政策。',
+    sections: [
+      ['我们存储什么', [
+        ['账号：用户名、电子邮箱（可选）、密码——仅以加密的 bcrypt 哈希形式保存、国家、头像以及你添加到个人资料中的内容。',
+         '对局：着法、结果、等级分历史、统计数据、成就、预测和风度评价。',
+         '交流：私信、俱乐部和对局聊天、观众聊天以及举报。',
+         '技术信息：IP 地址（仅用于限制请求频率，临时保存在服务器内存中）、连接延迟、对局中离开页面的情况以及走棋用时（用于公平竞赛检查）。',
+         '在你的浏览器中（localStorage）：你的登录令牌、设置和语言。我们不使用 Cookie、广告或跟踪（统计分析）脚本。']
+      ]],
+      ['我们为什么使用这些数据', [
+        '用于运行对局、计算等级分和统计数据、发送通知和重置密码的邮件、打击作弊和滥用行为，以及改进网站。我们绝不出售你的数据，也不会为广告目的分享数据。'
+      ]],
+      ['其他人能看到什么', [
+        '公开信息：用户名、国家、头像、等级分、统计数据、对局及其着法、俱乐部、成就和交手记录。你的电子邮箱和密码永远不会显示。私信只有对话双方可见。你可以在隐私设置中选择谁可以给你发消息或向你发起挑战。'
+      ]],
+      ['第三方服务', [
+        ['Render — 网站托管。', 'Neon — PostgreSQL 数据库。', 'Brevo — 发送重置密码的邮件。', 'Cloudflare — chesscaravan.com 域名和 DNS（把网址指向服务器）。', 'Telegram — 仅在你连接机器人时：会发送你的聊天 ID 和通知内容。', '推送通知 — 仅在你开启时，通过你的浏览器厂商（Google、Apple、Mozilla）发送。', '语音走棋 — 仅在你开启时：你的语音由浏览器的语音识别服务（例如 Chrome 中的 Google）转换为文字；我们从不接收或保存录音。',
+         '字体 — Google Fonts；国旗——flagcdn.com；贴纸——Google Noto Emoji。',
+         '出于技术原因，这些服务可能会看到你的 IP 地址。对局分析（Stockfish）完全在你的浏览器中运行。']
+      ]],
+      ['我们保存数据多久', [
+        '只要你的账号存在，我们就会保存数据。如果你删除账号，你的个人资料、对局、消息、好友、通知和其他个人数据会被立即删除。这些对局会以匿名名字保留在对手的记录中，你的俱乐部在旗帜之争中获得的积分也会保留，但不再显示你的名字。托管服务商的备份可能会短时间保留数据。'
+      ]],
+      ['你的权利', [
+        ['在个人资料和设置中查看并修改你的数据。', '以 PGN 文件下载你的对局。',
+         '彻底删除你的账号：设置 → 账号 → “删除账号”。', '拉黑和举报其他棋手。']
+      ]],
+      ['安全', [
+        '本站使用 HTTPS，密码只以 bcrypt 哈希形式保存，登录令牌有效期为 7 天。尽管如此，互联网上没有任何系统是 100% 安全的——请不要在其他网站重复使用你的密码。'
+      ]],
+      ['儿童', [
+        '13 岁以下的儿童只能在父母或监护人同意的情况下使用本网站。'
+      ]],
+      ['变更与联系', [
+        '如果本政策发生变化，本页上的日期会随之更新。如有问题或需要删除数据，请联系：{{contact}}。'
+      ]]
+    ]
+  },
+  terms: {
+    intro: '使用本网站即表示你同意以下条款。如果你不同意，请不要使用本网站。',
+    sections: [
+      ['账号', [
+        ['注册时请提供真实的信息，并且绝不要把密码告诉别人——你要对自己账号上发生的一切负责。',
+         '不允许为了刷等级分而创建多个账号。',
+         '不允许使用冒犯性的、冒充他人的或带广告的用户名。']
+      ]],
+      ['公平竞赛', [
+        ['对局中不允许使用国际象棋引擎、他人的建议或任何外部帮助。',
+         '不允许故意输棋、操纵结果和操纵等级分。',
+         '网站会自动检查对局。被查出作弊的棋手会被标记或封禁，他们的对手会拿回失去的等级分。']
+      ]],
+      ['行为规范', [
+        ['不允许辱骂、歧视、威胁、发送垃圾信息、广告、违法和淫秽内容。',
+         '聊天中的违禁词会被自动隐藏；违规者可能会被暂时禁言。',
+         '你可以拉黑和举报其他棋手——管理员会审核举报。']
+      ]],
+      ['处罚', [
+        '违反规则可能会导致警告、聊天限制，或临时、永久封禁。严重违规可能会被直接封禁，不另行警告。'
+      ]],
+      ['内容', [
+        '你的对局（着法和结果）是公开的；其他人可以查看、分析并以 PGN 格式下载。你要对自己的消息和笔记负责。为了提供服务，你授予我们存储和展示这些内容的权利。'
+      ]],
+      ['服务', [
+        'ChessCaravan 是免费的，并按“现状”提供。我们不保证服务不中断、没有错误或数据永远不会丢失。我们可能会更改、暂停或关闭某些功能。在法律允许的范围内，我们不对与本网站有关的间接损失承担责任。'
+      ]],
+      ['注销账号', [
+        '你可以随时通过 设置 → 账号 → “删除账号” 删除你的账号。我们可能会关闭违反规则的账号。'
+      ]],
+      ['变更与联系', [
+        '如果这些条款发生变化，本页上的日期会随之更新；变更后继续使用本网站即表示你接受新条款。如有问题：{{contact}}。'
+      ]]
+    ]
+  }
+};
+// Italiano (inglizcha matndan tarjima)
+window.LEGAL_TEXT.it = {
+  ui: { credits: 'Crediti e licenze', privacy: 'Informativa sulla privacy', terms: 'Termini di utilizzo', back: 'Torna al sito', updated: 'Ultimo aggiornamento', contactNone: 'scrivi agli amministratori con il pulsante “Segnala” sul sito' },
+  credits: {"intro":"ChessCaravan è costruito su librerie open source e risorse con licenza libera. Grazie ai loro autori! Qui sotto trovi tutte le risorse di terze parti usate dal sito, con autore e licenza.","code":"Librerie software (nel browser)","assets":"Immagini, caratteri e dati","own":"Realizzato da ChessCaravan","server":"Server: Node.js, Express, Socket.IO, PostgreSQL / SQLite e altri pacchetti open source (licenze MIT, BSD, ISC, MPL-2.0) — questi non vengono inviati agli utenti.","gpl":"La parte con licenza GPL (il motore di analisi Stockfish) è usata senza modifiche; il suo codice sorgente è disponibile al link qui sopra.","ownText":"Tutti i 15 set di pezzi (Karvon, Classic, Clear, Atlas, Rishton, Wood, Royal, Neon, Geometric, Bolajon, Pixel, Tanga, Samarqand, Origami, Kosmos), i suoni delle mosse (sintetizzati nel codice), il logo, le icone, il motivo atlas e l'immagine di anteprima dei link."},
+  privacy: {
+    intro: 'ChessCaravan è un sito di scacchi online. Questa pagina spiega quali dati conserviamo, perché e come li proteggiamo. Usando il sito accetti questa informativa.',
+    sections: [
+      ['Cosa conserviamo', [
+        ["Account: nome utente, email (facoltativa), password — solo come hash bcrypt cifrato, paese, immagine del profilo e tutto ciò che aggiungi al profilo.",
+         'Partite: mosse, risultati, andamento del punteggio, statistiche, traguardi, pronostici e voti di sportività.',
+         'Comunicazione: messaggi privati, chat dei club e delle partite, chat degli spettatori e segnalazioni.',
+         'Dati tecnici: indirizzo IP (solo per limitare le richieste, tenuto temporaneamente nella memoria del server), latenza della connessione, uscite dalla pagina durante la partita e tempi delle mosse (per i controlli di fair play).',
+         'Nel tuo browser (localStorage): il token di accesso, le impostazioni e la lingua. Non usiamo cookie, pubblicità né script di tracciamento (analytics).']
+      ]],
+      ['Perché li usiamo', [
+        "Per far funzionare le partite, calcolare punteggi e statistiche, inviare notifiche ed email per reimpostare la password, contrastare imbrogli e abusi e migliorare il sito. Non vendiamo mai i tuoi dati e non li condividiamo per fini pubblicitari."
+      ]],
+      ['Cosa vedono gli altri', [
+        "Pubblici: nome utente, paese, immagine del profilo, punteggi, statistiche, partite e relative mosse, club, traguardi e scontri diretti. La tua email e la tua password non vengono mai mostrate. I messaggi privati sono visibili solo alle due persone della conversazione. Nelle impostazioni della privacy scegli chi può scriverti o sfidarti."
+      ]],
+      ['Servizi di terze parti', [
+        ['Render — hosting del sito.', 'Neon — database PostgreSQL.', "Brevo — invio delle email per reimpostare la password.", "Cloudflare — il dominio chesscaravan.com e il DNS (collega l'indirizzo al server).", "Telegram — solo se colleghi il bot: vengono inviati l'ID della tua chat e i testi delle notifiche.", 'Notifiche push — solo se le attivi, tramite il fornitore del tuo browser (Google, Apple, Mozilla).', "Mosse a voce — solo se le attivi: la tua voce viene trasformata in testo dal servizio di riconoscimento vocale del browser (ad esempio Google in Chrome); non riceviamo né conserviamo mai registrazioni.",
+         'Caratteri — Google Fonts; bandiere — flagcdn.com; sticker — Google Noto Emoji.',
+         "Per motivi tecnici questi servizi possono vedere il tuo indirizzo IP. L'analisi delle partite (Stockfish) avviene interamente nel tuo browser."]
+      ]],
+      ['Per quanto tempo conserviamo i dati', [
+        "Conserviamo i dati finché il tuo account esiste. Se elimini l'account, profilo, partite, messaggi, amici, notifiche e altri dati personali vengono eliminati subito. Quelle partite restano negli storici dei tuoi avversari con un nome anonimo, e i punti della Sfida delle Bandiere del tuo club restano senza il tuo nome. I backup dei fornitori di hosting possono conservare i dati per un breve periodo."
+      ]],
+      ['I tuoi diritti', [
+        ['Visualizza e modifica i tuoi dati nel Profilo e nelle Impostazioni.', 'Scarica le tue partite come file PGN.',
+         "Elimina completamente il tuo account: Impostazioni → Account → “Elimina account”.", 'Blocca e segnala altri giocatori.']
+      ]],
+      ['Sicurezza', [
+        "Il sito usa HTTPS, le password sono conservate solo come hash bcrypt e il token di accesso vale 7 giorni. Tuttavia nessun sistema su internet è sicuro al 100% — non riutilizzare la tua password su altri siti."
+      ]],
+      ['Minori', [
+        "I minori di 13 anni possono usare il sito solo con il consenso di un genitore o di chi ne fa le veci."
+      ]],
+      ['Modifiche e contatti', [
+        "Se questa informativa cambia, la data in questa pagina viene aggiornata. Per domande e richieste di cancellazione dei dati: {{contact}}."
+      ]]
+    ]
+  },
+  terms: {
+    intro: 'Usando il sito accetti i termini qui sotto. Se non li accetti, ti preghiamo di non usare il sito.',
+    sections: [
+      ['Account', [
+        ["Fornisci informazioni corrette quando ti registri e non condividere mai la password — sei responsabile di ciò che accade sul tuo account.",
+         'Non è consentito creare più account per gonfiare il punteggio.',
+         'Non sono consentiti nomi utente offensivi, che imitano altre persone o pubblicitari.']
+      ]],
+      ['Fair play', [
+        ["Durante la partita non è consentito usare motori scacchistici, consigli di altre persone o qualsiasi aiuto esterno.",
+         'Non è consentito perdere apposta, accordarsi sui risultati o manipolare i punteggi.',
+         'Il sito controlla automaticamente le partite. I giocatori scoperti a imbrogliare vengono segnalati o bannati, e i loro avversari riavranno i punti persi.']
+      ]],
+      ['Comportamento', [
+        ['Non sono consentiti insulti, discriminazioni, minacce, spam, pubblicità, contenuti illegali e osceni.',
+         'Le parole vietate vengono nascoste automaticamente in chat; chi viola le regole può essere silenziato temporaneamente.',
+         'Puoi bloccare e segnalare altri giocatori — gli amministratori esaminano le segnalazioni.']
+      ]],
+      ['Sanzioni', [
+        "Violare le regole può comportare un avvertimento, una limitazione della chat, oppure un ban temporaneo o permanente. Le violazioni gravi possono comportare un ban senza preavviso."
+      ]],
+      ['Contenuti', [
+        "Le tue partite (mosse e risultati) sono pubbliche; altri possono vederle, analizzarle e scaricarle come PGN. Sei responsabile dei tuoi messaggi e delle tue note. Ci concedi il diritto di conservare e mostrare questi contenuti per fornire il servizio."
+      ]],
+      ['Il servizio', [
+        "ChessCaravan è gratuito e fornito “così com'è”. Non garantiamo un funzionamento ininterrotto, l'assenza di errori né che i dati non vadano mai persi. Possiamo modificare, sospendere o chiudere funzioni. Nei limiti consentiti dalla legge, non rispondiamo dei danni indiretti legati al sito."
+      ]],
+      ["Chiusura dell'account", [
+        "Puoi eliminare il tuo account in qualsiasi momento da Impostazioni → Account → “Elimina account”. Possiamo chiudere gli account che violano le regole."
+      ]],
+      ['Modifiche e contatti', [
+        "Se questi termini cambiano, la data in questa pagina viene aggiornata; continuare a usare il sito dopo una modifica significa accettare i nuovi termini. Domande: {{contact}}."
       ]]
     ]
   }

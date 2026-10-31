@@ -17,7 +17,7 @@ function loadTranslations() {
   ctx.window = ctx;
   ctx.i18next = { init() {}, use() { return ctx.i18next; }, t: (k) => k, on() {}, changeLanguage() {}, addResourceBundle() {} };
   vm.createContext(ctx);
-  for (const f of ['uzcyrl.js', 'lang-tr.js', 'lang-kk.js', 'lang-tg.js', 'lang-ky.js', 'lang-tk.js', 'lang-az.js', 'languages.js']) {
+  for (const f of ['uzcyrl.js', 'lang-tr.js', 'lang-kk.js', 'lang-tg.js', 'lang-ky.js', 'lang-tk.js', 'lang-az.js', 'lang-zh.js', 'lang-it.js', 'languages.js']) {
     vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8') + (f === 'languages.js' ? '\n;this.__tr = translations;' : ''), ctx, { filename: f });
   }
   return ctx.__tr;

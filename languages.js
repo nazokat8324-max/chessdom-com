@@ -10702,8 +10702,8 @@ if (window.UzCyrl) translations.uzc = window.UzCyrl.deep(translations.uz);
 // Türkçe — lang-tr.js (alohida fayl; yo'q kalitlar i18next fallbackLng bilan inglizchadan)
 if (window.TRANSLATIONS_TR) translations.tr = window.TRANSLATIONS_TR;
 if (window.TRANSLATIONS_KK) translations.kk = window.TRANSLATIONS_KK; // Қазақша — lang-kk.js
-// Тоҷикӣ, Кыргызча, Türkmençe, Azərbaycanca — lang-<kod>.js
-["tg", "ky", "tk", "az"].forEach(l => { const T = window["TRANSLATIONS_" + l.toUpperCase()]; if (T) translations[l] = T; });
+// Тоҷикӣ, Кыргызча, Türkmençe, Azərbaycanca, 中文, Italiano — lang-<kod>.js
+["tg", "ky", "tk", "az", "zh", "it"].forEach(l => { const T = window["TRANSLATIONS_" + l.toUpperCase()]; if (T) translations[l] = T; });
 
 i18next.init({
   lng: localStorage.getItem("justChessLang") || "en",
@@ -10722,7 +10722,9 @@ i18next.init({
     tg: { translation: translations.tg || {} },
     ky: { translation: translations.ky || {} },
     tk: { translation: translations.tk || {} },
-    az: { translation: translations.az || {} }
+    az: { translation: translations.az || {} },
+    zh: { translation: translations.zh || {} },
+    it: { translation: translations.it || {} }
   }
 }, function(err, t) {
   if (!err) updateUI();
@@ -10730,6 +10732,9 @@ i18next.init({
 
 function updateUI() {
   const t = (key) => i18next.t(key);
+  // <html lang> — brauzer shrift tanlashi uchun (xitoycha ieroglif shakli, defis bilan bo'g'in ko'chirish)
+  const ln = String(i18next.language || 'en');
+  document.documentElement.lang = ln === 'uzc' ? 'uz-Cyrl' : ln === 'zh' ? 'zh-CN' : ln;
 
   // HTML'dagi data-i18n (matn) va data-i18n-placeholder (placeholder) atributli elementlar
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });

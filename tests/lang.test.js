@@ -1,4 +1,4 @@
-// Qo'shimcha tillar (Türkçe, Қазақша, Тоҷикӣ, Кыргызча, Türkmençe, Azərbaycanca): har inglizcha kalitning tarjimasi bor,
+// Qo'shimcha tillar (Türkçe, Қазақша, Тоҷикӣ, Кыргызча, Türkmençe, Azərbaycanca, 中文, Italiano): har inglizcha kalitning tarjimasi bor,
 // {{o'zgaruvchi}}lar bir xil, server matnlari (push, bot), shahar/bayram nomlari, kutubxona, huquqiy sahifa va ovozli yurish ham shu tilda
 const test = require('node:test');
 const assert = require('node:assert/strict');
@@ -10,7 +10,8 @@ const ROOT = path.join(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 // [kod, library.js LANGS dagi o'rni, til nomi, kutubxona fayli]
 const LANGS = [['tr', 6, 'Türkçe', 'library-tr.js'], ['kk', 7, 'Қазақша', 'library-kk.js'], ['tg', 8, 'Тоҷикӣ', 'library-more.js'],
-  ['ky', 9, 'Кыргызча', 'library-more.js'], ['tk', 10, 'Türkmençe', 'library-more.js'], ['az', 11, 'Azərbaycanca', 'library-more.js']];
+  ['ky', 9, 'Кыргызча', 'library-more.js'], ['tk', 10, 'Türkmençe', 'library-more.js'], ['az', 11, 'Azərbaycanca', 'library-more.js'],
+  ['zh', 12, '中文', 'library-zh-it.js'], ['it', 13, 'Italiano', 'library-zh-it.js']];
 const LIB_FILES = [...new Set(LANGS.map((x) => x[3]))];
 
 function loadTranslations() {
@@ -30,7 +31,7 @@ test("Qo'shimcha tillar: har inglizcha kalit tarjima qilingan, o'zgaruvchilar bi
     assert.deepEqual(Object.keys(T[l]).filter((k) => !(k in T.en)), [], l + ": inglizchada yo'q kalitlar");
     assert.deepEqual(Object.keys(T.en).filter((k) => vars(T.en[k]) !== vars(T[l][k])), [], l + ": o'zgaruvchilari mos emas");
   }
-  const home = { tr: 'Ana sayfa', kk: 'Басты бет', tg: 'Саҳифаи асосӣ', ky: 'Башкы бет', tk: 'Baş sahypa', az: 'Ana səhifə' };
+  const home = { tr: 'Ana sayfa', kk: 'Басты бет', tg: 'Саҳифаи асосӣ', ky: 'Башкы бет', tk: 'Baş sahypa', az: 'Ana səhifə', zh: '首页', it: 'Home' };
   for (const l of Object.keys(home)) assert.equal(T[l].mHome, home[l], l);
 });
 
@@ -46,7 +47,7 @@ test("Qo'shimcha tillar: til ro'yxatlarida bor (sayt, sozlamalar, huquqiy sahifa
     assert.ok(lib > index.indexOf('<script src="library-articles.js">') && lib < index.indexOf('<script src="library.js">'), l + ': kutubxona fayli tartibda');
     assert.match(server, new RegExp("LIBRARY_LANGS = \\[[^\\]]*'" + l + "'"));
   }
-  assert.match(server, /tr: 'Misafir', kk: 'Қонақ', tg: 'Меҳмон', ky: 'Конок', tk: 'Myhman', az: 'Qonaq'/);
+  assert.match(server, /tr: 'Misafir', kk: 'Қонақ', tg: 'Меҳмон', ky: 'Конок', tk: 'Myhman', az: 'Qonaq', zh: '访客', it: 'Ospite'/);
   // library.js dagi tartib kutubxona fayllaridagi indeks bilan bir xil
   const libLangs = JSON.parse(read('library.js').match(/const LANGS = (\[[^\]]+\])/)[1].replace(/'/g, '"'));
   for (const [l, i] of LANGS) assert.equal(libLangs.indexOf(l), i, l);
@@ -61,6 +62,9 @@ test("Qo'shimcha tillar: push, Telegram bot, shahar va bayram nomlari", () => {
   assert.equal(push.pushMessage('message', { from: 'Ali', preview: '🎨' }, 'tr').body, 'Ali: 🎨 Çıkartma');
   assert.match(push.pushMessage('holiday_badge', { holiday: 'navruz', year: 2027 }, 'kk').body, /Наурыз 2027/);
   assert.match(push.pushMessage('holiday_badge', { holiday: 'navruz', year: 2027 }, 'az').body, /Novruz 2027/);
+  assert.equal(push.pushMessage('caravan_city', { city: 'samarkand' }, 'zh').body, '🐪 你的驼队抵达了撒马尔罕！');
+  assert.equal(push.pushMessage('caravan_city', { city: 'samarkand' }, 'it').body, '🐪 La tua carovana è arrivata a Samarcanda!');
+  assert.equal(push.pushMessage('message', { from: 'Ali', preview: '🎨' }, 'zh').body, 'Ali：🎨 贴纸');
   for (const [l] of LANGS) {
     assert.equal(push.langOf(l), l);
     assert.notEqual(push.pushMessage('generic', {}, l).body, push.pushMessage('generic', {}, 'en').body, l + ': push tarjima qilingan');
@@ -68,10 +72,10 @@ test("Qo'shimcha tillar: push, Telegram bot, shahar va bayram nomlari", () => {
     assert.notEqual(push.botText('help', l), push.botText('help', 'en'), l + ': bot tarjima qilingan');
   }
   for (const c of Caravan.CITIES) assert.equal(c.names.length, Caravan.CITIES[0].names.length, c.key);
-  assert.equal(Caravan.CITIES[0].names.length, 12);
-  const city = { tr: 'İstanbul', kk: 'Ыстамбұл', tg: 'Истанбул', ky: 'Стамбул', tk: 'Stambul', az: 'İstanbul' };
+  assert.equal(Caravan.CITIES[0].names.length, 14);
+  const city = { tr: 'İstanbul', kk: 'Ыстамбұл', tg: 'Истанбул', ky: 'Стамбул', tk: 'Stambul', az: 'İstanbul', zh: '伊斯坦布尔', it: 'Istanbul' };
   for (const l of Object.keys(city)) assert.equal(Caravan.cityName('istanbul', l), city[l], l);
-  const nav = { tr: 'Nevruz', kk: 'Наурыз', tg: 'Наврӯз', ky: 'Нооруз', tk: 'Nowruz', az: 'Novruz' };
+  const nav = { tr: 'Nevruz', kk: 'Наурыз', tg: 'Наврӯз', ky: 'Нооруз', tk: 'Nowruz', az: 'Novruz', zh: '纳吾肉孜节', it: 'Nowruz' };
   for (const l of Object.keys(nav)) assert.equal(Holidays.name('navruz', l), nav[l], l);
   // Noma'lum til — inglizcha
   assert.equal(Caravan.cityName('xian', 'xx'), "Xi'an");
@@ -107,6 +111,8 @@ test("Qo'shimcha tillar: kutubxona (maqolalar, partiyalar, kitoblar) va huquqiy 
   const fork = ctx.LibraryArticles.find((a) => a.id === 'fork').title;
   assert.equal(fork[7], 'Тактика: шанышқы');
   assert.equal(fork[11], 'Taktika: çəngəl');
+  assert.equal(fork[12], '战术：双重攻击（捉双）');
+  assert.equal(fork[13], 'Tattica: la forchetta');
 });
 
 test("Qo'shimcha tillar: ovozli yurish so'zlari", () => {
@@ -137,4 +143,16 @@ test("Qo'shimcha tillar: ovozli yurish so'zlari", () => {
   assert.equal(V.parseSpoken('vəzir h5').piece, 'q');
   assert.equal(V.parseSpoken('qalaba e4').castle, null);
   assert.equal(V.moveToWords({ piece: 'b', from: 'f1', to: 'c4', san: 'Bc4+' }, 'tg'), 'фил c 4, кишт');
+  // 中文 (bo'sh joysiz: har ieroglif alohida so'z), Italiano
+  assert.deepEqual(V.parseSpoken('马f3'), { castle: null, piece: 'n', squares: ['f3'], promo: null });
+  assert.deepEqual(V.parseSpoken('e四').squares, ['e4']);
+  assert.equal(V.parseSpoken('皇后h5').piece, 'q');
+  assert.equal(V.parseSpoken('短易位').castle, 'short');
+  assert.equal(V.parseSpoken('长王车易位').castle, 'long');
+  assert.equal(V.parseSpoken('cavallo f3').piece, 'n');
+  assert.deepEqual(V.parseSpoken('torre a sette'), { castle: null, piece: 'r', squares: ['a7'], promo: null });
+  assert.equal(V.parseSpoken('arrocco lungo').castle, 'long');
+  assert.equal(V.parseSpoken('re e2').piece, 'k');
+  assert.equal(V.moveToWords({ piece: 'n', from: 'g1', to: 'f3', san: 'Nf3+' }, 'it'), 'cavallo f 3, scacco');
+  assert.equal(V.moveToWords({ piece: 'q', from: 'd1', to: 'h5', san: 'Qh5#' }, 'zh'), '后 h 5, 将死');
 });

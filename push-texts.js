@@ -114,7 +114,35 @@ const MORE_T = {
 };
 Object.keys(MORE_T).forEach((k) => MORE.forEach((l, i) => { T[k][l] = MORE_T[k][i]; }));
 MORE.forEach((l, i) => { STICKER[l] = ['🎨 Стикер', '🎨 Стикер', '🎨 Stiker', '🎨 Stiker'][i]; });
-const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk', 'tg', 'ky', 'tk', 'az'];
+// 中文, Italiano — kalit: [zh, it]
+const ZI = ['zh', 'it'];
+const ZI_T = {
+  challenge: ['{{from}} 向你发起对局挑战（{{clock}}）', '{{from}} ti ha sfidato a una partita ({{clock}})'],
+  message: ['{{from}}：{{preview}}', '{{from}}: {{preview}}'],
+  messages: ['来自 {{from}} 的 {{count}} 条新消息', '{{count}} nuovi messaggi da {{from}}'],
+  friend_request: ['{{from}} 向你发送了好友请求', '{{from}} ti ha inviato una richiesta di amicizia'],
+  friend_accepted: ['{{from}} 现在是你的好友了', '{{from}} ora è tuo amico'],
+  rival_online: ['你的劲敌 {{name}} 上线了——来一场较量吗？⚔️', 'Il tuo rivale {{name}} è online — pronto alla sfida? ⚔️'],
+  follow_playing: ['{{name}} 开始了一盘对局——去观战吧', '{{name}} ha iniziato una partita — guardala'],
+  league_ready: ['联赛对局：{{opponent}} 正在等你', 'Partita di lega: {{opponent}} ti aspetta'],
+  prediction_won: ['你的预测正确！+{{points}} 🔮', 'Il tuo pronostico era giusto! +{{points}} 🔮'],
+  achievement: ['新成就！🏅', 'Nuovo traguardo! 🏅'],
+  quests_done: ['🎯 每周任务已完成！徽章数：{{total}}', '🎯 Missioni settimanali completate! Distintivi: {{total}}'],
+  game_of_day: ['🌟 你与 {{opponent}} 的对局被评为今日之局！', '🌟 La tua partita contro {{opponent}} è la Partita del giorno!'],
+  holiday_badge: ['{{icon}} 节日徽章：{{name}} {{year}}！', '{{icon}} Distintivo delle feste: {{name}} {{year}}!'],
+  duel_end: ['⚔️ 你与 {{opponent}} 的对抗赛结束了：{{me}} – {{opp}}', '⚔️ Il tuo match con {{opponent}} è finito: {{me}} – {{opp}}'],
+  caravan_city: ['🐪 你的驼队抵达了{{city}}！', '🐪 La tua carovana è arrivata a {{city}}!'],
+  rank_up: ['新段位！你的等级分是 {{rating}} ⭐', 'Nuovo livello! Il tuo punteggio è {{rating}} ⭐'],
+  invite_joined: ['{{from}} 通过你的邀请加入了 ChessCaravan 🎉', '{{from}} si è unito a ChessCaravan con il tuo invito 🎉'],
+  invite_waiting: ['{{from}} 想和你下棋——上线向对方发起挑战吧 ⚔️', '{{from}} vuole giocare con te — entra e sfidalo ⚔️'],
+  server_error: ['🐞 网站出现新错误：{{message}}', '🐞 Nuovo errore del sito: {{message}}'],
+  test: ['推送通知正常工作！♞', 'Le notifiche push funzionano! ♞'],
+  generic: ['你有一条新通知', 'Hai una nuova notifica']
+};
+Object.keys(ZI_T).forEach((k) => ZI.forEach((l, i) => { T[k][l] = ZI_T[k][i]; }));
+STICKER.zh = '🎨 贴纸';
+STICKER.it = '🎨 Sticker';
+const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk', 'tg', 'ky', 'tk', 'az', 'zh', 'it'];
 
 function fill(s, vars) { return String(s).replace(/\{\{(\w+)\}\}/g, (m, k) => (vars[k] == null ? '' : String(vars[k]))); }
 
@@ -264,6 +292,33 @@ const MORE_BOT = {
   cmdHelp: ['Ёрӣ', 'Жардам', 'Kömek', 'Kömək']
 };
 Object.keys(MORE_BOT).forEach((k) => MORE.forEach((l, i) => { BOT[k][l] = MORE_BOT[k][i]; }));
+const ZI_BOT = {
+  open: ['♞ 打开 ChessCaravan', '♞ Apri ChessCaravan'],
+  openShort: ['打开 ↗', 'Apri ↗'],
+  share: ['📤 发送给好友', '📤 Invia agli amici'],
+  welcome: [
+    '你好！这是 ChessCaravan 机器人 ♞\n\n它会把对局挑战、消息和其他重要事件发送到这里。\n\n连接方法：在网站上打开 设置 → 声音与通知 → Telegram → “连接”。',
+    'Ciao! Questo è il bot di ChessCaravan ♞\n\nTi manda qui sfide, messaggi e altri eventi importanti.\n\nPer collegarlo: sul sito apri Impostazioni → Suoni e notifiche → Telegram → «Collega».'],
+  linked: [
+    '✅ 完成！Telegram 已连接到 {{name}}。\n\n网站关闭时，挑战和消息会发送到这里。\n/invite — 给好友的邀请链接\n/stop — 断开连接',
+    '✅ Fatto! Telegram ora è collegato a {{name}}.\n\nQuando il sito è chiuso, sfide e messaggi arriveranno qui.\n/invite — il tuo link di invito per gli amici\n/stop — scollega'],
+  already: ['此聊天已连接到 {{name}} ✅\n/invite — 邀请链接 · /stop — 断开连接', 'Questa chat è collegata a {{name}} ✅\n/invite — link di invito · /stop — scollega'],
+  badCode: ['该链接已过期或无效。请在网站上再次点击“连接”。', 'Questo link è scaduto o non è valido. Premi di nuovo «Collega» sul sito.'],
+  stopped: ['Telegram 已与你的 ChessCaravan 账号断开。随时可以在设置中重新连接。', 'Telegram è stato scollegato dal tuo account ChessCaravan. Puoi ricollegarlo quando vuoi dalle Impostazioni.'],
+  notLinked: ['请先连接你的账号：在网站上打开 设置 → 声音与通知 → Telegram。', 'Prima collega il tuo account: sul sito, Impostazioni → Suoni e notifiche → Telegram.'],
+  invite: [
+    '你的邀请链接 👇\n发给你的好友：他们一注册就能和你对弈。\n\n{{url}}',
+    'Il tuo link di invito 👇\nMandalo agli amici: appena si registrano possono giocare con te.\n\n{{url}}'],
+  shareText: ['{{name}} 邀请你在 ChessCaravan 下一盘国际象棋 ♞', '{{name}} ti invita a una partita a scacchi su ChessCaravan ♞'],
+  help: [
+    '命令：\n/invite — 给好友的邀请链接\n/stop — 将 Telegram 与账号断开\n/help — 帮助',
+    'Comandi:\n/invite — link di invito per gli amici\n/stop — scollega Telegram dal tuo account\n/help — aiuto'],
+  test: ['Telegram 通知正常工作！♞', 'Le notifiche di Telegram funzionano! ♞'],
+  cmdInvite: ['邀请好友', 'Invita amici'],
+  cmdStop: ['断开 Telegram', 'Scollega Telegram'],
+  cmdHelp: ['帮助', 'Aiuto']
+};
+Object.keys(ZI_BOT).forEach((k) => ZI.forEach((l, i) => { BOT[k][l] = ZI_BOT[k][i]; }));
 // Telegram language_code (masalan "ru", "uz", "en-US") → sayt tili
 function langOf(code) { const c = String(code || '').slice(0, 2).toLowerCase(); return LANGS.includes(c) ? c : 'en'; }
 function botText(key, lang, vars) {

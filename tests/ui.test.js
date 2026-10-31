@@ -465,6 +465,64 @@ test("5-sinov o'tishi: 45 s chaqiruv '¾+0', PGN TimeControl soniyalarda (ekspor
   assert.deepEqual(p.errors, []);
 });
 
+test("6-sinov o'tishi: Choyxonada bosish qayta chizishda yo'qolmaydi, bo'sh stulning ikkalasi ishlaydi; 2 ga 2 da bosib yurish; hikoya Escape bilan yopiladi", opts, async () => {
+  const u = await srv.register('Six'), a = await srv.register('Sxa'), b2 = await srv.register('Sxb'), c = await srv.register('Sxc');
+  const PHONE = { width: 390, height: 844, isMobile: true, hasTouch: true };
+  const p = await page(u, PHONE);
+  await p.goto(srv.base + '/choyxona', { waitUntil: 'load' });
+  await p.waitForSelector('[data-sit-zone="rapid"]', { timeout: 15000 });
+  await sleep(800);
+  // Barmoq stulda turganda boshqa o'yinchi stolga o'tiradi (lobbi qayta chiziladi), so'ng qo'yib yuboriladi
+  await p.evaluate(() => document.querySelectorAll('[data-sit-zone="rapid"]')[1].scrollIntoView({ block: 'center' }));
+  await sleep(300);
+  const pt = await p.evaluate(() => { const r = document.querySelectorAll('[data-sit-zone="rapid"]')[1].getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; });
+  const cdp = await p.target().createCDPSession();
+  const sa = await srv.connect(a);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [pt] });
+  sa.emit('tea-sit', { initial: 180, increment: 0, rated: false, variant: 'standard' });
+  await sleep(800);
+  await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+  const opened = await p.waitForFunction(() => { const e = document.getElementById('teaPicker'); return e && !e.hidden; }, { timeout: 3000 }).then(() => true).catch(() => false);
+  assert.ok(opened, "qayta chizish paytidagi bosish yo'qolmadi");
+  assert.ok(await p.evaluate(() => !!document.querySelector('[data-join]')), 'kutayotgan stol ham chizildi (kechiktirilgan render)');
+  await p.evaluate(() => document.querySelector('#teaPicker [data-close]').click());
+  // Bo'sh stolning yuqori stuli ("Bo'sh") ham vaqt tanlashni ochadi
+  await p.evaluate(() => document.querySelector('[data-sit-zone="blitz"]').scrollIntoView({ block: 'center' }));
+  await sleep(200);
+  assert.equal(await p.evaluate(() => document.querySelectorAll('[data-sit-zone="blitz"]').length), 2);
+  await p.tap('[data-sit-zone="blitz"]');
+  assert.ok(await p.waitForFunction(() => { const e = document.getElementById('teaPicker'); return e && !e.hidden; }, { timeout: 3000 }).then(() => true).catch(() => false), "yuqori stul ham ishlaydi");
+  sa.close();
+  // 2 ga 2: telefonda bosib yurish
+  await p.goto(srv.base + '/jamoa', { waitUntil: 'load' });
+  await p.waitForSelector('[data-tc]', { timeout: 15000 });
+  await p.tap('[data-tc]');
+  await p.waitForFunction(() => /[?&]t=/.test(location.search), { timeout: 8000 });
+  const code = await p.evaluate(() => new URLSearchParams(location.search).get('t'));
+  await sleep(600);
+  if (await p.$('[data-sit="w1"]')) { await p.tap('[data-sit="w1"]'); await sleep(500); }
+  const socks = [];
+  for (const [usr, seat] of [[a, 'b1'], [b2, 'w2'], [c, 'b2']]) { const s = await srv.connect(usr); socks.push(s); await new Promise((r) => s.emit('team-sit', { code, seat }, r)); }
+  await p.waitForFunction(() => /e2/.test(document.querySelector('#teamBoard [data-square="e2"] img') ? 'e2' : ''), { timeout: 10000 });
+  await sleep(800);
+  await p.evaluate(() => document.getElementById('teamBoard').scrollIntoView({ block: 'center' }));
+  await sleep(300);
+  await p.tap('#teamBoard [data-square="e2"]');
+  await sleep(300);
+  assert.deepEqual(await p.evaluate(() => [document.querySelector('#teamBoard [data-square="e2"]').classList.contains('sq-selected'), [...document.querySelectorAll('#teamBoard .sq-hint')].map((e) => e.dataset.square).sort()]), [true, ['e3', 'e4']]);
+  await p.tap('#teamBoard [data-square="e4"]');
+  await p.waitForFunction(() => /e4/.test((document.getElementById('tmMoves') || {}).textContent || ''), { timeout: 5000 });
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#teamBoard .sq-selected, #teamBoard .sq-hint').length), 0, 'tanlov tozalandi');
+  socks.forEach((s) => s.close());
+  // O'yin hikoyasi Escape bilan yopiladi
+  await p.evaluate(() => window.openGameStory({ moves: [{ san: 'e4' }, { san: 'e5' }], analysis: { evals: [20, 30, 25], moves: [], accuracy: { w: 90, b: 90 } }, white: 'A', black: 'B', result: '1/2-1/2', reason: 'agreement' }));
+  await p.waitForSelector('#storyModal', { visible: true });
+  await p.keyboard.press('Escape');
+  await sleep(200);
+  assert.equal(await p.$('#storyModal'), null, 'Escape bilan yopildi');
+  assert.deepEqual(p.errors, []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

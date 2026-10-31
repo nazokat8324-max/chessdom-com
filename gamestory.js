@@ -138,7 +138,10 @@
         <button type="button" class="ch-primary" data-st-share>📤 ${esc(tx('stShare', 'Ulashish'))}</button>
       </div>
     </div>`;
-    const close = () => el.remove();
+    // Escape ham yopadi (qayta ko'rish, ulashish, donalar oynalari kabi)
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    const close = () => { el.remove(); document.removeEventListener('keydown', onKey); };
+    document.addEventListener('keydown', onKey);
     el.onclick = (e) => {
       if (e.target === el || e.target.closest('[data-st-close]')) return close();
       const ch = e.target.closest('[data-st-ply]');

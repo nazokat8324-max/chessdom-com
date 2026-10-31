@@ -91,33 +91,64 @@
       inp.value = '';
       await emit('team-chat', { code: st.code, message });
     };
+    const canMove = (piece) => {
+      const s = st.state;
+      if (!s || s.status !== 'active' || !st.mySeat) return false;
+      const c = st.mySeat[0];
+      return piece[0] === c && s.turn === c;
+    };
+    // true — yurish (yoki maslahat) yuborildi; false — noqonuniy
+    const tryMove = (from, to) => {
+      const s = st.state;
+      let mv = null;
+      try { mv = new Chess(s.fen).move({ from, to, promotion: 'q' }); } catch (e) { mv = null; }
+      if (!mv) return false;
+      const moverOnline = seatUser(s.mover).online;
+      if (st.mySeat === s.mover || !moverOnline) {
+        emit('team-move', { code: st.code, from, to, promotion: 'q' }).then((r) => { if (!r || !r.ok) st.board.position(s.fen, false); });
+        return 'move';
+      }
+      // Jamoadosh: yurish emas — maslahat
+      emit('team-suggest', { code: st.code, from, to });
+      return 'suggest';
+    };
     st.board = Chessboard('teamBoard', {
       position: 'start', draggable: true,
       pieceTheme: (p) => (window.pieceUrl ? window.pieceUrl(p) : 'img/chesspieces/karvon/' + p + '.svg'),
-      onDragStart: (source, piece) => {
-        const s = st.state;
-        if (!s || s.status !== 'active' || !st.mySeat) return false;
-        const c = st.mySeat[0];
-        return piece[0] === c && s.turn === c;
-      },
+      onDragStart: (source, piece) => canMove(piece),
       onDrop: (from, to) => {
-        if (from === to) return 'snapback';
-        const s = st.state;
-        let mv = null;
-        try { mv = new Chess(s.fen).move({ from, to, promotion: 'q' }); } catch (e) { mv = null; }
-        if (!mv) return 'snapback';
-        const moverOnline = seatUser(s.mover).online;
-        if (st.mySeat === s.mover || !moverOnline) {
-          emit('team-move', { code: st.code, from, to, promotion: 'q' }).then((r) => { if (!r || !r.ok) st.board.position(s.fen, false); });
-          return undefined;
-        }
-        // Jamoadosh: yurish emas — maslahat
-        emit('team-suggest', { code: st.code, from, to });
-        return 'snapback';
+        // O'z donasini bosish (sudramasdan) — tanlash/bekor qilish. click bu yerda kelmaydi: barmoq ostida donaning nusxasi turadi
+        if (from === to) { select(st.sel === from ? null : from); return 'snapback'; }
+        select(null);
+        const r = tryMove(from, to);
+        return r === 'move' ? undefined : 'snapback';
+      }
+    });
+    // Bosib yurish (asosiy o'yindagi kabi): donani bosing, so'ng katakni. Avval faqat sudrab yurilardi
+    const select = (sq) => {
+      st.sel = sq;
+      let ms = [];
+      if (sq) { try { ms = new Chess(st.state.fen).moves({ square: sq, verbose: true }); } catch (e) { ms = []; } }
+      mark('sq-selected', sq ? [sq] : []);
+      mark('sq-hint', ms.filter((m) => !m.captured).map((m) => m.to));
+      mark('sq-hint-capture', ms.filter((m) => m.captured).map((m) => m.to));
+    };
+    document.getElementById('teamBoard').addEventListener('click', (e) => {
+      const el = e.target.closest('[data-square]');
+      if (!el || !st.state) return;
+      const sq = el.dataset.square;
+      const piece = (st.board.position() || {})[sq];
+      if (piece && canMove(piece)) return; // o'z donasi — onDrop da
+      if (st.sel) {
+        const from = st.sel;
+        select(null);
+        if (tryMove(from, sq) === 'move') st.board.move(from + '-' + sq);
       }
     });
     st.boardCode = st.code;
     st.movesSeen = 0;
+    st.sel = null;
+    st.select = select;
   }
 
   function mark(cls, squares) {
@@ -145,7 +176,7 @@
     if (s.fen) st.board.position(s.fen, false); else st.board.position('start', false);
     mark('tm-last', s.lastMove);
     if (s.moves.length > st.movesSeen && st.movesSeen > 0 && typeof playSound === 'function') playSound('move');
-    if (s.moves.length !== st.movesSeen) { st.hint = null; mark('tm-hint', null); }
+    if (s.moves.length !== st.movesSeen) { st.hint = null; mark('tm-hint', null); if (st.select) st.select(null); }
     st.movesSeen = s.moves.length;
     document.getElementById('tmTc').textContent = '⏱️ ' + tcLabel(s.clock) + ' · ' + tx('tmCasual', 'reytingsiz');
     const top = orient === 'white' ? 'b' : 'w';

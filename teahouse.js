@@ -91,7 +91,7 @@
   function emptyTable(zone) {
     const attr = `data-sit-zone="${zone.key}"`;
     return `<div class="tea-table empty">
-      ${chair(null, { label: tx('teaFree', "Bo'sh"), icon: '🪑' })}
+      ${chair(null, { label: tx('teaFree', "Bo'sh"), icon: '🪑', attr })}
       <div class="tea-desk"><div class="tea-cloth">${POT}<span class="tea-cups">🍵 🍵</span></div></div>
       ${chair(null, { label: tx('teaSitDown', 'Stolga o\'tirish'), icon: '+', attr })}
     </div>`;
@@ -102,6 +102,16 @@
   function render() {
     const root = document.getElementById('teaRoot');
     if (!root) return;
+    // Barmoq (sichqoncha) bosilib turganda qayta chizilmaydi: tugma almashsa brauzer bosishni bekor qilardi
+    // (boshqa stollarda yurish yoki kimdir kirib-chiqqanda butun sahifa qayta chiziladi). Qo'yib yuborilgach — darhol
+    if (!root.__holdBound) {
+      root.__holdBound = true;
+      root.addEventListener('pointerdown', () => { st.holding = true; });
+      const up = () => setTimeout(() => { st.holding = false; if (st.pending) { st.pending = false; render(); } }, 0);
+      root.addEventListener('pointerup', up);
+      root.addEventListener('pointercancel', up);
+    }
+    if (st.holding) { st.pending = true; return; }
     const mine = st.seats.find(s => s.username === me()) || null;
     st.mine = mine;
     const waiting = st.seats.length, playing = st.games.length;

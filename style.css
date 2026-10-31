@@ -14353,6 +14353,12 @@ html.landscape-phone .nf-wrap { flex-direction: column-reverse; }
 #teamBoard .tm-last { box-shadow: inset 0 0 0 100px rgba(246, 196, 69, 0.35); }
 #teamBoard .tm-hint { box-shadow: inset 0 0 0 4px rgba(56, 189, 248, 0.9); }
 #teamBoard { touch-action: none; }
+/* 2 ga 2: bosib yurish — tanlangan dona va yurish nuqtalari (asosiy taxtadagi kabi) */
+#teamBoard [data-square] { position: relative; }
+#teamBoard .sq-selected { box-shadow: inset 0 0 0 200px rgba(255, 220, 60, 0.55); }
+#teamBoard .sq-hint, #teamBoard .sq-hint-capture { cursor: pointer; }
+#teamBoard .sq-hint::after { content: ""; position: absolute; left: 50%; top: 50%; width: 30%; height: 30%; transform: translate(-50%, -50%); border-radius: 50%; background: rgba(0, 0, 0, 0.2); pointer-events: none; z-index: 2; }
+#teamBoard .sq-hint-capture::after { content: ""; position: absolute; inset: 4%; box-sizing: border-box; border-radius: 50%; border: 6px solid rgba(0, 0, 0, 0.2); pointer-events: none; z-index: 2; }
 @media (max-width: 900px) {
   .tm-layout { grid-template-columns: minmax(0, 1fr); }
   .tm-head-actions { margin-left: 0; }

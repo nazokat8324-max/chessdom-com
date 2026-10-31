@@ -97,7 +97,12 @@
     st.el = el;
     buildTable();
     st.lens = X.map(lenAtX);
-    el.querySelectorAll('.cvr-stop').forEach((b) => b.addEventListener('click', () => { if (!st.drag || !st.drag.moved) go(Number(b.dataset.i)); }));
+    // Barmoq/sichqoncha bosishi pointerup da (end) — click faqat klaviatura uchun: surishdan so'ng darhol bosilganda
+    // brauzer click ni ba'zan umuman yubormas edi va bosish yo'qolardi
+    el.querySelectorAll('.cvr-stop').forEach((b) => b.addEventListener('click', (e) => {
+      if (e.detail > 0 && Date.now() - (st.tapAt || 0) < 700) return; // pointerup da bajarilgan bosishning click i
+      if (!st.drag || !st.drag.moved) go(Number(b.dataset.i));
+    }));
     bindDrag(el);
   }
 
@@ -142,7 +147,8 @@
   function bindDrag(el) {
     el.addEventListener('pointerdown', (e) => {
       if (e.pointerType === 'mouse' && e.button !== 0) return;
-      st.drag = { x: e.clientX, moved: false, id: e.pointerId };
+      const stop = e.target.closest && e.target.closest('.cvr-stop');
+      st.drag = { x: e.clientX, moved: false, id: e.pointerId, stop: stop ? Number(stop.dataset.i) : -1 };
     });
     el.addEventListener('pointermove', (e) => {
       const d = st.drag;
@@ -165,7 +171,12 @@
         travel(st.lens[best]);
         if (best !== st.idx || best === 4) go(best);
         setTimeout(() => { st.drag = null; }, 0); // surishdan keyingi click bekatni ikkinchi marta ochmasin
-      } else st.drag = null;
+      } else {
+        st.drag = null;
+        // Oddiy bosish: barmoq o'sha bekatda qo'yib yuborilgan bo'lsa
+        const stop = e.type === 'pointerup' && d.stop >= 0 && e.target.closest && e.target.closest('.cvr-stop');
+        if (stop && Number(stop.dataset.i) === d.stop) { st.tapAt = Date.now(); go(d.stop); }
+      }
     };
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', (e) => { end(e); sync(true); });

@@ -5818,6 +5818,7 @@ sidebar {
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   background: var(--cd-bg-2);
 }
+.msg-guest-note { align-items: center; justify-content: space-between; flex-wrap: wrap; color: var(--cd-text); font-size: 14px; font-weight: 600; }
 .msg-composer .form-input {
   flex: 1;
   min-width: 0;

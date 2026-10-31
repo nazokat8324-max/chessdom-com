@@ -96,6 +96,15 @@
     wrap('setGamePanelMode', (mode) => renderAll(mode));
     wrap('updateGameChatBox', () => { const c = document.getElementById('gameChatBox'); if (c && isGuest()) c.hidden = true; });
     wrap('updateUI', () => renderAll());
+    // "Ro'yxatdan o'ting" toasti o'rniga tugmali taklif (guestPrompt) — avval ikkalasi bir vaqtda chiqardi
+    const origToast = window.showToast;
+    if (typeof origToast === 'function' && !origToast.__guestWrapped) {
+      window.showToast = function (msg) {
+        if (isGuest() && msg === tx('srvGuestOnly', "Bu imkoniyat uchun ro'yxatdan o'ting!")) { showGuestPrompt(); return; }
+        return origToast.apply(this, arguments);
+      };
+      window.showToast.__guestWrapped = true;
+    }
     // Mehmon ro'yxatdan o'tish oynasini yopib, saytga qaytishi mumkin; mehmon tugmasi esa unga kerak emas
     wrap('showAuthGate', () => {
       const close = document.getElementById('authGateClose');

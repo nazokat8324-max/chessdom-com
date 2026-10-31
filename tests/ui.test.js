@@ -335,6 +335,62 @@ test("3-sinov o'tishi: telefonda toastlar ko'pi bilan 2 ta (takrorsiz), Xabarlar
   assert.deepEqual(p.errors, []);
 });
 
+test("4-sinov o'tishi: mehmonga Xabarlarda yozish maydoni o'rniga taklif, 'ro'yxatdan o'ting' bir marta (toast emas, taklif)", opts, async () => {
+  const other = await srv.register('Gmo');
+  const gr = await srv.api(null, '/api/auth/guest', 'POST', { lang: 'uz' });
+  const p = await page({ user: gr.user, token: gr.token }, { width: 844, height: 390, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await sleep(800);
+  await p.evaluate((n) => window.openMessagesWith(n), other.name);
+  await p.waitForSelector('#msgChat .msg-chat-head', { timeout: 10000 });
+  await sleep(300);
+  const st = await p.evaluate(() => ({ input: !!document.getElementById('msgInput'), note: !!document.querySelector('.msg-guest-note .guest-signup-btn'), clear: !!document.querySelector('[data-clear-chat]') }));
+  assert.deepEqual(st, { input: false, note: true, clear: false });
+  // Klubga qo'shilish (server 403 guest) — faqat taklif, bir xil matnli toast yo'q
+  await p.evaluate(() => fetch('/api/country-clubs/join', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + window.authToken }, body: JSON.stringify({ country: 'Uzbekistan', code: 'uz' }) }).then((r) => r.json()).then((d) => window.showToast(window.tServer(d.message), 'warning')));
+  await p.waitForFunction(() => { const e = document.getElementById('guestPrompt'); return e && !e.hidden; }, { timeout: 5000 });
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#toastContainer .toast').length), 0, 'takroriy toast yo\'q');
+  await p.evaluate(() => document.querySelector('.msg-guest-note .guest-signup-btn').click());
+  await sleep(300);
+  assert.equal(await p.evaluate(() => document.getElementById('authGateClose').hidden), false, "ro'yxatdan o'tish sahifasi ochildi");
+  assert.deepEqual(p.errors, []);
+});
+
+test("4-sinov o'tishi: Karvon yo'li — surishdan keyin darhol bosilgan bekat yo'qolmaydi; klaviatura bilan ham ishlaydi", opts, async () => {
+  const u = await srv.register('Swt');
+  const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await p.waitForSelector('#cvRoute .cvr-stop.on');
+  await sleep(800);
+  const cdp = await p.target().createCDPSession();
+  const missed = [];
+  for (const delay of [0, 30, 50, 50, 70, 100]) {
+    const box = await p.evaluate(() => { const r = document.getElementById('cvRoute').getBoundingClientRect(); return { left: r.left, width: r.width, top: r.top }; });
+    const y = box.top + 30;
+    const touch = (type, x) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: type === 'touchEnd' ? [] : [{ x, y }] });
+    const from = (await p.evaluate(() => location.pathname)) === '/xabarlar' ? 0.7 : 0.3;
+    await touch('touchStart', box.left + box.width * from);
+    for (let k = 1; k <= 8; k++) { await touch('touchMove', box.left + box.width * (from + (from < 0.5 ? 0.4 : -0.4) * k / 8)); await sleep(20); }
+    await touch('touchEnd');
+    await sleep(delay);
+    await p.tap('#cvRoute .cvr-stop[data-i="4"]');
+    const open = await p.waitForFunction(() => document.querySelector('#cvRouteMap .cvr-map-list button') && document.body.classList.contains('mobile-menu-open'), { timeout: 2000 }).then(() => true).catch(() => false);
+    if (!open) missed.push(delay);
+    else { await p.evaluate(() => window.toggleMobileMenu(false)); await sleep(300); }
+  }
+  assert.deepEqual(missed, [], "surishdan keyin 'Ko'proq' bosildi");
+  // Klaviatura: bekatda Enter — bir marta ochiladi (pointer bosishi bilan ikki marta emas)
+  await p.evaluate(() => { window.__sv = 0; const o = window.switchView; window.switchView = function () { window.__sv++; return o.apply(this, arguments); }; });
+  await p.focus('#cvRoute .cvr-stop[data-i="2"]');
+  await p.keyboard.press('Enter');
+  await p.waitForFunction(() => location.pathname === '/choyxona', { timeout: 5000 });
+  await p.tap('#cvRoute .cvr-stop[data-i="0"]');
+  await p.waitForFunction(() => location.pathname === '/', { timeout: 5000 });
+  await sleep(300);
+  assert.equal(await p.evaluate(() => window.__sv), 2, 'har bosish bitta switchView');
+  assert.deepEqual(p.errors, []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);
@@ -677,7 +733,7 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   const x0 = await camelX();
   // O'yin bekati — sahifa ochiladi, tuya o'ngga yuradi
   await p.tap('#cvRoute .cvr-stop[data-i="1"]');
-  await sleep(900);
+  await p.waitForFunction((x) => location.pathname === '/oyin' && !document.querySelector('#cvRoute .cvr-camel.walking') && document.querySelector('#cvRoute .cvr-camel').getBoundingClientRect().left > x + 40, { timeout: 8000 }, x0).catch(() => {});
   assert.equal(await p.evaluate(() => location.pathname), '/oyin');
   assert.equal(await p.evaluate(() => document.querySelector('#cvRoute .cvr-stop.on').dataset.i), '1');
   assert.ok((await camelX()) > x0 + 40, 'tuya yurdi');
@@ -689,7 +745,7 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   await touch('touchStart', box.left + box.width * 0.3);
   for (let k = 1; k <= 8; k++) { await touch('touchMove', box.left + box.width * (0.3 + 0.4 * k / 8)); await sleep(20); }
   await touch('touchEnd');
-  await sleep(900);
+  await p.waitForFunction(() => location.pathname === '/xabarlar', { timeout: 8000 }).catch(() => {});
   assert.equal(await p.evaluate(() => location.pathname), '/xabarlar', 'surib Xabarlar ochildi');
   // 5-bekat: Barcha bo'limlar xaritasi → Reyting; 5-bekat endi shu bo'lim nomi bilan
   await p.tap('#cvRoute .cvr-stop[data-i="4"]');
@@ -697,7 +753,8 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   const stops = await p.evaluate(() => [...document.querySelectorAll('#cvRouteMap [data-cvr-go]')].map((b) => b.dataset.cvrGo));
   assert.ok(stops.includes('navLeaderboard') && stops.includes('navLibrary') && !stops.includes('navAdmin'), stops.join(','));
   await p.tap('#cvRouteMap [data-cvr-go="navLeaderboard"]');
-  await sleep(700);
+  await p.waitForFunction(() => location.pathname === '/reyting' && !document.body.classList.contains('mobile-menu-open'), { timeout: 8000 }).catch(() => {});
+  await sleep(200);
   assert.equal(await p.evaluate(() => location.pathname), '/reyting');
   const st1 = await p.evaluate(() => ({ open: document.body.classList.contains('mobile-menu-open'), on: document.querySelector('#cvRoute .cvr-stop.on').dataset.i, label: document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-label').textContent, ref: document.querySelector('#navLeaderboard span:not(.icon)').textContent }));
   assert.deepEqual([st1.open, st1.on, st1.label], [false, '4', st1.ref]);
@@ -707,11 +764,11 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   await sleep(600);
   assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('sidebar'), '::after').backgroundImage), /atlas.svg/);
   for (let yy = 100; yy <= 700; yy += 100) { await p.evaluate((v) => { document.querySelector('.main-wrapper').scrollTop = v; }, yy); await sleep(60); }
-  await sleep(450);
+  await p.waitForFunction(() => window.cvRoute.state().compact && document.querySelector('sidebar').getBoundingClientRect().bottom <= 1 && getComputedStyle(document.querySelector('.nf-wrap')).opacity === '0', { timeout: 8000 }).catch(() => {});
   const down = await p.evaluate(() => ({ c: window.cvRoute.state().compact, head: document.querySelector('sidebar').getBoundingClientRect().bottom, bell: getComputedStyle(document.querySelector('.nf-wrap')).opacity }));
   assert.deepEqual([down.c, down.head <= 1, down.bell], [true, true, '0'], JSON.stringify(down));
   await p.evaluate(() => { document.querySelector('.main-wrapper').scrollTop = 400; });
-  await sleep(450);
+  await p.waitForFunction(() => window.cvRoute.state().compact === false, { timeout: 8000 }).catch(() => {});
   assert.equal(await p.evaluate(() => window.cvRoute.state().compact), false);
   // Tekshiruv (2026-10-30): '99+' nishoni ham ko'rinadi; yozish paytida yo'l yashirinadi; pastki panel yo'l ustida;
   // tebranish faqat foydalanuvchi bekat tanlaganda (sahifa o'zi almashganda emas)
@@ -724,12 +781,13 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   await sleep(1000);
   assert.equal(await p.evaluate(() => window.__vib), 0, "sahifa o'zi almashganda tebranmaydi");
   await p.tap('#cvRoute .cvr-stop[data-i="0"]');
-  await sleep(1000);
+  await p.waitForFunction(() => window.__vib >= 1, { timeout: 8000 }).catch(() => {});
+  await sleep(300);
   assert.equal(await p.evaluate(() => window.__vib), 1, 'bekat bosilganda bir marta');
   await p.goto(srv.base + '/xabarlar', { waitUntil: 'load' });
   await p.waitForSelector('#messagesRoot input[type="text"], #messagesRoot input:not([type])', { timeout: 15000 });
   await p.focus('#messagesRoot input[type="text"], #messagesRoot input:not([type])');
-  await sleep(400);
+  await p.waitForFunction(() => document.getElementById('cvRoute').getBoundingClientRect().top >= innerHeight - 2, { timeout: 8000 }).catch(() => {});
   assert.equal(await p.evaluate(() => document.getElementById('cvRoute').getBoundingClientRect().top >= innerHeight - 2), true, "yozishda yo'l yashirin");
   await p.evaluate(() => document.activeElement.blur());
   await sleep(500);
@@ -739,7 +797,7 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   await p.click('.set-nav [data-section="board"]');
   await p.waitForSelector('[data-piece-set="clear"]');
   await p.click('[data-piece-set="clear"]');
-  await sleep(400);
+  await p.waitForFunction(() => { const b = document.querySelector('.set-bar.show'); return b && b.getBoundingClientRect().bottom <= document.getElementById('cvRoute').getBoundingClientRect().top - 20; }, { timeout: 8000 }).catch(() => {});
   const bar = await p.evaluate(() => [document.querySelector('.set-bar.show').getBoundingClientRect().bottom, document.getElementById('cvRoute').getBoundingClientRect().top]);
   assert.ok(bar[0] <= bar[1] - 20, "saqlash paneli yo'l ustida: " + JSON.stringify(bar));
   await p.evaluate(() => { const c = document.querySelector('[data-cancel], .set-bar button'); if (c) c.click(); });

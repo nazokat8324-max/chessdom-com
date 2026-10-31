@@ -106,6 +106,8 @@
   function chatHtml() {
     const p = state.active;
     if (!p) return `<div class="msg-placeholder"><span>💬</span><p>${esc(tx('msgPickChat', "Suhbatni tanlang yoki yangisini boshlang"))}</p></div>`;
+    // Mehmon yoza olmaydi (server 403) — yozish maydoni o'rniga ro'yxatdan o'tish taklifi
+    const guest = typeof window.isGuestUser === 'function' && window.isGuestUser();
     let lastDay = '';
     const bubbles = state.messages.map(m => {
       const mine = window.currentUser && String(m.sender_id) === String(window.currentUser.id);
@@ -128,15 +130,16 @@
           ${p.country ? `<small>${flag(p.country)}</small>` : ''}
         </div>
         <button class="msg-challenge" data-challenge="${esc(p.username)}" title="${esc(tx('chProfileBtn', "O'yinga chaqirish"))}">⚔️ <span>${esc(tx('chPlayShort', "O'ynash"))}</span></button>
-        <button class="msg-clear" data-clear-chat="1" title="${esc(tx('chatClear', 'Chatni tozalash'))}">🧹</button>
+        ${guest ? '' : `<button class="msg-clear" data-clear-chat="1" title="${esc(tx('chatClear', 'Chatni tozalash'))}">🧹</button>`}
       </div>
-      <div class="msg-thread" id="msgThread">${bubbles || `<div class="msg-placeholder small"><p>${esc(tx('msgSayHi', "Salom deb yozing 👋"))}</p></div>`}</div>
+      <div class="msg-thread" id="msgThread">${bubbles || (guest ? '' : `<div class="msg-placeholder small"><p>${esc(tx('msgSayHi', "Salom deb yozing 👋"))}</p></div>`)}</div>
+      ${guest ? `<div class="msg-composer msg-guest-note"><span>👤 ${esc(tx('srvGuestOnly', "Bu imkoniyat uchun ro'yxatdan o'ting!"))}</span><button type="button" class="guest-signup-btn" onclick="window.openGuestSignup()">${esc(tx('guestSignupBtn', "Ro'yxatdan o'tish"))}</button></div>` : `
       ${state.picker ? pickerHtml() : ''}
       <form class="msg-composer" id="msgComposer">
         <button type="button" class="msg-emoji-btn${state.picker ? ' active' : ''}" data-picker="1" title="${esc(tx('msgStickers', 'Stikerlar va emoji'))}">😊</button>
         <input id="msgInput" class="form-input" maxlength="1000" autocomplete="off" placeholder="${esc(tx('chatPlaceholder', 'Xabar yozing...'))}">
         <button type="submit" class="msg-send">➤</button>
-      </form>`;
+      </form>`}`;
   }
 
   function pickerHtml() {

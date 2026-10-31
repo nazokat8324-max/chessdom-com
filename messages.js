@@ -148,6 +148,9 @@
     if (!root) return;
     const oldInput = document.getElementById('msgInput');
     const draft = oldInput ? { value: oldInput.value, focused: document.activeElement === oldInput, caret: oldInput.selectionStart } : null;
+    // Suhbatlar ro'yxati qayta chizilganda joyida qolsin (boshqa suhbatdan xabar kelsa tepaga sakramasin)
+    const oldList = document.getElementById('msgList');
+    const listScroll = oldList && oldList.dataset.tab === state.tab ? oldList.scrollTop : 0;
     const tabs = [
       ['chats', tx('msgTabChats', 'Suhbatlar'), state.unread],
       ['friends', tx('msgTabFriends', "Do'stlar"), 0],
@@ -164,11 +167,12 @@
             </form>
             <div class="msg-tabs">${tabs.map(([id, label, n]) => `<button class="msg-tab${state.tab === id ? ' active' : ''}" data-tab="${id}">${esc(label)}${n ? ` <span class="msg-tab-count">${n}</span>` : ''}</button>`).join('')}</div>
           </div>
-          <div class="msg-list" id="msgList">${listHtml()}</div>
+          <div class="msg-list" id="msgList" data-tab="${state.tab}">${listHtml()}</div>
         </aside>
         <section class="msg-chat" id="msgChat">${chatHtml()}</section>
       </div>`;
     bind(root);
+    if (listScroll) document.getElementById('msgList').scrollTop = listScroll;
     const newInput = document.getElementById('msgInput');
     if (draft && newInput && draft.value) {
       newInput.value = draft.value;

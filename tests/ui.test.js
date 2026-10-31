@@ -311,6 +311,30 @@ test("2-sinov o'tishi: kichik telefonda qayta ko'rish oynasi tepadan ochiladi (â
   assert.deepEqual([...p.errors, ...q.errors], []);
 });
 
+test("3-sinov o'tishi: telefonda toastlar ko'pi bilan 2 ta (takrorsiz), Xabarlar ro'yxati yangi xabarda joyida qoladi", opts, async () => {
+  const u = await srv.register('Tst');
+  const senders = [];
+  for (let i = 0; i < 14; i++) senders.push(await srv.register('Snd' + i));
+  for (const s of senders) await srv.api(s, '/api/chat/messages', 'POST', { roomId: 'user_' + u.user.id, message: 'salom ' + s.name });
+  const p = await page(u, { width: 390, height: 700, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await sleep(800);
+  const toasts = await p.evaluate(() => {
+    ['bir', 'ikki', 'uch', 'uch', "to'rt", "to'rt"].forEach((m) => window.showToast(m, 'info', 5000));
+    return [...document.querySelectorAll('#toastContainer .toast')].map((t) => t.textContent.slice(1));
+  });
+  assert.deepEqual(toasts, ['uch', "to'rt"], 'oxirgi 2 ta, takrorsiz');
+  await p.evaluate(() => switchView('messages'));
+  await p.waitForFunction(() => document.querySelectorAll('#msgList .msg-item').length >= 14, { timeout: 10000 });
+  const before = await p.evaluate(() => { const l = document.getElementById('msgList'); l.scrollTop = 300; return l.scrollTop; });
+  assert.ok(before > 100, "ro'yxat aylanadi: " + before);
+  await srv.api(senders[3], '/api/chat/messages', 'POST', { roomId: 'user_' + u.user.id, message: 'yana bir xabar' });
+  await p.waitForFunction(() => document.body.innerText.includes('yana bir xabar'), { timeout: 10000 });
+  await sleep(300);
+  assert.equal(await p.evaluate(() => document.getElementById('msgList').scrollTop), before, "ro'yxat joyida qoldi");
+  assert.deepEqual(p.errors, []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

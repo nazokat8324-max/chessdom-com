@@ -1270,9 +1270,16 @@ function showToast(message, type = 'info', duration = 3000) {
   const container = document.getElementById('toastContainer');
   if (!container) return;
   
+  // Bir vaqtda ko'pi bilan 2 ta (telefon) / 4 ta toast — o'yindagi ketma-ket hodisalar ekranning yarmini yopib qo'yardi.
+  // Xuddi shu matn allaqachon ko'rinib turgan bo'lsa — eskisi olib tashlanadi
+  const max = window.matchMedia && window.matchMedia('(max-width: 768px)').matches ? 2 : 4;
+  [...container.children].forEach((t) => { if (t.dataset.msg === String(message)) t.remove(); });
+  while (container.children.length >= max) container.firstElementChild.remove();
+
   const toast = document.createElement('div');
   toast.className = `toast ${type}`;
-  
+  toast.dataset.msg = String(message);
+
   const icons = {
     success: '✓',
     error: '✕',

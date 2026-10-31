@@ -278,6 +278,39 @@ test("1-sinov o'tishi: huquqiy sahifa tablari so'z o'rtasidan bo'linmaydi, chetd
   assert.deepEqual([...p.errors, ...g.errors], []);
 });
 
+test("2-sinov o'tishi: kichik telefonda qayta ko'rish oynasi tepadan ochiladi (✕ ko'rinadi), o'yinda ◀ sahifani siljitmaydi", opts, async () => {
+  const H = require('./helpers');
+  const a = await srv.register('Rpa'), b = await srv.register('Rpb');
+  const g = await H.startGame(srv, a, b);
+  const LINE = ['e2e4', 'e7e5', 'g1f3', 'b8c6', 'f1c4', 'f8c5', 'c2c3', 'g8f6', 'd2d3', 'd7d6', 'b1d2', 'a7a6', 'h2h3', 'h7h6', 'a2a4', 'a6a5'];
+  await H.play(g, LINE);
+  await H.finish(g, 'black-resigns');
+  H.closeAll(a, b);
+  const hist = await srv.api(a, '/api/users/' + encodeURIComponent(a.name) + '/history');
+  const p = await page(a, { width: 360, height: 640, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await sleep(800);
+  await p.evaluate((n, id) => window.openReplay(n, id), a.name, hist.games[0].id);
+  await p.waitForSelector('#replayModal .rp-x');
+  await sleep(600);
+  const r = await p.evaluate(() => { const x = document.querySelector('#replayModal .rp-x').getBoundingClientRect(); return { top: Math.round(x.top), bottom: Math.round(x.bottom), vh: innerHeight }; });
+  assert.ok(r.top >= 0 && r.bottom <= r.vh, "✕ ko'rinadi: " + JSON.stringify(r));
+  await p.keyboard.press('Escape');
+  // O'yin sahifasi: yurishlarni ◀ bilan ko'rish sahifani (main-wrapper) aylantirmaydi
+  const q = await page(a, { width: 360, height: 640, isMobile: true, hasTouch: true });
+  await q.goto(srv.base + '/oyin', { waitUntil: 'load' });
+  await q.waitForSelector('#btnLocalGame', { timeout: 15000 });
+  await sleep(500);
+  await q.evaluate(() => window.startLocalGame());
+  await sleep(300);
+  for (const mv of LINE) await q.evaluate((m) => window.executeMove(m.slice(0, 2), m.slice(2, 4)), mv);
+  await sleep(400);
+  const y0 = await q.evaluate(() => { const w = document.querySelector('.main-wrapper'); w.scrollTop = 0; return w.scrollTop; });
+  for (let i = 0; i < 6; i++) { await q.evaluate(() => window.reviewMove('prev')); await sleep(80); }
+  assert.equal(await q.evaluate(() => document.querySelector('.main-wrapper').scrollTop), y0, 'sahifa joyida qoldi');
+  assert.deepEqual([...p.errors, ...q.errors], []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

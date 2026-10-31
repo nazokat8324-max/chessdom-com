@@ -37,7 +37,7 @@
     const counter = document.getElementById('replayCounter');
     if (counter) counter.textContent = `${st.ply} / ${st.fens.length - 1}`;
     const active = document.querySelector('#replayModal [data-ply].active');
-    if (active) active.scrollIntoView({ block: 'nearest' });
+    if (active && window.scrollWithin) window.scrollWithin(active, active.closest('.rp-moves'));
     if (st.analysis) showEval();
     document.dispatchEvent(new CustomEvent('replay:ply', { detail: { ply: st.ply } }));
   }

@@ -1070,7 +1070,7 @@ function renderMoveList() {
     historyListElement.scrollTop = historyListElement.scrollHeight;
   } else {
     const cur = historyListElement.querySelector('.pg-mv.current');
-    if (cur) cur.scrollIntoView({ block: 'nearest' });
+    if (cur && window.scrollWithin) window.scrollWithin(cur, historyListElement);
   }
 }
 

@@ -10,6 +10,17 @@ window.uiLang = function() {
   return l === 'uzc' ? 'uzc' : l.slice(0, 2);
 };
 
+// Elementni faqat o'zining eng yaqin aylanadigan ro'yxati ichida ko'rinadigan qilish. scrollIntoView butun sahifani va
+// oynani ham aylantiradi: telefonda qayta ko'rish oynasi ochilganda pastga sakrab ✕ yashirinardi, o'yinda ◀ ▶ bosilganda
+// sahifa yurishlar ro'yxatiga sakrab, taxta ekrandan chiqardi (2-sinov o'tishi, 2026-10-31).
+// box — aynan shu ro'yxat (u aylanmasa — hech narsa qilinmaydi; ota oynalar aylantirilmaydi).
+window.scrollWithin = function(el, box) {
+  if (!el || !box || box.scrollHeight <= box.clientHeight) return;
+  const c = box.getBoundingClientRect(), r = el.getBoundingClientRect();
+  if (r.top < c.top) box.scrollTop -= c.top - r.top;
+  else if (r.bottom > c.bottom) box.scrollTop += r.bottom - c.bottom;
+};
+
 // 🎉 Konfetti (canvas-confetti) faqat birinchi kerak bo'lganda yuklanadi (g'alaba, bahs, bashorat). Avval index.html da
 // har sahifa ochilishida yuklanardi va telefonda asosiy oqimni ~0.9 s band qilardi — sahifa shu vaqt chizilmasdi.
 (function () {

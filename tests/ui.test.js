@@ -246,6 +246,38 @@ test("Onlayn o'ynash: skriptlar yuklanguncha tugma bosilsa ham xato yo'q — yuk
   await p.evaluate(() => window.cancelSearch && window.cancelSearch());
 });
 
+test("1-sinov o'tishi: huquqiy sahifa tablari so'z o'rtasidan bo'linmaydi, chetdagi bekat yozuvi ekranda, konfetti faqat kerak bo'lganda yuklanadi", opts, async () => {
+  const u = await srv.register('Pass');
+  // Huquqiy sahifa (telefon): har bir so'z bitta qatorda — avval "Foydalanis-h", "litsenziyala-r" bo'linib ketardi
+  const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/mualliflar', { waitUntil: 'load' });
+  await p.waitForSelector('#lgTabCredits');
+  await sleep(300);
+  const broken = await p.evaluate(() => [...document.querySelectorAll('.lg-tabs a')].flatMap((a) => {
+    const node = a.firstChild; if (!node || node.nodeType !== 3) return [];
+    const out = []; const re = /\S+/g; let m;
+    while ((m = re.exec(node.textContent))) { const r = document.createRange(); r.setStart(node, m.index); r.setEnd(node, m.index + m[0].length); if (r.getClientRects().length > 1) out.push(m[0]); }
+    return out;
+  }));
+  assert.deepEqual(broken, [], "bo'lingan so'zlar");
+  // Konfetti sahifa ochilganda yuklanmaydi; chaqirilganda yuklanib, haqiqiy funksiya o'rnini egallaydi
+  const reqs = [];
+  const g = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  g.on('request', (r) => { if (/canvas-confetti/.test(r.url())) reqs.push(r.url()); });
+  await g.goto(srv.base + '/bayroqlar', { waitUntil: 'load' });
+  await g.waitForSelector('#cvRoute .cvr-stop.on');
+  await sleep(800);
+  assert.equal(reqs.length, 0, 'konfetti oldindan yuklanmaydi');
+  // Chetdagi (5-) bekat yozuvi — "Bayroqlar bellashuvi" — ekrandan chiqmaydi
+  const lab = await g.evaluate(() => { const r = document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-label').getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right), innerWidth]; });
+  assert.ok(lab[0] >= 0 && lab[1] <= lab[2], 'yozuv: ' + JSON.stringify(lab));
+  const lazy = await g.evaluate(() => window.confetti);
+  await g.evaluate(() => window.confetti({ particleCount: 5 }));
+  await g.waitForFunction(() => window.confetti && !/loading/.test(String(window.confetti)) && window.confetti.reset, { timeout: 20000 });
+  assert.equal(reqs.length, 1, 'birinchi chaqiruvda bir marta yuklandi');
+  assert.deepEqual([...p.errors, ...g.errors], []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

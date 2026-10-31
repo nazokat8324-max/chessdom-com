@@ -55,6 +55,10 @@ test('Server fayllari va baza tashqariga berilmaydi', async () => {
 });
 
 test('Huquqiy sahifalar, sitemap va robots', async () => {
+  // /favicon.ico — 404 emas (huquqiy sahifalar va robotlar uni o'zi so'raydi; 1-sinov o'tishida topilgan)
+  const fav = await get('/favicon.ico');
+  assert.equal(fav.status, 200);
+  assert.match(fav.headers.get('content-type'), /^image\/png/);
   assert.equal((await get('/maxfiylik')).status, 200);
   assert.equal((await get('/shartlar')).status, 200);
   const sm = await (await get('/sitemap.xml')).text();

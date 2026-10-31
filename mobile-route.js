@@ -13,7 +13,7 @@
   const wide = window.matchMedia('(max-width: 768px)');
   const landscape = window.matchMedia('(orientation: landscape) and (max-height: 500px)');
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const st = { el: null, map: null, path: null, lens: [], idx: -1, len: null, raf: 0, drag: null, userGo: false };
+  const st = { el: null, map: null, table: [], lens: [], idx: -1, len: null, raf: 0, drag: null, userGo: false, ready: false };
 
   const esc = (v) => {
     const div = document.createElement('div');
@@ -32,24 +32,55 @@
   // Tuya — o'zimiz chizgan siluet (emoji har telefonda boshqacha ko'rinadi)
   const CAMEL = '<svg viewBox="0 0 48 36" aria-hidden="true"><path d="M5 31V22.5C5 17 8.2 13.4 12.6 13.4C14.4 7.6 20.4 6.8 22.6 12C24.8 8.4 29.6 8.6 31.2 13.2C32.4 13.6 33.4 14.4 34 15.4L37.4 8.6C38.2 6.4 40.6 5.4 42.6 6.4L44.6 7.6L43.4 9.4H41.2L38.6 17.6C37.8 20.6 35.8 22.6 33.2 23.2V31H30.6L29.6 24.2H15.2L14.4 31H11.8L11.6 24C9.4 24.4 8 26.4 7.8 31Z"/><circle cx="41.4" cy="8" r="0.9" class="e"/></svg>';
 
-  // Yo'l: bekatlar orqali silliq egri chiziq (Catmull-Rom → Bezier), chetlardan chetgacha
-  function roadD() {
+  // Yo'l: bekatlar orqali silliq egri chiziq (Catmull-Rom → kubik Bezier bo'laklari), chetlardan chetgacha
+  function roadSegs() {
     const pts = [[0, Y[0]], ...X.map((x, i) => [x, Y[i]]), [W, Y[4]]];
-    let d = `M${pts[0][0]} ${pts[0][1]}`;
+    const segs = [];
     for (let i = 0; i < pts.length - 1; i++) {
       const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
-      const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
-      const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
-      d += ` C${c1[0].toFixed(1)} ${c1[1].toFixed(1)} ${c2[0].toFixed(1)} ${c2[1].toFixed(1)} ${p2[0]} ${p2[1]}`;
+      const c1 = [+(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1), +(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)];
+      const c2 = [+(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1), +(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)];
+      segs.push([p1, c1, c2, p2]);
     }
-    return d;
+    return segs;
   }
-  // Yo'l x bo'yicha o'sib boradi — x ga mos uzunlikni ikkiga bo'lib qidirish
+  function roadD() {
+    const segs = roadSegs();
+    return `M${segs[0][0][0]} ${segs[0][0][1]}` + segs.map(([, c1, c2, p2]) => ` C${c1[0]} ${c1[1]} ${c2[0]} ${c2[1]} ${p2[0]} ${p2[1]}`).join('');
+  }
+  // Yo'l nuqtalari bir marta jadvalga yoziladi — Bezier formulasi bilan, SVG'dan so'ramasdan (getPointAtLength telefonda
+  // sekin: avval har kadrda ~130 ms, jadval uchun ham ~90 ms olardi). Uzunlik — vatarlar yig'indisi; keyin uzunlik ↔ nuqta ↔ x
+  // jadvaldan chiziqli oraliq bilan topiladi. Yo'l x bo'yicha o'sib boradi.
+  const SEG_STEPS = 32;
+  function buildTable() {
+    const bez = (a, b, c, d, t) => { const u = 1 - t; return u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d; };
+    const table = [];
+    let l = 0, prev = null;
+    roadSegs().forEach(([p1, c1, c2, p2], si) => {
+      for (let k = si === 0 ? 0 : 1; k <= SEG_STEPS; k++) {
+        const t = k / SEG_STEPS, x = bez(p1[0], c1[0], c2[0], p2[0], t), y = bez(p1[1], c1[1], c2[1], p2[1], t);
+        if (prev) l += Math.hypot(x - prev.x, y - prev.y);
+        prev = { l, x, y };
+        table.push(prev);
+      }
+    });
+    st.table = table;
+  }
+  function pointAt(len) {
+    const t = st.table;
+    let lo = 0, hi = t.length - 1;
+    if (len <= 0) return t[0];
+    if (len >= t[hi].l) return t[hi];
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (t[mid].l < len) lo = mid; else hi = mid; }
+    const a = t[lo], b = t[hi], k = (len - a.l) / (b.l - a.l || 1);
+    return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k };
+  }
   function lenAtX(x) {
-    const p = st.path;
-    let lo = 0, hi = p.getTotalLength();
-    for (let k = 0; k < 24; k++) { const mid = (lo + hi) / 2; if (p.getPointAtLength(mid).x < x) lo = mid; else hi = mid; }
-    return (lo + hi) / 2;
+    const t = st.table;
+    let lo = 0, hi = t.length - 1;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (t[mid].x < x) lo = mid; else hi = mid; }
+    const a = t[lo], b = t[hi], k = b.x === a.x ? 0 : (x - a.x) / (b.x - a.x);
+    return a.l + (b.l - a.l) * Math.max(0, Math.min(1, k));
   }
 
   function build() {
@@ -64,14 +95,14 @@
       <span class="cvr-camel">${CAMEL}</span>`;
     document.body.appendChild(el);
     st.el = el;
-    st.path = el.querySelector('.cvr-sand');
+    buildTable();
     st.lens = X.map(lenAtX);
     el.querySelectorAll('.cvr-stop').forEach((b) => b.addEventListener('click', () => { if (!st.drag || !st.drag.moved) go(Number(b.dataset.i)); }));
     bindDrag(el);
   }
 
   function placeCamel(len, dir) {
-    const p = st.path.getPointAtLength(len);
+    const p = pointAt(len);
     const c = st.el.querySelector('.cvr-camel');
     c.style.left = (p.x / W * 100) + '%';
     c.style.top = p.y + 'px';
@@ -181,7 +212,8 @@
       setCompact(inGame());
       st.idx = idx;
       if (!st.drag || !st.drag.moved) travel(st.lens[idx]);
-      if (prev >= 0 && prev !== idx && !reduce.matches) enterPage(idx > prev ? 1 : -1);
+      // Sahifa birinchi ochilganda (router boshlang'ich bo'limni ochadi) — sirpanishsiz
+      if (st.ready && prev >= 0 && prev !== idx && !reduce.matches) enterPage(idx > prev ? 1 : -1);
     }
   }
 
@@ -250,6 +282,7 @@
     if (on) sync(true);
   }
 
+  window.addEventListener('load', () => setTimeout(() => { st.ready = true; }, 300));
   document.addEventListener('DOMContentLoaded', () => {
     apply();
     [wide, landscape].forEach((mq) => (mq.addEventListener ? mq.addEventListener('change', apply) : mq.addListener(apply)));

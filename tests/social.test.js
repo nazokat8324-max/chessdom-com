@@ -1,7 +1,7 @@
 // Do'stlar, shaxsiy xabarlar, bloklash, kuzatish, bildirishnomalar, chaqiruv
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const { startServer, once, closeAll } = require('./helpers');
+const { startServer, once, closeAll, sleep } = require('./helpers');
 
 let srv;
 before(async () => { srv = await startServer(); });
@@ -73,6 +73,12 @@ test('Kuzatish va bildirishnomalarni o\'qish', async () => {
   const ex = await srv.api(a, '/api/users/' + b.name + '/extras');
   assert.equal(ex.isFollowing, true);
   await srv.api(a, '/api/friends/request', 'POST', { username: b.name });
+  // Bildirishnoma javobdan keyin fonda yoziladi — paydo bo'lishini kutamiz (aks holda band kompyuterda u "o'qildi" dan
+  // keyin yozilib, haqli ravishda o'qilmagan bo'lib qolardi va test tasodifan yiqilardi)
+  for (let i = 0; i < 40; i++) {
+    if ((await srv.api(b, '/api/notifications')).notifications.some((x) => x.type === 'friend_request')) break;
+    await sleep(100);
+  }
   await srv.api(b, '/api/notifications/read', 'POST');
   const n = await srv.api(b, '/api/notifications');
   assert.ok(n.notifications.every((x) => x.read));

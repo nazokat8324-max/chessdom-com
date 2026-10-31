@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ChessCaravan</title>
   <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/icons/favicon-32.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <!-- Maxfiylik siyosati (/maxfiylik), Foydalanish shartlari (/shartlar) va Mualliflar (/mualliflar). Matnlar — legal-content.js; aloqa manzili server tomonidan qo'yiladi (CONTACT_EMAIL). -->
@@ -37,9 +38,10 @@
     .lg-credits b a { color: #fff; text-decoration: none; border-bottom: 1px dotted var(--muted); }
     .lg-credits .who { color: var(--muted); font-size: 14px; flex: 1; min-width: 160px; }
     .lg-credits .lic { padding: 2px 8px; border-radius: 999px; background: rgba(1, 204, 213, 0.14); font-size: 12px; font-weight: 700; text-decoration: none; white-space: nowrap; }
-    .lg-tabs a { overflow-wrap: anywhere; }
+    /* So'z o'rtasidan bo'linmasin (avval `anywhere` telefonda "Foydalanis-h" qilardi): faqat juda uzun so'z bo'linadi */
+    .lg-tabs a { overflow-wrap: break-word; hyphens: auto; }
     .lg-back { display: inline-block; margin-top: 30px; padding: 10px 18px; border-radius: 12px; background: var(--accent); color: #032326; font-weight: 800; text-decoration: none; }
-    @media (max-width: 560px) { h1 { font-size: 24px; } .lg-top { padding: 10px 14px; } main { padding: 20px 14px 50px; } }
+    @media (max-width: 560px) { .lg-tabs a { padding: 9px 4px; font-size: 13px; line-height: 1.25; } h1 { font-size: 24px; } .lg-top { padding: 10px 14px; } main { padding: 20px 14px 50px; } }
   </style>
 </head>
 <body data-contact="__CONTACT__">

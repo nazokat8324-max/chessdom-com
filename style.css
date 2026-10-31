@@ -14571,6 +14571,9 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
     box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0.22), 0 6px 16px rgba(0, 0, 0, 0.4);
   }
   .cvr-stop.on .cvr-label { color: #fff; }
+  /* Chetdagi bekatlar yozuvi ekrandan chiqmasin ("Bayroqlar bellashuvi" kabi uzun nomlar): chetga tekislanadi */
+  .cvr-nav .cvr-stop[data-i="0"] .cvr-label { left: 0; transform: none; text-align: left; }
+  .cvr-nav .cvr-stop[data-i="4"] .cvr-label { left: auto; right: 0; transform: none; text-align: right; }
   .cvr-badge {
     position: absolute;
     top: -6px;

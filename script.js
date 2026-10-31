@@ -9,6 +9,27 @@ window.uiLang = function() {
   const l = String((typeof i18next !== 'undefined' && i18next.language) || window.currentLang || 'en');
   return l === 'uzc' ? 'uzc' : l.slice(0, 2);
 };
+
+// 🎉 Konfetti (canvas-confetti) faqat birinchi kerak bo'lganda yuklanadi (g'alaba, bahs, bashorat). Avval index.html da
+// har sahifa ochilishida yuklanardi va telefonda asosiy oqimni ~0.9 s band qilardi — sahifa shu vaqt chizilmasdi.
+(function () {
+  const SRC = 'https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js';
+  let loading = null;
+  const lazy = function (opts) {
+    if (!loading) {
+      loading = new Promise((resolve) => {
+        const s = document.createElement('script');
+        s.src = SRC;
+        s.async = true;
+        s.onload = () => resolve(window.confetti !== lazy ? window.confetti : null);
+        s.onerror = () => { loading = null; resolve(null); };
+        document.head.appendChild(s);
+      });
+    }
+    return loading.then((fire) => (fire ? fire(opts) : null));
+  };
+  window.confetti = lazy;
+})();
 window.tx = function(key, fallback, opts) {
   const vars = opts || {};
   if (typeof i18next !== 'undefined' && i18next.isInitialized) {

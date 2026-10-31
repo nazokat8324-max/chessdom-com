@@ -127,6 +127,8 @@ async function sendIndex(req, res) {
 }
 app.get('/', sendIndex);
 app.get('/index.html', sendIndex);
+// Brauzer va qidiruv robotlari /favicon.ico ni o'zi so'raydi (huquqiy sahifalar, PDF ko'rish...) — 404 o'rniga belgi
+app.get('/favicon.ico', (req, res) => res.type('image/png').set('Cache-Control', 'public, max-age=86400').sendFile(path.join(__dirname, 'assets/icons/favicon-32.png')));
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
   const pages = ['', 'reyting', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'karvon', 'kutubxona', 'maxfiylik', 'shartlar', 'mualliflar'];

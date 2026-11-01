@@ -14496,6 +14496,12 @@ html.landscape-phone .nf-wrap { flex-direction: column-reverse; }
 .tm-head h1 { margin: 0; font-size: 26px; }
 .tm-head p { margin: 2px 0 0; color: var(--cd-muted, #a9b6b0); font-size: 13px; }
 .tm-head-actions { margin-left: auto; display: flex; gap: 8px; flex-wrap: wrap; }
+/* O'yin boshlangach taklif tugmalari kerak emas — telefonda taxtaga joy (320×568 da taxtaning yarmi ekrandan pastda edi) */
+#teamView.tm-playing .tm-head-actions { display: none; }
+@media (max-width: 768px) {
+  #teamView.tm-playing .tm-head { gap: 8px; margin-bottom: 8px; }
+  #teamView.tm-playing .tm-head h1 { font-size: 20px; }
+}
 .tm-layout { display: grid; grid-template-columns: minmax(0, 560px) minmax(0, 1fr); gap: 18px; align-items: start; }
 .tm-board { width: 100%; }
 .tm-side { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 4px; }
@@ -14532,6 +14538,10 @@ html.landscape-phone .nf-wrap { flex-direction: column-reverse; }
 #teamBoard .tm-last { box-shadow: inset 0 0 0 100px rgba(246, 196, 69, 0.35); }
 #teamBoard .tm-hint { box-shadow: inset 0 0 0 4px rgba(56, 189, 248, 0.9); }
 #teamBoard { touch-action: none; }
+/* Jonli va 2 ga 2 taxtasi ekran balandligidan oshmaydi (yon holatdagi telefonda 450–650 px bo'lib, bir ekranga sig'masdi) */
+#liveBoard, #teamBoard { max-width: min(100%, calc(100dvh - 24px)); margin-left: auto; margin-right: auto; }
+/* Kompyuterda 2 ga 2 taxtasi tepasida sarlavha va o'rinlar — 1024×768 da pastki qatori ekrandan chiqardi */
+@media (min-width: 769px) { #teamBoard { max-width: min(100%, calc(100dvh - 310px)); } }
 /* 2 ga 2: bosib yurish — tanlangan dona va yurish nuqtalari (asosiy taxtadagi kabi) */
 #teamBoard [data-square] { position: relative; }
 #teamBoard .sq-selected { box-shadow: inset 0 0 0 200px rgba(255, 220, 60, 0.55); }

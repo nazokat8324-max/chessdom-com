@@ -504,9 +504,11 @@ test("6-sinov o'tishi: Choyxonada bosish qayta chizishda yo'qolmaydi, bo'sh stul
   const socks = [];
   for (const [usr, seat] of [[a, 'b1'], [b2, 'w2'], [c, 'b2']]) { const s = await srv.connect(usr); socks.push(s); await new Promise((r) => s.emit('team-sit', { code, seat }, r)); }
   await p.waitForFunction(() => /e2/.test(document.querySelector('#teamBoard [data-square="e2"] img') ? 'e2' : ''), { timeout: 10000 });
+  // O'yin boshlanganda telefon menyusi ixchamlashadi (sahifa biroz siljiydi) — joylashib bo'lishini kutamiz
+  await p.waitForFunction(() => document.documentElement.classList.contains('cvr-compact'), { timeout: 5000 }).catch(() => {});
   await sleep(800);
   await p.evaluate(() => document.getElementById('teamBoard').scrollIntoView({ block: 'center' }));
-  await sleep(300);
+  await sleep(500);
   await p.tap('#teamBoard [data-square="e2"]');
   await sleep(300);
   assert.deepEqual(await p.evaluate(() => [document.querySelector('#teamBoard [data-square="e2"]').classList.contains('sq-selected'), [...document.querySelectorAll('#teamBoard .sq-hint')].map((e) => e.dataset.square).sort()]), [true, ['e3', 'e4']]);
@@ -701,6 +703,74 @@ test("Joylashuv L3: 30 harfli ismlar va katta raqamlar 320 px telefonda sahifani
   }
   H.closeAll(b, c);
   assert.deepEqual(p.errors, []);
+});
+
+test("Joylashuv L4: 2 ga 2 o'yini 320×568 telefonda — taxta aylantirmasdan ko'rinadi, taklif tugmalari yashirin, menyu ixcham; o'yin tugagach qaytadi", opts, async () => {
+  const a = await srv.register('Tpa'), b = await srv.register('Tpb'), c = await srv.register('Tpc'), d = await srv.register('Tpd');
+  const p = await page(a, { width: 320, height: 568, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/jamoa', { waitUntil: 'load' });
+  await p.waitForSelector('[data-tc]', { timeout: 15000 });
+  await p.evaluate(() => document.querySelector('[data-tc]').click());
+  await p.waitForFunction(() => /[?&]t=/.test(location.search), { timeout: 8000 });
+  const code = await p.evaluate(() => new URLSearchParams(location.search).get('t'));
+  await sleep(500);
+  await p.evaluate(() => { const s = document.querySelector('[data-sit="w1"]'); if (s) s.click(); });
+  assert.equal(await p.evaluate(() => getComputedStyle(document.querySelector('.tm-head-actions')).display !== 'none'), true, "kutilayotganda taklif tugmalari bor");
+  const socks = [];
+  for (const [u, seat] of [[b, 'b1'], [c, 'w2'], [d, 'b2']]) { const s = await srv.connect(u); socks.push(s); await new Promise((r) => s.emit('team-sit', { code, seat }, r)); }
+  await p.waitForFunction(() => document.querySelector('#teamView.tm-playing'), { timeout: 10000 });
+  await sleep(800);
+  const st = await p.evaluate(() => {
+    const r = document.getElementById('teamBoard').getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, vh: innerHeight, actions: getComputedStyle(document.querySelector('.tm-head-actions')).display, compact: document.documentElement.classList.contains('cvr-compact') };
+  });
+  assert.ok(st.top >= 0 && st.bottom <= st.vh, "taxta ekranda: " + JSON.stringify(st));
+  assert.equal(st.actions, 'none');
+  assert.equal(st.compact, true, "menyu ixcham");
+  // Taslim — o'yin tugadi, menyu qaytadi
+  await new Promise((r) => socks[0].emit('team-resign', { code }, r));
+  await p.waitForFunction(() => !document.querySelector('#teamView.tm-playing'), { timeout: 8000 });
+  await sleep(400);
+  assert.equal(await p.evaluate(() => document.documentElement.classList.contains('cvr-compact')), false, "o'yin tugagach menyu qaytdi");
+  socks.forEach((s) => s.close());
+  assert.deepEqual(p.errors, []);
+});
+
+test("Joylashuv L4: kompyuterda (1024×768) 2 ga 2 taxtasi va ikkala jamoa soati ekranda; yon holatdagi telefonda jonli taxta bir ekranga sig'adi", opts, async () => {
+  const H = require('./helpers');
+  const a = await srv.register('Tda'), b = await srv.register('Tdb'), c = await srv.register('Tdc'), d = await srv.register('Tdd');
+  const p = await page(a, { width: 1024, height: 768 });
+  await p.goto(srv.base + '/jamoa', { waitUntil: 'load' });
+  await p.waitForSelector('[data-tc]', { timeout: 15000 });
+  await p.evaluate(() => document.querySelector('[data-tc]').click());
+  await p.waitForFunction(() => /[?&]t=/.test(location.search), { timeout: 8000 });
+  const code = await p.evaluate(() => new URLSearchParams(location.search).get('t'));
+  await sleep(500);
+  await p.evaluate(() => { const s = document.querySelector('[data-sit="w1"]'); if (s) s.click(); });
+  const socks = [];
+  for (const [u, seat] of [[b, 'b1'], [c, 'w2'], [d, 'b2']]) { const s = await srv.connect(u); socks.push(s); await new Promise((r) => s.emit('team-sit', { code, seat }, r)); }
+  await p.waitForFunction(() => document.querySelector('#teamView.tm-playing'), { timeout: 10000 });
+  await sleep(800);
+  const off = await p.evaluate(() => ['#teamBoard', ...[...document.querySelectorAll('#teamView .tm-clock')].map((_, i) => '#teamView .tm-clock:nth-of-type(' + (i + 1) + ')')]
+    .map((sel) => [...document.querySelectorAll(sel === '#teamBoard' ? sel : '#teamView .tm-clock')]).flat()
+    .filter((el) => { const r = el.getBoundingClientRect(); return r.top < 0 || r.bottom > innerHeight + 1; }).length);
+  assert.equal(off, 0, "taxta va soatlar ekranda");
+  await new Promise((r) => socks[0].emit('team-resign', { code }, r));
+  socks.forEach((s) => s.close());
+  // Yon holat: jonli tomosha taxtasi ekran balandligidan oshmaydi
+  const e = await srv.register('Tde'), f = await srv.register('Tdf');
+  const g = await H.startGame(srv, e, f, { initial: 600, increment: 5 });
+  await H.play(g, ['e2e4', 'e7e5']);
+  const l = await page(a, { width: 740, height: 360, isMobile: true, hasTouch: true, isLandscape: true });
+  await l.goto(srv.base + '/jonli', { waitUntil: 'load' });
+  await sleep(800);
+  await l.evaluate((rid) => window.watchGame(rid), g.roomId);
+  await l.waitForSelector('#liveBoard [data-square="e4"]', { timeout: 10000 });
+  await sleep(500);
+  const lb = await l.evaluate(() => { const r = document.getElementById('liveBoard').getBoundingClientRect(); return [Math.round(r.height), innerHeight]; });
+  assert.ok(lb[0] <= lb[1], "jonli taxta bir ekranga sig'adi: " + JSON.stringify(lb));
+  H.closeAll(e, f);
+  assert.deepEqual([...p.errors, ...l.errors], []);
 });
 
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {

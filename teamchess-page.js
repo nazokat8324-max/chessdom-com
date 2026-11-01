@@ -15,10 +15,13 @@
   const fmt = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
   const emit = (ev, data) => new Promise((r) => socket.emit(ev, data, r));
 
+  // O'yin davom etmoqda: taklif tugmalari yashirin, telefonda menyu ixcham (mobile-route.js inGame)
+  const setPlaying = (on) => { const v = document.getElementById('teamView'); if (v) v.classList.toggle('tm-playing', !!on); };
   // ---------- Stollar ro'yxati ----------
   async function renderLobby() {
     const el = root();
     if (!el) return;
+    setPlaying(false);
     el.innerHTML = `<section class="tm-hero">
         <span class="tea-kicker">🤝 ${esc(tx('teaKicker', 'Faqat ChessCaravan da'))}</span>
         <h1>${esc(tx('tmTitle', "2 ga 2 — maslahatli shaxmat"))}</h1>
@@ -200,6 +203,7 @@
     const stEl = document.getElementById('tmStatus');
     stEl.textContent = status;
     stEl.classList.toggle('mine', s.status === 'active' && st.mySeat === s.mover);
+    setPlaying(s.status === 'active');
     // O'rinlar (kutilayotganda)
     const seatsEl = document.getElementById('tmSeats');
     seatsEl.hidden = s.status !== 'waiting';
@@ -314,7 +318,7 @@
   const origSwitch = window.switchView;
   if (typeof origSwitch === 'function') {
     window.switchView = function (view) {
-      if (view !== 'team' && st.code) { socket.emit('team-unwatch', { code: st.code }); st.code = null; clearInterval(st.tick); }
+      if (view !== 'team' && st.code) { socket.emit('team-unwatch', { code: st.code }); st.code = null; clearInterval(st.tick); setPlaying(false); }
       return origSwitch.apply(this, arguments);
     };
   }

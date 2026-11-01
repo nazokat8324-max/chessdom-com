@@ -272,14 +272,14 @@
     root.classList.toggle('cvr-compact', on);
   }
   // O'yin davom etayotganda karvon dam oladi: taxta va soatlarga ko'proq joy
-  const inGame = () => !!document.querySelector('#gameView.active-view.pg-mode-in');
+  const inGame = () => !!document.querySelector('#gameView.active-view.pg-mode-in, #teamView.active-view.tm-playing');
   function gameCompact() { if (enabled() && !document.body.classList.contains('mobile-menu-open')) setCompact(inGame()); }
   function onScroll(e) {
     const box = e.currentTarget;
     const y = box.scrollTop, dy = y - lastY;
     lastY = y;
     if (!enabled() || document.body.classList.contains('mobile-menu-open')) return setCompact(false);
-    if (document.querySelector('#gameView.active-view')) return setCompact(inGame());
+    if (document.querySelector('#gameView.active-view, #teamView.active-view.tm-playing')) return setCompact(inGame());
     if (y < 40) setCompact(false);
     else if (dy > 6) setCompact(true);
     else if (dy < -6) setCompact(false);
@@ -300,7 +300,12 @@
     const gv = document.getElementById('gameView');
     if (gv) new MutationObserver(() => { gameCompact(); sync(); }).observe(gv, { attributes: true, attributeFilter: ['class'] });
     // Bo'lim almashuvi (menyuda bandi yo'q sahifalar uchun ham): faqat .view-section klasslari
-    new MutationObserver((list) => { if (list.some((m) => m.target.classList && m.target.classList.contains('view-section'))) sync(); })
+    new MutationObserver((list) => {
+      if (!list.some((m) => m.target.classList && m.target.classList.contains('view-section'))) return;
+      sync();
+      // 2 ga 2: o'yin boshlanishi/tugashi (#teamView.tm-playing) — menyu ixcham bo'ladi/qaytadi
+      if (list.some((m) => m.target.id === 'teamView')) gameCompact();
+    })
       .observe(document.querySelector('.main-wrapper') || document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
     const wrap = document.querySelector('.main-wrapper');
     if (wrap) wrap.addEventListener('scroll', onScroll, { passive: true });

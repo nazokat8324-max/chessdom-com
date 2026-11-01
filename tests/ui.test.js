@@ -627,6 +627,53 @@ test("Joylashuv L1: 320 px telefonda sahifalar ekrandan kengaymaydi (Bosh sahifa
   assert.deepEqual(p.errors, []);
 });
 
+test("Joylashuv L2: oynalar — yon holatda Choyxona tanlovi sig'adi (✕ ko'rinadi), 320 px da qayta ko'rish tugmalari va profil grafigi tablari kartada", opts, async () => {
+  const H = require('./helpers');
+  const a = await srv.register('Lda'), b = await srv.register('Ldb');
+  const g = await H.startGame(srv, a, b);
+  await H.play(g, ['e2e4', 'e7e5', 'g1f3', 'b8c6']);
+  await H.finish(g, 'black-resigns');
+  await sleep(400);
+  H.closeAll(a, b);
+  // Yon holat: Choyxona — vaqt tanlash oynasi ekrandan oshmaydi, ✕ ko'rinadi va bosiladi
+  const l = await page(a, { width: 568, height: 320, isMobile: true, hasTouch: true, isLandscape: true });
+  await l.goto(srv.base + '/choyxona', { waitUntil: 'load' });
+  await l.waitForSelector('[data-sit-zone]', { timeout: 15000 });
+  await sleep(500);
+  await l.evaluate(() => document.querySelector('[data-sit-zone]').click());
+  await l.waitForSelector('#teaPicker .tea-picker', { visible: true });
+  await sleep(300);
+  const tp = await l.evaluate(() => {
+    const c = document.querySelector('#teaPicker .tea-picker').getBoundingClientRect();
+    const x = document.querySelector('#teaPicker .tea-x').getBoundingClientRect();
+    const top = document.elementFromPoint(x.left + x.width / 2, x.top + x.height / 2);
+    return { top: c.top, bottom: c.bottom, vh: innerHeight, xTop: x.top, xOk: !!top && !!top.closest('.tea-x') };
+  });
+  assert.ok(tp.top >= 0 && tp.bottom <= tp.vh + 1, "karta ekranda: " + JSON.stringify(tp));
+  assert.ok(tp.xOk && tp.xTop >= 0, "✕ ko'rinadi va bosiladi: " + JSON.stringify(tp));
+  // 320 px: qayta ko'rish tugmalari kartadan chiqmaydi
+  const p = await page(a, { width: 320, height: 568, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await sleep(800);
+  const hist = await srv.api(a, '/api/users/' + encodeURIComponent(a.name) + '/history');
+  await p.evaluate((n, id) => window.openReplay(n, id), a.name, hist.games[0].id);
+  await p.waitForSelector('#replayModal .rp-controls button');
+  await sleep(400);
+  const rp = await p.evaluate(() => {
+    const card = document.querySelector('#replayModal .rp-card').getBoundingClientRect();
+    return [...document.querySelectorAll('#replayModal .rp-controls button')].map((x) => x.getBoundingClientRect()).filter((r) => r.right > card.right + 1 || r.left < card.left - 1).length;
+  });
+  assert.equal(rp, 0, "⏮ ◀ ▶ ⏭ kartada");
+  await p.keyboard.press('Escape');
+  // 320 px: profil grafigi tablari (5 ta rejim) ekranda
+  await p.evaluate((n) => window.openPlayerProfile(n), b.name);
+  await p.waitForSelector('#profileChartTabs button', { visible: true, timeout: 10000 });
+  await sleep(500);
+  const tabs = await p.evaluate(() => [...document.querySelectorAll('#profileChartTabs button')].filter((x) => x.getBoundingClientRect().right > innerWidth + 1).map((x) => x.textContent.trim()));
+  assert.deepEqual(tabs, [], 'grafik tablari ekrandan chiqmaydi');
+  assert.deepEqual([...l.errors, ...p.errors], []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

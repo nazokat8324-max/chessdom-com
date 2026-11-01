@@ -12453,8 +12453,11 @@ button.tea-chair:not([disabled]):hover {
   text-decoration: none;
 }
 /* ✈️ Telegram kanal havolasi (script.js telegramChannelLink) — atrofdagi havola rangi va shrifti */
-.tg-channel { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
-.tg-channel .tg-ic { flex: none; }
+.tg-channel, .yt-channel { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
+.tg-channel .tg-ic, .yt-channel .yt-ic { flex: none; }
+/* Taklif blokida Telegram va YouTube yonma-yon (tor ekranda ustma-ust) */
+.ab-cta .ab-cta-social { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; margin-top: 16px; }
+.ab-cta .ab-cta-social .ab-cta-tg { margin: 0; }
 .ab-cta .ab-cta-tg { display: flex; justify-content: center; width: fit-content; max-width: 100%; margin: 16px auto 0; font-size: 14px; font-weight: 700; color: var(--accent-light); text-decoration: none; text-align: center; }
 .ab-cta .ab-cta-tg:hover { text-decoration: underline; }
 .set-del-form {

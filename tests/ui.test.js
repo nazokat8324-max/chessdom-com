@@ -559,6 +559,39 @@ test("Shaxmat tarixi muzeyi: Kutubxonadan kirish, manzil, oldin/keyin chizmalari
   assert.deepEqual([...p.errors, ...q.errors], []);
 });
 
+test("YouTube kanal: Sayt haqida (Telegram yonida + pastki qator) va Sozlamalar → Hisob; yangi tabda, tarjima qilingan, telefonda sig'adi", opts, async () => {
+  const u = await srv.register('Ytc');
+  for (const [vp, lang] of [[{ width: 1366, height: 860 }, 'uz'], [{ width: 360, height: 740, isMobile: true, hasTouch: true }, 'zh']]) {
+    const p = await page(u, vp);
+    await p.evaluateOnNewDocument((l) => localStorage.setItem('justChessLang', l), lang);
+    await p.goto(srv.base + '/', { waitUntil: 'load' });
+    await sleep(800);
+    await p.evaluate(() => window.openAboutPage());
+    await p.waitForSelector('#aboutPageContent .ab-cta .yt-channel', { timeout: 5000 });
+    const links = (sel) => p.evaluate((s) => [...document.querySelectorAll(s)].map((a) => { const r = a.getBoundingClientRect(); return { href: a.href, target: a.target, rel: a.rel, text: a.textContent.trim(), svg: !!a.querySelector('svg'), left: r.left, right: r.right, vw: innerWidth }; }), sel);
+    const url = await p.evaluate(() => window.YOUTUBE_CHANNEL_URL);
+    assert.equal(url, 'https://www.youtube.com/@chesscaravan');
+    const want = lang === 'zh' ? ['在我们的 YouTube 频道观看视频', 'YouTube 频道'] : ['Videolarimizni YouTube kanalimizda tomosha qiling', 'YouTube kanal'];
+    const about = await links('#aboutPageContent .ab-cta .yt-channel, #aboutPageContent .ab-footer .yt-channel');
+    assert.equal(about.length, 2);
+    about.forEach((a, i) => {
+      assert.deepEqual([a.href, a.target, a.rel, a.svg, a.text], [url, '_blank', 'noopener noreferrer', true, want[i]]);
+      assert.ok(a.left >= 0 && a.right <= a.vw + 1, 'ekranda: ' + JSON.stringify(a));
+    });
+    // Telegram havolasi ham joyida, ikkalasi bir blokda
+    assert.equal(await p.evaluate(() => document.querySelectorAll('#aboutPageContent .ab-cta-social a').length), 2);
+    await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
+    await p.waitForSelector('.set-nav [data-section="account"]', { timeout: 15000 });
+    await p.click('.set-nav [data-section="account"]');
+    await p.waitForSelector('.set-legal .yt-channel', { timeout: 5000 });
+    const set = await links('.set-legal .yt-channel');
+    assert.deepEqual([set.length, set[0].href, set[0].target, set[0].rel, set[0].text], [1, url, '_blank', 'noopener noreferrer', want[1]]);
+    assert.ok(set[0].right <= set[0].vw + 1);
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1), true, "gorizontal toshish yo'q");
+    assert.deepEqual(p.errors, []);
+  }
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

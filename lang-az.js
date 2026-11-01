@@ -5,6 +5,8 @@ window.TRANSLATIONS_AZ = {
   rtAllStops: "Bütün bölmələr",
   tgChannel: "Telegram kanalı",
   tgChannelFollow: "Yeniliklərimizi Telegram kanalımızda izlə",
+  ytChannel: "YouTube kanalı",
+  ytChannelFollow: "Videolarımıza YouTube kanalımızda bax",
   musTitle: "Şahmat tarixi muzeyi",
   musLead: "Hindistandan Səmərqənd vasitəsilə bütün dünyaya: şahmatın İpək yolu ilə necə səyahət etdiyini və qaydalarının necə dəyişdiyini gör.",
   musCard: "{{n}} dayanacaq: çaturanqadan Chess960-a qədər",

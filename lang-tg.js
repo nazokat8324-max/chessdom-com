@@ -5,6 +5,8 @@ window.TRANSLATIONS_TG = {
   rtAllStops: "Ҳамаи бахшҳо",
   tgChannel: "Канали Telegram",
   tgChannelFollow: "Хабарҳоро дар канали Telegram-и мо пайгирӣ кунед",
+  ytChannel: "Канали YouTube",
+  ytChannelFollow: "Видеоҳои моро дар канали YouTube-и мо тамошо кунед",
   musTitle: "Осорхонаи таърихи шоҳмот",
   musLead: "Аз Ҳиндустон тавассути Самарқанд ба тамоми ҷаҳон: бубинед, ки шоҳмот чӣ гуна бо Роҳи Абрешим сафар кард ва қоидаҳояш чӣ тавр дигар шуданд.",
   musCard: "{{n}} истгоҳ: аз чатуранга то Chess960",

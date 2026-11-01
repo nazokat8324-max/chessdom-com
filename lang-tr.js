@@ -5,6 +5,8 @@ window.TRANSLATIONS_TR = {
   rtAllStops: "Tüm bölümler",
   tgChannel: "Telegram kanalı",
   tgChannelFollow: "Haberlerimizi Telegram kanalımızdan takip edin",
+  ytChannel: "YouTube kanalı",
+  ytChannelFollow: "Videolarımızı YouTube kanalımızda izleyin",
   musTitle: "Satranç tarihi müzesi",
   musLead: "Hindistan'dan Semerkant üzerinden tüm dünyaya: satrancın İpek Yolu boyunca nasıl yolculuk ettiğini ve kurallarının nasıl değiştiğini görün.",
   musCard: "{{n}} durak: çaturangadan Chess960'a",

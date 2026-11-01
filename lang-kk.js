@@ -5,6 +5,8 @@ window.TRANSLATIONS_KK = {
   rtAllStops: "Барлық бөлімдер",
   tgChannel: "Telegram арнасы",
   tgChannelFollow: "Жаңалықтарды Telegram арнамыздан қадағалаңыз",
+  ytChannel: "YouTube арнасы",
+  ytChannelFollow: "Бейнелерімізді YouTube арнамыздан көріңіз",
   musTitle: "Шахмат тарихы мұражайы",
   musLead: "Үндістаннан Самарқанд арқылы бүкіл әлемге: шахматтың Жібек жолымен қалай саяхат жасағанын және ережелері қалай өзгергенін көріңіз.",
   musCard: "{{n}} аялдама: чатурангадан Chess960-қа дейін",

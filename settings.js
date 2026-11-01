@@ -298,7 +298,7 @@
       <div class="set-card">
         <div class="set-row">
           <span><b>📜 ${esc(tx('setLegal', 'Hujjatlar'))}</b><small>${esc(tx('setLegalHint', "Saytdan foydalanish qoidalari va ma'lumotlaringiz qanday saqlanishi"))}</small></span>
-          <span class="set-legal"><a href="/shartlar" target="_blank" rel="noopener">${esc(tx('legalTerms', 'Foydalanish shartlari'))}</a><a href="/maxfiylik" target="_blank" rel="noopener">${esc(tx('legalPrivacy', 'Maxfiylik siyosati'))}</a><a href="/mualliflar" target="_blank" rel="noopener">${esc(tx('legalCredits', 'Mualliflar va litsenziyalar'))}</a>${window.telegramChannelLink(tx('tgChannel', 'Telegram kanal'))}</span>
+          <span class="set-legal"><a href="/shartlar" target="_blank" rel="noopener">${esc(tx('legalTerms', 'Foydalanish shartlari'))}</a><a href="/maxfiylik" target="_blank" rel="noopener">${esc(tx('legalPrivacy', 'Maxfiylik siyosati'))}</a><a href="/mualliflar" target="_blank" rel="noopener">${esc(tx('legalCredits', 'Mualliflar va litsenziyalar'))}</a>${window.telegramChannelLink(tx('tgChannel', 'Telegram kanal'))}${window.youtubeChannelLink(tx('ytChannel', 'YouTube kanal'))}</span>
         </div>
       </div>
       <div class="set-card set-danger">

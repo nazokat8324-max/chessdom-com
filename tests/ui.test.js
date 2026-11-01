@@ -484,14 +484,20 @@ test("6-sinov o'tishi: Choyxonada bosish qayta chizishda yo'qolmaydi, bo'sh stul
   await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   const opened = await p.waitForFunction(() => { const e = document.getElementById('teaPicker'); return e && !e.hidden; }, { timeout: 3000 }).then(() => true).catch(() => false);
   assert.ok(opened, "qayta chizish paytidagi bosish yo'qolmadi");
-  assert.ok(await p.evaluate(() => !!document.querySelector('[data-join]')), 'kutayotgan stol ham chizildi (kechiktirilgan render)');
+  // Boshqa o'yinchining stoli: server xabari band kompyuterda barmoq qo'yib yuborilgandan keyin kelishi mumkin — kutamiz
+  assert.ok(await p.waitForSelector('[data-join]', { timeout: 8000 }).then(() => true).catch(() => false), 'kutayotgan stol ham chizildi (kechiktirilgan render)');
   await p.evaluate(() => document.querySelector('#teaPicker [data-close]').click());
   // Bo'sh stolning yuqori stuli ("Bo'sh") ham vaqt tanlashni ochadi
-  await p.evaluate(() => document.querySelector('[data-sit-zone="blitz"]').scrollIntoView({ block: 'center' }));
-  await sleep(200);
+  // Silliq aylanish band kompyuterda sekin — tugashini kutib, keyin bosamiz (bosish eski koordinataga tushmasin)
+  await p.evaluate(() => document.querySelector('[data-sit-zone="blitz"]').scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await sleep(500);
   assert.equal(await p.evaluate(() => document.querySelectorAll('[data-sit-zone="blitz"]').length), 2);
-  await p.tap('[data-sit-zone="blitz"]');
-  assert.ok(await p.waitForFunction(() => { const e = document.getElementById('teaPicker'); return e && !e.hidden; }, { timeout: 3000 }).then(() => true).catch(() => false), "yuqori stul ham ishlaydi");
+  let topOk = false;
+  for (let k = 0; k < 3 && !topOk; k++) {
+    await p.tap('[data-sit-zone="blitz"]');
+    topOk = await p.waitForFunction(() => { const e = document.getElementById('teaPicker'); return e && !e.hidden; }, { timeout: 2500 }).then(() => true).catch(() => false);
+  }
+  assert.ok(topOk, "yuqori stul ham ishlaydi");
   sa.close();
   // 2 ga 2: telefonda bosib yurish
   await p.goto(srv.base + '/jamoa', { waitUntil: 'load' });

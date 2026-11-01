@@ -674,6 +674,35 @@ test("Joylashuv L2: oynalar — yon holatda Choyxona tanlovi sig'adi (✕ ko'rin
   assert.deepEqual([...l.errors, ...p.errors], []);
 });
 
+test("Joylashuv L3: 30 harfli ismlar va katta raqamlar 320 px telefonda sahifani kengaytirmaydi (Jonli o'yinlar, raqiblar statistikasi, Karvon qadamlari)", opts, async () => {
+  const H = require('./helpers');
+  const reg = async (name) => { const d = await srv.api(null, '/api/auth/register', 'POST', { username: name, email: Math.random().toString(36).slice(2) + '@t.uz', password: 'secret1' }); return { id: d.user.id, name, token: d.token, user: d.user }; };
+  const sfx = String(Date.now() % 100000).padStart(5, '0');
+  const a = await reg('Aleksandr_Konstantinovich_' + sfx.slice(0, 4)), b = await reg('WWWWWWWWWWWWWWWWWWWWWWWWW' + sfx), c = await reg('Mmmmmmmmmmmmmmmmmmmmmmmmm' + sfx);
+  let g = await H.startGame(srv, a, b); await H.play(g, ['f2f3', 'e7e5', 'g2g4', 'd8h4']); await sleep(300);
+  g = await H.startGame(srv, a, b); await H.play(g, ['e2e4', 'e7e5']); await H.finish(g, 'black-resigns');
+  g = await H.startGame(srv, a, b); await H.play(g, ['d2d4', 'd7d5']); await H.finish(g, 'draw');
+  H.closeAll(a, b);
+  // Katta qadamlar soni (Karvon) — statistika bazada
+  await new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(require('path').join(srv.dir, 'test.sqlite'));
+    d.run('UPDATE users SET stats = ? WHERE id = ?', [JSON.stringify({ wins: 12345, losses: 9876, draws: 4321 }), a.id], (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  // Uzun ismli jonli o'yin
+  const live = await H.startGame(srv, b, c, { initial: 600, increment: 5 });
+  await H.play(live, ['d2d4', 'd7d5']);
+  const p = await page(a, { width: 320, height: 568, isMobile: true, hasTouch: true });
+  const widen = () => p.evaluate(() => { const m = document.querySelector('.main-wrapper'); return m.scrollWidth - m.clientWidth; });
+  for (const [route, ready] of [['/jonli', '.lv-item'], ['/profil?u=' + encodeURIComponent(a.name) + '&b=statistika', '.ex-opps b'], ['/karvon', '.cv-me-pts']]) {
+    await p.goto(srv.base + route, { waitUntil: 'load' });
+    await p.waitForSelector(ready, { timeout: 15000 });
+    await sleep(700);
+    assert.equal(await widen(), 0, route + ': sahifa kengaymaydi');
+  }
+  H.closeAll(b, c);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

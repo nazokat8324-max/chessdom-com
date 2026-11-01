@@ -6433,7 +6433,7 @@ sidebar {
 }
 
 @media (max-width: 900px) {
-  .lv-layout { grid-template-columns: 1fr; }
+  .lv-layout { grid-template-columns: minmax(0, 1fr); } /* uzun ismli o'yin ro'yxatni 570 px gacha kengaytirardi */
   .lv-layout.has-watch .lv-side { display: none; }
   .lv-layout:not(.has-watch) .lv-stage { display: none; }
   .lv-back { display: block; }
@@ -13061,7 +13061,13 @@ a,
 .ex-opps b {
   color: #fff;
   cursor: pointer;
+  /* 30 harfli ism G/D/M ni ekrandan chiqarardi */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+.ex-opps small { flex-shrink: 0; }
 .ex-opps small {
   margin-left: auto;
   color: var(--cd-muted);
@@ -13929,7 +13935,8 @@ body.auth-locked {
 .cv-hero h1 { margin: 0 0 8px; font-size: 34px; color: #fff; }
 .cv-hero p { margin: 0; color: #d8c9a8; line-height: 1.55; font-size: 15px; }
 .cv-me { padding: 18px; border-radius: 18px; background: rgba(0, 0, 0, 0.28); border: 1px solid rgba(255, 255, 255, 0.08); }
-.cv-me-city { display: flex; align-items: center; gap: 12px; }
+.cv-me-city { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; } /* katta qadamlar soni 320 px da chetga chiqardi */
+.cv-me-city > div { min-width: 0; }
 .cv-me-ico { font-size: 34px; }
 .cv-me-city small { display: block; color: #b9ab8c; font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; }
 .cv-me-city b { color: #fff; font-size: 22px; }

@@ -1336,7 +1336,8 @@
           width: 200px;
         }
         .dashboard-grid {
-          grid-template-columns: 1fr;
+          /* minmax(0, 1fr): 1fr kartalar ustunini ichidagi eng keng narsadan torayishga qo'ymasdi — 320 px telefonda 35 px chetga chiqardi */
+          grid-template-columns: minmax(0, 1fr);
         }
 
         .game-layout {
@@ -7690,6 +7691,7 @@ html.hide-last-move #chessBoard .sq-last {
 .set-select,
 .set-input {
   flex: 1;
+  min-width: 0; /* davlatlar ro'yxati eng uzun nom bo'yicha kengayib, 320 px telefonda qatordan chiqardi */
   height: 42px;
   padding: 0 12px;
   border-radius: 12px;
@@ -8007,7 +8009,8 @@ html.hide-last-move #chessBoard .sq-last {
   .set-preview-wrap { max-width: 300px; }
 }
 @media (max-width: 900px) {
-  .set-layout { grid-template-columns: 1fr; }
+  /* minmax(0, 1fr): 1fr kontentning eng kichik kengligidan torayolmasdi — 320 px telefonda sahifa 348 px bo'lib, o'ng tomoni kesilardi */
+  .set-layout { grid-template-columns: minmax(0, 1fr); }
   .set-nav {
     position: static;
     flex-direction: row;
@@ -8035,7 +8038,10 @@ html.hide-last-move #chessBoard .sq-last {
   .set-pass { grid-template-columns: 1fr; }
   .set-card { padding: 16px 14px; }
   .set-bar { bottom: calc(84px + env(safe-area-inset-bottom)); width: calc(100% - 24px); box-sizing: border-box; }
-  .set-bar > span { flex: 1; font-size: 12px; }
+  /* Telefonda ikki qator: yozuv tepada, tugmalar pastda teng (320 px da "Saqlash" ekrandan chiqardi) */
+  .set-bar { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+  .set-bar > span { flex: 1 1 100%; font-size: 12px; text-align: center; }
+  .set-bar > button { flex: 1; }
 }
 
 /* ===== Xabarlar: stikerlar va emoji (messages.js) ===== */
@@ -8684,7 +8690,12 @@ html.hide-last-move #chessBoard .sq-last {
 }
 .adm-tabs {
   margin-bottom: 16px;
+  /* 8 ta tab: tor ekranda bir necha qatorga o'raladi (telefonda butun sahifani 750 px gacha kengaytirardi) */
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
+.adm-tabs button { flex: 1 1 auto; }
 .adm-stats {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -13950,9 +13961,9 @@ body.auth-locked {
 .cv-chip { margin-top: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(217, 167, 60, 0.35); background: rgba(217, 167, 60, 0.1); color: #f0c869; font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
 .profile-caravan[hidden] { display: none; }
 @media (max-width: 900px) {
-  .cv-hero { grid-template-columns: 1fr; padding: 20px; }
+  .cv-hero { grid-template-columns: minmax(0, 1fr); padding: 20px; }
   .cv-hero h1 { font-size: 26px; }
-  .cv-grid { grid-template-columns: 1fr; }
+  .cv-grid { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* ===== 🛡️ Klublar: yangi ko'rinish (clubs.js) ===== */

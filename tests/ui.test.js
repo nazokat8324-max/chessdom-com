@@ -592,6 +592,41 @@ test("YouTube kanal: Sayt haqida (Telegram yonida + pastki qator) va Sozlamalar 
   }
 });
 
+test("Joylashuv L1: 320 px telefonda sahifalar ekrandan kengaymaydi (Bosh sahifa Top 5, Karvon yetakchilari, Sozlamalar va saqlash paneli, Admin tablari)", opts, async () => {
+  const H = require('./helpers');
+  const a = await srv.register('Lwa'), b = await srv.register('Lwb');
+  await new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(require('path').join(srv.dir, 'test.sqlite'));
+    d.run("UPDATE users SET role = 'admin' WHERE id = ?", [a.id], (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  a.user.role = 'admin';
+  // Top 5 va karvon yetakchilari bo'sh bo'lmasin
+  const g = await H.startGame(srv, a, b);
+  await H.play(g, ['f2f3', 'e7e5', 'g2g4', 'd8h4']);
+  await sleep(400);
+  H.closeAll(a, b);
+  const p = await page(a, { width: 320, height: 568, isMobile: true, hasTouch: true });
+  const widen = () => p.evaluate(() => { const m = document.querySelector('.main-wrapper'); return [m.scrollWidth - m.clientWidth, document.documentElement.scrollWidth - innerWidth]; });
+  for (const [route, ready] of [['/', '.tw-card, #playOnlineBtn'], ['/karvon', '.cv-leaders li'], ['/sozlamalar', '#setCountry'], ['/admin', '.adm-tabs button']]) {
+    await p.goto(srv.base + route, { waitUntil: 'load' });
+    await p.waitForSelector(ready, { timeout: 15000 });
+    await sleep(700);
+    assert.deepEqual(await widen(), [0, 0], route + ': sahifa 320 px dan kengaymaydi');
+  }
+  // Saqlash paneli ochiq — ikkala tugma ekranda
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
+  await p.waitForSelector('.set-nav [data-section="board"]', { timeout: 15000 });
+  await p.click('.set-nav [data-section="board"]');
+  await p.waitForSelector('[data-piece-set="clear"]');
+  await p.click('[data-piece-set="clear"]');
+  await p.waitForSelector('.set-bar.show [data-save]');
+  await sleep(400);
+  const bar = await p.evaluate(() => [...document.querySelectorAll('.set-bar.show button')].map((x) => { const r = x.getBoundingClientRect(); return [Math.round(r.left), Math.round(r.right)]; }));
+  assert.equal(bar.length, 2);
+  bar.forEach(([l, r]) => assert.ok(l >= 0 && r <= 320, "saqlash paneli tugmasi ekranda: " + JSON.stringify(bar)));
+  assert.deepEqual(p.errors, []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

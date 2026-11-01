@@ -792,6 +792,26 @@ test("Joylashuv L5: qora donalar to'q katakda ajralib turadi — och hoshiya (Ri
   assert.deepEqual(p.errors, []);
 });
 
+test("Joylashuv L5: asosiy rangli tugmalardagi yozuv o'qiladi — kontrast ≥ 4.5:1 (Firuza, Oltin, Olxo'ri)", opts, async () => {
+  const u = await srv.register('Ona');
+  for (const theme of ['turquoise', 'gold', 'plum']) {
+    const p = await page(u);
+    await p.evaluateOnNewDocument((th) => localStorage.setItem('justChessSettings', JSON.stringify({ siteTheme: th })), theme);
+    await p.goto(srv.base + '/kutubxona', { waitUntil: 'load' });
+    await p.waitForSelector('.lib-btn', { timeout: 15000 });
+    await sleep(500);
+    const r = await p.evaluate(() => {
+      const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
+      const lum = ([r, g, b]) => { const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+      const ratio = (x, y) => { const [a, b] = [lum(x), lum(y)].sort((m, n) => n - m); return (a + 0.05) / (b + 0.05); };
+      const btn = document.querySelector('.lib-btn:not(.ghost)');
+      return ratio(rgb(getComputedStyle(btn).color), rgb(getComputedStyle(btn).backgroundColor));
+    });
+    assert.ok(r >= 4.5, theme + ': tugma yozuvi kontrasti ' + r.toFixed(2));
+    assert.deepEqual(p.errors, []);
+  }
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

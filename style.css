@@ -14537,6 +14537,9 @@ html.landscape-phone .nf-wrap { flex-direction: column-reverse; }
 .tm-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 #teamBoard .tm-last { box-shadow: inset 0 0 0 100px rgba(246, 196, 69, 0.35); }
 #teamBoard .tm-hint { box-shadow: inset 0 0 0 4px rgba(56, 189, 248, 0.9); }
+/* Qora donalar atrofida ingichka och hoshiya: to'q katakda ham ajralib tursin (L5: Rishton taxtasida ko'k donalar, Choyxona/Suzana
+   taxtasida yog'och donalar deyarli ko'rinmasdi). Och katakda sezilmaydi. chessboard.js donalari — img[data-piece] */
+.board-b72b1 img[data-piece^="b"] { filter: drop-shadow(0 0 1.2px rgba(255, 255, 255, 0.75)) drop-shadow(0 0 0.6px rgba(255, 255, 255, 0.6)); }
 #teamBoard { touch-action: none; }
 /* Jonli va 2 ga 2 taxtasi ekran balandligidan oshmaydi (yon holatdagi telefonda 450–650 px bo'lib, bir ekranga sig'masdi) */
 #liveBoard, #teamBoard { max-width: min(100%, calc(100dvh - 24px)); margin-left: auto; margin-right: auto; }

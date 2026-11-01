@@ -779,6 +779,19 @@ test("Joylashuv L4: kompyuterda (1024×768) 2 ga 2 taxtasi va ikkala jamoa soati
   assert.deepEqual([...p.errors, ...l.errors], []);
 });
 
+test("Joylashuv L5: qora donalar to'q katakda ajralib turadi — och hoshiya (Rishton taxtasi + Rishton donalari), oq donalarda yo'q", opts, async () => {
+  const u = await srv.register('Hal');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => localStorage.setItem('justChessSettings', JSON.stringify({ boardStyle: 'rishton', pieceSet: 'rishton' })));
+  await p.goto(srv.base + '/oyin', { waitUntil: 'load' });
+  await p.waitForSelector('#chessBoard img[data-piece="bP"]', { timeout: 15000 });
+  const f = await p.evaluate(() => [getComputedStyle(document.querySelector('#chessBoard img[data-piece="bP"]')).filter, getComputedStyle(document.querySelector('#chessBoard img[data-piece="wP"]')).filter, document.documentElement.dataset.board]);
+  assert.equal(f[2], 'rishton');
+  assert.match(f[0], /drop-shadow/, 'qora donada hoshiya');
+  assert.equal(f[1], 'none', "oq donada hoshiya yo'q");
+  assert.deepEqual(p.errors, []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);

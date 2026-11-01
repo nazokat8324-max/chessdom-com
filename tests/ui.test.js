@@ -792,7 +792,7 @@ test("Joylashuv L5: qora donalar to'q katakda ajralib turadi — och hoshiya (Ri
   assert.deepEqual(p.errors, []);
 });
 
-test("Joylashuv L5: asosiy rangli tugmalardagi yozuv o'qiladi — kontrast ≥ 4.5:1 (Firuza, Oltin, Olxo'ri)", opts, async () => {
+test("Joylashuv L5: asosiy rangli tugmalardagi yozuv o'qiladi — kontrast ≥ 4.5:1 (Firuza, Oltin, Nilufar)", opts, async () => {
   const u = await srv.register('Ona');
   for (const theme of ['turquoise', 'gold', 'plum']) {
     const p = await page(u);

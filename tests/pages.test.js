@@ -173,6 +173,20 @@ test("Sayt rang mavzulari: 15 ta, barcha ro'yxatlar, CSS va 6 tildagi nomlar bir
     assert.ok(css.includes(`.set-theme.t-${id} i`), id + ' namunasi');
     assert.equal((langs.match(new RegExp('\\b' + key + ':', 'g')) || []).length, 6, key + ' 6 tilda');
   }
+  // Nomlar (2026-11-01, foydalanuvchi tanlovi): settings.js zaxira nomi = o'zbekcha tarjima, har tilda nomlar takrorlanmaydi
+  const fallbacks = Object.fromEntries([...read('settings.js').match(/const THEMES = \[(.*)\];/)[1].matchAll(/\['\w+', '(\w+)', (['"])(.*?)\2\]/g)].map((m) => [m[1], m[3]]));
+  const files = ['languages.js', 'lang-tr.js', 'lang-kk.js', 'lang-tg.js', 'lang-ky.js', 'lang-tk.js', 'lang-az.js', 'lang-zh.js', 'lang-it.js'];
+  const names = {};
+  for (const f of files) {
+    const src = read(f);
+    for (const [, , key] of settings) {
+      [...src.matchAll(new RegExp('\\b' + key + ': "([^"]*)"', 'g'))].forEach((m, i) => { (names[f + i] = names[f + i] || []).push(m[1]); });
+    }
+  }
+  assert.deepEqual(names['languages.js0'], settings.map((m) => fallbacks[m[2]]), "settings.js nomlari = o'zbekcha");
+  assert.deepEqual(names['languages.js0'].slice(10), ['Zaytun', "O'rik", 'Nilufar', "Bug'doy", 'Yalpiz']);
+  assert.equal(names['languages.js0'][2], 'Binafsha');
+  for (const [k, v] of Object.entries(names)) assert.equal(new Set(v).size, v.length, k + ': mavzu nomlari takrorlanmasin ' + v);
 });
 
 test("Xochli ♔/♚ matn belgilari sayt kodida yo'q (o'rniga kingIcon rasm)", () => {

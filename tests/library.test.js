@@ -54,6 +54,33 @@ test("Qo'llanmalar: noyob id, sarlavha, kirish va har band 6 tilda", () => {
   }
 });
 
+test("Shaxmat tarixi muzeyi: noyob bekatlar, har matn 14 tilda, ko'rgazmalar haqiqiy (partiya, o'yin turi, dona)", () => {
+  const { STOPS } = require('../museum-data');
+  const fourteen = (arr, what) => {
+    assert.ok(Array.isArray(arr) && arr.length === 14, what + ': 14 til');
+    arr.forEach((s, i) => assert.ok(typeof s === 'string' && s.trim().length > 1, what + ' [' + i + '] bo\'sh'));
+  };
+  assert.ok(STOPS.length >= 9);
+  const ids = new Set();
+  for (const s of STOPS) {
+    assert.ok(!ids.has(s.id), s.id); ids.add(s.id);
+    assert.ok(s.icon && s.year, s.id);
+    fourteen(s.place, s.id + '.place'); fourteen(s.title, s.id + '.title'); fourteen(s.text, s.id + '.text');
+    // Xitoycha matn haqiqatan xitoycha, italyancha — inglizchadan farqli
+    assert.match(s.text[12], /[一-鿿]/, s.id + ': zh');
+    assert.notEqual(s.text[13], s.text[1], s.id + ': it');
+    for (const d of s.demos || []) {
+      if (d.type === 'game') assert.ok(D.GAMES.some((g) => g.id === d.id), s.id + ': partiya ' + d.id);
+      else if (d.type === 'play') assert.ok(['shatranj', 'chess960'].includes(d.variant), s.id);
+      else if (d.type === 'diagram') { assert.match(d.piece, /^[KQRBNP]$/); fourteen(d.caption, s.id + '.caption'); }
+      else if (d.type === 'compare') d.pieces.forEach((p) => assert.match(p, /^[KQRBNP]$/));
+      else assert.fail(s.id + ': noma\'lum ko\'rgazma ' + d.type);
+    }
+  }
+  // Ipak yo'li bekatlari: Samarqand (Afrosiyob donalari) va Temur shaxmati bor
+  assert.ok(ids.has('afrasiab') && ids.has('timur') && ids.has('shatranj'));
+});
+
 let srv;
 before(async () => { srv = await startServer(); });
 after(async () => { await srv.stop(); });

@@ -132,5 +132,5 @@
     if (img.title !== title) img.title = title;
   });
 
-  window.PieceGuide = { moves, PIECES };
+  window.PieceGuide = { moves, PIECES, diagram };
 })();

@@ -74,6 +74,11 @@
           <a href="#lib-books">📚 ${esc(tx('libBooks', 'Klassik kitoblar'))}</a>
         </nav>
       </section>
+      ${window.ChessMuseumView ? `<button type="button" class="lib-museum" data-museum>
+        <span class="lib-ico big">🏛️</span>
+        <span class="lib-museum-text"><b>${esc(tx('musTitle', 'Shaxmat tarixi muzeyi'))}</b><small>${esc(tx('musCard', "{{n}} bekat: chaturangadan Chess960 gacha", { n: window.ChessMuseumView.count() }))}</small></span>
+        <span class="lib-go">${esc(tx('musEnter', 'Muzeyga kirish'))} →</span>
+      </button>` : ''}
       <section class="lib-shelf" id="lib-guides">
         <h2>📝 ${esc(tx('libGuides', "Qo'llanmalar"))}</h2>
         <div class="lib-grid">${ARTICLES().map((a) => `<button type="button" class="lib-card" data-article="${esc(a.id)}">
@@ -103,6 +108,8 @@
         </article>`).join('')}</div>
       </section>`;
     el.querySelectorAll('[data-article]').forEach((b) => b.onclick = () => openArticle(b.dataset.article));
+    const mu = el.querySelector('[data-museum]');
+    if (mu) mu.onclick = () => openArticle(MUSEUM);
     el.querySelectorAll('[data-game]').forEach((b) => b.onclick = () => window.openLibraryGame(b.dataset.game));
     el.querySelectorAll('.lib-jump a').forEach((a) => a.onclick = (e) => {
       e.preventDefault();
@@ -129,11 +136,19 @@
     document.title = L(a.title) + ' · ' + tx('libTitle', 'Kutubxona') + ' · ChessCaravan';
   }
 
+  // 🏛 Shaxmat tarixi muzeyi (museum.js) — maqola kabi manzili bor: /kutubxona?m=muzey
+  const MUSEUM = 'muzey';
+  const isMuseum = (id) => id === MUSEUM && !!window.ChessMuseumView;
+  function renderMuseum() {
+    const el = root();
+    if (el) window.ChessMuseumView.render(el, () => window.openLibrary(null));
+  }
+
   function openArticle(id) {
-    const a = ARTICLES().find((x) => x.id === id);
-    if (!a) return;
+    const a = isMuseum(id) ? null : ARTICLES().find((x) => x.id === id);
+    if (!a && !isMuseum(id)) return;
     st.article = id;
-    renderArticle(a);
+    if (a) renderArticle(a); else renderMuseum();
     const url = '/kutubxona?m=' + encodeURIComponent(id);
     if (location.pathname + location.search !== url) history.pushState({ view: 'library', m: id }, '', url);
     const v = document.getElementById('libraryView');
@@ -157,9 +172,10 @@
     const q = location.pathname === '/kutubxona' ? new URLSearchParams(location.search).get('m') : null;
     const id = st.pending !== undefined ? st.pending : q;
     st.pending = undefined;
-    const a = id && ARTICLES().find((x) => x.id === id);
-    st.article = a ? a.id : null;
-    if (a) renderArticle(a); else renderShelves();
+    const museum = isMuseum(id);
+    const a = !museum && id && ARTICLES().find((x) => x.id === id);
+    st.article = museum ? MUSEUM : a ? a.id : null;
+    if (museum) renderMuseum(); else if (a) renderArticle(a); else renderShelves();
     // Admin materiallari yuklangach — qayta chizish (yoki havoladagi admin maqolasini ochish)
     loadItems().then((changed) => {
       const v = document.getElementById('libraryView');
@@ -167,7 +183,7 @@
       const again = id && ARTICLES().find((x) => x.id === id);
       if (again) { st.article = again.id; renderArticle(again); } else if (!st.article) renderShelves();
     });
-    const url = '/kutubxona' + (a ? '?m=' + encodeURIComponent(a.id) : '');
+    const url = '/kutubxona' + (museum ? '?m=' + MUSEUM : a ? '?m=' + encodeURIComponent(a.id) : '');
     setTimeout(() => { if (location.pathname === '/kutubxona' && location.pathname + location.search !== url) history.replaceState({ view: 'library' }, '', url); }, 0);
   };
   window.openLibrary = function (articleId) {

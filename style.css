@@ -14556,6 +14556,50 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
   .lib-hero h1 { font-size: 26px; }
   .lib-article-head h1 { font-size: 22px; }
 }
+/* ===== 🏛 Shaxmat tarixi muzeyi (museum.js, /kutubxona?m=muzey) ===== */
+.lib-museum { display: flex; align-items: center; gap: 14px; width: 100%; margin: 0 0 22px; padding: 16px 18px; border-radius: 18px; font: inherit; color: inherit; text-align: left; cursor: pointer; background: linear-gradient(120deg, rgba(246, 196, 69, 0.14), rgba(var(--accent-rgb), 0.12)); border: 1px solid rgba(246, 196, 69, 0.35); }
+.lib-museum:hover { border-color: #f6c445; }
+.lib-museum-text { display: flex; flex-direction: column; gap: 3px; min-width: 0; flex: 1; }
+.lib-museum-text b { font-size: 18px; }
+.lib-museum-text small { color: var(--cd-muted, #a9b6b0); font-size: 13px; }
+.lib-museum .lib-go { margin: 0; white-space: nowrap; }
+.mu-page { max-width: 860px; }
+.mu-hero { margin: 14px 0 16px; padding: 22px; border-radius: 20px; background: linear-gradient(135deg, rgba(246, 196, 69, 0.14), rgba(var(--accent-rgb), 0.1)); border: 1px solid var(--cd-border-strong); }
+.mu-hero h1 { margin: 6px 0; font-size: 30px; }
+.mu-hero p { margin: 0; max-width: 680px; line-height: 1.6; color: var(--cd-muted, #a9b6b0); }
+/* Yo'l: bekatlar zanjiri (o'zi ichida yonga aylanadi, sahifa toshmaydi) */
+.mu-route { display: flex; gap: 8px; margin: 0 0 22px; padding: 4px 2px 10px; overflow-x: auto; scrollbar-width: thin; }
+.mu-route a { flex: none; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 92px; padding: 10px 10px; border-radius: 14px; text-decoration: none; color: inherit; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); position: relative; }
+.mu-route a:not(:last-child)::after { content: ""; position: absolute; right: -9px; top: 50%; width: 10px; border-top: 2px dashed rgba(246, 196, 69, 0.6); }
+.mu-route a:hover { border-color: #f6c445; }
+.mu-route span { font-size: 22px; line-height: 1.2; }
+.mu-route b { font-size: 12px; color: #f6c445; white-space: nowrap; }
+.mu-route small { font-size: 11px; color: var(--cd-muted, #a9b6b0); text-align: center; max-width: 110px; overflow-wrap: anywhere; }
+/* Vaqt chizig'i */
+.mu-timeline { list-style: none; margin: 0; padding: 0 0 0 26px; position: relative; }
+.mu-timeline::before { content: ""; position: absolute; left: 13px; top: 6px; bottom: 6px; border-left: 2px dashed rgba(246, 196, 69, 0.45); }
+.mu-stop { position: relative; margin: 0 0 16px; scroll-margin-top: 16px; }
+.mu-dot { position: absolute; left: -30px; top: 12px; width: 34px; height: 34px; display: grid; place-items: center; font-size: 18px; border-radius: 50%; background: var(--cd-bg-2, #0d171a); border: 2px solid #f6c445; }
+.mu-card { margin-left: 14px; padding: 16px 18px; border-radius: 16px; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); }
+.mu-year { font-size: 12px; font-weight: 800; letter-spacing: 0.04em; color: #f6c445; }
+.mu-card h2 { margin: 4px 0 8px; font-size: 20px; }
+.mu-card p { margin: 0 0 12px; line-height: 1.65; font-size: 15px; overflow-wrap: anywhere; }
+.mu-demo { margin: 0 0 12px; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.mu-demo .pc-board { max-width: 190px; margin: 0; }
+.mu-demo.small .pc-board { max-width: 150px; }
+.mu-demo figcaption { font-size: 13px; text-align: center; color: var(--cd-muted, #a9b6b0); }
+.mu-compare { display: grid; gap: 12px; margin: 0 0 12px; }
+.mu-cmp-row > b { display: block; margin-bottom: 6px; font-size: 14px; }
+.mu-cmp-pair { display: flex; align-items: center; justify-content: center; gap: 10px; }
+.mu-cmp-pair .mu-demo { margin: 0; flex: 1; min-width: 0; }
+.mu-arrow { font-size: 22px; font-weight: 800; color: #f6c445; }
+.mu-play { display: inline-block; margin: 0 8px 4px 0; }
+@media (max-width: 600px) {
+  .mu-hero h1 { font-size: 24px; }
+  .mu-card { padding: 14px; }
+  .lib-museum { flex-wrap: wrap; }
+  .lib-museum .lib-go { flex-basis: 100%; }
+}
 /* "ChessCaravan haqida": bajarilgan rejalar ✓ */
 .ab-step.done .ab-step-dot { background: #22c55e; color: #fff; }
 .ab-step-tag { display: block; margin-top: 4px; font-size: 11px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.7; }

@@ -523,6 +523,42 @@ test("6-sinov o'tishi: Choyxonada bosish qayta chizishda yo'qolmaydi, bo'sh stul
   assert.deepEqual(p.errors, []);
 });
 
+test("Shaxmat tarixi muzeyi: Kutubxonadan kirish, manzil, oldin/keyin chizmalari, Shatranj o'ynash, orqaga, italyancha, telefonda sig'adi", opts, async () => {
+  const u = await srv.register('Mzy');
+  const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/kutubxona', { waitUntil: 'load' });
+  await p.waitForSelector('[data-museum]', { timeout: 15000 });
+  await p.click('[data-museum]');
+  await p.waitForSelector('.mu-stop');
+  const st = await p.evaluate(() => ({
+    url: location.pathname + location.search, stops: document.querySelectorAll('.mu-stop').length,
+    ferz: document.querySelectorAll('#mu-shatranj .pc-board .mv').length,
+    compare: [...document.querySelectorAll('#mu-queen .mu-cmp-pair')].map((r) => [...r.querySelectorAll('.pc-board')].map((b) => b.querySelectorAll('.mv').length)),
+    ov: document.documentElement.scrollWidth - innerWidth
+  }));
+  assert.equal(st.url, '/kutubxona?m=muzey');
+  assert.equal(st.stops, 9);
+  assert.equal(st.ferz, 4, 'shatranj farzini: 4 diagonal katak');
+  assert.deepEqual(st.compare, [[4, 24], [4, 12]], 'farzin 4 → 24, fil 4 → 12 (7×7 chizmada)');
+  assert.ok(st.ov <= 1, "gorizontal toshish yo'q: " + st.ov);
+  // Shatranj o'ynash — o'yin sahifasi Shatranj tanlangan holda
+  await p.evaluate(() => document.querySelector('[data-mu-play="shatranj"]').click());
+  await p.waitForFunction(() => document.querySelector('#gameView.active-view') && document.querySelector('#variantSeg [data-variant="shatranj"].active'), { timeout: 5000 });
+  // Orqaga — yana muzey
+  await p.goBack();
+  await p.waitForFunction(() => location.search === '?m=muzey' && document.querySelector('.mu-stop'), { timeout: 5000 });
+  await p.evaluate(() => document.querySelector('[data-mu-back]').click());
+  await p.waitForFunction(() => location.pathname === '/kutubxona' && !location.search && document.querySelector('[data-museum]'), { timeout: 5000 });
+  // To'g'ridan-to'g'ri havola, italyancha
+  const q = await page(u, { width: 1366, height: 860 });
+  await q.evaluateOnNewDocument(() => localStorage.setItem('justChessLang', 'it'));
+  await q.goto(srv.base + '/kutubxona?m=muzey', { waitUntil: 'load' });
+  await q.waitForSelector('.mu-stop', { timeout: 15000 });
+  assert.equal(await q.evaluate(() => document.querySelector('.mu-hero h1').textContent), 'Museo della storia degli scacchi');
+  assert.match(await q.evaluate(() => document.querySelector('#mu-afrasiab h2').textContent), /Afrasiab/);
+  assert.deepEqual([...p.errors, ...q.errors], []);
+});
+
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
   const u = await srv.register('Voice');
   const p = await page(u);
@@ -1335,7 +1371,7 @@ test("Barcha bo'limlar: kirgan foydalanuvchi har bir sahifani ochganda ushlanmag
   await srv.api(u, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
   const login = await srv.api(null, '/api/auth/login', 'POST', { username: u.name, password: u.password });
   const ROUTES = ['/', '/oyin', '/choyxona', '/reyting', '/jonli', '/xabarlar', '/klublar', '/klublar?club=Uzbekistan', '/ligalar', '/chempionlar',
-    '/bayroqlar', '/karvon', '/kutubxona', '/sozlamalar', '/tarix?u=' + u.name, '/profil?u=' + u.name + '&b=nishonlar', '/jamoa', '/?profile=' + u.name];
+    '/bayroqlar', '/karvon', '/kutubxona', '/kutubxona?m=muzey', '/sozlamalar', '/tarix?u=' + u.name, '/profil?u=' + u.name + '&b=nishonlar', '/jamoa', '/?profile=' + u.name];
   for (const vp of [undefined, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
     const p = await page({ token: login.token, user: login.user }, vp);
     p.consoleErrors = [];

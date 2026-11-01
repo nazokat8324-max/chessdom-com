@@ -189,6 +189,45 @@ test("Sayt rang mavzulari: 15 ta, barcha ro'yxatlar, CSS va 6 tildagi nomlar bir
   for (const [k, v] of Object.entries(names)) assert.equal(new Set(v).size, v.length, k + ': mavzu nomlari takrorlanmasin ' + v);
 });
 
+test("C1: index.html dagi title / aria-label / placeholder matnlari tarjima qilinadi (data-i18n-*)", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+  // Holatga qarab JS o'zi yozadigan tugmalar (sound/voice/menyu) va email namunalari bundan mustasno
+  const JS_MANAGED = ['pgVoiceBtn', 'pgSoundBtn', 'sidebarToggle'];
+  const bad = [];
+  for (const tag of html.match(/<[a-z][^>]*>/gis) || []) {
+    const id = (tag.match(/\sid="([^"]*)"/) || [])[1];
+    if (JS_MANAGED.includes(id)) continue;
+    for (const [, name, value] of tag.matchAll(/\s(title|aria-label|placeholder)="([^"]*)"/gi)) {
+      if (!/\p{L}{2,}/u.test(value) || value.includes('@')) continue;
+      const ok = name === 'placeholder' ? /data-i18n-placeholder=/.test(tag) || ['clubSearchInput', 'languageSearch'].includes(id) : /data-i18n-title=/.test(tag);
+      if (!ok) bad.push(name + '="' + value + '"');
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
+test("C1: dona to'plamlari nomlari 15 tilda tarjima qilinadi va bir tilda takrorlanmaydi", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const vm = require('vm');
+  const read = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  const pieces = [...read('settings.js').match(/const PIECES = \[(.*)\];/)[1].matchAll(/\['(\w+)', (?:"[^"]*"|'[^']*'), '(\w+)'\]/g)];
+  assert.equal(pieces.length, 15, "har to'plamda tarjima kaliti");
+  const L = ['tr', 'kk', 'tg', 'ky', 'tk', 'az', 'zh', 'it'];
+  const ctx = { console, localStorage: { getItem: () => null }, document: { querySelectorAll: () => [], getElementById: () => null, addEventListener() {} }, i18next: { init() {}, t: (k) => k, on() {} } };
+  ctx.window = ctx; vm.createContext(ctx);
+  vm.runInContext(L.map((l) => read('lang-' + l + '.js')).join('\n') + '\n' + read('languages.js') + '\n;globalThis.__T = translations;', ctx);
+  for (const l of ['uz', 'en', 'ru', 'es', 'de', 'fr', ...L]) {
+    const names = pieces.map(([, , key]) => ctx.__T[l][key]);
+    assert.ok(names.every(Boolean), l + ': ' + names);
+    assert.equal(new Set(names).size, 15, l + ': takroriy nom ' + names);
+  }
+  assert.equal(ctx.__T.en.pcSetCute, 'Cute');
+  assert.equal(ctx.__T.ru.pcSetWood, 'Дерево');
+});
+
 test("Xochli ♔/♚ matn belgilari sayt kodida yo'q (o'rniga kingIcon rasm)", () => {
   const fs = require('fs');
   const path = require('path');

@@ -505,7 +505,7 @@ window.toggleSidebar = function(force) {
   root.classList.toggle('sidebar-collapsed', collapsed);
   try { localStorage.setItem('justChessSidebar', collapsed ? 'collapsed' : 'open'); } catch (e) {}
   const btn = document.getElementById('sidebarToggle');
-  if (btn) btn.title = collapsed ? tx('sidebarOpen', 'Menyuni ochish') : tx('sidebarClose', "Menyuni yig'ish");
+  if (btn) { btn.title = collapsed ? tx('sidebarOpen', 'Menyuni ochish') : tx('sidebarClose', "Menyuni yig'ish"); btn.setAttribute('aria-label', btn.title); }
   // Taxta va grafiklar yangi kenglikka moslashsin
   setTimeout(() => window.dispatchEvent(new Event('resize')), 260);
 };

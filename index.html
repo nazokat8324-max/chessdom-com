@@ -507,6 +507,7 @@
             class="nf-bell"
             id="notifBell"
             aria-label="Bildirishnomalar"
+            data-i18n-title="nfTitle"
           >
             🔔<span class="nf-count" id="notifCount" hidden>0</span>
           </button>
@@ -717,6 +718,7 @@
                   type="button"
                   class="pg-tool"
                   id="pgFlipBtn"
+              data-i18n-title="gpFlip"
                   onclick="window.flipBoard()"
                   title="Taxtani aylantirish"
                 >
@@ -1082,7 +1084,7 @@
               type="text"
               id="loginUsername"
               class="form-input"
-              placeholder="Ismingiz"
+              placeholder="Ismingiz" data-i18n-placeholder="labelLoginUsername"
             />
           </div>
           <div class="form-group">
@@ -1129,7 +1131,7 @@
               type="text"
               id="regUsername"
               class="form-input"
-              placeholder="Ism tanlang"
+              placeholder="Ism tanlang" data-i18n-placeholder="labelRegUsername"
             />
           </div>
           <div class="form-group">
@@ -1536,6 +1538,7 @@
               id="clubChatClearBtn"
               onclick="window.clearClubChat()"
               title="Chatni tozalash"
+              data-i18n-title="chatClear"
             >
               🧹
             </button>
@@ -1568,6 +1571,7 @@
                 class="msg-emoji-btn"
                 id="clubChatEmojiBtn"
                 title="Stikerlar va emoji"
+                data-i18n-title="msgStickers"
               >
                 😊
               </button>
@@ -2160,7 +2164,7 @@
                   onclick="
                     window.togglePasswordVisibility('signupPassword', this)
                   "
-                  aria-label="Parol"
+                  aria-label="Parol" data-i18n-title="labelLoginPassword"
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path
@@ -2317,7 +2321,7 @@
                   onclick="
                     window.togglePasswordVisibility('loginModalPassword', this)
                   "
-                  aria-label="Parol"
+                  aria-label="Parol" data-i18n-title="labelLoginPassword"
                 >
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path
@@ -2647,6 +2651,7 @@
                 type="button"
                 class="avatar-remove-btn"
                 id="avatarRemoveBtn"
+                data-i18n-title="avatarRemove"
                 style="display: none"
                 onclick="window.removeAvatar()"
                 title="Rasmni o'chirish"

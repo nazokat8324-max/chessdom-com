@@ -149,7 +149,7 @@
         century: { title: "La Partita del Secolo", story: "Bobby Fischer, a 13 anni, sacrifica la donna contro il forte maestro Donald Byrne (17...Be6!). In cambio raccoglie un mucchio di materiale e i suoi pezzi lavorano insieme per dare matto al re bianco. Fischer sarebbe poi diventato campione del mondo." },
         rubinstein: { title: "L'Immortale di Rubinstein", story: "Rubinstein sacrifica la donna (22...Rxc3!!) ed entrambe le torri. I suoi due alfieri puntano il re bianco e dopo 25...Rh3 il matto non si può più fermare, così il Bianco abbandona." },
         marshall: { title: "La partita delle “monete d'oro”", story: "Marshall mette la donna in g3, dove può essere catturata in tre modi (23...Qg3!!). Ogni cattura porta al matto o a gravi perdite. Si racconta che gli spettatori ricoprirono la scacchiera di monete d'oro." },
-        short: { title: "La marcia del re", story: "Con le donne ancora sulla scacchiera, Short porta il suo re da h2 a g5, minacciando Kh6 e Qg7 matto. Il Nero non trovò difesa e abbandonò. La prova migliore che anche il re può partecipare all'attacco." },
+        short: { title: "La marcia del re", story: "Con le donne ancora sulla scacchiera, Short porta il suo re da h2 a g5, minacciando Rh6 e Dg7 matto. Il Nero non trovò difesa e abbandonò. La prova migliore che anche il re può partecipare all'attacco." },
         kasparov: { title: "L'Immortale di Kasparov", story: "24.Rxd4!! — Kasparov sacrifica una torre e il re nero viene inseguito attraverso tutta la scacchiera fino a d1. Molti maestri la considerano la partita più bella mai giocata." }
       },
       books: {

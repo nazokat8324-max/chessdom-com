@@ -87,7 +87,7 @@
         </div>
         <div class="war-hero-side">
           <div class="war-season">
-            <select id="warSeasonSel" aria-label="season">${seasonOptions(d)}</select>
+            <select id="warSeasonSel" aria-label="${esc(tx('ariaSeason', 'Mavsum'))}">${seasonOptions(d)}</select>
             ${d.current ? `<small>⏳ ${esc(tx('warEndsIn', 'Tugashiga'))}: <b id="warCountdown">${esc(countdown(d.endsAt))}</b></small>` : `<small>${esc(tx('warEnded', 'Mavsum yakunlandi'))}</small>`}
           </div>
           <div class="war-ruler">${ruler ? `<span>👑 ${esc(d.current ? tx('warLeading', 'Hozir yetakchi') : tx('warRuler', "Mavsum chempioni"))}</span>

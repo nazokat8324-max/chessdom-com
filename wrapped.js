@@ -186,9 +186,9 @@
     m.hidden = true;
     m.innerHTML = `<div class="wr-stage">
       <div class="wr-progress"></div>
-      <div class="wr-top"><select class="wr-season" aria-label="season"></select><button type="button" class="wr-close" aria-label="close">✕</button></div>
+      <div class="wr-top"><select class="wr-season" aria-label="${esc(tx('ariaSeason', 'Mavsum'))}"></select><button type="button" class="wr-close" aria-label="${esc(tx('close', 'Yopish'))}">✕</button></div>
       <div class="wr-slide"></div>
-      <button type="button" class="wr-nav prev" aria-label="prev"></button><button type="button" class="wr-nav next" aria-label="next"></button>
+      <button type="button" class="wr-nav prev" aria-label="${esc(tx('ariaPrev', 'Oldingi'))}"></button><button type="button" class="wr-nav next" aria-label="${esc(tx('ariaNext', 'Keyingi'))}"></button>
     </div>`;
     document.body.appendChild(m);
     m.querySelector('.wr-close').addEventListener('click', close);

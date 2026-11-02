@@ -77,13 +77,45 @@ app.use((req, res, next) => {
 });
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library' };
+const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library', jamoa: '2 vs 2 consultation chess', profil: 'Player profile', admin: 'Admin' };
 const DEFAULT_DESC = 'ChessCaravan — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
+// C4 (2026-11-02): har bo'limga o'z tavsifi (avval hammasida bir xil edi)
+const PAGE_DESC = {
+  oyin: 'Play chess online for free: bullet, blitz and rapid, Chess960 and Shatranj — the Silk Road chess. Rated or casual, with post-game analysis.',
+  reyting: 'ChessCaravan leaderboard: the strongest players in rapid, blitz, bullet and Chess960, and the country clubs ranking.',
+  jonli: 'Watch live chess games, chat with other spectators and guess the next move. The game of the day is picked every morning.',
+  klublar: 'Country chess clubs: join your country, chat with members and play for your club in continental leagues.',
+  ligalar: 'Team chess leagues of country clubs — round-robin matches on 10 boards, then the Champions League.',
+  chempionlar: 'The Champions League of country chess clubs: league winners meet in bullet, blitz and rapid matches.',
+  bayroqlar: 'Battle of Flags: every rated win earns flag points for your country club. Who paints the world map this month?',
+  choyxona: 'The Teahouse — a chess lobby with tables: sit down at a free chair, pick a time control and play.',
+  karvon: 'The Caravan Road: every game moves your camel along the Silk Road — from Xi’an to Samarkand and Istanbul.',
+  kutubxona: 'Chess library: guides for beginners, famous games with analysis, classic public-domain chess books and a museum of chess history.',
+  jamoa: 'Consultation chess: two against two on one board, with a private team chat.'
+};
+// Kirishni talab qiladigan yoki shaxsiy bo'limlar qidiruvga kiritilmaydi
+const NOINDEX = new Set(['xabarlar', 'sozlamalar', 'admin', 'profil']);
+// Kanonik manzilda kontentni o'zgartiradigan parametrlar qoladi (avval hammasi tashlanardi — profil va maqolalar bosh sahifa nusxasi bo'lib qolardi)
+const CANONICAL_PARAMS = { '': ['profile'], kutubxona: ['m'], klublar: ['club'], tarix: ['u'] };
+const LIB_ARTICLES = require('./library-articles');
+const enText = (v) => Array.isArray(v) ? (v[1] || v[0] || '') : String(v || '');
 const escAttr = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 async function sendIndex(req, res) {
-  let title = PAGE_TITLES[req.params && req.params[0] ? req.params[0].toLowerCase() : ''] || 'ChessCaravan';
-  if (title !== PAGE_TITLES['']) title += ' · ChessCaravan';
-  let desc = DEFAULT_DESC;
+  const slug = req.params && req.params[0] ? req.params[0].toLowerCase() : '';
+  let title = PAGE_TITLES[slug] || 'ChessCaravan';
+  if (title !== PAGE_TITLES[''] && title !== 'ChessCaravan') title += ' · ChessCaravan';
+  let desc = PAGE_DESC[slug] || DEFAULT_DESC;
+  // Kutubxona maqolasi / muzey: o'z sarlavhasi va tavsifi bilan
+  const m = slug === 'kutubxona' && typeof req.query.m === 'string' ? req.query.m.slice(0, 40) : '';
+  if (m === 'muzey') {
+    title = 'Museum of chess history · ChessCaravan';
+    desc = 'From chaturanga in India to shatranj in Baghdad, the Afrasiab pieces of Samarkand, the powerful queen and computers — a timeline of chess history.';
+  } else if (m) {
+    const a = LIB_ARTICLES.find((x) => x.id === m);
+    if (a) { title = enText(a.title) + ' · ChessCaravan'; desc = String(enText(a.lead)).slice(0, 300) || desc; }
+  }
+  const club = slug === 'klublar' && typeof req.query.club === 'string' ? req.query.club.slice(0, 60) : '';
+  if (club && isValidClubName(club)) { title = club + ' chess club · ChessCaravan'; desc = `${club} country chess club on ChessCaravan: members, rating, league matches and club chat.`; }
   const name = typeof req.query.profile === 'string' ? req.query.profile.slice(0, 40) : '';
   // 🔗 Taklif havolasi: Telegram/WhatsApp oldindan ko'rinishida "X sizni o'yinga chaqiryapti"
   const inviteCode = typeof req.query.invite === 'string' ? req.query.invite.slice(0, 16) : '';
@@ -109,9 +141,13 @@ async function sendIndex(req, res) {
     } catch (e) {}
   }
   const url = SITE_URL + req.originalUrl;
+  const keep = new URLSearchParams();
+  for (const k of CANONICAL_PARAMS[slug] || []) if (typeof req.query[k] === 'string' && req.query[k]) keep.set(k, req.query[k].slice(0, 60));
+  const canonical = SITE_URL + (req.path === '/index.html' ? '/' : req.path) + (keep.toString() ? '?' + keep.toString() : '');
   const meta = `<title>${escAttr(title)}</title>
     <meta name="description" content="${escAttr(desc)}" />
-    <link rel="canonical" href="${escAttr(SITE_URL + req.path)}" />
+    ${NOINDEX.has(slug) ? '<meta name="robots" content="noindex" />' : ''}
+    <link rel="canonical" href="${escAttr(canonical)}" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ChessCaravan" />
     <meta property="og:title" content="${escAttr(title)}" />
@@ -132,9 +168,12 @@ app.get('/favicon.ico', (req, res) => res.type('image/png').set('Cache-Control',
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
   const pages = ['', 'reyting', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'karvon', 'kutubxona', 'maxfiylik', 'shartlar', 'mualliflar'];
-  let players = [];
+  let players = [], clubs = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
-  const urls = pages.map(p => `${SITE_URL}/${p}`).concat(players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
+  try { clubs = (await db.getCountryClubSummary()).filter(c => c.members > 0 && isValidClubName(c.name)).map(c => c.name); } catch (e) {}
+  // Kutubxona maqolalari, muzey va a'zosi bor klublar ham (C4, 2026-11-02)
+  const library = ['muzey', ...LIB_ARTICLES.map(a => a.id)].map(id => `${SITE_URL}/kutubxona?m=${encodeURIComponent(id)}`);
+  const urls = pages.map(p => `${SITE_URL}/${p}`).concat(library, clubs.map(c => `${SITE_URL}/klublar?club=${encodeURIComponent(c)}`), players.map(n => `${SITE_URL}/?profile=${encodeURIComponent(n)}`));
   res.type('application/xml').send('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + urls.map(u => `  <url><loc>${u.replace(/&/g, '&amp;')}</loc></url>`).join('\n') + '\n</urlset>\n');
 });
@@ -150,10 +189,18 @@ app.get('/manifest.json', (req, res) => {
 // Maxfiylik siyosati va Foydalanish shartlari — alohida ommaviy sahifa (kirish talab qilinmaydi). CONTACT_EMAIL (env) — aloqa manzili
 const LEGAL_HTML = fs.readFileSync(path.join(__dirname, 'legal.html'), 'utf8').replace('__CONTACT__', escapeHtml(process.env.CONTACT_EMAIL || ''));
 const LEGAL_ALIASES = { '/privacy': '/maxfiylik', '/terms': '/shartlar', '/credits': '/mualliflar' };
+// Har hujjatga o'z sarlavhasi, tavsifi va kanonik manzili (avval uchalasida "ChessCaravan" va tavsifsiz edi); til klientda almashadi
+const LEGAL_META = {
+  '/maxfiylik': ['Privacy Policy', 'How ChessCaravan collects, uses and protects your data.'],
+  '/shartlar': ['Terms of Use', 'The rules for using ChessCaravan — accounts, fair play and conduct.'],
+  '/mualliflar': ['Credits and licenses', 'Open-source libraries and freely licensed resources ChessCaravan is built on.']
+};
 app.get(['/maxfiylik', '/shartlar', '/mualliflar', '/privacy', '/terms', '/credits'], (req, res) => {
   if (LEGAL_ALIASES[req.path]) return res.redirect(301, LEGAL_ALIASES[req.path]);
+  const [t, d] = LEGAL_META[req.path];
   res.set('Cache-Control', 'no-cache');
-  res.type('html').send(LEGAL_HTML);
+  res.type('html').send(LEGAL_HTML.replace('<html lang="uz">', '<html lang="en">').replace('<title>ChessCaravan</title>',
+    `<title>${escAttr(t)} · ChessCaravan</title>\n  <meta name="description" content="${escAttr(d)}">\n  <link rel="canonical" href="${SITE_URL + req.path}">`));
 });
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /jonli ... — hammasi bitta sahifa (index.html).

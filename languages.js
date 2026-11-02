@@ -10918,7 +10918,8 @@ function updateUI() {
 
   // HTML'dagi data-i18n (matn) va data-i18n-placeholder (placeholder) atributli elementlar
   document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
-  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); });
+  // Yorlig'i (label/aria-label) yo'q maydonga placeholder matni aria-label bo'lib ham qo'yiladi — ekran o'quvchi placeholder'ni har doim o'qimaydi (C4)
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { el.placeholder = t(el.dataset.i18nPlaceholder); if (!(el.id && document.querySelector('label[for="' + el.id + '"]')) && !el.closest('label') && (!el.hasAttribute('aria-label') || el.dataset.i18nAria)) { el.setAttribute('aria-label', el.placeholder); el.dataset.i18nAria = '1'; } });
   document.querySelectorAll('[data-i18n-title]').forEach(el => { el.title = t(el.dataset.i18nTitle); el.setAttribute('aria-label', el.title); });
 
   const mHome = document.getElementById("mHome"); if (mHome) mHome.textContent = t('mHome');
@@ -10992,7 +10993,7 @@ function updateUI() {
   const playOnlineBtn = document.getElementById("playOnlineBtn"); if (playOnlineBtn) playOnlineBtn.textContent = '\u26A1 ' + t('playOnlineBtn');
   const tabPlayers = document.getElementById("playersTabLabel"); if (tabPlayers) tabPlayers.textContent = t('tabPlayers');
   const tabClubs = document.getElementById("clubsTabLabel"); if (tabClubs) tabClubs.textContent = t('tabClubs');
-  const searchCountry = document.getElementById("clubSearchInput"); if (searchCountry) searchCountry.placeholder = t('searchCountry');
+  const searchCountry = document.getElementById("clubSearchInput"); if (searchCountry) { searchCountry.placeholder = t('searchCountry'); searchCountry.setAttribute('aria-label', searchCountry.placeholder); }
   const filterAll = document.getElementById("filterAll"); if (filterAll) filterAll.textContent = t('filterAll');
   const filterRapid = document.getElementById("filterRapid"); if (filterRapid) filterRapid.textContent = t('filterRapid');
   const filterBlitz = document.getElementById("filterBlitz"); if (filterBlitz) filterBlitz.textContent = t('filterBlitz');

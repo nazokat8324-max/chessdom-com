@@ -14956,3 +14956,13 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
 @media (prefers-reduced-motion: reduce) {
   .cvr-camel.walking svg, .view-section.cvr-in-right, .view-section.cvr-in-left, .cvr-map { animation: none !important; }
 }
+
+/* ===== C4 qulaylik (2026-11-02) ===== */
+/* Ko'rinmas sarlavha: ekran o'quvchi va qidiruv tizimlari uchun (sahifada ko'rinmaydi) */
+.sr-only { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+/* Qidiruv maydonlari ichidagi input'da outline yo'q — klaviatura bilan kelganda butun "pill" yorishadi */
+.lb-search:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35); }
+/* Telefonda bosiladigan matnli tugmalar kamida 24 px (WCAG 2.5.8) */
+.set-reset, .meta-edit-btn, .auth-gate .auth-switch-link { min-height: 24px; display: inline-flex; align-items: center; }
+/* Kirish sahifasi yoki profil oynasi ochiq — ularning o'z h1 i bor, orqadagi sahifaniki yashiriladi (sahifada bitta h1) */
+body.auth-locked .view-section > h1.sr-only, body:has(#profileModal[style*="flex"]) .view-section > h1.sr-only { display: none !important; }

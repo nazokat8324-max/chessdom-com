@@ -165,8 +165,8 @@
           <div class="msg-sidebar-head">
             <h2>${esc(tx('mMessages', 'Xabarlar'))}</h2>
             <form class="msg-search" id="msgSearch">
-              <input id="msgSearchInput" class="form-input" placeholder="${esc(tx('msgSearchPlaceholder', "O'yinchi nomi bilan yangi suhbat"))}" autocomplete="off">
-              <button type="submit" class="msg-small-btn">+</button>
+              <input id="msgSearchInput" class="form-input" placeholder="${esc(tx('msgSearchPlaceholder', "O'yinchi nomi bilan yangi suhbat"))}" aria-label="${esc(tx('msgSearchPlaceholder', "O'yinchi nomi bilan yangi suhbat"))}" autocomplete="off">
+              <button type="submit" class="msg-small-btn" aria-label="${esc(tx('msgSearchPlaceholder', "O'yinchi nomi bilan yangi suhbat"))}">+</button>
             </form>
             <div class="msg-tabs">${tabs.map(([id, label, n]) => `<button class="msg-tab${state.tab === id ? ' active' : ''}" data-tab="${id}">${esc(label)}${n ? ` <span class="msg-tab-count">${n}</span>` : ''}</button>`).join('')}</div>
           </div>

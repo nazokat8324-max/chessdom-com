@@ -35,8 +35,8 @@
       </div>`;
     const manage = d.canManage ? `
       <form class="cs-manage" id="csManageForm" autocomplete="off">
-        <input class="form-input" id="csUser" maxlength="30" placeholder="${esc(tx('csUsernamePh', "A'zoning nomi"))}">
-        <select class="form-input" id="csRole">
+        <input class="form-input" id="csUser" maxlength="30" placeholder="${esc(tx('csUsernamePh', "A'zoning nomi"))}" aria-label="${esc(tx('csUsernamePh', "A'zoning nomi"))}">
+        <select class="form-input" id="csRole" aria-label="${esc(tx('csAssign', 'Tayinlash'))}">
           <option value="moderator">🛡️ ${esc(tx('csModerator', 'Moderator'))}</option>
           <option value="captain">👑 ${esc(tx('csMakeCaptain', 'Kapitanlikni topshirish'))}</option>
         </select>
@@ -44,8 +44,8 @@
       </form>` : '';
     const compose = d.canModerate ? `
       <form class="cs-compose" id="csNewsForm" autocomplete="off">
-        <input class="form-input" id="csNewsTitle" maxlength="120" placeholder="${esc(tx('csNewsTitlePh', 'Sarlavha'))}">
-        <textarea class="form-input" id="csNewsBody" maxlength="3000" rows="3" placeholder="${esc(tx('csNewsBodyPh', "Klub a'zolariga xabar..."))}"></textarea>
+        <input class="form-input" id="csNewsTitle" maxlength="120" placeholder="${esc(tx('csNewsTitlePh', 'Sarlavha'))}" aria-label="${esc(tx('csNewsTitlePh', 'Sarlavha'))}">
+        <textarea class="form-input" id="csNewsBody" maxlength="3000" rows="3" placeholder="${esc(tx('csNewsBodyPh', "Klub a'zolariga xabar..."))}" aria-label="${esc(tx('csNewsBodyPh', "Klub a'zolariga xabar..."))}"></textarea>
         <div class="cs-compose-row">
           <label class="cs-pin-check"><input type="checkbox" id="csNewsPin"> 📌 ${esc(tx('csPin', 'Mahkamlash'))}</label>
           <button type="submit" class="start-game-btn cs-publish">${esc(tx('csPublish', "E'lon qilish"))}</button>

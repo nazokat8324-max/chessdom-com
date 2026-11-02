@@ -106,7 +106,7 @@
         <p class="set-hint">${esc(tx('setCountryHint', "Bayrog'ingiz o'yinlarda, reytingda va profilingizda ko'rinadi"))}</p>
         <div class="set-country">
           <img id="setCountryFlag" src="https://flagcdn.com/w80/${esc(d.country)}.png" alt="">
-          <select id="setCountry" class="set-select">${countries.map(([code, name]) => `<option value="${esc(code)}"${code === d.country ? ' selected' : ''}>${esc(name)}</option>`).join('')}</select>
+          <select id="setCountry" class="set-select" aria-label="${esc(tx('setCountryTitle', 'Davlatingiz'))}">${countries.map(([code, name]) => `<option value="${esc(code)}"${code === d.country ? ' selected' : ''}>${esc(name)}</option>`).join('')}</select>
         </div>
       </div>`;
   }

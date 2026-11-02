@@ -904,6 +904,39 @@ test("Shahar naqshlari: o'z profilida tanlanadi, qulflanganlari bosilmaydi", opt
   assert.equal(await p2.evaluate(() => !!document.querySelector('#profileCaravan .bn-edit')), false);
 });
 
+test("C4 qulaylik: har sahifada bitta h1, maydonlarning yorlig'i bor, qidiruvda klaviatura fokusi ko'rinadi, ingliz tilida yorliqlar inglizcha", opts, async () => {
+  const u = await srv.register('A11y');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => localStorage.setItem('justChessLang', 'en'));
+  const h1s = () => p.evaluate(() => [...document.querySelectorAll('h1')].filter((h) => { for (let e = h; e && e !== document.documentElement; e = e.parentElement) { const cs = getComputedStyle(e); if (cs.display === 'none' || cs.visibility === 'hidden') return false; } return true; }).map((h) => h.textContent.trim()));
+  for (const route of ['/', '/oyin', '/jonli', '/xabarlar', '/klublar', '/ligalar', '/chempionlar', '/reyting', '/kutubxona']) {
+    await p.goto(srv.base + route, { waitUntil: 'load' });
+    await sleep(1200);
+    assert.equal((await h1s()).length, 1, route + ': ' + JSON.stringify(await h1s()));
+  }
+  // Profil oynasi ochiq — faqat profilning h1 i
+  await p.goto(srv.base + '/?profile=' + u.name, { waitUntil: 'load' });
+  await p.waitForFunction(() => document.getElementById('profileModal').style.display === 'flex', { timeout: 10000 });
+  assert.deepEqual(await h1s(), ['Profile']);
+  // Placeholder'li maydonlarda aria-label (tilda)
+  await p.goto(srv.base + '/xabarlar', { waitUntil: 'load' });
+  await p.waitForSelector('#msgSearchInput', { timeout: 10000 });
+  const lbl = await p.evaluate(() => ({ s: document.getElementById('msgSearchInput').getAttribute('aria-label'), b: document.querySelector('#msgSearch button').getAttribute('aria-label') }));
+  assert.ok(lbl.s && !/[ʻ'’]/.test(lbl.s.replace(/'s\b/, '')) && /[a-z]/i.test(lbl.s), 'inglizcha yorliq: ' + lbl.s);
+  assert.equal(lbl.b, lbl.s);
+  await p.goto(srv.base + '/klublar', { waitUntil: 'load' });
+  await p.waitForSelector('#clubSearchInput', { timeout: 10000 });
+  await sleep(500);
+  assert.ok(await p.evaluate(() => document.getElementById('clubSearchInput').getAttribute('aria-label')));
+  // Reyting qidiruvi: Tab bilan kelinganda "pill" yorishadi
+  await p.goto(srv.base + '/reyting', { waitUntil: 'load' });
+  await p.waitForSelector('#lbSearch', { timeout: 10000 });
+  await p.focus('#lbSearch');
+  const ring = await p.evaluate(() => getComputedStyle(document.getElementById('lbSearch').closest('.lb-search')).boxShadow);
+  assert.notEqual(ring, 'none');
+  assert.deepEqual(p.errors, []);
+});
+
 // C3 (2026-11-02): o'yinni boshlash — B (socket) A ni chaqiradi, A brauzerda qabul qiladi; ranglar tasodifiy
 async function browserGame(prefixA, prefixB) {
   const a = await srv.register(prefixA), b = await srv.register(prefixB);

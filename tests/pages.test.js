@@ -18,6 +18,46 @@ test('Bosh sahifa va bo\'limlar sarlavhasi bilan beriladi', async () => {
   assert.match(lb, /rel="canonical"/);
 });
 
+test("C4 SEO: o'z sarlavhasi va tavsifi, kanonik manzilda profil/maqola/klub qoladi, shaxsiy bo'limlar noindex, sitemap va huquqiy sahifalar", async () => {
+  const head = async (p) => {
+    const h = await (await get(p)).text();
+    const pick = (re) => (h.match(re) || [])[1];
+    return { title: pick(/<title>([^<]*)<\/title>/), desc: pick(/name="description" content="([^"]*)"/), canonical: pick(/rel="canonical" href="([^"]*)"/), noindex: /name="robots" content="noindex"/.test(h), lang: pick(/<html lang="([^"]*)"/) };
+  };
+  // Takrorlangan brend yo'q
+  for (const p of ['/jamoa', '/profil', '/admin']) assert.doesNotMatch((await head(p)).title, /ChessCaravan · ChessCaravan/, p);
+  // Bo'limlarning tavsiflari har xil
+  const descs = await Promise.all(['/', '/reyting', '/choyxona', '/kutubxona', '/karvon', '/klublar'].map(async (p) => (await head(p)).desc));
+  assert.equal(new Set(descs).size, descs.length, "har bo'limda o'z tavsifi");
+  // Profil, maqola va klub — kanonik manzilda parametr qoladi, ortiqchasi tashlanadi
+  const reg = await srv.api(null, '/api/auth/register', 'POST', { username: 'SeoUser', email: 'seo@test.uz', password: 'secret1' });
+  assert.ok(reg.success);
+  const prof = await head('/?profile=SeoUser&utm_source=x');
+  assert.match(prof.canonical, /\/\?profile=SeoUser$/);
+  assert.match(prof.title, /^SeoUser · ChessCaravan$/);
+  const art = await head('/kutubxona?m=fork');
+  assert.match(art.canonical, /\/kutubxona\?m=fork$/);
+  assert.doesNotMatch(art.title, /^Chess library/, 'maqola o\'z sarlavhasi bilan');
+  assert.match((await head('/kutubxona?m=muzey')).title, /Museum of chess history/);
+  const club = await head('/klublar?club=Uzbekistan&tab=chat');
+  assert.match(club.canonical, /\/klublar\?club=Uzbekistan$/);
+  assert.match(club.title, /^Uzbekistan chess club/);
+  assert.match((await head('/reyting?x=1')).canonical, /\/reyting$/);
+  // Shaxsiy bo'limlar qidiruvga kirmaydi, ommaviylari kiradi
+  for (const p of ['/xabarlar', '/sozlamalar', '/admin', '/profil']) assert.equal((await head(p)).noindex, true, p);
+  for (const p of ['/', '/reyting', '/kutubxona', '/klublar']) assert.equal((await head(p)).noindex, false, p);
+  // Sitemap: maqolalar, muzey, a'zosi bor klub
+  await srv.api(reg, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
+  const sm = await (await get('/sitemap.xml')).text();
+  assert.match(sm, /\/kutubxona\?m=muzey</);
+  assert.match(sm, /\/kutubxona\?m=fork</);
+  assert.match(sm, /\/klublar\?club=Uzbekistan</);
+  // Huquqiy sahifalar: o'z sarlavhasi, tavsifi, kanonik manzili
+  const legal = await Promise.all(['/maxfiylik', '/shartlar', '/mualliflar'].map(head));
+  assert.equal(new Set(legal.map((x) => x.title)).size, 3);
+  for (const x of legal) { assert.ok(x.desc); assert.ok(x.canonical); assert.equal(x.lang, 'en'); }
+});
+
 test("socket.io mijozi o'z serverimizdan (CDN yuklanmasa butun sayt ishlamasdi — admin 'Xatolar': socket is not defined)", async () => {
   const html = await (await get('/')).text();
   assert.match(html, /<script src="\/socket\.io\/socket\.io\.min\.js"><\/script>/);

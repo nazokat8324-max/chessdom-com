@@ -18,7 +18,7 @@
   }
 
   function chips(name, options, current) {
-    return `<div class="gh-chips">${options.map(([v, l]) => `<button class="lb-chip${current === v ? ' active' : ''}" data-f="${name}" data-v="${v}">${l}</button>`).join('')}</div>`;
+    return `<div class="gh-chips">${options.map(([v, l, label]) => `<button class="lb-chip${current === v ? ' active' : ''}" data-f="${name}" data-v="${v}"${label ? ` aria-label="${esc(label)}"` : ''}>${l}</button>`).join('')}</div>`;
   }
 
   function render() {
@@ -51,8 +51,8 @@
       <div class="gh-filters">
         ${chips('mode', [['all', '🏆 ' + tx('lbModeAll', 'Umumiy')], ['rapid', '⏱️ Rapid'], ['blitz', '⚡ Blitz'], ['bullet', '🔥 Bullet'], ['chess960', '🎲 Chess960'], ['shatranj', '🏺 Shatranj']], st.mode)}
         ${chips('result', [['all', tx('ghAllResults', 'Barchasi')], ['win', resultLabel.win], ['draw', resultLabel.draw], ['loss', resultLabel.loss]], st.result)}
-        ${chips('color', [['all', window.kingIcon('w') + window.kingIcon('b')], ['w', window.kingIcon('w') + ' ' + tx('whiteText', 'Oq')], ['b', window.kingIcon('b') + ' ' + tx('blackText', 'Qora')]], st.color)}
-        <form class="lb-search gh-search" id="ghSearch"><span>🔍</span><input id="ghQuery" type="search" placeholder="${esc(tx('ghOpponent', 'Raqib nomi'))}" value="${esc(st.q)}" autocomplete="off"></form>
+        ${chips('color', [['all', window.kingIcon('w') + window.kingIcon('b'), tx('ghAllResults', 'Barchasi')], ['w', window.kingIcon('w') + ' ' + tx('whiteText', 'Oq')], ['b', window.kingIcon('b') + ' ' + tx('blackText', 'Qora')]], st.color)}
+        <form class="lb-search gh-search" id="ghSearch"><span>🔍</span><input id="ghQuery" type="search" placeholder="${esc(tx('ghOpponent', 'Raqib nomi'))}" aria-label="${esc(tx('ghOpponent', 'Raqib nomi'))}" value="${esc(st.q)}" autocomplete="off"></form>
       </div>
       <div class="gh-summary"><span class="w">${esc(resultLabel.win)} <b>${sum.win || 0}</b></span><span class="d">${esc(resultLabel.draw)} <b>${sum.draw || 0}</b></span><span class="l">${esc(resultLabel.loss)} <b>${sum.loss || 0}</b></span></div>
       <div class="gh-list">${rows}</div>

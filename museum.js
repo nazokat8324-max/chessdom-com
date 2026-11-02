@@ -71,6 +71,24 @@
     el.querySelectorAll('[data-mu-play]').forEach((b) => b.onclick = () => playVariant(b.dataset.muPlay));
     el.querySelectorAll('[data-mu-game]').forEach((b) => b.onclick = () => window.openLibraryGame && window.openLibraryGame(b.dataset.muGame));
     document.title = tx('musTitle', 'Shaxmat tarixi muzeyi') + ' · ChessCaravan';
+    addVideos(el);
+  }
+
+  // ▶ YouTube'dagi "Shaxmat tarixi" Shorts'lari: faqat ochiq bo'lganlari (server tekshiradi), havola — yangi oynada (sahifaga joylanmaydi)
+  async function addVideos(el) {
+    let videos = {};
+    try { const r = await fetch('/api/museum/videos'); const d = await r.json(); videos = (d && d.videos) || {}; } catch (e) { return; }
+    for (const [stop, id] of Object.entries(videos)) {
+      const card = el.querySelector('#mu-' + CSS.escape(stop) + ' .mu-card');
+      if (!card || card.querySelector('.mu-video') || !/^[\w-]{6,20}$/.test(id)) continue;
+      const a = document.createElement('a');
+      a.className = 'lib-btn ghost mu-play mu-video';
+      a.href = 'https://www.youtube.com/shorts/' + id;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.innerHTML = (window.youtubeIcon ? window.youtubeIcon() : '▶') + ' ' + esc(tx('musWatchVideo', "Videoda ko'rish"));
+      card.appendChild(a);
+    }
   }
 
   window.ChessMuseumView = { render, count: () => stops().length };

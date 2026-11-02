@@ -54,7 +54,10 @@ test("Liga: ikkalasi bir vaqtda tayyor → bitta o'yin; natija yoziladi, bahs ya
   for (const x of [a, b]) x.socket.events.length = 0;
   a.socket.emit('league-ready', { gameId });
   b.socket.emit('league-ready', { gameId });
-  await sleep(1200);
+  // Yuklamada bazaga yozish sekinlashadi — qat'iy 1.2 s o'rniga ikkalasiga kelguncha kutamiz, so'ng takror kelmasligini tekshiramiz
+  const got = (x) => x.socket.events.some((e) => e.e === 'match-found');
+  await waitFor(async () => got(a) && got(b));
+  await sleep(600);
   const mfA = a.socket.events.filter((e) => e.e === 'match-found');
   const mfB = b.socket.events.filter((e) => e.e === 'match-found');
   assert.equal(mfA.length, 1, "A ga bitta match-found");

@@ -2949,6 +2949,33 @@ async function start() {
       res.json({ success: true, users: list, queue: fairplayAnalyzer ? fairplayAnalyzer.size() : 0, engineEnabled: !!fairplayAnalyzer });
     } catch (err) { console.error('Fair-play xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
+  // 🏛 Muzey videolari: faqat YouTube'da ochiq bo'lgan Shorts (rejalashtirilganlari chiqquncha yopiq).
+  // Har video oEmbed orqali tekshiriladi (bazaga murojaat yo'q); ochiq deb topilgani qayta tekshirilmaydi, qolganlari — soatiga bir marta.
+  // Testlarda tarmoqsiz: MUSEUM_VIDEOS_PUBLIC="chaturanga,chatrang"
+  const MUSEUM_VIDEOS = require('./museum-data').VIDEOS;
+  const museumVideoState = new Map(); // stopId → { public, checkedAt }
+  let museumVideoCheck = null;
+  async function museumVideos() {
+    if (TEST_MODE) {
+      const allow = new Set(String(process.env.MUSEUM_VIDEOS_PUBLIC || '').split(',').filter(Boolean));
+      return Object.fromEntries(Object.entries(MUSEUM_VIDEOS).filter(([stop]) => allow.has(stop)));
+    }
+    const due = Object.entries(MUSEUM_VIDEOS).filter(([stop]) => { const s = museumVideoState.get(stop); return !s || (!s.public && Date.now() - s.checkedAt > 3600000); });
+    if (due.length && !museumVideoCheck) {
+      museumVideoCheck = Promise.all(due.map(async ([stop, id]) => {
+        let ok = false;
+        try { ok = (await fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/shorts/' + id), { signal: AbortSignal.timeout(4000) })).ok; } catch (e) {}
+        museumVideoState.set(stop, { public: ok, checkedAt: Date.now() });
+      })).finally(() => { museumVideoCheck = null; });
+    }
+    if (museumVideoCheck) await museumVideoCheck;
+    return Object.fromEntries(Object.entries(MUSEUM_VIDEOS).filter(([stop]) => (museumVideoState.get(stop) || {}).public));
+  }
+  app.get('/api/museum/videos', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, videos: await museumVideos() }); }
+    catch (err) { res.json({ success: true, videos: {} }); }
+  });
+
   // 📚 Kutubxona: admin materiallari (ommaviy ro'yxat + admin qo'shish/tahrirlash/o'chirish)
   app.get('/api/library', apiLimiter, async (req, res) => {
     try { res.json({ success: true, items: await cached('library', 60000, () => db.listLibraryItems()) }); }

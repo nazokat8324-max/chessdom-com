@@ -1462,6 +1462,8 @@ const translationsExtra = {
     tgChannelFollow: "Yangiliklarni Telegram kanalimizda kuzatib boring",
     ytChannel: "YouTube kanal",
     ytChannelFollow: "Videolarimizni YouTube kanalimizda tomosha qiling",
+
+    musWatchVideo: "Videoda ko'rish",
     musTitle: "Shaxmat tarixi muzeyi",
     musLead: "Hindistondan Samarqand orqali butun dunyoga: shaxmat Ipak yo'li bo'ylab qanday sayohat qilganini va qoidalari qanday o'zgarganini ko'ring.",
     musCard: "{{n}} bekat: chaturangadan Chess960 gacha",
@@ -3032,6 +3034,8 @@ const translationsExtra = {
     tgChannelFollow: "Follow our news on our Telegram channel",
     ytChannel: "YouTube channel",
     ytChannelFollow: "Watch our videos on our YouTube channel",
+
+    musWatchVideo: "Watch the video",
     musTitle: "Chess history museum",
     musLead: "From India through Samarkand to the whole world: see how chess travelled the Silk Road and how its rules changed.",
     musCard: "{{n}} stops: from chaturanga to Chess960",
@@ -4602,6 +4606,8 @@ const translationsExtra = {
     tgChannelFollow: "Следите за новостями в нашем Telegram-канале",
     ytChannel: "YouTube-канал",
     ytChannelFollow: "Смотрите наши видео на YouTube-канале",
+
+    musWatchVideo: "Смотреть видео",
     musTitle: "Музей истории шахмат",
     musLead: "Из Индии через Самарканд по всему миру: посмотрите, как шахматы путешествовали по Шёлковому пути и как менялись их правила.",
     musCard: "{{n}} остановок: от чатуранги до Chess960",
@@ -6172,6 +6178,8 @@ const translationsExtra = {
     tgChannelFollow: "Sigue nuestras novedades en nuestro canal de Telegram",
     ytChannel: "Canal de YouTube",
     ytChannelFollow: "Mira nuestros vídeos en nuestro canal de YouTube",
+
+    musWatchVideo: "Ver el vídeo",
     musTitle: "Museo de la historia del ajedrez",
     musLead: "De la India a todo el mundo pasando por Samarcanda: descubre cómo el ajedrez viajó por la Ruta de la Seda y cómo cambiaron sus reglas.",
     musCard: "{{n}} paradas: del chaturanga al Chess960",
@@ -7742,6 +7750,8 @@ const translationsExtra = {
     tgChannelFollow: "Folge unseren Neuigkeiten in unserem Telegram-Kanal",
     ytChannel: "YouTube-Kanal",
     ytChannelFollow: "Sieh dir unsere Videos auf unserem YouTube-Kanal an",
+
+    musWatchVideo: "Video ansehen",
     musTitle: "Museum der Schachgeschichte",
     musLead: "Von Indien über Samarkand in die ganze Welt: Sieh, wie das Schach über die Seidenstraße reiste und wie sich seine Regeln änderten.",
     musCard: "{{n}} Stationen: vom Chaturanga bis Chess960",
@@ -9312,6 +9322,8 @@ const translationsExtra = {
     tgChannelFollow: "Suivez nos actualités sur notre chaîne Telegram",
     ytChannel: "Chaîne YouTube",
     ytChannelFollow: "Regardez nos vidéos sur notre chaîne YouTube",
+
+    musWatchVideo: "Voir la vidéo",
     musTitle: "Musée de l'histoire des échecs",
     musLead: "De l'Inde au monde entier en passant par Samarcande : découvrez comment les échecs ont voyagé sur la route de la soie et comment leurs règles ont changé.",
     musCard: "{{n}} étapes : du chaturanga au Chess960",

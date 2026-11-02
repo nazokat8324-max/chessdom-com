@@ -14,7 +14,7 @@ const opts = { skip: QUICK ? 'test:quick — brauzer testlari o\'tkazildi' : CHR
 let srv, browser;
 before(async () => {
   if (!CHROME || QUICK) return;
-  srv = await startServer();
+  srv = await startServer({ MUSEUM_VIDEOS_PUBLIC: 'chaturanga' });
   browser = await require('puppeteer-core').launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox'] });
 });
 after(async () => { if (browser) await browser.close(); if (srv) await srv.stop(); });
@@ -554,6 +554,10 @@ test("Shaxmat tarixi muzeyi: Kutubxonadan kirish, manzil, oldin/keyin chizmalari
   assert.equal(st.ferz, 4, 'shatranj farzini: 4 diagonal katak');
   assert.deepEqual(st.compare, [[4, 24], [4, 12]], 'farzin 4 → 24, fil 4 → 12 (7×7 chizmada)');
   assert.ok(st.ov <= 1, "gorizontal toshish yo'q: " + st.ov);
+  // ▶ Video tugmasi faqat ochiq video bekatida (testda: chaturanga), YouTube havolasi yangi oynada
+  await p.waitForSelector('#mu-chaturanga .mu-video', { timeout: 8000 });
+  const vid = await p.evaluate(() => ({ n: document.querySelectorAll('.mu-video').length, href: document.querySelector('#mu-chaturanga .mu-video').href, target: document.querySelector('#mu-chaturanga .mu-video').target, rel: document.querySelector('#mu-chaturanga .mu-video').rel }));
+  assert.deepEqual(vid, { n: 1, href: 'https://www.youtube.com/shorts/axHTEebW8xo', target: '_blank', rel: 'noopener noreferrer' });
   // Shatranj o'ynash — o'yin sahifasi Shatranj tanlangan holda
   await p.evaluate(() => document.querySelector('[data-mu-play="shatranj"]').click());
   await p.waitForFunction(() => document.querySelector('#gameView.active-view') && document.querySelector('#variantSeg [data-variant="shatranj"].active'), { timeout: 5000 });

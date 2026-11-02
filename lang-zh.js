@@ -247,6 +247,8 @@ window.TRANSLATIONS_ZH = {
   tgChannelFollow: "在我们的 Telegram 频道关注最新消息",
   ytChannel: "YouTube 频道",
   ytChannelFollow: "在我们的 YouTube 频道观看视频",
+
+  musWatchVideo: "观看视频",
   musTitle: "国际象棋历史博物馆",
   musLead: "从印度经撒马尔罕走向全世界：看看国际象棋如何沿着丝绸之路旅行，规则又是如何演变的。",
   musCard: "{{n}} 站：从恰图兰卡到 Chess960",

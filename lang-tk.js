@@ -7,6 +7,8 @@ window.TRANSLATIONS_TK = {
   tgChannelFollow: "Täzeliklerimizi Telegram kanalymyzda yzarlaň",
   ytChannel: "YouTube kanaly",
   ytChannelFollow: "Wideolarymyzy YouTube kanalymyzda tomaşa ediň",
+
+  musWatchVideo: "Wideony gör",
   musTitle: "Küşt taryhy muzeýi",
   musLead: "Hindistandan Samarkant arkaly bütin dünýä: küştüň Beýik Ýüpek ýoly boýunça nähili syýahat edendigini we düzgünleriniň nähili üýtgändigini görüň.",
   musCard: "{{n}} duralga: çaturangadan Chess960-a çenli",

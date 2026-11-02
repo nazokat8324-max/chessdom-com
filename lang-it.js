@@ -247,6 +247,8 @@ window.TRANSLATIONS_IT = {
   tgChannelFollow: "Segui le nostre novità sul canale Telegram",
   ytChannel: "Canale YouTube",
   ytChannelFollow: "Guarda i nostri video sul nostro canale YouTube",
+
+  musWatchVideo: "Guarda il video",
   musTitle: "Museo della storia degli scacchi",
   musLead: "Dall'India al mondo intero passando per Samarcanda: scopri come gli scacchi hanno viaggiato lungo la Via della Seta e come sono cambiate le loro regole.",
   musCard: "{{n}} tappe: dal chaturanga allo Chess960",

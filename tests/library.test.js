@@ -82,7 +82,7 @@ test("Shaxmat tarixi muzeyi: noyob bekatlar, har matn 14 tilda, ko'rgazmalar haq
 });
 
 let srv;
-before(async () => { srv = await startServer(); });
+before(async () => { srv = await startServer({ MUSEUM_VIDEOS_PUBLIC: 'chaturanga,chatrang' }); });
 after(async () => { await srv.stop(); });
 
 test("Sahifa: /kutubxona ochiladi (SEO sarlavha), sitemap'da bor, ma'lumot fayllari ommaviy", async () => {
@@ -128,4 +128,16 @@ test("Admin kutubxonasi: faqat admin; maqola, partiya (PGN tekshiriladi), havola
   assert.deepEqual(list.map((x) => x.title).sort(), ['Ahmoqona mat', 'Yangi sarlavha']);
   const audit = await srv.api(adm, '/api/admin/audit?action=library');
   assert.deepEqual(audit.actions.map((x) => x.action).sort(), ['library_add', 'library_add', 'library_add', 'library_delete', 'library_edit']);
+});
+
+test("Muzey videolari: har bekatga bitta YouTube Shorts (noyob), API faqat ochiq videolarni beradi", async () => {
+  const { STOPS, VIDEOS } = require('../museum-data');
+  assert.deepEqual(Object.keys(VIDEOS).sort(), STOPS.map((s) => s.id).sort(), 'har bekatda video');
+  const ids = Object.values(VIDEOS);
+  assert.equal(new Set(ids).size, ids.length, 'videolar takrorlanmaydi');
+  for (const id of ids) assert.match(id, /^[\w-]{11}$/, id);
+  assert.equal(VIDEOS.chaturanga, 'axHTEebW8xo', "1-video — Chaturanga");
+  const d = await (await fetch(srv.base + '/api/museum/videos')).json();
+  assert.equal(d.success, true);
+  assert.deepEqual(d.videos, { chaturanga: VIDEOS.chaturanga, chatrang: VIDEOS.chatrang }, 'yopiq (rejalashtirilgan) videolar berilmaydi');
 });

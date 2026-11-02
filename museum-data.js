@@ -204,7 +204,13 @@
       demos: [{ type: 'play', variant: 'chess960' }]
     }
   ];
-  const api = { STOPS };
+  // ▶ YouTube kanalidagi "Shaxmat tarixi #1…#9" Shorts'lari — har bekatga bittadan (2026-11-02, foydalanuvchi bergan).
+  // Rejalashtirilgan videolar chiqquncha yopiq: tugma faqat server ochiq deb tasdiqlaganlarida chiqadi (/api/museum/videos)
+  const VIDEOS = {
+    chaturanga: 'axHTEebW8xo', chatrang: '48bnbD7OVLU', afrasiab: 'd_05rb3bVws', shatranj: 'eZTc558HObU', europe: 'nSeU91qf68s',
+    timur: 'czYBrHEE0OU', queen: 'V-xadJxFWEA', modern: 'aFEnXKbg_yo', digital: '8lC7K9KIXsM'
+  };
+  const api = { STOPS, VIDEOS };
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ChessMuseum = api;
 })(typeof window !== 'undefined' ? window : this);

@@ -904,6 +904,100 @@ test("Shahar naqshlari: o'z profilida tanlanadi, qulflanganlari bosilmaydi", opt
   assert.equal(await p2.evaluate(() => !!document.querySelector('#profileCaravan .bn-edit')), false);
 });
 
+// C3 (2026-11-02): o'yinni boshlash — B (socket) A ni chaqiradi, A brauzerda qabul qiladi; ranglar tasodifiy
+async function browserGame(prefixA, prefixB) {
+  const a = await srv.register(prefixA), b = await srv.register(prefixB);
+  const p = await page(a);
+  await p.goto(srv.base + '/', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#topSettingsBtn', { visible: true, timeout: 10000 });
+  await sleep(1200);
+  const sb = await srv.connect(b);
+  sb.emit('challenge-send', { username: a.name, initial: 600, increment: 0, rated: false });
+  await p.waitForSelector('#challengeModal [data-accept]', { visible: true, timeout: 8000 });
+  const found = new Promise((r) => sb.once('match-found', r));
+  await p.click('#challengeModal [data-accept]');
+  const m = await found;
+  await p.waitForFunction(() => window.currentRoomId && window.myColor, { timeout: 8000 });
+  return { a, b, p, sb, roomId: m.roomId, aColor: m.color === 'w' ? 'b' : 'w' };
+}
+const sbMove = (sb, roomId, uci) => new Promise((r) => { sb.emit('make-move', { roomId, move: { from: uci.slice(0, 2), to: uci.slice(2, 4) } }); setTimeout(r, 400); });
+const nextOppMove = (sb) => new Promise((r) => sb.once('opponent-move', r));
+
+test("O'yin davomida sahifa yangilansa: o'yin tiklanadi (yurishlar, rang, xona), raqibga opponent-back, o'yin davom etadi", opts, async () => {
+  const { p, sb, roomId, aColor } = await browserGame('RlA', 'RlB');
+  if (aColor === 'b') await sbMove(sb, roomId, 'e2e4');
+  else { const got = nextOppMove(sb); await p.click('#chessBoard [data-square="e2"]'); await p.click('#chessBoard [data-square="e4"]'); await got; }
+  await p.waitForSelector('#chessBoard [data-square="e4"] img', { timeout: 5000 });
+  const back = new Promise((r) => sb.once('opponent-back', r));
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  await p.waitForFunction((rid) => window.currentRoomId === rid && document.querySelector('#gameView.active-view') && document.querySelector('#chessBoard [data-square="e4"] img'), { timeout: 15000 }, roomId);
+  await back;
+  assert.equal(await p.evaluate(() => window.myColor), aColor);
+  assert.equal(await p.evaluate(() => document.querySelector('#chessBoard [data-square="e2"] img')), null, 'e2 bo\'sh — yurish tiklangan');
+  // O'yin davom etadi: navbatdagi yurish o'tadi
+  if (aColor === 'b') { const got = nextOppMove(sb); await p.click('#chessBoard [data-square="e7"]'); await p.click('#chessBoard [data-square="e5"]'); await got; }
+  else { await sbMove(sb, roomId, 'e7e5'); await p.waitForSelector('#chessBoard [data-square="e5"] img', { timeout: 5000 }); }
+  sb.disconnect();
+  assert.deepEqual(p.errors, []);
+});
+
+test("Premove: raqib navbatida qo'yilgan yurish raqib yurgach darhol serverga ketadi", opts, async () => {
+  const { p, sb, roomId, aColor } = await browserGame('PmA', 'PmB');
+  if (aColor === 'w') { const got = nextOppMove(sb); await p.click('#chessBoard [data-square="e2"]'); await p.click('#chessBoard [data-square="e4"]'); await got; }
+  // Endi navbat B da: A oldindan yuradi
+  const [from, to, oppMove] = aColor === 'w' ? ['d2', 'd4', 'e7e5'] : ['e7', 'e5', 'e2e4'];
+  await p.click(`#chessBoard [data-square="${from}"]`);
+  await p.click(`#chessBoard [data-square="${to}"]`);
+  await p.waitForSelector('#chessBoard .sq-premove', { timeout: 3000 });
+  const got = nextOppMove(sb);
+  await sbMove(sb, roomId, oppMove);
+  const mv = await got;
+  const m = mv.move || mv;
+  assert.equal(m.from + m.to, from + to, 'premove bajarildi');
+  await p.waitForSelector(`#chessBoard [data-square="${to}"] img`, { timeout: 5000 });
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#chessBoard .sq-premove').length), 0);
+  sb.disconnect();
+  assert.deepEqual(p.errors, []);
+});
+
+test("PGN yuklash: matn qo'yilib o'yin qayta ko'rish oynasida ochiladi, yurishlar va natija bilan; buzuq PGN rad etiladi", opts, async () => {
+  const u = await srv.register('PgnIm');
+  const p = await page(u);
+  await p.goto(srv.base + '/tarix?u=' + u.name, { waitUntil: 'domcontentloaded' });
+  await p.waitForFunction(() => typeof window.openPgnImport === 'function', { timeout: 10000 });
+  await sleep(800);
+  await p.evaluate(() => window.openPgnImport());
+  await p.waitForSelector('#pgnText', { visible: true });
+  await p.type('#pgnText', 'salom dunyo');
+  await p.click('[data-open]');
+  await sleep(400);
+  assert.ok(await p.$('#pgnText'), "buzuq PGN — oyna yopilmaydi");
+  await p.evaluate(() => { document.getElementById('pgnText').value = '[White "Morphy"]\n[Black "Duke Karl"]\n[Result "1-0"]\n[TimeControl "180+2"]\n\n1. e4 e5 2. Nf3 d6 3. d4 Bg4 4. dxe5 Bxf3 5. Qxf3 dxe5 6. Bc4 Nf6 7. Qb3 Qe7 8. Nc3 c6 9. Bg5 b5 10. Nxb5 cxb5 11. Bxb5+ Nbd7 12. O-O-O Rd8 13. Rxd7 Rxd7 14. Rd1 Qe6 15. Bxd7+ Nxd7 16. Qb8+ Nxb8 17. Rd8# 1-0'; });
+  await p.click('[data-open]');
+  await p.waitForSelector('#replayModal [data-ply="33"]', { timeout: 8000 });
+  const st = await p.evaluate(() => ({ plies: document.querySelectorAll('#replayModal [data-ply]').length, text: document.getElementById('replayModal').textContent }));
+  assert.equal(st.plies, 33);
+  assert.match(st.text, /Morphy/);
+  assert.match(st.text, /Duke Karl/);
+  assert.deepEqual(p.errors, []);
+});
+
+test("Chiqish: Sozlamalar → Hisob → Chiqish — sessiya tozalanadi, kirish sahifasi chiqadi", opts, async () => {
+  const u = await srv.register('LgOut');
+  const p = await page(u);
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#settingsRoot [data-section="account"]', { visible: true, timeout: 10000 });
+  await p.click('#settingsRoot [data-section="account"]');
+  await p.waitForSelector('#settingsRoot [data-logout]', { visible: true });
+  await p.click('#settingsRoot [data-logout]');
+  await p.waitForFunction(() => document.body.classList.contains('auth-locked'), { timeout: 8000 });
+  const st = await p.evaluate(() => ({ token: localStorage.getItem('justChessAuthToken'), user: localStorage.getItem('justChessCurrentUser'), cur: window.currentUser }));
+  assert.equal(st.token, null);
+  assert.equal(st.user, null);
+  assert.equal(st.cur, null);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Bahs: chaqiruvda tanlanadi, o'yin panelida hisob, keyingi o'yin tugmasi, profilda ro'yxat", opts, async () => {
   const a = await srv.register('DuelA'), b = await srv.register('DuelB');
   const p = await page(a);

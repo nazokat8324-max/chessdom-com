@@ -1184,10 +1184,14 @@ async function loadBans() {
   return dbAll('SELECT id, banned_until as "until", ban_reason as "reason" FROM users WHERE banned_until IS NOT NULL');
 }
 
+// LIKE uchun % _ \ ekranlanadi (2026-11-02 gacha olib tashlanardi — "ali_bek" qidiruvi "alibek" bo'lib topilmasdi,
+// jurnalning "chat_delete" / "report_resolve" filtrlari bo'sh chiqardi)
+const likeEscape = (s) => String(s).replace(/[\\%_]/g, (c) => '\\' + c);
+
 async function adminSearchUsers(q) {
-  const like = '%' + String(q || '').toLowerCase().replace(/[%_]/g, '') + '%';
+  const like = '%' + likeEscape(String(q || '').toLowerCase()) + '%';
   const rows = await dbAll(`SELECT id, username, email, rating, country, created_at as "createdAt", last_active as "lastActive", role, banned_until as "bannedUntil", ban_reason as "banReason", stats
-    FROM users WHERE LOWER(username) LIKE ? ORDER BY last_active DESC LIMIT 50`, [like]);
+    FROM users WHERE LOWER(username) LIKE ? ESCAPE '\\' ORDER BY last_active DESC LIMIT 50`, [like]);
   const counts = await reportCounts();
   return rows.map(u => ({ ...u, reports: counts.get(u.id) || 0 }));
 }
@@ -2181,8 +2185,8 @@ async function addAdminAction({ adminId, adminName, action, targetType, targetId
 // Filtr: action (aniq nom yoki "ban" kabi guruh boshi), q — admin yoki nishon nomi; 50 tadan sahifalab
 async function listAdminActions({ action, q, page } = {}) {
   const where = [], params = [];
-  if (action) { where.push('action LIKE ?'); params.push(String(action).replace(/[%_]/g, '') + '%'); }
-  if (q) { const like = '%' + String(q).replace(/[%_]/g, '').toLowerCase() + '%'; where.push('(LOWER(admin_name) LIKE ? OR LOWER(target_name) LIKE ?)'); params.push(like, like); }
+  if (action) { where.push("action LIKE ? ESCAPE '\\'"); params.push(likeEscape(action) + '%'); }
+  if (q) { const like = '%' + likeEscape(String(q).toLowerCase()) + '%'; where.push("(LOWER(admin_name) LIKE ? ESCAPE '\\' OR LOWER(target_name) LIKE ? ESCAPE '\\')"); params.push(like, like); }
   const per = 50, p = Math.max(0, Number(page) || 0);
   const w = where.length ? 'WHERE ' + where.join(' AND ') : '';
   const rows = await dbAll(`SELECT id, admin_name as "admin", action, target_type as "targetType", target_id as "targetId", target_name as "target", details, created_at as "createdAt"

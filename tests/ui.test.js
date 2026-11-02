@@ -103,7 +103,12 @@ test("Klublar: mening klubim kartasi, faol klublar tepada, klub sahifasidagi 4 t
   const p = await page({ token: login.token, user: login.user });
   await p.goto(srv.base + '/klublar', { waitUntil: 'domcontentloaded' });
   await p.waitForSelector('.cl-mine[data-club="Uzbekistan"]', { timeout: 10000 });
-  assert.equal(await p.evaluate(() => document.querySelector('.cl-grid .cl-tile').dataset.club), 'Uzbekistan', "faol klub birinchi");
+  // Faol klublar a'zolar soni bo'yicha tepada (boshqa testlar ham klubga qo'shiladi — tartib a'zolar soniga qarab tekshiriladi)
+  const active = await p.evaluate(() => [...document.querySelectorAll('.cl-grid:not(.small) .cl-tile')].map((t) => t.dataset.club));
+  assert.ok(active.includes('Uzbekistan'), "a'zosi bor klub faollar orasida: " + active.join(','));
+  const counts = (await srv.api(null, '/api/country-clubs')).clubs;
+  const n = (name) => (counts.find((c) => c.name === name) || { members: 0 }).members;
+  assert.deepEqual(active.map(n), [...active.map(n)].sort((a, b) => b - a), "a'zolar soni bo'yicha kamayib boradi");
   await p.click('.cl-mine');
   await p.waitForSelector('.cl-tabs .cl-tab.active[data-cl-tab="overview"]');
   await p.waitForSelector('.cl-stats');
@@ -1596,6 +1601,97 @@ test("中文, Italiano: menyu, kutubxona va huquqiy sahifa shu tillarda, sozlama
     assert.deepEqual(p.errors, [], l);
     await p.close();
   }
+});
+
+test("C5 admin paneli: 8 ta tab, shikoyat → ban → blokdan chiqarish, jim qilish, taqiqlangan so'z, kutubxona qo'shish/tahrir/o'chirish, xato hal qilish, zaxira, jurnal filtrlari", opts, async () => {
+  const adm = await srv.register('C5Adm'), bad = await srv.register('C5_bad'), rep = await srv.register('C5Rep');
+  await new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(require('path').join(srv.dir, 'test.sqlite'));
+    d.run("UPDATE users SET role = 'admin' WHERE id = ?", [adm.id], (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  adm.user.role = 'admin';
+  await srv.api(rep, '/api/reports', 'POST', { username: bad.name, reason: 'abuse', details: 'C5 sinov shikoyati' });
+  for (const u of [adm, bad]) await srv.api(u, '/api/country-clubs/join', 'POST', { country: 'Kenya', code: 'ke' });
+  await srv.api(bad, '/api/chat/messages', 'POST', { roomId: 'club_Kenya', message: 'C5 klub xabari' });
+  await fetch(srv.base + '/api/client-errors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: 'C5 sinov xatosi: x is undefined', stack: 'at c5 (https://x/app.js:1:1)', url: '/c5' }) });
+  const p = await page(adm);
+  await p.goto(srv.base + '/admin', { waitUntil: 'load' });
+  await p.waitForSelector('#adminRoot [data-atab="stats"].active, [data-atab="stats"].active', { timeout: 15000 });
+  const tab = async (id, sel) => { await clickEl(`[data-atab="${id}"]`); await p.waitForSelector(sel, { timeout: 10000 }); await sleep(300); };
+  // Ro'yxat har amaldan keyin qayta chiziladi — element har safar yangidan topiladi (eski havola "detached" bo'lib qolardi)
+  const clickEl = async (sel) => { await p.waitForSelector(sel, { timeout: 8000 }); await sleep(250); await p.evaluate((q) => document.querySelector(q).click(), sel); };
+  const txt = () => p.evaluate(() => document.querySelector('.adm-body').textContent);
+  // 📊 Statistika — kartalar va zaxira nusxa
+  await p.waitForSelector('.adm-stat', { timeout: 10000 });
+  assert.ok((await p.$$('.adm-stat')).length >= 8);
+  const backup = p.waitForResponse((r) => r.url().endsWith('/api/admin/backup'), { timeout: 15000 });
+  await clickEl('#admBackupBtn');
+  assert.equal((await backup).status(), 200);
+  // ⚠️ Shikoyatlar: ban (1 kun) → ko'rib chiqildi
+  await tab('reports', '.adm-item [data-resolve]');
+  assert.match(await txt(), /C5 sinov shikoyati/);
+  const banned = p.waitForResponse((r) => r.url().endsWith('/api/admin/users/' + bad.id + '/ban'), { timeout: 8000 });
+  await clickEl(`[data-ban="${bad.id}"]`);
+  assert.equal((await banned).status(), 200);
+  assert.equal((await srv.api(bad, '/api/notifications')).status, 403, 'bloklangan foydalanuvchi API ga kira olmaydi');
+  await clickEl('[data-resolve]');
+  await p.waitForFunction(() => !/C5 sinov shikoyati/.test(document.querySelector('.adm-body').textContent), { timeout: 8000 });
+  // 👥 O'yinchilar: "_" li ism qidiruvi, blokdan chiqarish
+  await tab('users', '#admQuery');
+  await p.type('#admQuery', 'C5_bad');
+  await p.keyboard.press('Enter');
+  await p.waitForSelector(`[data-unban="${bad.id}"]`, { timeout: 8000 });
+  await clickEl(`[data-unban="${bad.id}"]`);
+  await p.waitForSelector(`[data-ban="${bad.id}"]`, { timeout: 8000 });
+  assert.equal((await srv.api(bad, '/api/notifications')).status, 200, 'blokdan chiqdi');
+  // 🕵️ Fair-play tab ochiladi
+  await tab('fairplay', '.adm-note');
+  // 💬 Chat: taqiqlangan so'z qo'shish/olib tashlash, jim qilish
+  await tab('chat', '#admWord');
+  await p.type('#admWord', 'c5yomon');
+  await clickEl('#admWordForm button');
+  await p.waitForSelector('[data-unword="c5yomon"]', { timeout: 8000 });
+  await clickEl('[data-unword="c5yomon"]');
+  await p.waitForFunction(() => !document.querySelector('[data-unword="c5yomon"]'), { timeout: 8000 });
+  await p.waitForFunction(() => /C5 klub xabari/.test(document.querySelector('.adm-body').textContent), { timeout: 8000 });
+  await clickEl(`[data-mute="${bad.id}"]`);
+  await p.waitForFunction(() => /🔇/.test(document.querySelector('.adm-tag.red') ? document.querySelector('.adm-tag.red').textContent : ''), { timeout: 8000 });
+  assert.equal((await srv.api(bad, '/api/chat/messages', 'POST', { roomId: 'club_Kenya', message: 'jim' })).status, 403, 'jim qilingan yoza olmaydi');
+  // 🐞 Xatolar: brauzer xatosi ko'rinadi, hal qilinadi
+  await tab('errors', '.adm-err-bar');
+  await p.waitForFunction(() => /C5 sinov xatosi/.test(document.querySelector('.adm-body').textContent), { timeout: 8000 });
+  await clickEl('[data-err-resolve]');
+  await p.waitForFunction(() => !/C5 sinov xatosi/.test(document.querySelector('.adm-body').textContent), { timeout: 8000 });
+  // 📚 Kutubxona: maqola qo'shish → tahrirlash → o'chirish
+  await tab('library', '#admLibForm');
+  await p.type('#admLibForm [data-lf="title"]', 'C5 sinov maqolasi');
+  await p.type('#admLibForm [data-lf="lead"]', 'Qisqa kirish matni');
+  await p.type('#admLibForm [data-lf="body"]', "Bu maqola admin panelini tekshirish uchun yozildi va yigirma belgidan uzun.");
+  await clickEl('#admLibForm button[type="submit"]');
+  await p.waitForSelector('[data-lib-edit]', { timeout: 8000 });
+  await clickEl('[data-lib-edit]');
+  await p.waitForSelector('#admLibCancel', { timeout: 5000 });
+  await p.evaluate(() => { const i = document.querySelector('#admLibForm [data-lf="title"]'); i.value = 'C5 tahrirlangan maqola'; });
+  await clickEl('#admLibForm button[type="submit"]');
+  await p.waitForFunction(() => /C5 tahrirlangan maqola/.test(document.querySelector('.adm-list').textContent), { timeout: 8000 });
+  assert.ok((await srv.api(null, '/api/library')).items.some((x) => x.title === 'C5 tahrirlangan maqola'));
+  await clickEl('[data-lib-del]');
+  await p.waitForSelector('.adm-empty', { timeout: 8000 });
+  // 📜 Jurnal: har amal yozilgan, filtrlar ("_" li nomlar ham) ishlaydi
+  await tab('audit', '#admAuditAction');
+  for (const [filter, re] of [['ban', /Blokladi|ban/i], ['unban', /Blokdan chiqardi/], ['mute', /Jim qildi/], ['report', /Shikoyatni/], ['filter', /Taqiqlangan so'z/], ['backup', /Zaxira/], ['library', /Kutubxona/], ['chat_delete', null]]) {
+    await p.select('#admAuditAction', filter);
+    await sleep(700);
+    const t = await txt();
+    if (re) assert.match(t, re, filter);
+    else assert.match(t, /Yozuvlar yo'q|Klub chatidagi/, filter);
+  }
+  await p.select('#admAuditAction', '');
+  await p.type('#admAuditQ', 'C5_bad');
+  await clickEl('#admAuditForm button');
+  await sleep(700);
+  assert.match(await txt(), /C5_bad/);
+  assert.deepEqual(p.errors, []);
 });
 
 test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni tekshirish' tugmasi", opts, async () => {

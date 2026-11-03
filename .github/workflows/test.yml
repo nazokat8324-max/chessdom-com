@@ -26,5 +26,8 @@ jobs:
         run: |
           set -o pipefail
           if npm test 2>&1 | tee test.log; then exit 0; fi
-          grep -E "^✖|AssertionError|actual:|expected:|Error:" test.log | grep -v "failing tests" | head -30 | while IFS= read -r line; do echo "::error::$line"; done
+          # Avval yiqilgan testlar nomi (CI da reporter TAP — "not ok N - nom"; terminalda "✖ nom"), keyin tafsilotlar.
+          # GitHub bitta qadamda ko'pi bilan 10 ta annotatsiya ko'rsatadi — nomlar birinchi bo'lsin.
+          { grep -E "^\s*not ok [0-9]+ - |^\s*✖ " test.log | grep -v "failing tests" | head -8
+            grep -E "AssertionError|actual:|expected:|Error:" test.log | head -20; } | while IFS= read -r line; do echo "::error::$line"; done
           exit 1

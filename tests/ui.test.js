@@ -103,6 +103,9 @@ test("Klublar: mening klubim kartasi, faol klublar tepada, klub sahifasidagi 4 t
   const p = await page({ token: login.token, user: login.user });
   await p.goto(srv.base + '/klublar', { waitUntil: 'domcontentloaded' });
   await p.waitForSelector('.cl-mine[data-club="Uzbekistan"]', { timeout: 10000 });
+  // A'zolar soni (/api/country-clubs) kartadan keyin keladi — "Faol klublar" shundan keyin to'ladi (sekin CI da kartani ko'rgan zahoti
+  // tekshirilsa ro'yxat bo'sh edi: 2026-10-30 dan 2026-11-03 gacha GitHub Actions shu sababli yiqilgan)
+  await p.waitForSelector('.cl-grid:not(.small) .cl-tile[data-club="Uzbekistan"]', { timeout: 10000 });
   // Faol klublar a'zolar soni bo'yicha tepada (boshqa testlar ham klubga qo'shiladi — tartib a'zolar soniga qarab tekshiriladi)
   const active = await p.evaluate(() => [...document.querySelectorAll('.cl-grid:not(.small) .cl-tile')].map((t) => t.dataset.club));
   assert.ok(active.includes('Uzbekistan'), "a'zosi bor klub faollar orasida: " + active.join(','));
@@ -1593,8 +1596,9 @@ test("Kutubxona: misol taxtasi; admin formasi orqali maqola qo'shiladi va kutubx
   // Admin → 📚 Kutubxona → maqola qo'shish
   await p.goto(srv.base + '/admin', { waitUntil: 'domcontentloaded' });
   await p.waitForSelector('#adminRoot [data-atab="library"]', { timeout: 15000 });
-  await p.click('#adminRoot [data-atab="library"]');
-  await p.waitForSelector('#admLibForm [data-lf="title"]', { timeout: 8000 });
+  // Admin paneli statistika kelgach qayta chiziladi — topilgan tugma eskirib qolishi mumkin ("Node is detached"), shuning uchun
+  // har urinishda yangidan topib bosamiz, forma chiqquncha
+  await p.waitForFunction(() => { if (document.querySelector('#admLibForm [data-lf="title"]')) return true; const b = document.querySelector('#adminRoot [data-atab="library"]'); if (b) b.click(); return false; }, { polling: 300, timeout: 15000 });
   await p.type('#admLibForm [data-lf="title"]', 'Admin maqolasi');
   await p.type('#admLibForm [data-lf="lead"]', 'Sinov uchun');
   await p.type('#admLibForm [data-lf="body"]', 'Birinchi band — yetarlicha uzun matn.');

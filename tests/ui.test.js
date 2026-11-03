@@ -1966,6 +1966,82 @@ test("Service worker ro'yxatdan o'tadi", opts, async () => {
   assert.equal(scope, srv.base + '/');
 });
 
+test("Internetsiz: server o'chganda offline sahifa ochiladi va 5 ta o'yinning hammasi oxirigacha o'ynaladi", opts, async () => {
+  // Alohida server — uni o'chirib, haqiqiy "tarmoq yo'q" holatini yaratamiz (puppeteer offline rejimi service worker'ga ta'sir qilmaydi)
+  const own = await startServer();
+  const p = await page(null, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  await p.goto(own.base + '/offline.html', { waitUntil: 'load' });
+  await p.evaluate(() => navigator.serviceWorker.register('/sw.js'));
+  await p.evaluate(() => navigator.serviceWorker.ready);
+  await p.waitForFunction(async () => (await (await caches.open('chessdom-shell-v1')).keys()).length >= 24, { polling: 200, timeout: 20000 });
+  await own.stop();
+  await p.goto(own.base + '/oyin', { waitUntil: 'load' });
+  assert.equal(await p.$eval('h1', (e) => e.textContent), "Internet aloqasi yo'q");
+  assert.equal(await p.$$eval('.og-card', (x) => x.length), 5);
+  const msg = () => p.$eval('#ogMsg', (e) => e.textContent);
+  const tap = (sq) => p.click('[data-sq="' + sq + '"]');
+  const open = async (g) => { await p.click('[data-game="' + g + '"]'); await sleep(150); };
+  const back = async () => { await p.click('#ogBack'); await sleep(150); };
+
+  // 👥 Ikki kishi: ahmoqona mat
+  await open('local');
+  await p.evaluate(() => document.querySelector('#ogCtl .og-btn.primary').click());
+  for (const s of ['f2', 'f3', 'e7', 'e5', 'g2', 'g4', 'd8', 'h4']) { await tap(s); await sleep(40); }
+  assert.match(await msg(), /Qora yutdi · mat/);
+  await back();
+
+  // 🎯 Katakni top: 3 ta to'g'ri katak
+  await open('squares');
+  await p.evaluate(() => document.querySelector('#ogCtl .og-btn.primary').click());
+  for (let i = 0; i < 3; i++) { await tap(await p.$eval('.og-target', (e) => e.textContent)); await sleep(40); }
+  assert.match(await p.$eval('#ogStats', (e) => e.textContent), /Ochko3/);
+  await back();
+
+  // 🐪 Karvon tangalari: eng yaqin tangaga eng qisqa yo'l bilan
+  await open('coins');
+  for (let guard = 0; guard < 40 && !/yig'ildi/.test(await msg()); guard++) {
+    const next = await p.evaluate(() => {
+      const G = window.OfflineGames;
+      const sqOf = (el) => G.index(el.closest('.og-sq').dataset.sq);
+      const pos = sqOf(document.querySelector('.og-sq img[src*="wB"]'));
+      const coins = [...document.querySelectorAll('.og-sq .og-coin')].map(sqOf);
+      const rocks = new Set([...document.querySelectorAll('.og-sq.rock')].map((e) => G.index(e.dataset.sq)));
+      // Tangadan orqaga BFS: pos dan bir qadamda yetiladigan va tangagacha masofasi eng kam katak
+      let best = null;
+      for (const j of G.knightTargets(pos, rocks)) for (const c of coins) { const d = G.distances(c, rocks)[j]; if (d >= 0 && (!best || d < best.d)) best = { j, d }; }
+      return G.name(best.j);
+    });
+    await tap(next);
+  }
+  assert.match(await msg(), /Barcha tangalar yig'ildi/);
+  await back();
+
+  // 🧠 Eslab qol: ko'rsatilgan pozitsiyani yozib olib, qaytadan qo'yamiz
+  await open('memory');
+  const shown = await p.evaluate(() => Object.fromEntries([...document.querySelectorAll('.og-sq img')].map((i) => [i.closest('.og-sq').dataset.sq, i.src.match(/(\w\w)\.svg$/)[1]])));
+  await p.waitForSelector('.og-token', { timeout: 8000 });
+  for (const [sq, code] of Object.entries(shown)) {
+    await p.evaluate((c) => [...document.querySelectorAll('.og-token')].find((b) => b.querySelector('img').src.endsWith(c + '.svg')).click(), code);
+    await tap(sq);
+  }
+  await p.evaluate(() => document.querySelector('#ogCtl .og-btn.primary').click());
+  assert.match(await msg(), /To'g'ri/);
+  await back();
+
+  // ♞ Ot sayohati: a1 dan maslahat bilan barcha 64 katak
+  await open('tour');
+  await tap('a1');
+  for (let i = 0; i < 63; i++) {
+    await p.evaluate(() => [...document.querySelectorAll('#ogCtl .og-btn')].find((b) => b.textContent.includes('Maslahat')).click());
+    await p.click('.og-sq.hint.best');
+  }
+  assert.match(await msg(), /Barcha 64 katak/);
+  await back();
+  // Rekordlar bosh menyuda ko'rinadi
+  assert.match(await p.$eval('[data-best="tour"]', (e) => e.textContent), /64/);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha bo'limlar: kirgan foydalanuvchi har bir sahifani ochganda ushlanmagan JS xatosi yo'q (kompyuter va telefon)", opts, async () => {
   const u = await srv.register('Tour');
   await srv.api(u, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });

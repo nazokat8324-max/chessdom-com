@@ -1,9 +1,14 @@
 // ChessCaravan service worker: ilovani o'rnatish, internet yo'qligida offline sahifa va push-bildirishnomalar.
 // Sayt fayllari KESHLANMAYDI (har doim tarmoqdan) — deploydan keyin eski versiya qolib ketmasligi uchun.
-// Faqat offline sahifa va ikonkalar keshda. Kesh nomi o'zgarsa, eskilari o'chiriladi.
+// Faqat offline sahifa (internetsiz o'yinlari bilan) va ikonkalar keshda. Kesh nomi o'zgarsa, eskilari o'chiriladi.
 const CACHE = 'chessdom-shell-v1';
 const OFFLINE = '/offline.html';
-const PRECACHE = [OFFLINE, '/assets/icons/icon-192.png', '/assets/icons/badge-96.png'];
+// Internetsiz o'yinlar (offline.html): qoidalar, matnlar, donalar (Karvon to'plami) va yog'och ovozlari
+const PIECES = ['K', 'Q', 'R', 'B', 'N', 'P'].flatMap((p) => ['w', 'b'].map((c) => '/img/chesspieces/karvon/' + c + p + '.svg'));
+const PRECACHE = [OFFLINE, '/assets/icons/icon-192.png', '/assets/icons/badge-96.png',
+  '/vendor/chess-0.10.3.min.js', '/chess960.js', '/shatranj.js', '/uzcyrl.js', '/offline-texts.js', '/offline-games.js',
+  '/assets/sounds/wood/move.wav', '/assets/sounds/wood/capture.wav', '/assets/sounds/wood/game-end.wav'].concat(PIECES);
+let offlineRefreshed = false;
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting()));
@@ -16,17 +21,25 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Sahifa ochilishi (navigatsiya): tarmoq bo'lmasa — offline sahifa. Offline sahifa va ikonkalar — keshdan.
+// Sahifa ochilishi (navigatsiya): tarmoq bo'lmasa — offline sahifa. PRECACHE fayllari — tarmoqdan (keshdagi nusxa ham
+// yangilanadi — offline o'yinlar deploydan keyin eskirmaydi), tarmoq bo'lmasa keshdan.
 // Qolgan barcha so'rovlar service worker'dan o'tmaydi (oddiy tarmoq).
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.mode === 'navigate') {
-    event.respondWith(fetch(req).catch(() => caches.match(OFFLINE)));
+    event.respondWith(fetch(req).then((res) => {
+      // Sayt ochilganda offline sahifaning o'zi ham (service worker ishga tushganda bir marta) yangilanadi
+      if (!offlineRefreshed && res.ok) { offlineRefreshed = true; event.waitUntil(caches.open(CACHE).then((c) => c.add(OFFLINE)).catch(() => {})); }
+      return res;
+    }).catch(() => caches.match(OFFLINE)));
     return;
   }
   const url = new URL(req.url);
   if (url.origin === self.location.origin && PRECACHE.includes(url.pathname)) {
-    event.respondWith(fetch(req).catch(() => caches.match(url.pathname)));
+    event.respondWith(fetch(req).then((res) => {
+      if (res.status === 200) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(url.pathname, copy)).catch(() => {}); }
+      return res;
+    }).catch(() => caches.match(url.pathname)));
   }
 });
 

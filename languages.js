@@ -3004,6 +3004,16 @@ const translationsExtra = {
     abCreditGutenberg: "kutubxonadagi klassik kitoblar (jamoat mulki)",
     abCreditsAll: "To'liq ro'yxat: Mualliflar va litsenziyalar",
     libOpenLink: "Ochish",
+
+    libVideos: "Videodarslar",
+
+    libVideosNote: "ChessCaravan YouTube kanalidagi videolar: shaxmat tarixi va qiziqarli faktlar. Yangi videolar shu yerda o'zi paydo bo'ladi.",
+
+    libWatchYt: "YouTube'da ko'rish",
+
+    libViews: "{{n}} marta ko'rilgan",
+
+    libAllVideos: "Barcha videolar kanalda",
     admLibIntro: "Kutubxonaga kod yozmasdan material qo'shing: maqola, partiya (PGN) yoki kitob/havola. Faqat o'zingiz yozgan matnlar yoki jamoat mulkidagi kitoblar — begona mualliflik huquqini buzmang. \"Til\" tanlansa, material faqat o'sha tilda o'qiyotganlarga ko'rinadi.",
     admLibKindArticle: "Maqola",
     admLibKindGame: "Partiya",
@@ -4588,6 +4598,16 @@ const translationsExtra = {
     abCreditGutenberg: "classic books in the Library (public domain)",
     abCreditsAll: "Full list: credits and licences",
     libOpenLink: "Open",
+
+    libVideos: "Video lessons",
+
+    libVideosNote: "Videos from the ChessCaravan YouTube channel: chess history and fun facts. New videos appear here by themselves.",
+
+    libWatchYt: "Watch on YouTube",
+
+    libViews: "{{n}} views",
+
+    libAllVideos: "All videos on the channel",
     admLibIntro: "Add material to the Library without code: an article, a game (PGN) or a book/link. Only your own texts or public-domain books — never infringe copyright. If a language is chosen, only readers using that language see it.",
     admLibKindArticle: "Article",
     admLibKindGame: "Game",
@@ -6172,6 +6192,16 @@ const translationsExtra = {
     abCreditGutenberg: "классические книги в Библиотеке (общественное достояние)",
     abCreditsAll: "Полный список: авторы и лицензии",
     libOpenLink: "Открыть",
+
+    libVideos: "Видеоуроки",
+
+    libVideosNote: "Видео с YouTube-канала ChessCaravan: история шахмат и интересные факты. Новые видео появляются здесь сами.",
+
+    libWatchYt: "Смотреть на YouTube",
+
+    libViews: "Просмотров: {{n}}",
+
+    libAllVideos: "Все видео на канале",
     admLibIntro: "Добавляйте материалы в Библиотеку без кода: статью, партию (PGN) или книгу/ссылку. Только свои тексты или книги в общественном достоянии — не нарушайте авторские права. Если выбран язык, материал видят только читатели на этом языке.",
     admLibKindArticle: "Статья",
     admLibKindGame: "Партия",
@@ -7756,6 +7786,16 @@ const translationsExtra = {
     abCreditGutenberg: "libros clásicos de la Biblioteca (dominio público)",
     abCreditsAll: "Lista completa: autores y licencias",
     libOpenLink: "Abrir",
+
+    libVideos: "Videolecciones",
+
+    libVideosNote: "Vídeos del canal de YouTube de ChessCaravan: historia del ajedrez y curiosidades. Los vídeos nuevos aparecen aquí solos.",
+
+    libWatchYt: "Ver en YouTube",
+
+    libViews: "Visualizaciones: {{n}}",
+
+    libAllVideos: "Todos los vídeos en el canal",
     admLibIntro: "Añade material a la Biblioteca sin código: un artículo, una partida (PGN) o un libro/enlace. Solo textos propios o libros de dominio público; no infrinjas derechos de autor. Si eliges un idioma, solo lo verán quienes usen ese idioma.",
     admLibKindArticle: "Artículo",
     admLibKindGame: "Partida",
@@ -9340,6 +9380,16 @@ const translationsExtra = {
     abCreditGutenberg: "klassische Bücher der Bibliothek (gemeinfrei)",
     abCreditsAll: "Vollständige Liste: Urheber und Lizenzen",
     libOpenLink: "Öffnen",
+
+    libVideos: "Videolektionen",
+
+    libVideosNote: "Videos vom YouTube-Kanal von ChessCaravan: Schachgeschichte und spannende Fakten. Neue Videos erscheinen hier von selbst.",
+
+    libWatchYt: "Auf YouTube ansehen",
+
+    libViews: "Aufrufe: {{n}}",
+
+    libAllVideos: "Alle Videos auf dem Kanal",
     admLibIntro: "Füge der Bibliothek ohne Code Material hinzu: einen Artikel, eine Partie (PGN) oder ein Buch/einen Link. Nur eigene Texte oder gemeinfreie Bücher — keine Urheberrechte verletzen. Ist eine Sprache gewählt, sehen es nur Leser dieser Sprache.",
     admLibKindArticle: "Artikel",
     admLibKindGame: "Partie",
@@ -10924,6 +10974,16 @@ const translationsExtra = {
     abCreditGutenberg: "livres classiques de la Bibliothèque (domaine public)",
     abCreditsAll: "Liste complète : auteurs et licences",
     libOpenLink: "Ouvrir",
+
+    libVideos: "Leçons vidéo",
+
+    libVideosNote: "Vidéos de la chaîne YouTube de ChessCaravan : histoire des échecs et anecdotes. Les nouvelles vidéos apparaissent ici d’elles-mêmes.",
+
+    libWatchYt: "Regarder sur YouTube",
+
+    libViews: "Vues : {{n}}",
+
+    libAllVideos: "Toutes les vidéos sur la chaîne",
     admLibIntro: "Ajoutez du contenu à la Bibliothèque sans code : un article, une partie (PGN) ou un livre/lien. Uniquement vos propres textes ou des livres du domaine public — ne violez pas le droit d'auteur. Si une langue est choisie, seuls les lecteurs de cette langue le voient.",
     admLibKindArticle: "Article",
     admLibKindGame: "Partie",

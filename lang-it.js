@@ -1788,6 +1788,16 @@ window.TRANSLATIONS_IT = {
   abCreditGutenberg: "libri classici della Biblioteca (pubblico dominio)",
   abCreditsAll: "Elenco completo: crediti e licenze",
   libOpenLink: "Apri",
+
+  libVideos: "Video lezioni",
+
+  libVideosNote: "Video dal canale YouTube di ChessCaravan: storia degli scacchi e curiosità. I nuovi video compaiono qui da soli.",
+
+  libWatchYt: "Guarda su YouTube",
+
+  libViews: "Visualizzazioni: {{n}}",
+
+  libAllVideos: "Tutti i video sul canale",
   admLibIntro: "Aggiungi materiale alla Biblioteca senza codice: un articolo, una partita (PGN) o un libro/link. Solo testi tuoi o libri di pubblico dominio — non violare mai il diritto d'autore. Se scegli una lingua, lo vedono solo i lettori che usano quella lingua.",
   admLibKindArticle: "Articolo",
   admLibKindGame: "Partita",

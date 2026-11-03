@@ -1,6 +1,6 @@
 // 📚 Kutubxona (#libraryView → #libraryRoot, /kutubxona, lib-*): 📝 qo'llanmalar (library-articles.js, sahifa ichida o'qiladi —
 // /kutubxona?m=<id>), ♟ mashhur partiyalar (library-data.js → qayta ko'rish oynasi, tahlil va hikoya bilan), 📚 klassik kitoblar
-// (jamoat mulki, Project Gutenberg'da o'qiladi). Server ishtirok etmaydi.
+// (jamoat mulki, Project Gutenberg'da o'qiladi), 📺 videodarslar (YouTube kanali, GET /api/videos — havola, sahifaga joylanmaydi).
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const LANGS = ['uz', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk', 'tg', 'ky', 'tk', 'az', 'zh', 'it'];
@@ -12,7 +12,7 @@
     const i = LANGS.indexOf(l);
     return (arr && arr[i < 0 ? 1 : i]) || (arr && arr[1]) || '';
   };
-  const st = { article: null, items: null, itemsAt: 0 };
+  const st = { article: null, items: null, itemsAt: 0, videos: null, videosAt: 0 };
   const root = () => document.getElementById('libraryRoot');
   const curLang = () => (uiLang() === 'uzc' ? 'uz' : uiLang());
   const six = (s) => Array(6).fill(s || '');
@@ -39,6 +39,35 @@
     return false;
   }
   window.reloadLibraryItems = () => { st.itemsAt = 0; };
+  // 📺 Videodarslar: kanalning ochiq videolari (GET /api/videos — server YouTube lentasidan oladi, muqovalar server orqali)
+  async function loadVideos() {
+    if (st.videos && Date.now() - st.videosAt < 10 * 60000) return false;
+    try {
+      const d = await fetch('/api/videos').then((r) => r.json());
+      if (d && d.success) { const changed = JSON.stringify(d.videos || []) !== JSON.stringify(st.videos || []); st.videos = d.videos || []; st.videosAt = Date.now(); return changed; }
+    } catch (e) {}
+    return false;
+  }
+  function videosShelf() {
+    const list = st.videos || [];
+    if (!list.length) return '';
+    const lang = uiLang() === 'uzc' ? 'uz' : uiLang();
+    // Sana raqamlarda: brauzerlarda o'zbekcha (va ba'zi boshqa tillarda) oy nomlari yo'q — "2026 M11 2" chiqardi
+    const date = (iso) => { const m = String(iso || '').match(/^(\d{4})-(\d\d)-(\d\d)/); return m ? (lang === 'zh' ? m[1] + '-' + m[2] + '-' + m[3] : m[3] + '.' + m[2] + '.' + m[1]) : ''; };
+    const url = (v) => 'https://www.youtube.com/' + (v.short ? 'shorts/' : 'watch?v=') + encodeURIComponent(v.id);
+    const channel = window.YOUTUBE_CHANNEL_URL || 'https://www.youtube.com/@chesscaravan';
+    return `<section class="lib-shelf" id="lib-videos">
+        <h2>📺 ${esc(tx('libVideos', 'Videodarslar'))}</h2>
+        <p class="lib-note">${esc(tx('libVideosNote', "ChessCaravan YouTube kanalidagi videolar: shaxmat tarixi va qiziqarli faktlar. Yangi videolar shu yerda o'zi paydo bo'ladi."))}</p>
+        <div class="lib-grid lib-videos">${list.map((v) => `<a class="lib-card lib-video" href="${esc(url(v))}" target="_blank" rel="noopener noreferrer">
+          <span class="lib-thumb${v.short ? ' short' : ''}"><img src="/api/videos/thumb/${esc(v.id)}" alt="" loading="lazy" onerror="this.remove()"><i>▶</i></span>
+          <b>${esc(v.title)}</b>
+          <small>${esc(date(v.published))}${v.views ? ' · ' + esc(tx('libViews', "{{n}} marta ko'rilgan", { n: v.views.toLocaleString(lang === 'zh' ? 'zh-CN' : lang) })) : ''}</small>
+          <span class="lib-go">${esc(tx('libWatchYt', "YouTube'da ko'rish"))} ↗</span>
+        </a>`).join('')}</div>
+        ${typeof window.youtubeChannelLink === 'function' ? `<p class="lib-note">${window.youtubeChannelLink(tx('libAllVideos', 'Barcha videolar kanalda'), 'lib-btn ghost lib-channel')}</p>` : `<p class="lib-note"><a href="${esc(channel)}" target="_blank" rel="noopener noreferrer">${esc(tx('libAllVideos', 'Barcha videolar kanalda'))} ↗</a></p>`}
+      </section>`;
+  }
   // Misol pozitsiyasi: kichik taxta, belgilangan kataklar bilan
   function boardHtml(fen, marks) {
     const rows = String(fen || '').split(' ')[0].split('/');
@@ -69,6 +98,7 @@
         <h1>${esc(tx('libTitle', 'Kutubxona'))}</h1>
         <p>${esc(tx('libLead', "Qo'llanmalar, tarixga kirgan partiyalar va jamoat mulkiga aylangan klassik kitoblar — bepul va bir joyda."))}</p>
         <nav class="lib-jump">
+          ${(st.videos || []).length ? `<a href="#lib-videos">📺 ${esc(tx('libVideos', 'Videodarslar'))}</a>` : ''}
           <a href="#lib-guides">📝 ${esc(tx('libGuides', "Qo'llanmalar"))}</a>
           <a href="#lib-games">♟ ${esc(tx('libGames', 'Mashhur partiyalar'))}</a>
           <a href="#lib-books">📚 ${esc(tx('libBooks', 'Klassik kitoblar'))}</a>
@@ -79,6 +109,7 @@
         <span class="lib-museum-text"><b>${esc(tx('musTitle', 'Shaxmat tarixi muzeyi'))}</b><small>${esc(tx('musCard', "{{n}} bekat: chaturangadan Chess960 gacha", { n: window.ChessMuseumView.count() }))}</small></span>
         <span class="lib-go">${esc(tx('musEnter', 'Muzeyga kirish'))} →</span>
       </button>` : ''}
+      ${videosShelf()}
       <section class="lib-shelf" id="lib-guides">
         <h2>📝 ${esc(tx('libGuides', "Qo'llanmalar"))}</h2>
         <div class="lib-grid">${ARTICLES().map((a) => `<button type="button" class="lib-card" data-article="${esc(a.id)}">
@@ -177,6 +208,10 @@
     st.article = museum ? MUSEUM : a ? a.id : null;
     if (museum) renderMuseum(); else if (a) renderArticle(a); else renderShelves();
     // Admin materiallari yuklangach — qayta chizish (yoki havoladagi admin maqolasini ochish)
+    loadVideos().then((changed) => {
+      const v = document.getElementById('libraryView');
+      if (changed && v && v.classList.contains('active-view') && !st.article) renderShelves();
+    });
     loadItems().then((changed) => {
       const v = document.getElementById('libraryView');
       if (!changed || !v || !v.classList.contains('active-view')) return;

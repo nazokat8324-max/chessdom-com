@@ -2976,6 +2976,67 @@ async function start() {
     catch (err) { res.json({ success: true, videos: {} }); }
   });
 
+  // 📺 Kutubxonadagi "Videodarslar" javoni: kanalning ommaviy RSS lentasi (faqat ochiq videolar; rejalashtirilganlari ochilgan kuni
+  // o'zi qo'shiladi). Faqat so'rov kelganda, 30 daqiqada bir marta; tarmoq xatosida oxirgi yaxshi ro'yxat. Bazaga murojaat yo'q.
+  // Muqovalar shu server orqali (/api/videos/thumb/:id) — brauzer YouTube'ga ulanmaydi, maxfiylik siyosati o'zgarmaydi.
+  // Testlar: YOUTUBE_BASE / YTIMG_BASE — soxta server.
+  const YOUTUBE_CHANNEL_ID = 'UCgW8WVM-r8UsXri3ejfFe7g';
+  const YOUTUBE_BASE = process.env.YOUTUBE_BASE || 'https://www.youtube.com';
+  const YTIMG_BASE = process.env.YTIMG_BASE || 'https://i.ytimg.com';
+  const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
+  const videoFeed = { list: null, at: 0, pending: null };
+  const xmlText = (s) => String(s || '').replace(/&(amp|lt|gt|quot|apos|#39|#x27);/g, (m, e) => ({ amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", '#39': "'", '#x27': "'" }[e]));
+  function parseVideoFeed(xml) {
+    return (String(xml).match(/<entry>[\s\S]*?<\/entry>/g) || []).map((e) => {
+      const id = (e.match(/<yt:videoId>([^<]+)<\/yt:videoId>/) || [])[1];
+      const href = (e.match(/<link rel="alternate" href="([^"]+)"/) || [])[1] || '';
+      return {
+        id,
+        title: xmlText((e.match(/<media:title>([^<]*)<\/media:title>/) || e.match(/<title>([^<]*)<\/title>/) || [])[1]).replace(/\s*#shorts\b/gi, '').trim(),
+        published: (e.match(/<published>([^<]+)<\/published>/) || [])[1] || '',
+        views: Number((e.match(/<media:statistics views="(\d+)"/) || [])[1]) || 0,
+        short: /\/shorts\//.test(href)
+      };
+    }).filter((v) => VIDEO_ID.test(v.id || '') && v.title);
+  }
+  async function channelVideos() {
+    if (TEST_MODE && !process.env.YOUTUBE_BASE) return []; // testlar haqiqiy YouTube'ga ulanmaydi
+    if (videoFeed.list && Date.now() - videoFeed.at < 30 * 60000) return videoFeed.list;
+    if (!videoFeed.pending) {
+      videoFeed.pending = (async () => {
+        try {
+          const r = await fetch(YOUTUBE_BASE + '/feeds/videos.xml?channel_id=' + YOUTUBE_CHANNEL_ID, { signal: AbortSignal.timeout(5000) });
+          if (r.ok) { videoFeed.list = parseVideoFeed(await r.text()); videoFeed.at = Date.now(); }
+          else videoFeed.at = Date.now() - 25 * 60000; // 5 daqiqadan keyin qayta urinish
+        } catch (e) { videoFeed.at = Date.now() - 25 * 60000; }
+      })().finally(() => { videoFeed.pending = null; });
+    }
+    await videoFeed.pending;
+    return videoFeed.list || [];
+  }
+  app.get('/api/videos', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, videos: await channelVideos() }); }
+    catch (err) { res.json({ success: true, videos: [] }); }
+  });
+  const thumbCache = new Map(); // id → { type, body }
+  app.get('/api/videos/thumb/:id', apiLimiter, async (req, res) => {
+    const id = String(req.params.id);
+    // Faqat kanaldagi videolar — ochiq proksi bo'lmasin
+    if (!VIDEO_ID.test(id) || !(await channelVideos()).some((v) => v.id === id)) return res.status(404).end();
+    try {
+      let t = thumbCache.get(id);
+      if (!t) {
+        const r = await fetch(YTIMG_BASE + '/vi/' + id + '/hqdefault.jpg', { signal: AbortSignal.timeout(5000) });
+        const type = r.headers.get('content-type') || '';
+        if (!r.ok || !/^image\//.test(type)) return res.status(404).end();
+        t = { type, body: Buffer.from(await r.arrayBuffer()) };
+        if (thumbCache.size >= 60) thumbCache.delete(thumbCache.keys().next().value);
+        thumbCache.set(id, t);
+      }
+      res.set('Cache-Control', 'public, max-age=86400').type(t.type).send(t.body);
+    } catch (e) { res.status(404).end(); }
+  });
+
   // 📚 Kutubxona: admin materiallari (ommaviy ro'yxat + admin qo'shish/tahrirlash/o'chirish)
   app.get('/api/library', apiLimiter, async (req, res) => {
     try { res.json({ success: true, items: await cached('library', 60000, () => db.listLibraryItems()) }); }

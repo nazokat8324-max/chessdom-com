@@ -1788,6 +1788,16 @@ window.TRANSLATIONS_TK = {
   abCreditGutenberg: "Kitaphanadaky klassyky kitaplar (jemgyýetçilik eýeçiligi)",
   abCreditsAll: "Doly sanaw: awtorlar we ygtyýarnamalar",
   libOpenLink: "Aç",
+
+  libVideos: "Wideo sapaklar",
+
+  libVideosNote: "ChessCaravan YouTube kanalyndaky wideolar: küşt taryhy we gyzykly maglumatlar. Täze wideolar bu ýerde özi peýda bolýar.",
+
+  libWatchYt: "YouTube'da görmek",
+
+  libViews: "Görülen: {{n}}",
+
+  libAllVideos: "Ähli wideolar kanalda",
   admLibIntro: "Kitaphana kodsuz material goşuň: makala, oýun (PGN) ýa-da kitap/salgy. Diňe öz tekstleriňiz ýa-da jemgyýetçilik eýeçiligindäki kitaplar — awtorlyk hukugyny hiç haçan bozmaň. Dil saýlansa, ony diňe şol dildäki okyjylar görýär.",
   admLibKindArticle: "Makala",
   admLibKindGame: "Oýun",

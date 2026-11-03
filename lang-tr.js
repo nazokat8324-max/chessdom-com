@@ -1788,6 +1788,16 @@ window.TRANSLATIONS_TR = {
   abCreditGutenberg: "Kütüphanedeki klasik kitaplar (kamu malı)",
   abCreditsAll: "Tam liste: katkıda bulunanlar ve lisanslar",
   libOpenLink: "Aç",
+
+  libVideos: "Video dersler",
+
+  libVideosNote: "ChessCaravan YouTube kanalındaki videolar: satranç tarihi ve ilginç bilgiler. Yeni videolar burada kendiliğinden görünür.",
+
+  libWatchYt: "YouTube'da izle",
+
+  libViews: "İzlenme: {{n}}",
+
+  libAllVideos: "Tüm videolar kanalda",
   admLibIntro: "Kütüphaneye kod yazmadan materyal ekle: bir yazı, bir oyun (PGN) veya bir kitap/bağlantı. Yalnızca kendi metinlerin veya kamu malı kitaplar — telif hakkını asla ihlal etme. Bir dil seçilirse yalnızca o dili kullanan okurlar görür.",
   admLibKindArticle: "Yazı",
   admLibKindGame: "Oyun",

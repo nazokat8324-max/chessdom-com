@@ -1788,6 +1788,16 @@ window.TRANSLATIONS_ZH = {
   abCreditGutenberg: "图书馆中的经典书籍（公有领域）",
   abCreditsAll: "完整列表：致谢与许可证",
   libOpenLink: "打开",
+
+  libVideos: "视频课程",
+
+  libVideosNote: "ChessCaravan YouTube 频道的视频：国际象棋历史与趣闻。新视频会自动出现在这里。",
+
+  libWatchYt: "在 YouTube 上观看",
+
+  libViews: "{{n}} 次观看",
+
+  libAllVideos: "频道里的全部视频",
   admLibIntro: "无需写代码即可向图书馆添加内容：文章、对局（PGN）或书籍/链接。只能使用你自己的文字或公有领域的书籍——绝不能侵犯版权。如果选择了某种语言，只有使用该语言的读者才能看到。",
   admLibKindArticle: "文章",
   admLibKindGame: "对局",

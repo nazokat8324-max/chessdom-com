@@ -1966,6 +1966,32 @@ test("Service worker ro'yxatdan o'tadi", opts, async () => {
   assert.equal(scope, srv.base + '/');
 });
 
+test("Videodarslar: Kutubxonada kanal videolari — muqova server orqali, bosilganda YouTube yangi oynada", opts, async () => {
+  const { startFakeYoutube } = require('./fixtures/youtube');
+  const yt = await startFakeYoutube();
+  const own = await startServer({ YOUTUBE_BASE: yt.base, YTIMG_BASE: yt.base });
+  try {
+    const u = await own.register('VidUi');
+    const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    await p.goto(own.base + '/kutubxona', { waitUntil: 'load' });
+    await p.waitForFunction(() => document.querySelectorAll('#lib-videos a.lib-video').length === 2, { timeout: 15000 });
+    const cards = await p.$$eval('#lib-videos a.lib-video', (as) => as.map((a) => ({ href: a.href, target: a.target, rel: a.rel, title: a.querySelector('b').textContent, img: a.querySelector('img') && a.querySelector('img').getAttribute('src') })));
+    assert.deepEqual(cards.map((c) => c.href), ['https://www.youtube.com/shorts/axHTEebW8xo', 'https://www.youtube.com/watch?v=KTc2AAnXWlU']);
+    assert.ok(cards.every((c) => c.target === '_blank' && /noopener/.test(c.rel)));
+    assert.equal(cards[0].img, '/api/videos/thumb/axHTEebW8xo');
+    // Muqova haqiqatan yuklangan (brauzer YouTube'ga emas, bizning serverga murojaat qiladi)
+    await p.waitForFunction(() => [...document.querySelectorAll('#lib-videos img')].every((i) => i.complete && i.naturalWidth > 0), { timeout: 10000 });
+    assert.ok(await p.$('.lib-jump a[href="#lib-videos"]'), "javonlar menyusida 'Videodarslar'");
+    assert.match(await p.$eval('#lib-videos', (e) => e.textContent), /YouTube'da ko'rish/);
+    // Sana raqamlarda (brauzerda o'zbekcha oy nomlari yo'q) va ko'rishlar soni
+    assert.match(await p.$eval('#lib-videos a.lib-video small', (e) => e.textContent), /^02\.11\.2026 · 46 /);
+    assert.ok(await p.$('#lib-videos a.yt-channel'), 'kanal havolasi');
+    // Sahifa kengligidan oshmaydi
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
+    assert.deepEqual(p.errors, []);
+  } finally { await own.stop(); await yt.stop(); }
+});
+
 test("Internetsiz: server o'chganda offline sahifa ochiladi va 5 ta o'yinning hammasi oxirigacha o'ynaladi", opts, async () => {
   // Alohida server — uni o'chirib, haqiqiy "tarmoq yo'q" holatini yaratamiz (puppeteer offline rejimi service worker'ga ta'sir qilmaydi)
   const own = await startServer();

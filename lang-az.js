@@ -1788,6 +1788,16 @@ window.TRANSLATIONS_AZ = {
   abCreditGutenberg: "Kitabxanadakı klassik kitablar (ictimai mülkiyyət)",
   abCreditsAll: "Tam siyahı: müəlliflər və lisenziyalar",
   libOpenLink: "Aç",
+
+  libVideos: "Video dərslər",
+
+  libVideosNote: "ChessCaravan YouTube kanalındakı videolar: şahmat tarixi və maraqlı faktlar. Yeni videolar burada özü görünür.",
+
+  libWatchYt: "YouTube'da bax",
+
+  libViews: "Baxış: {{n}}",
+
+  libAllVideos: "Bütün videolar kanalda",
   admLibIntro: "Kitabxanaya kodsuz material əlavə et: məqalə, oyun (PGN) və ya kitab/keçid. Yalnız öz mətnlərin və ya ictimai mülkiyyətdə olan kitablar — müəllif hüququnu heç vaxt pozma. Dil seçilsə, onu yalnız həmin dildəki oxucular görür.",
   admLibKindArticle: "Məqalə",
   admLibKindGame: "Oyun",

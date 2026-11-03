@@ -129,7 +129,25 @@
         <b>💾 ${esc(tx('admBackupTitle', 'Zaxira nusxa'))}</b>
         <p class="adm-note">${esc(tx('admBackupHint', "Butun bazaning nusxasi (siqilgan JSON). Faylda parol xeshlari va emaillar bor — ishonchli joyda saqlang. Avtomatik kunlik nusxa GitHub Actions orqali shifrlangan holda olinadi."))}</p>
         <button class="set-mini accent" id="admBackupBtn">⬇ ${esc(tx('admBackupDownload', 'Nusxani yuklab olish'))}</button>
-      </div>`;
+      </div>${s.tgChannel ? `
+      <div class="adm-box adm-backup">
+        <b>✈️ ${esc(tx('admTgTitle', "Telegram kanal: Kun o'yini"))}</b>
+        <p class="adm-note">${esc(tx('admTgHint', "Har kuni 20:00 da (Toshkent vaqti) kechagi eng qiziqarli o'yin GIF bilan kanalga chiqadi. Sinash uchun hozir yuborishingiz mumkin — o'sha kuni 20:00 da qayta chiqmaydi."))}</p>
+        <button class="set-mini accent" id="admTgPostBtn">✈️ ${esc(tx('admTgPost', 'Hozir kanalga yuborish'))}</button>
+      </div>` : ''}`;
+  }
+
+  // ⭐ Kun o'yinini Telegram kanalga hozir yuborish (POST /api/admin/telegram/channel-post)
+  async function postChannel(btn) {
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/admin/telegram/channel-post', { method: 'POST', headers: headers() });
+      const d = await r.json().catch(() => ({}));
+      if (d.success) showToast(tx('admTgDone', 'Kanalga yuborildi'), 'success');
+      else if (d.reason === 'no_game') showToast(tx('admTgNoGame', "Kechagi o'yinlar orasida mos o'yin yo'q"), 'warning');
+      else showToast(tx('admTgFail', 'Telegram rad etdi — bot kanalda admin ekanini tekshiring'), 'warning');
+    } catch (e) { showToast(tx('errGeneric', 'Xatolik yuz berdi!'), 'warning'); }
+    btn.disabled = false;
   }
 
   // 🐞 Xatolar: server (console.error, ushlanmagan xatolar) va brauzer (errors.js) — bir xil xato bitta qatorda, ×N
@@ -176,6 +194,7 @@
     club_news_pin: ['📌', () => tx('audClubNewsPin', 'Klub yangiligini mahkamladi')],
     chat_delete: ['💬', () => tx('audChatDelete', "Klub chatidagi xabarni o'chirdi")],
     backup_download: ['💾', () => tx('audBackup', 'Zaxira nusxani yuklab oldi')],
+    tg_channel_post: ['✈️', () => tx('audTgPost', "Kun o'yinini kanalga yubordi")],
     errors_clear: ['🐞', () => tx('audErrorsClear', "Hal qilingan xatolarni o'chirdi")],
     library_add: ['📚', () => tx('audLibraryAdd', "Kutubxonaga material qo'shdi")],
     library_edit: ['✏️', () => tx('audLibraryEdit', 'Kutubxona materialini tahrirladi')],
@@ -387,6 +406,8 @@
     el.querySelectorAll('[data-apage]').forEach(b => b.addEventListener('click', () => { st.audit.page = Math.max(0, st.audit.page + Number(b.dataset.apage)); load(); }));
     const backupBtn = el.querySelector('#admBackupBtn');
     if (backupBtn) backupBtn.addEventListener('click', () => downloadBackup(backupBtn));
+    const tgBtn = el.querySelector('#admTgPostBtn');
+    if (tgBtn) tgBtn.addEventListener('click', () => postChannel(tgBtn));
     el.querySelectorAll('[data-rstatus]').forEach(b => b.addEventListener('click', () => { st.reportStatus = b.dataset.rstatus; load(); }));
     const search = el.querySelector('#admSearch');
     if (search) search.addEventListener('submit', (e) => { e.preventDefault(); st.query = el.querySelector('#admQuery').value.trim(); load(); });

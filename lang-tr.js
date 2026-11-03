@@ -1361,6 +1361,20 @@ window.TRANSLATIONS_TR = {
   admBackupTitle: "Yedek",
   admBackupHint: "Tüm veritabanının bir kopyası (sıkıştırılmış JSON). Dosyada şifre özetleri ve e-postalar var — güvenli bir yerde sakla. GitHub Actions her gün otomatik olarak şifreli bir kopya da alır.",
   admBackupDownload: "Yedeği indir",
+
+  admTgTitle: "Telegram kanalı: Günün oyunu",
+
+  admTgHint: "Her gün 20:00’de (Taşkent saati) dünün en ilginç oyunu GIF olarak kanalda paylaşılır. Denemek için şimdi gönderebilirsin — o gün 20:00’de tekrar paylaşılmaz.",
+
+  admTgPost: "Şimdi kanala gönder",
+
+  admTgDone: "Kanala gönderildi",
+
+  admTgNoGame: "Dünkü oyunlar arasında uygun oyun yok",
+
+  admTgFail: "Telegram reddetti — botun kanalda yönetici olduğunu kontrol et",
+
+  audTgPost: "Günün oyununu kanala gönderdi",
   admBackupDone: "Yedek indirildi",
   admErrOpen: "Açık",
   admErrResolved: "Çözüldü",

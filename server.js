@@ -33,6 +33,7 @@ const webpush = require('web-push');
 const { pushMessage } = require('./push-texts');
 const backup = require('./backup');
 const telegram = require('./telegram');
+const { makeGameGif } = require('./daygif');
 const util = require('util');
 const escapeHtml = (v) => String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -69,7 +70,7 @@ app.use((req, res, next) => {
   next();
 });
 // Loyiha papkasi statik beriladi — server fayllari, sozlamalar va hujjatlar tashqariga ko'rsatilmaydi
-const PRIVATE_FILES = /^\/(server|database|league|mailer|continents|push-texts|backup|telegram|teamchess|fairplay-engine|fairplay-worker)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*|[\w.-]*\.log)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
+const PRIVATE_FILES = /^\/(server|database|league|mailer|continents|push-texts|backup|telegram|teamchess|fairplay-engine|fairplay-worker|daygif)\.js$|^\/(package(-lock)?\.json|CLAUDE\.md|README\.md|Dockerfile|Procfile|docker-compose\.yml|schema[\w-]*\.sql|database\.sqlite[\w-]*|[\w.-]*\.log)$|^\/(data|node_modules|tests|tools|\.github)(\/|$)/i;
 app.use((req, res, next) => {
   let p = req.path;
   try { p = decodeURIComponent(p); } catch (e) { return res.status(400).end(); }
@@ -1100,6 +1101,51 @@ async function pickGameOfDay(now) {
     result: g.result === 'win' ? '1-0' : g.result === 'loss' ? '0-1' : '1/2-1/2', reason: g.reason || null,
     variant: g.variant || 'standard', startFen: g.startFen || null, clock: g.clock || null, playedAt: g.timestamp || null, moves: g.moves || []
   };
+}
+
+// ⭐ Kun o'yini Telegram kanalida (env TELEGRAM_CHANNEL): har kuni 20:00 (Toshkent) — GIF (daygif.js) + o'zbekcha matn + "Saytda qayta ko'rish".
+// Bir kunda bir marta (app_settings 'tg_channel_day'); taymer 20:00 gacha bazaga murojaat qilmaydi.
+const CHANNEL_POST_HOUR = 20;
+const CHANNEL_REASON = { checkmate: 'mat', resign: 'taslim', timeout: 'vaqt tugadi', stalemate: 'pat', agreement: 'kelishuv', threefold: 'takrorlanish', fifty: '50 yurish qoidasi', insufficient: 'dona yetishmaydi', bare: "yalang'och shoh", abandon: "o'yinni tark etdi" };
+const htmlEsc = (v) => String(v == null ? '' : v).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+function channelCaption(g) {
+  const [y, m, d] = String(g.day).split('-');
+  const who = (p) => htmlEsc(p.name) + (p.rating ? ' (' + p.rating + ')' : '');
+  const op = (!g.variant || g.variant === 'standard') ? openingOfMoves(g.moves) : null;
+  const lines = ["⭐ <b>Kun o'yini</b> · " + d + '.' + m + '.' + y, '', '⚪ ' + who(g.white), '⚫ ' + who(g.black), '',
+    '🏆 ' + (g.result === '1/2-1/2' ? '½–½' : g.result.replace('-', '–')) + (CHANNEL_REASON[g.reason] ? ' · ' + CHANNEL_REASON[g.reason] : '')];
+  if (op) lines.push('📖 ' + htmlEsc(op[1]) + ' (' + htmlEsc(op[0]) + ')');
+  if (g.variant === 'chess960') lines.push('🎲 Chess960');
+  if (g.variant === 'shatranj') lines.push('🏺 Shatranj');
+  lines.push('♟ ' + Math.ceil(g.moves.length / 2) + ' yurish' + (g.clock ? ' · ⏱ ' + htmlEsc(g.clock) : ''));
+  lines.push('', '#kunoyini #shaxmat #chesscaravan');
+  return lines.join('\n');
+}
+async function postGameOfDayToChannel(now, force) {
+  if (!telegram.channelEnabled()) return { ok: false, reason: 'disabled' };
+  const day = dayKeyOf(tashkentDayStart(now));
+  if (!force && (await db.getAppSetting('tg_channel_day')) === day) return { ok: false, reason: 'done' };
+  const g = await pickGameOfDay(now);
+  const gif = g && g.moves.length ? await makeGameGif(g) : null;
+  if (!gif) return { ok: false, reason: 'no_game' };
+  await telegram.postAnimation({ gif, caption: channelCaption(g), buttonText: "▶ Saytda qayta ko'rish", url: SITE_URL + '/jonli' });
+  await db.setAppSetting('tg_channel_day', day);
+  return { ok: true, day };
+}
+// Keyingi 20:00 gacha kutadi; server 20:00 dan keyin ishga tushsa va bugun hali chiqmagan bo'lsa — 1 daqiqadan keyin
+function scheduleChannelPost(first) {
+  if (!telegram.channelEnabled()) return;
+  const now = Date.now();
+  const today = tashkentDayStart(now) + CHANNEL_POST_HOUR * 3600000;
+  const at = first && now >= today ? now + 60000 : now < today ? today : today + 864e5;
+  const t = setTimeout(async () => {
+    try {
+      const r = await postGameOfDayToChannel(Date.now());
+      if (r.ok) console.log("✈️ Kun o'yini kanalga yuborildi:", r.day);
+    } catch (err) { console.error("Kun o'yini kanalga yuborilmadi:", err.message); }
+    scheduleChannelPost(false);
+  }, at - now);
+  if (t.unref) t.unref();
 }
 
 // --- 📖 Debyutlar (assets/openings.json — lichess chess-openings, CC0): o'yinchining o'z o'yinlaridan statistika ---
@@ -2173,7 +2219,7 @@ async function start() {
     try {
       let activeGames = 0;
       for (const room of rooms.values()) if (room.status === 'active') activeGames++;
-      res.json({ success: true, stats: { ...(await db.adminStats()), online: onlineUsers.size, activeGames, errors: await db.errorCounts() } });
+      res.json({ success: true, stats: { ...(await db.adminStats()), online: onlineUsers.size, activeGames, errors: await db.errorCounts(), tgChannel: telegram.channelEnabled() } });
     } catch (err) { console.error('Admin stats xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   // 🐞 Xatolar jurnali
@@ -2971,6 +3017,19 @@ async function start() {
     if (museumVideoCheck) await museumVideoCheck;
     return Object.fromEntries(Object.entries(MUSEUM_VIDEOS).filter(([stop]) => (museumVideoState.get(stop) || {}).public));
   }
+  // ⭐ Admin: bugungi Kun o'yinini kanalga hozir yuborish (sinash uchun; keyin 20:00 dagi post o'sha kuni takrorlanmaydi)
+  app.post('/api/admin/telegram/channel-post', adminMiddleware, async (req, res) => {
+    try {
+      const r = await postGameOfDayToChannel(Date.now(), true);
+      if (r.ok) auditLog(req, 'tg_channel_post', null, { day: r.day });
+      res.status(r.ok ? 200 : 400).json({ success: r.ok, reason: r.reason || null });
+    } catch (err) { console.error("Kun o'yini kanalga yuborilmadi:", err.message); res.status(502).json({ success: false, reason: 'telegram', message: err.message }); }
+  });
+  if (TEST_MODE) app.post('/api/test/channel-post', async (req, res) => {
+    try { res.json({ success: true, ...(await postGameOfDayToChannel(Number(req.query.now) || Date.now(), req.query.force === '1')) }); }
+    catch (err) { res.status(502).json({ success: false, message: err.message }); }
+  });
+
   app.get('/api/museum/videos', apiLimiter, async (req, res) => {
     try { res.json({ success: true, videos: await museumVideos() }); }
     catch (err) { res.json({ success: true, videos: {} }); }
@@ -3554,6 +3613,7 @@ async function start() {
   }, 4000);
 
   telegram.init({ app, db, io, SITE_URL, isActive, authMiddleware, inviteUrl: async (userId) => `${SITE_URL}/?invite=${await db.getInviteCode(userId)}` });
+  scheduleChannelPost(true);
   league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId, notify, inActiveGame });
   // Bloklar, banlar va adminlar (ADMIN_USERNAMES="ism1,ism2" — Render env)
   try {

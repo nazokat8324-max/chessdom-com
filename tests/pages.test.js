@@ -118,7 +118,7 @@ test("Olib tashlangan eski API'lar yo'q, ishlatiladiganlari joyida", async () =>
 });
 
 test('Server fayllari va baza tashqariga berilmaydi', async () => {
-  for (const p of ['/server.js', '/database.js', '/push-texts.js', '/league.js', '/package.json', '/CLAUDE.md', '/database.sqlite', '/node_modules/express/package.json', '/tests/helpers.js', '/tests/fixtures/push-key.pem', '/.github/workflows/test.yml']) {
+  for (const p of ['/server.js', '/database.js', '/push-texts.js', '/daygif.js', '/league.js', '/package.json', '/CLAUDE.md', '/database.sqlite', '/node_modules/express/package.json', '/tests/helpers.js', '/tests/fixtures/push-key.pem', '/.github/workflows/test.yml']) {
     assert.equal((await get(p)).status, 404, p);
   }
   // Klient fayllari esa ochiq
@@ -252,7 +252,7 @@ test("Yakuniy tekshiruv: faqat belgidan iborat tugmalar (✕ ← ➤ ⏮ 🗑 �
   const fs = require('fs');
   const path = require('path');
   const root = path.join(__dirname, '..');
-  const SERVER_ONLY = /^(server|database|league|mailer|backup|telegram|teamchess|fairplay-|push-texts|continents|lang-|languages|library-|museum-data|legal-content)/;
+  const SERVER_ONLY = /^(server|database|league|mailer|backup|telegram|teamchess|fairplay-|push-texts|continents|daygif|lang-|languages|library-|museum-data|legal-content)/;
   const files = fs.readdirSync(root).filter((f) => (f.endsWith('.js') && !SERVER_ONLY.test(f)) || f === 'index.html');
   const bad = [];
   for (const f of files) {

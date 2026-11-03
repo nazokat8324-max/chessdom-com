@@ -7,7 +7,7 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-const SERVER_ONLY = /^(lang-|languages|library-|legal-content|server|database|league|teamchess|telegram|push-texts|backup|mailer|fairplay|continents|sw\.js)/;
+const SERVER_ONLY = /^(lang-|languages|library-|legal-content|server|database|league|teamchess|telegram|push-texts|backup|mailer|fairplay|continents|daygif|sw\.js)/;
 // Kalit emas: dinamik prefikslar (pastda alohida tekshiriladi) va izohdagi namuna
 const NOT_KEYS = new Set(['q_', 'achT', 'achD', 'kalit']);
 

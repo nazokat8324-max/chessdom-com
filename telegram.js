@@ -25,6 +25,22 @@ async function call(method, body) {
   return data.result;
 }
 
+// ⭐ Rasmiy kanal (env TELEGRAM_CHANNEL, masalan "@chesscaravan"; bot kanalda admin bo'lishi kerak) — har kuni Kun o'yini (server.js)
+const CHANNEL = (process.env.TELEGRAM_CHANNEL || '').trim();
+const channelEnabled = () => enabled() && !!CHANNEL;
+async function postAnimation({ gif, caption, buttonText, url }) {
+  const form = new FormData();
+  form.append('chat_id', CHANNEL);
+  form.append('caption', caption);
+  form.append('parse_mode', 'HTML');
+  form.append('reply_markup', JSON.stringify(button(buttonText, url)));
+  form.append('animation', new Blob([gif], { type: 'image/gif' }), 'chesscaravan-game-of-the-day.gif');
+  const res = await fetch(`${API}/bot${TOKEN}/sendAnimation`, { method: 'POST', body: form });
+  const data = await res.json().catch(() => ({}));
+  if (!data.ok) { const err = new Error(data.description || ('Telegram ' + res.status)); err.code = data.error_code || res.status; throw err; }
+  return data.result;
+}
+
 const button = (text, url) => ({ inline_keyboard: [[{ text, url }]] });
 function send(chatId, text, markup) {
   return call('sendMessage', { chat_id: chatId, text, disable_web_page_preview: true, ...(markup ? { reply_markup: markup } : {}) });
@@ -159,4 +175,4 @@ function init(d) {
   })();
 }
 
-module.exports = { init, enabled, sendNotification };
+module.exports = { init, enabled, sendNotification, channelEnabled, postAnimation };

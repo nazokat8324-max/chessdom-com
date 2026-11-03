@@ -1361,6 +1361,20 @@ window.TRANSLATIONS_TK = {
   admBackupTitle: "Ätiýaçlyk nusga",
   admBackupHint: "Ähli maglumatlar binasynyň nusgasy (gysylan JSON). Faýlda açar söz heşleri we email-ler bar — ygtybarly ýerde saklaň. GitHub Actions her gün şifrlenen nusgany awtomatik alýar.",
   admBackupDownload: "Nusgany ýükle",
+
+  admTgTitle: "Telegram kanaly: Günüň oýny",
+
+  admTgHint: "Her gün 20:00-da (Daşkent wagty) düýnki iň gyzykly oýun GIF görnüşinde kanala çykýar. Barlamak üçin häzir iberip bilersiňiz — şol gün 20:00-da gaýtalanmaz.",
+
+  admTgPost: "Häzir kanala ibermek",
+
+  admTgDone: "Kanala iberildi",
+
+  admTgNoGame: "Düýnki oýunlaryň arasynda laýyk oýun ýok",
+
+  admTgFail: "Telegram ret etdi — botuň kanalda admin bolandygyny barlaň",
+
+  audTgPost: "Günüň oýnuny kanala iberdi",
   admBackupDone: "Nusga ýüklendi",
   admErrOpen: "Açyk",
   admErrResolved: "Çözüldi",

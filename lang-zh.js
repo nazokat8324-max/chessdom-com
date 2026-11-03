@@ -1361,6 +1361,20 @@ window.TRANSLATIONS_ZH = {
   admBackupTitle: "备份",
   admBackupHint: "整个数据库的副本（压缩的 JSON）。文件中包含密码哈希和电子邮箱——请妥善保管。GitHub Actions 每天也会自动生成一份加密副本。",
   admBackupDownload: "下载备份",
+
+  admTgTitle: "Telegram 频道：每日对局",
+
+  admTgHint: "每天 20:00（塔什干时间），昨天最精彩的对局会以 GIF 发布到频道。可以现在发送测试——当天 20:00 不会再重复发布。",
+
+  admTgPost: "立即发布到频道",
+
+  admTgDone: "已发布到频道",
+
+  admTgNoGame: "昨天的对局中没有合适的",
+
+  admTgFail: "Telegram 拒绝了——请确认机器人是频道管理员",
+
+  audTgPost: "已将每日对局发布到频道",
   admBackupDone: "备份已下载",
   admErrOpen: "未解决",
   admErrResolved: "已解决",

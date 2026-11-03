@@ -2576,6 +2576,20 @@ const translationsExtra = {
     admBackupTitle: "Zaxira nusxa",
     admBackupHint: "Butun bazaning nusxasi (siqilgan JSON). Faylda parol xeshlari va emaillar bor — ishonchli joyda saqlang. Avtomatik kunlik nusxa GitHub Actions orqali shifrlangan holda olinadi.",
     admBackupDownload: "Nusxani yuklab olish",
+
+    admTgTitle: "Telegram kanal: Kun o'yini",
+
+    admTgHint: "Har kuni 20:00 da (Toshkent vaqti) kechagi eng qiziqarli o'yin GIF bilan kanalga chiqadi. Sinash uchun hozir yuborishingiz mumkin — o'sha kuni 20:00 da qayta chiqmaydi.",
+
+    admTgPost: "Hozir kanalga yuborish",
+
+    admTgDone: "Kanalga yuborildi",
+
+    admTgNoGame: "Kechagi o'yinlar orasida mos o'yin yo'q",
+
+    admTgFail: "Telegram rad etdi — bot kanalda admin ekanini tekshiring",
+
+    audTgPost: "Kun o'yinini kanalga yubordi",
     admBackupDone: "Zaxira nusxa yuklab olindi",
     admErrOpen: "Ochiq",
     admErrResolved: "Hal qilingan",
@@ -4170,6 +4184,20 @@ const translationsExtra = {
     admBackupTitle: "Backup",
     admBackupHint: "A copy of the whole database (compressed JSON). The file contains password hashes and emails — keep it somewhere safe. A daily encrypted copy is also taken automatically by GitHub Actions.",
     admBackupDownload: "Download backup",
+
+    admTgTitle: "Telegram channel: Game of the Day",
+
+    admTgHint: "Every day at 20:00 (Tashkent time) yesterday's most interesting game is posted to the channel as a GIF. You can send it now to test — it will not be posted again at 20:00 that day.",
+
+    admTgPost: "Post to the channel now",
+
+    admTgDone: "Posted to the channel",
+
+    admTgNoGame: "No suitable game among yesterday’s games",
+
+    admTgFail: "Telegram refused — check that the bot is an admin of the channel",
+
+    audTgPost: "Posted the Game of the Day to the channel",
     admBackupDone: "Backup downloaded",
     admErrOpen: "Open",
     admErrResolved: "Resolved",
@@ -5764,6 +5792,20 @@ const translationsExtra = {
     admBackupTitle: "Резервная копия",
     admBackupHint: "Копия всей базы (сжатый JSON). В файле есть хеши паролей и email — храните его в надёжном месте. Ежедневная зашифрованная копия также делается автоматически через GitHub Actions.",
     admBackupDownload: "Скачать копию",
+
+    admTgTitle: "Telegram-канал: Партия дня",
+
+    admTgHint: "Каждый день в 20:00 (по Ташкенту) самая интересная вчерашняя партия выходит в канале в виде GIF. Для проверки можно отправить сейчас — в 20:00 в этот день она не повторится.",
+
+    admTgPost: "Отправить в канал сейчас",
+
+    admTgDone: "Отправлено в канал",
+
+    admTgNoGame: "Среди вчерашних партий нет подходящей",
+
+    admTgFail: "Telegram отказал — проверьте, что бот — администратор канала",
+
+    audTgPost: "Отправил партию дня в канал",
     admBackupDone: "Копия скачана",
     admErrOpen: "Открытые",
     admErrResolved: "Решённые",
@@ -7358,6 +7400,20 @@ const translationsExtra = {
     admBackupTitle: "Copia de seguridad",
     admBackupHint: "Copia de toda la base de datos (JSON comprimido). El archivo contiene hashes de contraseñas y correos: guárdalo en un lugar seguro. GitHub Actions también hace una copia cifrada diaria.",
     admBackupDownload: "Descargar copia",
+
+    admTgTitle: "Canal de Telegram: Partida del día",
+
+    admTgHint: "Cada día a las 20:00 (hora de Taskent) la partida más interesante de ayer se publica en el canal como GIF. Puedes enviarla ahora para probar: ese día no se volverá a publicar a las 20:00.",
+
+    admTgPost: "Publicar en el canal ahora",
+
+    admTgDone: "Publicado en el canal",
+
+    admTgNoGame: "No hay ninguna partida adecuada entre las de ayer",
+
+    admTgFail: "Telegram lo rechazó: comprueba que el bot es administrador del canal",
+
+    audTgPost: "Publicó la partida del día en el canal",
     admBackupDone: "Copia descargada",
     admErrOpen: "Abiertos",
     admErrResolved: "Resueltos",
@@ -8952,6 +9008,20 @@ const translationsExtra = {
     admBackupTitle: "Sicherung",
     admBackupHint: "Kopie der gesamten Datenbank (komprimiertes JSON). Die Datei enthält Passwort-Hashes und E-Mails — sicher aufbewahren. Eine tägliche verschlüsselte Kopie erstellt GitHub Actions automatisch.",
     admBackupDownload: "Sicherung herunterladen",
+
+    admTgTitle: "Telegram-Kanal: Partie des Tages",
+
+    admTgHint: "Jeden Tag um 20:00 Uhr (Taschkenter Zeit) erscheint die spannendste Partie von gestern als GIF im Kanal. Zum Testen kannst du sie jetzt senden – an diesem Tag wird sie um 20:00 Uhr nicht erneut gepostet.",
+
+    admTgPost: "Jetzt im Kanal posten",
+
+    admTgDone: "Im Kanal gepostet",
+
+    admTgNoGame: "Unter den gestrigen Partien ist keine passende",
+
+    admTgFail: "Telegram hat abgelehnt – prüfe, ob der Bot Admin des Kanals ist",
+
+    audTgPost: "Partie des Tages im Kanal gepostet",
     admBackupDone: "Sicherung heruntergeladen",
     admErrOpen: "Offen",
     admErrResolved: "Erledigt",
@@ -10546,6 +10616,20 @@ const translationsExtra = {
     admBackupTitle: "Sauvegarde",
     admBackupHint: "Copie de toute la base (JSON compressé). Le fichier contient des hachages de mots de passe et des e-mails — conservez-le en lieu sûr. Une copie chiffrée quotidienne est aussi faite par GitHub Actions.",
     admBackupDownload: "Télécharger la sauvegarde",
+
+    admTgTitle: "Canal Telegram : Partie du jour",
+
+    admTgHint: "Chaque jour à 20 h 00 (heure de Tachkent), la partie la plus intéressante d’hier est publiée dans le canal en GIF. Vous pouvez l’envoyer maintenant pour tester : elle ne sera pas republiée à 20 h 00 ce jour-là.",
+
+    admTgPost: "Publier dans le canal maintenant",
+
+    admTgDone: "Publié dans le canal",
+
+    admTgNoGame: "Aucune partie adaptée parmi celles d’hier",
+
+    admTgFail: "Telegram a refusé — vérifiez que le bot est administrateur du canal",
+
+    audTgPost: "A publié la partie du jour dans le canal",
     admBackupDone: "Sauvegarde téléchargée",
     admErrOpen: "Ouvertes",
     admErrResolved: "Résolues",

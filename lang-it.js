@@ -1361,6 +1361,20 @@ window.TRANSLATIONS_IT = {
   admBackupTitle: "Backup",
   admBackupHint: "Una copia dell'intero database (JSON compresso). Il file contiene gli hash delle password e le email — conservalo al sicuro. Ogni giorno GitHub Actions crea anche una copia cifrata automatica.",
   admBackupDownload: "Scarica il backup",
+
+  admTgTitle: "Canale Telegram: Partita del giorno",
+
+  admTgHint: "Ogni giorno alle 20:00 (ora di Tashkent) la partita più interessante di ieri viene pubblicata nel canale come GIF. Puoi inviarla ora per provare: quel giorno non verrà ripubblicata alle 20:00.",
+
+  admTgPost: "Pubblica ora nel canale",
+
+  admTgDone: "Pubblicato nel canale",
+
+  admTgNoGame: "Nessuna partita adatta tra quelle di ieri",
+
+  admTgFail: "Telegram ha rifiutato: verifica che il bot sia amministratore del canale",
+
+  audTgPost: "Ha pubblicato la partita del giorno nel canale",
   admBackupDone: "Backup scaricato",
   admErrOpen: "Aperti",
   admErrResolved: "Risolti",

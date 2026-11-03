@@ -1361,6 +1361,20 @@ window.TRANSLATIONS_AZ = {
   admBackupTitle: "Ehtiyat nüsxə",
   admBackupHint: "Bütün verilənlər bazasının nüsxəsi (sıxılmış JSON). Faylda şifrə heşləri və e-poçtlar var — təhlükəsiz yerdə saxla. GitHub Actions hər gün şifrələnmiş nüsxəni avtomatik götürür.",
   admBackupDownload: "Nüsxəni yüklə",
+
+  admTgTitle: "Telegram kanalı: Günün oyunu",
+
+  admTgHint: "Hər gün saat 20:00-da (Daşkənd vaxtı) dünənin ən maraqlı oyunu GIF şəklində kanalda paylaşılır. Yoxlamaq üçün indi göndərə bilərsən — həmin gün 20:00-da təkrarlanmayacaq.",
+
+  admTgPost: "İndi kanala göndər",
+
+  admTgDone: "Kanala göndərildi",
+
+  admTgNoGame: "Dünənki oyunlar arasında uyğun oyun yoxdur",
+
+  admTgFail: "Telegram rədd etdi — botun kanalda admin olduğunu yoxla",
+
+  audTgPost: "Günün oyununu kanala göndərdi",
   admBackupDone: "Nüsxə yükləndi",
   admErrOpen: "Açıq",
   admErrResolved: "Həll edildi",

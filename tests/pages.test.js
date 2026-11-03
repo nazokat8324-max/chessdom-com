@@ -322,6 +322,17 @@ test("Taxta ko'rinishlari: 14 ta + 'Mavzuga mos', barcha ro'yxatlar, CSS va 6 ti
   assert.ok(css.includes('.bd-auto {'), "'Mavzuga mos' namunasi");
 });
 
+test("Node versiyasi bir xil: package.json engines (Render shu bo'yicha tanlaydi), Dockerfile va GitHub Actions", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const root = path.join(__dirname, '..');
+  // 2026-11-03 gacha Render'da Node 18 edi (xavfsizlik yangilanishlari 2025-04 da tugagan) — testlar esa Node 22 da o'tardi
+  const engines = require('../package.json').engines.node;
+  assert.equal(engines, '22.x');
+  assert.match(fs.readFileSync(path.join(root, 'Dockerfile'), 'utf8'), /^FROM node:22-alpine\s*$/m);
+  assert.match(fs.readFileSync(path.join(root, '.github', 'workflows', 'test.yml'), 'utf8'), /node-version: 22\s/);
+});
+
 test('PWA: manifest, service worker, ikonkalar, VAPID kaliti', async () => {
   const mf = await (await get('/manifest.json')).json();
   assert.equal(mf.display, 'standalone');

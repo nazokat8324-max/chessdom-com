@@ -28,14 +28,19 @@ async function call(method, body) {
 // ⭐ Rasmiy kanal (env TELEGRAM_CHANNEL, masalan "@chesscaravan"; bot kanalda admin bo'lishi kerak) — har kuni Kun o'yini (server.js)
 const CHANNEL = (process.env.TELEGRAM_CHANNEL || '').trim();
 const channelEnabled = () => enabled() && !!CHANNEL;
+// multipart/form-data qo'lda yig'iladi: FormData + Blob fayl nomi bilan Node 18 da `buffer.File` ni ishlatadi va har postda
+// "ExperimentalWarning" chiqarardi (admin "Xatolar" da ko'rindi, 2026-11-03)
+function multipart(fields, file) {
+  const boundary = '----cc' + crypto.randomBytes(12).toString('hex');
+  const parts = [];
+  for (const [name, value] of Object.entries(fields)) parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`, 'utf8'));
+  parts.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${file.name}"; filename="${file.filename}"\r\nContent-Type: ${file.type}\r\n\r\n`, 'utf8'), file.data, Buffer.from(`\r\n--${boundary}--\r\n`, 'utf8'));
+  return { body: Buffer.concat(parts), type: 'multipart/form-data; boundary=' + boundary };
+}
 async function postAnimation({ gif, caption, buttonText, url }) {
-  const form = new FormData();
-  form.append('chat_id', CHANNEL);
-  form.append('caption', caption);
-  form.append('parse_mode', 'HTML');
-  form.append('reply_markup', JSON.stringify(button(buttonText, url)));
-  form.append('animation', new Blob([gif], { type: 'image/gif' }), 'chesscaravan-game-of-the-day.gif');
-  const res = await fetch(`${API}/bot${TOKEN}/sendAnimation`, { method: 'POST', body: form });
+  const form = multipart({ chat_id: CHANNEL, caption, parse_mode: 'HTML', reply_markup: JSON.stringify(button(buttonText, url)) },
+    { name: 'animation', filename: 'chesscaravan-game-of-the-day.gif', type: 'image/gif', data: gif });
+  const res = await fetch(`${API}/bot${TOKEN}/sendAnimation`, { method: 'POST', headers: { 'Content-Type': form.type }, body: form.body });
   const data = await res.json().catch(() => ({}));
   if (!data.ok) { const err = new Error(data.description || ('Telegram ' + res.status)); err.code = data.error_code || res.status; throw err; }
   return data.result;

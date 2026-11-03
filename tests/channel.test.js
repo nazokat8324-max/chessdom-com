@@ -91,7 +91,8 @@ test("Kun o'yini kanalda: GIF + matn + saytga tugma, bir kunda bir marta; mos o'
   assert.equal(r.ok, true, JSON.stringify(r));
   assert.equal(posts.length, 1);
   const p = posts[0];
-  assert.match(p.type, /multipart\/form-data/);
+  // So'rov o'zimiz yig'gan multipart (FormData + Blob Node 18 da "ExperimentalWarning: buffer.File" chiqarardi)
+  assert.match(p.type, /^multipart\/form-data; boundary=----cc[0-9a-f]{24}$/);
   assert.equal(field(p, 'chat_id'), '@cc_test_channel');
   assert.equal(field(p, 'parse_mode'), 'HTML');
   const caption = field(p, 'caption');
@@ -106,6 +107,10 @@ test("Kun o'yini kanalda: GIF + matn + saytga tugma, bir kunda bir marta; mos o'
   const gif = fileOf(p);
   assert.ok(gif, 'GIF fayli');
   assert.equal(gifFrames(gif).frames, RUY.length + 1);
+  // Fayl baytma-bayt buzilmasdan yetadi
+  const boundary = p.type.split('boundary=')[1];
+  const s = p.body.toString('latin1'), from = s.indexOf('GIF89a'), to = s.indexOf('\r\n--' + boundary + '--', from);
+  assert.deepEqual(p.body.subarray(from, to), await makeGameGif({ moves: RUY }));
 
   // Shu kuni qayta — yo'q (server qayta ishga tushsa ham — app_settings da)
   assert.equal((await srv.api(null, '/api/test/channel-post?now=' + (tomorrow + 3600000), 'POST')).reason, 'done');

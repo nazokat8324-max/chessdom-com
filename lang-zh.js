@@ -1667,6 +1667,12 @@ window.TRANSLATIONS_ZH = {
   stHint: "点击某一步即可在棋盘上查看该局面",
   stCopy: "复制",
   stShare: "分享",
+
+  stListen: "收听",
+
+  stStop: "停止",
+
+  stNoVoice: "你的浏览器没有该语言的语音",
   stCopied: "故事已复制",
   stCopyFail: "无法复制",
   stPreparing: "正在准备故事——先分析对局…",

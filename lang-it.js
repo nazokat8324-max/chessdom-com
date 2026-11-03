@@ -1667,6 +1667,12 @@ window.TRANSLATIONS_IT = {
   stHint: "Tocca un passaggio per vedere quella posizione sulla scacchiera",
   stCopy: "Copia",
   stShare: "Condividi",
+
+  stListen: "Ascolta",
+
+  stStop: "Ferma",
+
+  stNoVoice: "Il tuo browser non ha una voce per questa lingua",
   stCopied: "Storia copiata",
   stCopyFail: "Impossibile copiare",
   stPreparing: "Preparo la storia — prima analizzo la partita…",

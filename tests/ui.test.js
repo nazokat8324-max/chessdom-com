@@ -1119,6 +1119,65 @@ test("O'yin hikoyasi: tahlildan keyin oynada bosqichlar, bosilsa taxtada o'sha p
   assert.deepEqual(p.errors, []);
 });
 
+test("O'yin hikoyasini tinglash: bosqichlar navbat bilan o'qiladi (yurishlar so'z bilan), o'qilayotgani ajratiladi va taxtada ochiladi; ovoz yo'q bo'lsa tugma o'chiq", opts, async () => {
+  const u = await srv.register('Listen');
+  const p = await page(u);
+  // Soxta speechSynthesis: o'zbekcha ovoz bor, o'qilgan matnlar yoziladi, har bosqich darhol tugaydi
+  await p.evaluateOnNewDocument(() => {
+    window.__spoken = [];
+    window.__voices = [{ lang: 'uz-UZ', name: 'Test Madina' }];
+    window.SpeechSynthesisUtterance = function (text) { this.text = text; };
+    const synth = { speaking: false, getVoices: () => window.__voices, cancel() { window.__cancelled = (window.__cancelled || 0) + 1; }, addEventListener() {},
+      speak(u) { window.__spoken.push({ text: u.text, lang: u.lang }); setTimeout(() => u.onend && u.onend(), 30); } };
+    Object.defineProperty(window, 'speechSynthesis', { value: synth, configurable: true });
+  });
+  await p.goto(srv.base + '/oyin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#btnLocalGame', { visible: true, timeout: 10000 });
+  await sleep(600);
+  await p.click('#btnLocalGame');
+  await sleep(300);
+  await p.evaluate(() => { for (const [f, t] of [['e2', 'e4'], ['e7', 'e5'], ['f1', 'c4'], ['b8', 'c6'], ['d1', 'h5'], ['g8', 'f6'], ['h5', 'f7']]) window.executeMove(f, t); });
+  await sleep(600);
+  await p.waitForSelector('#pgAnalysisBox .an-story', { visible: true, timeout: 8000 });
+  await p.evaluate(() => {
+    const ev = (cp) => ({ cp, mate: null });
+    const h = game.history({ verbose: true });
+    window.gameAnalysis = {
+      evals: [ev(20), ev(30), ev(25), ev(40), ev(35), ev(60), { cp: 10000, mate: null, terminal: true }, { cp: 10000, mate: null, terminal: true }],
+      moves: h.map((m, i) => ({ san: m.san, color: m.color, cls: i === 5 ? 'blunder' : null, loss: i === 5 ? 48 : 1, bestSan: i === 5 ? 'g6' : null })),
+      accuracy: { w: 96, b: 41 }
+    };
+  });
+  await p.click('#pgAnalysisBox .an-story');
+  await p.waitForSelector('#storyModal [data-st-listen]:not([disabled])', { visible: true, timeout: 5000 });
+  const n = await p.evaluate(() => document.querySelectorAll('#storyModal .st-ch').length);
+  // Taxtada qaysi pozitsiyalar ochilganini yozib boramiz
+  await p.evaluate(() => { window.__plies = []; const orig = window.reviewMove; window.reviewMove = (x) => { window.__plies.push(x); return orig(x); }; });
+  await p.click('#storyModal [data-st-listen]');
+  await p.waitForFunction((k) => window.__spoken.length >= k + 1 && !/⏹/.test(document.querySelector('#storyModal [data-st-listen]').textContent), { timeout: 8000 }, n);
+  const sp = await p.evaluate(() => window.__spoken);
+  assert.equal(sp.length, n + 1, 'sarlavha + har bosqich');
+  assert.ok(sp.every((s) => s.lang === 'uz-UZ'));
+  const all = sp.map((s) => s.text).join(' | ');
+  assert.doesNotMatch(all, /Qxf7|Nf6|\(\)|\?\?|[\u{1F300}-\u{1FAFF}]/u, "yurish yozuvi, baho belgisi va emoji o'qilmaydi: " + all);
+  assert.match(all, /farzin oladi f 7, mat!/, 'Qxf7# — «farzin oladi f 7, mat!»');
+  // O'qish davomida bosqichlar navbat bilan taxtada ochilgan (3... Nf6 → 6-yarim yurish, 4. Qxf7# → 7)
+  const plies = await p.evaluate(() => window.__plies);
+  assert.ok(plies.includes(6) && plies.includes(7), 'taxtada ochilgan pozitsiyalar: ' + plies);
+  assert.deepEqual(plies, [...plies].sort((a, b) => a - b), 'tartib bilan');
+  // Yopilganda ovoz to'xtaydi
+  await p.keyboard.press('Escape');
+  assert.ok(await p.evaluate(() => window.__cancelled >= 1));
+  // Ovoz yo'q (masalan, o'zbekcha ovozsiz brauzer) — tugma o'chiq va izohli
+  await p.evaluate(() => { window.__voices = [{ lang: 'en-US', name: 'Eng' }]; });
+  await p.click('#pgAnalysisBox .an-story');
+  await p.waitForSelector('#storyModal [data-st-listen]', { visible: true, timeout: 5000 });
+  const off = await p.evaluate(() => { const b = document.querySelector('#storyModal [data-st-listen]'); return { d: b.disabled, t: b.title }; });
+  assert.equal(off.d, true);
+  assert.match(off.t, /ovoz/i);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Nishonlar: profilda tugma, 6 tur, olinganlari ajralib turadi", opts, async () => {
   const u = await srv.register('Badge');
   const p = await page(u);

@@ -2883,6 +2883,12 @@ const translationsExtra = {
     stHint: "Bosqichni bossangiz — o'sha pozitsiya taxtada ochiladi",
     stCopy: "Nusxalash",
     stShare: "Ulashish",
+
+    stListen: "Tinglash",
+
+    stStop: "To'xtatish",
+
+    stNoVoice: "Brauzeringizda bu til uchun ovoz yo'q",
     stCopied: "Hikoya nusxalandi",
     stCopyFail: "Nusxalab bo'lmadi",
     stPreparing: "Hikoya tayyorlanmoqda — avval o'yin tahlil qilinadi…",
@@ -4455,6 +4461,12 @@ const translationsExtra = {
     stHint: "Tap a step to see that position on the board",
     stCopy: "Copy",
     stShare: "Share",
+
+    stListen: "Listen",
+
+    stStop: "Stop",
+
+    stNoVoice: "Your browser has no voice for this language",
     stCopied: "Story copied",
     stCopyFail: "Could not copy",
     stPreparing: "Preparing the story — analysing the game first…",
@@ -6027,6 +6039,12 @@ const translationsExtra = {
     stHint: "Нажмите на этап — позиция откроется на доске",
     stCopy: "Копировать",
     stShare: "Поделиться",
+
+    stListen: "Слушать",
+
+    stStop: "Остановить",
+
+    stNoVoice: "В вашем браузере нет голоса для этого языка",
     stCopied: "История скопирована",
     stCopyFail: "Не удалось скопировать",
     stPreparing: "Готовим историю — сначала анализ партии…",
@@ -7599,6 +7617,12 @@ const translationsExtra = {
     stHint: "Toca un paso para ver esa posición en el tablero",
     stCopy: "Copiar",
     stShare: "Compartir",
+
+    stListen: "Escuchar",
+
+    stStop: "Detener",
+
+    stNoVoice: "Tu navegador no tiene voz para este idioma",
     stCopied: "Historia copiada",
     stCopyFail: "No se pudo copiar",
     stPreparing: "Preparando la historia: primero se analiza la partida…",
@@ -9171,6 +9195,12 @@ const translationsExtra = {
     stHint: "Tippe auf einen Abschnitt, um die Stellung zu sehen",
     stCopy: "Kopieren",
     stShare: "Teilen",
+
+    stListen: "Anhören",
+
+    stStop: "Stopp",
+
+    stNoVoice: "Dein Browser hat keine Stimme für diese Sprache",
     stCopied: "Geschichte kopiert",
     stCopyFail: "Kopieren fehlgeschlagen",
     stPreparing: "Geschichte wird vorbereitet — zuerst wird die Partie analysiert…",
@@ -10743,6 +10773,12 @@ const translationsExtra = {
     stHint: "Touchez une étape pour voir la position sur l’échiquier",
     stCopy: "Copier",
     stShare: "Partager",
+
+    stListen: "Écouter",
+
+    stStop: "Arrêter",
+
+    stNoVoice: "Votre navigateur n'a pas de voix pour cette langue",
     stCopied: "Récit copié",
     stCopyFail: "Impossible de copier",
     stPreparing: "Préparation du récit — analyse de la partie d’abord…",

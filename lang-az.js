@@ -1667,6 +1667,12 @@ window.TRANSLATIONS_AZ = {
   stHint: "Həmin mövqeyi taxtada görmək üçün mərhələyə toxun",
   stCopy: "Kopyala",
   stShare: "Paylaş",
+
+  stListen: "Dinlə",
+
+  stStop: "Dayandır",
+
+  stNoVoice: "Brauzerində bu dil üçün səs yoxdur",
   stCopied: "Hekayə kopyalandı",
   stCopyFail: "Kopyalamaq alınmadı",
   stPreparing: "Hekayə hazırlanır — əvvəlcə oyun təhlil edilir…",

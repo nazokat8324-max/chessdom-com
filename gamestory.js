@@ -111,6 +111,33 @@
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const SITE = location.origin;
 
+  // 🔊 Hikoyani ovozda o'qish (brauzer speechSynthesis; serverga hech narsa ketmaydi). Til — sayt tili (uzc → o'zbekcha ovoz)
+  const SPEECH_LANG = { uz: 'uz-UZ', uzc: 'uz-UZ', en: 'en-US', ru: 'ru-RU', es: 'es-ES', de: 'de-DE', fr: 'fr-FR', tr: 'tr-TR', kk: 'kk-KZ', tg: 'tg-TJ', ky: 'ky-KG', tk: 'tk-TM', az: 'az-AZ', zh: 'zh-CN', it: 'it-IT' };
+  const uiLangCode = () => (window.uiLang ? window.uiLang() : 'en');
+  // Shu til uchun ovoz bormi (masalan, Chrome'da o'zbekcha ovoz yo'q bo'lishi mumkin — unda tugma o'chiq va izohli)
+  const voiceFor = (lang) => {
+    if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') return null;
+    const want = (SPEECH_LANG[lang] || 'en-US').toLowerCase();
+    const voices = window.speechSynthesis.getVoices() || [];
+    return voices.find((v) => String(v.lang).toLowerCase().replace('_', '-') === want) || voices.find((v) => String(v.lang).toLowerCase().startsWith(want.slice(0, 2))) || null;
+  };
+  // Matnni o'qishga tayyorlash: emoji va baho belgilari (?!, ??) olib tashlanadi, yurish yozuvi so'zga aylanadi ("Nf3" → "ot f 3")
+  // Yurish + ixtiyoriy baho belgisi (Qxd5?, Nf6?!) — belgi o'qilmaydi, oddiy so'roq/undov belgilari qoladi
+  const SAN_RE = /(^|[^\w])(O-O-O|O-O|[KQRBN]?[a-h]?[1-8]?x?[a-h][1-8](?:=[QRBN])?[+#]?)(?:\?\?|\?!|!\?|!!|\?|!)?(?=$|[^\w])/g;
+  function speakable(text, lang) {
+    const L = lang === 'uzc' ? 'uz' : lang;
+    let s = String(text || '').replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu, ' ')
+      .replace(/\s*\((?:\?\?|\?!|!\?|!!|\?|!)\)/g, ''); // "(??)" kabi baho izohlari
+    if (window.VoiceMoves && window.VoiceMoves.moveToWords) {
+      s = s.replace(SAN_RE, (all, pre, san) => {
+        const m = san.match(/^([KQRBN])?([a-h])?[1-8]?(x)?([a-h][1-8])(?:=([QRBN]))?/);
+        const mv = /^O-O/.test(san) ? { san } : { san, piece: m && m[1] ? m[1].toLowerCase() : 'p', captured: m && m[3] ? 'x' : null, from: (m && m[2]) || '', to: m ? m[4] : '', promotion: m && m[5] ? m[5].toLowerCase() : null };
+        return pre + window.VoiceMoves.moveToWords(mv, L);
+      });
+    }
+    return s.replace(/\s+/g, ' ').trim();
+  }
+
   window.openGameStory = function (input) {
     const GS = window.GameStory;
     if (!GS || !input || !input.analysis) return;
@@ -134,16 +161,62 @@
         <span class="st-ico">${esc(c.icon)}</span><span class="st-text">${esc(c.text)}</span></li>`).join('')}</ol>
       ${input.onPly ? `<p class="st-hint">${esc(tx('stHint', "Bosqichni bossangiz — o'sha pozitsiya taxtada ochiladi"))}</p>` : ''}
       <div class="st-actions">
+        <button type="button" class="ch-secondary st-listen" data-st-listen>🔊 ${esc(tx('stListen', 'Tinglash'))}</button>
         <button type="button" class="ch-secondary" data-st-copy>📋 ${esc(tx('stCopy', 'Nusxalash'))}</button>
         <button type="button" class="ch-primary" data-st-share>📤 ${esc(tx('stShare', 'Ulashish'))}</button>
       </div>
     </div>`;
-    // Escape ham yopadi (qayta ko'rish, ulashish, donalar oynalari kabi)
+    // 🔊 Tinglash: sarlavha, so'ng har bosqich navbat bilan; o'qilayotgan bosqich ajratiladi va taxtada o'sha pozitsiya ochiladi
+    const lang = uiLangCode();
+    const listenBtn = el.querySelector('[data-st-listen]');
+    let speaking = false;
+    const setListen = () => {
+      const voice = voiceFor(lang);
+      listenBtn.disabled = !voice;
+      listenBtn.title = voice ? '' : tx('stNoVoice', "Brauzeringizda bu til uchun ovoz yo'q");
+      listenBtn.textContent = (speaking ? '⏹ ' + tx('stStop', "To'xtatish") : '🔊 ' + tx('stListen', 'Tinglash'));
+    };
+    const stopSpeech = () => { speaking = false; try { window.speechSynthesis && window.speechSynthesis.cancel(); } catch (e) {} if (document.body.contains(el)) setListen(); };
+    const highlight = (li) => {
+      el.querySelectorAll('.st-ch.on').forEach((x) => x.classList.remove('on'));
+      if (!li) return;
+      li.classList.add('on');
+      if (window.scrollWithin) window.scrollWithin(li, el.querySelector('.st-card'));
+      if (li.dataset.stPly && input.onPly) input.onPly(Number(li.dataset.stPly));
+    };
+    const startSpeech = () => {
+      const voice = voiceFor(lang);
+      if (!voice) return;
+      speaking = true;
+      setListen();
+      const items = el.querySelectorAll('.st-ch');
+      const parts = [{ text: story.title, li: null }].concat(story.chapters.map((c, i) => ({ text: c.text, li: items[i] })));
+      let i = 0;
+      const next = () => {
+        if (!speaking || !document.body.contains(el)) return;
+        if (i >= parts.length) { speaking = false; highlight(null); setListen(); return; }
+        const part = parts[i++];
+        highlight(part.li);
+        const u = new SpeechSynthesisUtterance(speakable(part.text, lang));
+        try { u.voice = voice; } catch (e) {}
+        u.lang = voice.lang;
+        u.onend = next;
+        u.onerror = () => { stopSpeech(); };
+        window.speechSynthesis.speak(u);
+      };
+      try { window.speechSynthesis.cancel(); } catch (e) {}
+      next();
+    };
+    setListen();
+    // Ovozlar ro'yxati ba'zi brauzerlarda kechroq keladi
+    if (window.speechSynthesis && !voiceFor(lang)) window.speechSynthesis.addEventListener('voiceschanged', () => { if (document.body.contains(el)) setListen(); }, { once: true });
+    // Escape ham yopadi (qayta ko'rish, ulashish, donalar oynalari kabi); yopilganda ovoz ham to'xtaydi
     const onKey = (e) => { if (e.key === 'Escape') close(); };
-    const close = () => { el.remove(); document.removeEventListener('keydown', onKey); };
+    const close = () => { stopSpeech(); el.remove(); document.removeEventListener('keydown', onKey); };
     document.addEventListener('keydown', onKey);
     el.onclick = (e) => {
       if (e.target === el || e.target.closest('[data-st-close]')) return close();
+      if (e.target.closest('[data-st-listen]')) { if (speaking) stopSpeech(); else startSpeech(); return; }
       const ch = e.target.closest('[data-st-ply]');
       if (ch && input.onPly) { input.onPly(Number(ch.dataset.stPly)); el.querySelectorAll('.st-ch.on').forEach((x) => x.classList.remove('on')); ch.classList.add('on'); return; }
       if (e.target.closest('[data-st-copy]')) {

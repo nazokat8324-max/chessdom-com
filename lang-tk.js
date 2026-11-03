@@ -1667,6 +1667,12 @@ window.TRANSLATIONS_TK = {
   stHint: "Şol ýagdaýy tagtada görmek üçin tapgyra basyň",
   stCopy: "Göçür",
   stShare: "Paýlaş",
+
+  stListen: "Diňlemek",
+
+  stStop: "Togtatmak",
+
+  stNoVoice: "Brauzeriňizde bu dil üçin ses ýok",
   stCopied: "Hekaýa göçürildi",
   stCopyFail: "Göçürip bolmady",
   stPreparing: "Hekaýa taýýarlanýar — ilki oýun derňelýär…",

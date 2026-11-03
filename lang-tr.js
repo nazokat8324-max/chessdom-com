@@ -1667,6 +1667,12 @@ window.TRANSLATIONS_TR = {
   stHint: "O pozisyonu tahtada görmek için bir adıma dokun",
   stCopy: "Kopyala",
   stShare: "Paylaş",
+
+  stListen: "Dinle",
+
+  stStop: "Durdur",
+
+  stNoVoice: "Tarayıcınızda bu dil için ses yok",
   stCopied: "Hikâye kopyalandı",
   stCopyFail: "Kopyalanamadı",
   stPreparing: "Hikâye hazırlanıyor — önce oyun analiz ediliyor…",

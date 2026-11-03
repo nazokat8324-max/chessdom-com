@@ -1321,6 +1321,12 @@ window.TRANSLATIONS_TK = {
   close: "Ýap",
   ariaSeason: "Möwsüm",
   ariaPrev: "Öňki",
+
+  ariaFirst: "Başyna",
+
+  ariaSearch: "Gözle",
+
+  ariaLast: "Ahyryna",
   ariaNext: "Indiki",
   pwaInstall: "Programmany guruň",
   pwaInstallSub: "Baş ekranda — çalt açylýar, bildirişler bilen",

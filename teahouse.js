@@ -178,7 +178,7 @@
   function paintPicker() {
     const el = document.getElementById('teaPicker'), p = st.picker;
     el.innerHTML = `<div class="tea-picker" role="dialog">
-      <div class="tea-picker-head"><span>${p.zone.icon}</span><div><b>${esc(tx('teaPickTitle', "Stolga o'tirish"))}</b><small>${esc(tx(p.zone.title[0], p.zone.title[1]))}</small></div><button type="button" class="tea-x" data-close>✕</button></div>
+      <div class="tea-picker-head"><span>${p.zone.icon}</span><div><b>${esc(tx('teaPickTitle', "Stolga o'tirish"))}</b><small>${esc(tx(p.zone.title[0], p.zone.title[1]))}</small></div><button type="button" class="tea-x" data-close aria-label="${esc(tx('close', "Yopish"))}">✕</button></div>
       <label>${esc(tx('teaPickClock', 'Vaqt nazorati'))}</label>
       <div class="tea-chips">${p.zone.clocks.map(c => `<button type="button" class="${c === p.clock ? 'active' : ''}" data-clock="${c.join(',')}">${clockLabel(c)}</button>`).join('')}</div>
       <label>${esc(tx('teaPickType', "O'yin turi"))}</label>

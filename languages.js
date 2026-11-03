@@ -2536,6 +2536,12 @@ const translationsExtra = {
     close: "Yopish",
     ariaSeason: "Mavsum",
     ariaPrev: "Oldingi",
+
+    ariaFirst: "Boshiga",
+
+    ariaSearch: "Qidirish",
+
+    ariaLast: "Oxiriga",
     ariaNext: "Keyingi",
     pwaInstall: "Ilovani o'rnatish",
     pwaInstallSub: "Telefon ekraningizda — tez ochiladi, bildirishnomalar keladi",
@@ -4114,6 +4120,12 @@ const translationsExtra = {
     close: "Close",
     ariaSeason: "Season",
     ariaPrev: "Previous",
+
+    ariaFirst: "First",
+
+    ariaSearch: "Search",
+
+    ariaLast: "Last",
     ariaNext: "Next",
     pwaInstall: "Install the app",
     pwaInstallSub: "On your home screen — opens fast, with notifications",
@@ -5692,6 +5704,12 @@ const translationsExtra = {
     close: "Закрыть",
     ariaSeason: "Сезон",
     ariaPrev: "Назад",
+
+    ariaFirst: "В начало",
+
+    ariaSearch: "Поиск",
+
+    ariaLast: "В конец",
     ariaNext: "Далее",
     pwaInstall: "Установить приложение",
     pwaInstallSub: "На главном экране — быстрый запуск и уведомления",
@@ -7270,6 +7288,12 @@ const translationsExtra = {
     close: "Cerrar",
     ariaSeason: "Temporada",
     ariaPrev: "Anterior",
+
+    ariaFirst: "Al principio",
+
+    ariaSearch: "Buscar",
+
+    ariaLast: "Al final",
     ariaNext: "Siguiente",
     pwaInstall: "Instalar la app",
     pwaInstallSub: "En tu pantalla de inicio: abre rápido y con notificaciones",
@@ -8848,6 +8872,12 @@ const translationsExtra = {
     close: "Schließen",
     ariaSeason: "Saison",
     ariaPrev: "Zurück",
+
+    ariaFirst: "Zum Anfang",
+
+    ariaSearch: "Suchen",
+
+    ariaLast: "Zum Ende",
     ariaNext: "Weiter",
     pwaInstall: "App installieren",
     pwaInstallSub: "Auf dem Startbildschirm — schnell geöffnet, mit Benachrichtigungen",
@@ -10426,6 +10456,12 @@ const translationsExtra = {
     close: "Fermer",
     ariaSeason: "Saison",
     ariaPrev: "Précédent",
+
+    ariaFirst: "Au début",
+
+    ariaSearch: "Rechercher",
+
+    ariaLast: "À la fin",
     ariaNext: "Suivant",
     pwaInstall: "Installer l'appli",
     pwaInstallSub: "Sur votre écran d'accueil — ouverture rapide et notifications",

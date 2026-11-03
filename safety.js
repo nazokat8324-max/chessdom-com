@@ -97,7 +97,7 @@
     el.className = 'ch-overlay';
     el.innerHTML = `
       <form class="ch-card rp-form">
-        <button type="button" class="ch-x" data-close="1">✕</button>
+        <button type="button" class="ch-x" data-close="1" aria-label="${esc(tx('close', "Yopish"))}">✕</button>
         <div class="ch-icon">⚠️</div>
         <h3>${esc(tx('rpTitle', '{{name}} ustidan shikoyat', { name: username }))}</h3>
         <p class="ch-sub">${esc(tx('rpHint', "Sababni tanlang — adminlar ko'rib chiqadi"))}</p>

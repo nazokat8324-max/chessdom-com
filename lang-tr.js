@@ -1321,6 +1321,12 @@ window.TRANSLATIONS_TR = {
   close: "Kapat",
   ariaSeason: "Sezon",
   ariaPrev: "Önceki",
+
+  ariaFirst: "Başa",
+
+  ariaSearch: "Ara",
+
+  ariaLast: "Sona",
   ariaNext: "Sonraki",
   pwaInstall: "Uygulamayı yükle",
   pwaInstallSub: "Ana ekranında — hızlı açılır, bildirimlerle",

@@ -91,7 +91,7 @@
     const el = modal();
     const busy = res.status === 'busy';
     el.innerHTML = `<div class="inv-card">
-        <button class="inv-x" data-close>✕</button>
+        <button class="inv-x" data-close aria-label="${esc(tx('close', "Yopish"))}">✕</button>
         <div class="inv-big">${busy ? '♟️' : '🔔'}</div>
         <h3>${esc(busy ? tx('invBusyTitle', "{{name}} hozir o'ynayapti", { name: res.inviter }) : tx('invOfflineTitle', '{{name}} hozir saytda emas', { name: res.inviter }))}</h3>
         <p class="inv-sub">${esc(tx('invWaitSub', "Unga xabar yubordik — bo'shashi bilan sizni o'yinga chaqira oladi. Endi siz do'stsiz, u «Xabarlar» va do'stlar ro'yxatida."))}</p>
@@ -135,7 +135,7 @@
     const list = d && d.recent && d.recent.length
       ? `<div class="inv-list">${d.recent.map(r => `<span class="player-link inv-chip" data-username="${esc(r.username)}">${esc(r.username)}<small>${r.games} ${esc(tx('admGamesShort', "o'yin"))}</small></span>`).join('')}</div>` : '';
     el.innerHTML = `<div class="inv-card">
-        <button class="inv-x" data-close>✕</button>
+        <button class="inv-x" data-close aria-label="${esc(tx('close', "Yopish"))}">✕</button>
         <div class="inv-big">🔗</div>
         <h3>${esc(tx('invTitle', "Do'stingizni taklif qiling"))}</h3>
         <p class="inv-sub">${esc(tx('invSub', "Havolani Telegram'da yuboring. Do'stingiz uni ochib, ro'yxatdan o'tishi bilan siz bilan o'yinga tushadi va ikkingiz do'st bo'lasiz."))}</p>

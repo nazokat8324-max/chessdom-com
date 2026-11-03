@@ -58,7 +58,7 @@
       </div>`;
     return `
       <div class="lv-stage-head">
-        <button class="lv-back" data-back="1">←</button>
+        <button class="lv-back" data-back="1" aria-label="${esc(tx('clubDetailBack', "Orqaga"))}">←</button>
         <div>${modeIcon(info.mode)} <b>${esc(window.clockText(info.clock.initial, info.clock.increment))}</b> ${kindTag(info)}</div>
         <span class="lv-live"><span class="ar-dot"></span>${esc(tx('lvLiveTag', 'Jonli'))}</span>
       </div>
@@ -73,8 +73,8 @@
         <div class="lv-chat-head">💬 ${esc(tx('lvChatTitle', 'Tomoshabinlar chati'))}<span id="lvWatchers"></span></div>
         <div class="lv-chat-list" id="lvChatList"></div>
         <form class="lv-chat-form" id="lvChatForm" autocomplete="off">
-          <input id="lvChatInput" class="form-input" maxlength="200" placeholder="${esc(tx('lvChatPlaceholder', 'Xabar yozing...'))}">
-          <button type="submit">➤</button>
+          <input id="lvChatInput" class="form-input" maxlength="200" placeholder="${esc(tx('lvChatPlaceholder', 'Xabar yozing...'))}" aria-label="${esc(tx('lvChatPlaceholder', 'Xabar yozing...'))}">
+          <button type="submit" aria-label="${esc(tx('btnSendChatMessage', 'Yuborish'))}">➤</button>
         </form>
       </div>`;
   }

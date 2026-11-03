@@ -1788,15 +1788,19 @@ test("C5 admin paneli: 8 ta tab, shikoyat → ban → blokdan chiqarish, jim qil
   await p.type('#admLibForm [data-lf="lead"]', 'Qisqa kirish matni');
   await p.type('#admLibForm [data-lf="body"]', "Bu maqola admin panelini tekshirish uchun yozildi va yigirma belgidan uzun.");
   await clickEl('#admLibForm button[type="submit"]');
-  await p.waitForSelector('[data-lib-edit]', { timeout: 8000 });
-  await clickEl('[data-lib-edit]');
+  // Boshqa testlar ham kutubxonaga material qo'shadi — o'zimiznikini id bo'yicha topamiz (ro'yxatdagi birinchisi emas)
+  let mine = null;
+  for (let i = 0; i < 40 && !mine; i++) { mine = (await srv.api(null, '/api/library')).items.find((x) => x.title === 'C5 sinov maqolasi'); if (!mine) await sleep(200); }
+  assert.ok(mine, "maqola qo'shildi");
+  await clickEl(`[data-lib-edit="${mine.id}"]`);
   await p.waitForSelector('#admLibCancel', { timeout: 5000 });
   await p.evaluate(() => { const i = document.querySelector('#admLibForm [data-lf="title"]'); i.value = 'C5 tahrirlangan maqola'; });
   await clickEl('#admLibForm button[type="submit"]');
   await p.waitForFunction(() => /C5 tahrirlangan maqola/.test(document.querySelector('.adm-list').textContent), { timeout: 8000 });
-  assert.ok((await srv.api(null, '/api/library')).items.some((x) => x.title === 'C5 tahrirlangan maqola'));
-  await clickEl('[data-lib-del]');
-  await p.waitForSelector('.adm-empty', { timeout: 8000 });
+  assert.ok((await srv.api(null, '/api/library')).items.some((x) => x.id === mine.id && x.title === 'C5 tahrirlangan maqola'));
+  await clickEl(`[data-lib-del="${mine.id}"]`);
+  await p.waitForFunction((id) => !document.querySelector(`[data-lib-del="${id}"]`), { timeout: 8000 }, mine.id);
+  assert.ok(!(await srv.api(null, '/api/library')).items.some((x) => x.id === mine.id), "maqola o'chirildi");
   // 📜 Jurnal: har amal yozilgan, filtrlar ("_" li nomlar ham) ishlaydi
   await tab('audit', '#admAuditAction');
   for (const [filter, re] of [['ban', /Blokladi|ban/i], ['unban', /Blokdan chiqardi/], ['mute', /Jim qildi/], ['report', /Shikoyatni/], ['filter', /Taqiqlangan so'z/], ['backup', /Zaxira/], ['library', /Kutubxona/], ['chat_delete', null]]) {

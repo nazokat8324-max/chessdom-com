@@ -248,6 +248,27 @@ test("C1: index.html dagi title / aria-label / placeholder matnlari tarjima qili
   assert.deepEqual(bad, []);
 });
 
+test("Yakuniy tekshiruv: faqat belgidan iborat tugmalar (✕ ← ➤ ⏮ 🗑 🔍 …) nomga ega — ekran o'quvchi «tugma» deb qoldirmaydi", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const root = path.join(__dirname, '..');
+  const SERVER_ONLY = /^(server|database|league|mailer|backup|telegram|teamchess|fairplay-|push-texts|continents|lang-|languages|library-|museum-data|legal-content)/;
+  const files = fs.readdirSync(root).filter((f) => (f.endsWith('.js') && !SERVER_ONLY.test(f)) || f === 'index.html');
+  const bad = [];
+  for (const f of files) {
+    const s = fs.readFileSync(path.join(root, f), 'utf8');
+    for (const m of s.matchAll(/>([^<>`{}]{1,12})<\/button>/g)) {
+      const inner = m[1].trim();
+      if (!inner || /[\p{L}\p{N}]/u.test(inner)) continue; // matn yoki raqam bor — nom shu
+      const start = s.lastIndexOf('<button', m.index);
+      if (start < 0) continue;
+      const tag = s.slice(start, m.index + 1); // atributlarda ">" (masalan ">=") bo'lsa ham to'liq teg
+      if (!/aria-label=|title=|data-i18n-title=/.test(tag)) bad.push(f + ':' + s.slice(0, start).split('\n').length + ' ' + JSON.stringify(inner));
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
 test("C1: dona to'plamlari nomlari 15 tilda tarjima qilinadi va bir tilda takrorlanmaydi", () => {
   const fs = require('fs');
   const path = require('path');

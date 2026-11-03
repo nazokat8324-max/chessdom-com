@@ -127,7 +127,7 @@
     const rows = d && d.success ? d.leaders : [];
     const acc = (r) => r.total ? Math.round(r.correct / r.total * 100) : 0;
     m.innerHTML = `<div class="pr-modal-card">
-      <div class="pr-modal-head"><b>🏆 ${esc(tx('prLeaderboard', 'Bashoratchilar reytingi'))}</b><button type="button" class="pr-x" data-close>✕</button></div>
+      <div class="pr-modal-head"><b>🏆 ${esc(tx('prLeaderboard', 'Bashoratchilar reytingi'))}</b><button type="button" class="pr-x" data-close aria-label="${esc(tx('close', "Yopish"))}">✕</button></div>
       <div class="pr-tabs"><button type="button" class="${lb.period === 'month' ? 'active' : ''}" data-period="month">${esc(tx('prThisMonth', 'Shu oy'))}</button><button type="button" class="${lb.period === 'all' ? 'active' : ''}" data-period="all">${esc(tx('prAllTime', 'Butun vaqt'))}</button></div>
       <p class="pr-modal-note">${esc(tx('prLbNote', "Oy oxirida eng ko'p ochko to'plagan bashoratchi 🔮 nishon oladi"))}</p>
       ${rows.length ? `<div class="pr-lb">${rows.map((r, i) => `

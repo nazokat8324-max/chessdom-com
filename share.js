@@ -218,7 +218,7 @@
     const canShareFile = !!(url && navigator.canShare && navigator.canShare({ files: [new File([st.blobs[st.kind]], fileName(st.kind), { type: st.blobs[st.kind].type })] }));
     const link = st.invite || location.origin;
     el.innerHTML = `<div class="inv-card sh-card">
-        <button class="inv-x" data-close>✕</button>
+        <button class="inv-x" data-close aria-label="${esc(tx('close', "Yopish"))}">✕</button>
         <h3>📤 ${esc(tx('shTitle', "O'yinni ulashish"))}</h3>
         <div class="inv-clocks sh-kinds">
           <button class="${st.kind === 'gif' ? 'active' : ''}" data-kind="gif">🎬 GIF</button>

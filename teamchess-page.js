@@ -74,7 +74,7 @@
           <div class="tm-chat" id="tmChat" hidden>
             <div class="tm-chat-head">🔒 ${esc(tx('tmTeamChat', 'Jamoa chati — raqiblar ko\'rmaydi'))}</div>
             <div class="tm-chat-list" id="tmChatList"></div>
-            <form class="tm-chat-form" id="tmChatForm"><input id="tmChatInput" maxlength="200" autocomplete="off" placeholder="${esc(tx('tmChatPh', 'Jamoadoshingizga maslahat…'))}"><button type="submit">➤</button></form>
+            <form class="tm-chat-form" id="tmChatForm"><input id="tmChatInput" maxlength="200" autocomplete="off" placeholder="${esc(tx('tmChatPh', 'Jamoadoshingizga maslahat…'))}" aria-label="${esc(tx('tmChatPh', 'Jamoadoshingizga maslahat…'))}"><button type="submit" aria-label="${esc(tx('btnSendChatMessage', 'Yuborish'))}">➤</button></form>
           </div>
           <div class="tm-actions" id="tmActions"></div>
         </div>

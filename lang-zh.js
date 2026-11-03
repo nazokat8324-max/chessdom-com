@@ -1321,6 +1321,12 @@ window.TRANSLATIONS_ZH = {
   close: "关闭",
   ariaSeason: "赛季",
   ariaPrev: "上一个",
+
+  ariaFirst: "到开头",
+
+  ariaSearch: "搜索",
+
+  ariaLast: "到结尾",
   ariaNext: "下一个",
   pwaInstall: "安装应用",
   pwaInstallSub: "放在主屏幕上——打开更快，还能接收通知",

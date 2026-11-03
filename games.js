@@ -56,7 +56,7 @@
       </div>
       <div class="gh-summary"><span class="w">${esc(resultLabel.win)} <b>${sum.win || 0}</b></span><span class="d">${esc(resultLabel.draw)} <b>${sum.draw || 0}</b></span><span class="l">${esc(resultLabel.loss)} <b>${sum.loss || 0}</b></span></div>
       <div class="gh-list">${rows}</div>
-      ${d && d.pages > 1 ? `<div class="gh-pager"><button class="set-mini" data-page="${d.page - 1}" ${d.page <= 1 ? 'disabled' : ''}>←</button><span>${d.page} / ${d.pages}</span><button class="set-mini" data-page="${d.page + 1}" ${d.page >= d.pages ? 'disabled' : ''}>→</button></div>` : ''}`;
+      ${d && d.pages > 1 ? `<div class="gh-pager"><button class="set-mini" data-page="${d.page - 1}" ${d.page <= 1 ? 'disabled' : ''} aria-label="${esc(tx('ariaPrev', "Oldingi"))}">←</button><span>${d.page} / ${d.pages}</span><button class="set-mini" data-page="${d.page + 1}" ${d.page >= d.pages ? 'disabled' : ''} aria-label="${esc(tx('ariaNext', "Keyingi"))}">→</button></div>` : ''}`;
     bind(el);
   }
 
@@ -112,7 +112,7 @@
     el.className = 'ch-overlay';
     el.innerHTML = `
       <div class="ch-card pgn-card">
-        <button class="ch-x" data-close="1">✕</button>
+        <button class="ch-x" data-close="1" aria-label="${esc(tx('close', "Yopish"))}">✕</button>
         <div class="ch-icon">📥</div>
         <h3>${esc(tx('ghImportTitle', 'PGN yuklash'))}</h3>
         <p class="ch-sub">${esc(tx('ghImportHint', "PGN matnini qo'ying yoki .pgn faylni tanlang — o'yin taxtada ochiladi, uni tahlil ham qilish mumkin."))}</p>

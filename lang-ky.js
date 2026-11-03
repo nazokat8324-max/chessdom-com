@@ -1321,6 +1321,12 @@ window.TRANSLATIONS_KY = {
   close: "Жабуу",
   ariaSeason: "Мезгил",
   ariaPrev: "Мурунку",
+
+  ariaFirst: "Башына",
+
+  ariaSearch: "Издөө",
+
+  ariaLast: "Аягына",
   ariaNext: "Кийинки",
   pwaInstall: "Тиркемени орнотуу",
   pwaInstallSub: "Башкы экранда — тез ачылат, билдирмелер менен",

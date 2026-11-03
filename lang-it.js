@@ -1321,6 +1321,12 @@ window.TRANSLATIONS_IT = {
   close: "Chiudi",
   ariaSeason: "Stagione",
   ariaPrev: "Precedente",
+
+  ariaFirst: "All'inizio",
+
+  ariaSearch: "Cerca",
+
+  ariaLast: "Alla fine",
   ariaNext: "Successivo",
   pwaInstall: "Installa l'app",
   pwaInstallSub: "Sulla schermata Home — si apre in fretta, con le notifiche",

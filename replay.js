@@ -172,15 +172,15 @@
     el.className = 'rp-overlay';
     el.innerHTML = `
       <div class="rp-card">
-        <button class="rp-x" data-close="1">✕</button>
+        <button class="rp-x" data-close="1" aria-label="${esc(tx('close', "Yopish"))}">✕</button>
         <div class="rp-board-col">
           <div class="rp-player">${window.kingIcon('b')} ${g.color ? `<b class="player-link" data-username="${esc(black)}">${esc(black)}</b>` : '<b>—</b>'}</div>
           <div class="rp-board-wrap"><div id="replayBoard"></div><div class="pg-evalbar rp-evalbar" id="rpEvalBar"><div class="an-fill"></div><span class="an-label"></span></div></div>
           <div class="rp-player">${window.kingIcon('w')} ${g.color ? `<b class="player-link" data-username="${esc(white)}">${esc(white)}</b>` : '<b>—</b>'}</div>
           <div class="rp-controls">
-            <button data-nav="first" title="Home">⏮</button><button data-nav="prev" title="←">◀</button>
+            <button data-nav="first" title="${esc(tx('ariaFirst', 'Boshiga'))}">⏮</button><button data-nav="prev" title="${esc(tx('ariaPrev', 'Oldingi'))}">◀</button>
             <span id="replayCounter"></span>
-            <button data-nav="next" title="→">▶</button><button data-nav="last" title="End">⏭</button>
+            <button data-nav="next" title="${esc(tx('ariaNext', 'Keyingi'))}">▶</button><button data-nav="last" title="${esc(tx('ariaLast', 'Oxiriga'))}">⏭</button>
           </div>
         </div>
         <div class="rp-side">

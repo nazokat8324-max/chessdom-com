@@ -951,16 +951,16 @@
                   ⏭ <span data-i18n="gpBackToLive">Joriy pozitsiya</span>
                 </button>
                 <div class="pg-nav">
-                  <button type="button" onclick="window.reviewMove('start')">
+                  <button type="button" onclick="window.reviewMove('start')" data-i18n-title="ariaFirst">
                     ⏮
                   </button>
-                  <button type="button" onclick="window.reviewMove('prev')">
+                  <button type="button" onclick="window.reviewMove('prev')" data-i18n-title="ariaPrev">
                     ◀
                   </button>
-                  <button type="button" onclick="window.reviewMove('next')">
+                  <button type="button" onclick="window.reviewMove('next')" data-i18n-title="ariaNext">
                     ▶
                   </button>
-                  <button type="button" onclick="window.reviewMove('end')">
+                  <button type="button" onclick="window.reviewMove('end')" data-i18n-title="ariaLast">
                     ⏭
                   </button>
                 </div>
@@ -1043,6 +1043,7 @@
                     type="button"
                     class="msg-emoji-btn"
                     id="gameChatEmoji"
+                    data-i18n-title="msgStickers"
                   >
                     😊
                   </button>
@@ -1053,7 +1054,7 @@
                     placeholder="Xabar..."
                     data-i18n-placeholder="gcPlaceholder"
                   />
-                  <button type="submit" class="gc-send">➤</button>
+                  <button type="submit" class="gc-send" data-i18n-title="btnSendChatMessage">➤</button>
                 </form>
               </div>
 
@@ -1651,7 +1652,8 @@
       <div class="language-modal-container">
         <div class="language-modal-header">
           <h2 id="languageModalTitle">Tilni tanlang</h2>
-          <button class="language-modal-close" id="closeLanguageModal">
+          <button class="language-modal-close" id="closeLanguageModal"
+                    data-i18n-title="close">
             ✕
           </button>
         </div>

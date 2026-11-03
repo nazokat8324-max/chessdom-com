@@ -1321,6 +1321,12 @@ window.TRANSLATIONS_KK = {
   close: "Жабу",
   ariaSeason: "Маусым",
   ariaPrev: "Алдыңғы",
+
+  ariaFirst: "Басына",
+
+  ariaSearch: "Іздеу",
+
+  ariaLast: "Соңына",
   ariaNext: "Келесі",
   pwaInstall: "Қосымшаны орнату",
   pwaInstallSub: "Басты экранда — жылдам ашылады, хабарландырулармен",

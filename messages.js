@@ -97,8 +97,8 @@
           <small>${esc(tx('msgWantsFriend', "do'stlik so'ramoqda"))}</small>
         </span>
         <span class="msg-req-actions">
-          <button class="msg-small-btn accept" data-accept="${esc(r.id)}">✓</button>
-          <button class="msg-small-btn decline" data-decline="${esc(r.id)}">✕</button>
+          <button class="msg-small-btn accept" data-accept="${esc(r.id)}" aria-label="${esc(tx('btnAccept', 'Qabul qilish'))}">✓</button>
+          <button class="msg-small-btn decline" data-decline="${esc(r.id)}" aria-label="${esc(tx('btnDecline', 'Rad etish'))}">✕</button>
         </span>
       </div>`).join('');
   }
@@ -122,7 +122,7 @@
     }).join('');
     return `
       <div class="msg-chat-head">
-        <button class="msg-back" data-back="1">←</button>
+        <button class="msg-back" data-back="1" aria-label="${esc(tx('clubDetailBack', "Orqaga"))}">←</button>
         ${avatar(p.username, 'lg')}
         <div class="msg-chat-title">
           ${window.presenceDot ? window.presenceDot(p.id) : ''}
@@ -137,8 +137,8 @@
       ${state.picker ? pickerHtml() : ''}
       <form class="msg-composer" id="msgComposer">
         <button type="button" class="msg-emoji-btn${state.picker ? ' active' : ''}" data-picker="1" title="${esc(tx('msgStickers', 'Stikerlar va emoji'))}">😊</button>
-        <input id="msgInput" class="form-input" maxlength="1000" autocomplete="off" placeholder="${esc(tx('chatPlaceholder', 'Xabar yozing...'))}">
-        <button type="submit" class="msg-send">➤</button>
+        <input id="msgInput" class="form-input" maxlength="1000" autocomplete="off" placeholder="${esc(tx('chatPlaceholder', 'Xabar yozing...'))}" aria-label="${esc(tx('chatPlaceholder', 'Xabar yozing...'))}">
+        <button type="submit" class="msg-send" aria-label="${esc(tx('btnSendChatMessage', 'Yuborish'))}">➤</button>
       </form>`}`;
   }
 

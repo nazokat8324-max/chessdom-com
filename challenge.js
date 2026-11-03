@@ -47,7 +47,7 @@
     const el = modal();
     el.innerHTML = `
       <div class="ch-card">
-        <button class="ch-x" data-close="1">✕</button>
+        <button class="ch-x" data-close="1" aria-label="${esc(tx('close', "Yopish"))}">✕</button>
         <div class="ch-icon">⚔️</div>
         <h3>${esc(tx('chTitle', "{{name}} ni o'yinga chaqirish", { name: username }))}</h3>
         <p class="ch-sub">${esc(tx('chPickClock', 'Vaqt nazoratini tanlang'))}</p>

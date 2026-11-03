@@ -1321,6 +1321,12 @@ window.TRANSLATIONS_AZ = {
   close: "Bağla",
   ariaSeason: "Mövsüm",
   ariaPrev: "Əvvəlki",
+
+  ariaFirst: "Əvvələ",
+
+  ariaSearch: "Axtar",
+
+  ariaLast: "Sona",
   ariaNext: "Növbəti",
   pwaInstall: "Tətbiqi quraşdır",
   pwaInstallSub: "Ana ekranında — tez açılır, bildirişlərlə",

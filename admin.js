@@ -73,8 +73,8 @@
         <div class="adm-item-main"><b>${LIB_KIND_ICON[x.kind] || ''} ${esc(x.title)}</b>
           <small>${esc(kindLabel[x.kind] || x.kind)} · ${esc(x.lang ? x.lang.toUpperCase() : tx('admLibAllLangs', 'Barcha tillarda'))} · ${esc(fmt(x.createdAt))}${x.author ? ' · ' + esc(x.author) : ''}</small></div>
         <div class="adm-actions">
-          <button class="set-mini" data-lib-edit="${esc(x.id)}">✏️</button>
-          <button class="set-mini danger" data-lib-del="${esc(x.id)}">🗑</button>
+          <button class="set-mini" data-lib-edit="${esc(x.id)}" aria-label="${esc(tx('profEditBtn', "Tahrirlash"))}">✏️</button>
+          <button class="set-mini danger" data-lib-del="${esc(x.id)}" aria-label="${esc(tx('csDelete', "O'chirish"))}">🗑</button>
         </div></div>`).join('')}</div>` : `<div class="adm-empty">${esc(tx('admLibEmpty', "Hali admin qo'shgan material yo'q — yuqoridagi forma orqali birinchisini qo'shing."))}</div>`;
     return `<p class="adm-note">${esc(tx('admLibIntro', "Kutubxonaga kod yozmasdan material qo'shing."))}</p>${form}${list}`;
   }
@@ -205,7 +205,7 @@
       <form class="adm-search" id="admAuditForm">
         <select class="set-input" id="admAuditAction">${filters.map(([id, l]) => `<option value="${id}"${a.action === id ? ' selected' : ''}>${esc(l)}</option>`).join('')}</select>
         <input class="set-input" id="admAuditQ" placeholder="${esc(tx('audSearch', 'Admin yoki o\'yinchi nomi'))}" value="${esc(a.q)}">
-        <button class="set-mini accent" type="submit">🔍</button>
+        <button class="set-mini accent" type="submit" aria-label="${esc(tx('ariaSearch', "Qidirish"))}">🔍</button>
       </form>`;
     if (!a.list.length) return bar + `<div class="adm-empty">${esc(tx('audNone', "Yozuvlar yo'q"))}</div>`;
     const rows = a.list.map(x => {
@@ -268,7 +268,7 @@
   }
 
   function usersHtml() {
-    return `<form class="adm-search" id="admSearch"><input class="set-input" id="admQuery" placeholder="${esc(tx('lbSearch', "O'yinchini qidirish"))}" value="${esc(st.query)}"><button class="set-mini accent" type="submit">🔍</button></form>
+    return `<form class="adm-search" id="admSearch"><input class="set-input" id="admQuery" placeholder="${esc(tx('lbSearch', "O'yinchini qidirish"))}" value="${esc(st.query)}"><button class="set-mini accent" type="submit" aria-label="${esc(tx('ariaSearch', "Qidirish"))}">🔍</button></form>
       <div class="adm-list">${st.users.map(u => {
         const s = u.stats || {};
         const banned = u.bannedUntil && (u.bannedUntil === 'forever' || new Date(u.bannedUntil) > new Date());
@@ -315,7 +315,7 @@
   // Chat moderatsiyasi: klub chatlaridagi so'nggi xabarlar, o'chirish, jim qilish, taqiqlangan so'zlar
   function chatHtml() {
     const c = st.chat;
-    const words = c.words.map(w => `<span class="adm-word">${esc(w)}<button data-unword="${esc(w)}">✕</button></span>`).join('');
+    const words = c.words.map(w => `<span class="adm-word">${esc(w)}<button data-unword="${esc(w)}" aria-label="${esc(tx('csDelete', "O'chirish"))}">✕</button></span>`).join('');
     const msgs = c.messages.map(m => {
       const muted = m.mutedUntil && new Date(m.mutedUntil) > new Date();
       return `<div class="adm-item">
@@ -324,7 +324,7 @@
           <p>${esc(m.message)}</p>
         </div>
         <div class="adm-actions">
-          <button class="set-mini danger" data-delmsg="${esc(m.id)}">🗑</button>
+          <button class="set-mini danger" data-delmsg="${esc(m.id)}" aria-label="${esc(tx('csDelete', "O'chirish"))}">🗑</button>
           <select data-mute-hours="${esc(m.userId)}"><option value="1">1 ${esc(tx('admHour', 'soat'))}</option><option value="24">24 ${esc(tx('admHour', 'soat'))}</option><option value="168">7 ${esc(tx('admDay', 'kun'))}</option><option value="0">${esc(tx('admUnmute', 'Ruxsat berish'))}</option></select>
           <button class="set-mini" data-mute="${esc(m.userId)}">🔇 ${esc(tx('admMute', 'Jim qilish'))}</button>
         </div>
@@ -335,12 +335,12 @@
         <b>🚫 ${esc(tx('admBadWords', "Taqiqlangan so'zlar"))}</b>
         <p class="adm-note">${esc(tx('admBadWordsHint', "Bu so'zlar barcha chatlarda (shaxsiy, klub, o'yin, tomoshabinlar) avtomatik *** bilan yashiriladi."))}</p>
         <div class="adm-words">${words || `<small>—</small>`}</div>
-        <form class="adm-search" id="admWordForm"><input class="set-input" id="admWord" maxlength="40" placeholder="${esc(tx('admAddWord', "So'z qo'shish"))}"><button class="set-mini accent" type="submit">+</button></form>
+        <form class="adm-search" id="admWordForm"><input class="set-input" id="admWord" maxlength="40" placeholder="${esc(tx('admAddWord', "So'z qo'shish"))}"><button class="set-mini accent" type="submit" aria-label="${esc(tx('admAddWord', "So'z qo'shish"))}">+</button></form>
       </div>
       <form class="adm-search" id="admChatSearch">
         <input class="set-input" id="admChatClub" placeholder="${esc(tx('admChatClub', 'Klub (masalan, Uzbekistan)'))}" value="${esc(c.club)}">
         <input class="set-input" id="admChatUser" placeholder="${esc(tx('lbSearch', "O'yinchini qidirish"))}" value="${esc(c.user)}">
-        <button class="set-mini accent" type="submit">🔍</button>
+        <button class="set-mini accent" type="submit" aria-label="${esc(tx('ariaSearch', "Qidirish"))}">🔍</button>
       </form>
       <div class="adm-list">${msgs || `<div class="adm-empty">${esc(tx('admNoMessages', "Xabarlar yo'q"))}</div>`}</div>`;
   }

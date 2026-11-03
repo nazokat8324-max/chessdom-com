@@ -1321,6 +1321,12 @@ window.TRANSLATIONS_TG = {
   close: "Пӯшидан",
   ariaSeason: "Мавсим",
   ariaPrev: "Қаблӣ",
+
+  ariaFirst: "Ба аввал",
+
+  ariaSearch: "Ҷустуҷӯ",
+
+  ariaLast: "Ба охир",
   ariaNext: "Навбатӣ",
   pwaInstall: "Насби барнома",
   pwaInstallSub: "Дар экрани асосӣ — зуд кушода мешавад, бо огоҳиномаҳо",

@@ -226,6 +226,8 @@
     document.dispatchEvent(new CustomEvent('replay:open', { detail: { game: g, sans: st.sans.slice() } }));
     if (typeof window.renderOpeningInto === 'function') window.renderOpeningInto(document.getElementById('rpOpening'), st.sans, g.startFen && g.variant !== 'chess960' ? 'custom' : g.variant);
     go(st.fens.length - 1);
+    // Avval tahlil qilingan o'yin — tahlil keshdan darhol ko'rsatiladi (qayta "Tahlil" bosish va kutish shart emas)
+    if (document.getElementById('rpAnalysis') && typeof window.analysisCached === 'function' && window.analysisCached(st.moves, g.variant, g.startFen)) analyze();
   }
   window.showReplayGame = showReplay;
 })();

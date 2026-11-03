@@ -14967,3 +14967,6 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
 .set-reset, .meta-edit-btn, .auth-gate .auth-switch-link { min-height: 24px; display: inline-flex; align-items: center; }
 /* Kirish sahifasi yoki profil oynasi ochiq — ularning o'z h1 i bor, orqadagi sahifaniki yashiriladi (sahifada bitta h1) */
 body.auth-locked .view-section > h1.sr-only, body:has(#profileModal[style*="flex"]) .view-section > h1.sr-only { display: none !important; }
+/* Qayta ko'rish oynasidan (.rp-overlay 12500) ochiladigan oynalar uning USTIDA bo'lsin: O'yin hikoyasi, O'yinni ulashish
+   (2026-11-03 gacha ortida ochilardi — foydalanuvchi ko'rmasdi) */
+.ch-overlay.st-overlay, .inv-modal.sh-modal { z-index: 13000; }

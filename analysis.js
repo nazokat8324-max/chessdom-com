@@ -68,9 +68,34 @@
     return window.newChessFor ? window.newChessFor(v, f) : new Chess();
   }
 
+  // 💾 Tahlil keshi (2026-11-03): bir xil o'yin (tur + boshlang'ich pozitsiya + yurishlar) qayta tahlil qilinmaydi —
+  // baholar brauzerda (localStorage) saqlanadi, ko'pi bilan CACHE_MAX ta o'yin, eng eskisi o'chiriladi. Faqat baholar saqlanadi, xulosa qayta hisoblanadi
+  const CACHE_KEY = 'justChessAnalysisCache', CACHE_MAX = 40, CACHE_VER = 1;
+  const lineKey = (moves, variant, startFen) => CACHE_VER + '|' + (variant || 'standard') + '|' + (startFen || '') + '|' + moves.map((m) => m.from + m.to + (m.promotion || '')).join(' ');
+  const readCache = () => { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || '[]'); } catch (e) { return []; } };
+  function cachedEvals(key) {
+    const hit = readCache().find((x) => x && x.k === key);
+    return hit && Array.isArray(hit.e) ? hit.e : null;
+  }
+  function storeEvals(key, evals) {
+    const list = readCache().filter((x) => x && x.k !== key);
+    list.push({ k: key, e: evals });
+    while (list.length > CACHE_MAX) list.shift();
+    // Joy tugasa — eski yozuvlarni tashlab qayta urinamiz
+    for (let n = list.length; n > 0; n = Math.floor(n / 2)) {
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(list.slice(-n))); return; } catch (e) {}
+    }
+  }
+
   // Umumiy tahlil: yurishlar ({from,to,promotion,color,san}) → baholar va xulosa. Bir vaqtda bitta tahlil (dvigatel bitta)
   let busy = false;
   async function analyzeLine(moves, variant, startFen, onProgress, isCancelled) {
+    const key = lineKey(moves, variant, startFen);
+    const hit = cachedEvals(key);
+    if (hit && hit.length === moves.length + 1) {
+      if (onProgress) onProgress(hit.length, hit.length);
+      return summarize(moves, hit, variant, startFen);
+    }
     if (busy) throw new Error('busy');
     busy = true;
     try {
@@ -90,12 +115,15 @@
         else evals.push(await evaluate(fens[i], chess960));
         if (onProgress) onProgress(i + 1, fens.length);
       }
+      storeEvals(key, evals);
       return summarize(moves, evals, variant, startFen);
     } finally {
       busy = false;
     }
   }
   window.analyzeLine = analyzeLine;
+  // Shu o'yin avval tahlil qilinganmi (keshda bormi) — qayta ko'rish oynasi ochilganda tahlilni darhol ko'rsatish uchun
+  window.analysisCached = (moves, variant, startFen) => { const e = cachedEvals(lineKey(moves || [], variant, startFen)); return !!(e && e.length === (moves || []).length + 1); };
   window.analysisUtils = {
     winPct: (e) => winPct(toCp(e)),
     evalText: (e) => evalText(e),

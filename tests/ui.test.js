@@ -1178,6 +1178,58 @@ test("O'yin hikoyasini tinglash: bosqichlar navbat bilan o'qiladi (yurishlar so'
   assert.deepEqual(p.errors, []);
 });
 
+test("Tahlil keshi: qayta ko'rishda tahlil qilingan o'yin qayta tahlil qilinmaydi (keshdan darhol), hikoya va ulashish oynasi qayta ko'rish ustida ochiladi", opts, async () => {
+  const u = await srv.register('AnCache');
+  const p = await page(u);
+  await p.goto(srv.base + '/tarix?u=' + u.name, { waitUntil: 'domcontentloaded' });
+  await p.waitForFunction(() => typeof window.showReplayGame === 'function' && typeof window.analyzeLine === 'function', { timeout: 15000 });
+  await sleep(600);
+  const game = { id: null, player: u.name, opponent: 'Raqib', color: 'b', result: 'win', reason: 'checkmate', moves: ['f3', 'e5', 'g4', 'Qh4#'], variant: 'standard' };
+  await p.evaluate((g) => window.showReplayGame(g), game);
+  await p.waitForSelector('#replayModal [data-analyze]', { visible: true, timeout: 8000 });
+  // 1-marta: haqiqiy Stockfish bilan tahlil
+  await p.click('#replayModal [data-analyze]');
+  await p.waitForSelector('#replayModal .an-summary', { timeout: 60000 });
+  const cache = await p.evaluate(() => JSON.parse(localStorage.getItem('justChessAnalysisCache') || '[]'));
+  assert.equal(cache.length, 1, "tahlil keshga yozildi");
+  assert.equal(cache[0].e.length, 5, '4 yurish → 5 pozitsiya bahosi');
+  // Keshdagi baholarni ataylab o'zgartiramiz: keyingi safar shu (soxta) natija chiqsa — dvigatel ishlamagan, kesh ishlatilgan
+  await p.evaluate(() => {
+    const c = JSON.parse(localStorage.getItem('justChessAnalysisCache'));
+    c[0].e = c[0].e.map((x) => (x.terminal ? x : { cp: 0, mate: null, best: null }));
+    localStorage.setItem('justChessAnalysisCache', JSON.stringify(c));
+  });
+  await p.click('#replayModal .rp-close, #replayModal [data-close], #replayModal .ch-x').catch(() => p.keyboard.press('Escape'));
+  await sleep(300);
+  if (await p.$('#replayModal')) { await p.keyboard.press('Escape'); await sleep(300); }
+  // 2-marta: ochilishi bilanoq, "Tahlil" bosilmasdan, keshdan
+  const t0 = Date.now();
+  await p.evaluate((g) => window.showReplayGame(g), game);
+  await p.waitForSelector('#replayModal .an-summary', { timeout: 3000 });
+  assert.ok(Date.now() - t0 < 3000, 'darhol');
+  const acc = await p.evaluate(() => [...document.querySelectorAll('#replayModal .an-side-head b')].map((b) => b.textContent));
+  assert.deepEqual(acc, ['100%', '100%'], "keshdagi (o'zgartirilgan) baholar ishlatildi — qayta tahlil qilinmadi: " + acc);
+  // Hikoya oynasi qayta ko'rish oynasining USTIDA (avval ortida ochilardi)
+  await p.click('#replayModal [data-story]');
+  await p.waitForSelector('#storyModal .st-card', { visible: true, timeout: 5000 });
+  const top = await p.evaluate(() => {
+    const card = document.querySelector('#storyModal .st-card').getBoundingClientRect();
+    const hit = document.elementFromPoint(card.left + card.width / 2, card.top + 20);
+    return { onTop: !!(hit && hit.closest('#storyModal')), z: [getComputedStyle(document.getElementById('storyModal')).zIndex, getComputedStyle(document.querySelector('.rp-overlay')).zIndex].map(Number) };
+  });
+  assert.ok(top.onTop && top.z[0] > top.z[1], 'hikoya qayta ko\'rish ustida: ' + JSON.stringify(top));
+  await p.keyboard.press('Escape');
+  await sleep(200);
+  // Ulashish oynasi ham ustida
+  if (await p.$('#replayModal [data-share-game]')) {
+    await p.click('#replayModal [data-share-game]');
+    await p.waitForSelector('.inv-modal.sh-modal', { visible: true, timeout: 5000 });
+    const z = await p.evaluate(() => [getComputedStyle(document.querySelector('.inv-modal.sh-modal')).zIndex, getComputedStyle(document.querySelector('.rp-overlay')).zIndex].map(Number));
+    assert.ok(z[0] > z[1], 'ulashish qayta ko\'rish ustida: ' + z);
+  }
+  assert.deepEqual(p.errors, []);
+});
+
 test("Nishonlar: profilda tugma, 6 tur, olinganlari ajralib turadi", opts, async () => {
   const u = await srv.register('Badge');
   const p = await page(u);

@@ -172,10 +172,17 @@ test("Klub rahbariyati: birinchi a'zo — kapitan, moderator tayinlanadi, yangil
 test("Reyting grafigi: reytingli o'yindan keyin profil ratingHistory da rejim nuqtalari (boshlang'ich va yangi), reytingsizda yo'q", async () => {
   const A = await srv.register('Gr'), B = await srv.register('Gs');
   let g = await startGame(srv, A, B, { initial: 180, increment: 2, rated: true });
+  const ended = once(g.white.socket, 'game-ended', 10000);
   await play(g, ['f2f3', 'e7e5', 'g2g4', 'd8h4']);
-  await sleep(500);
+  await ended;
   const W = g.black; // qora mat qiladi
-  const p = (await srv.api(null, '/api/users/' + encodeURIComponent(W.name) + '/profile')).profile;
+  // Reyting tarixi o'yin tugagach bazaga yoziladi — yuklamada qat'iy 0.5 s yetmasdi, yozilguncha kutamiz (10 s gacha)
+  let p;
+  for (let i = 0; i < 50; i++) {
+    p = (await srv.api(null, '/api/users/' + encodeURIComponent(W.name) + '/profile')).profile;
+    if (p.ratingHistory.blitz.length >= 2) break;
+    await sleep(200);
+  }
   const blitz = p.ratingHistory.blitz;
   assert.equal(blitz.length, 2, "boshlang'ich nuqta + o'yindan keyingi");
   assert.equal(blitz[0].r, 1500);

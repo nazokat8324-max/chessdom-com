@@ -14589,7 +14589,8 @@ button.lib-card:hover { border-color: var(--accent); transform: translateY(-2px)
 .lib-players i { font-style: normal; font-weight: 800; padding: 0 4px; color: var(--cd-muted, #a9b6b0); }
 .lib-players .king-ic { width: 16px; height: 16px; }
 .lib-btn { margin-top: auto; align-self: flex-start; padding: 8px 14px; border-radius: 10px; border: 1px solid transparent; font: inherit; font-weight: 700; color: var(--on-accent); background: var(--accent); cursor: pointer; text-decoration: none; }
-.lib-btn.ghost { background: transparent; border-color: var(--cd-border-strong); }
+/* Foni shaffof — yozuv to'q --on-accent emas, oddiy matn rangida (L5 dan keyin to'q fonda ko'rinmay qolgan edi) */
+.lib-btn.ghost { background: transparent; border-color: var(--cd-border-strong); color: var(--cd-text); }
 .lib-article { max-width: 760px; }
 .lib-article-head { display: flex; align-items: center; gap: 12px; margin: 14px 0 6px; }
 .lib-article-head h1 { margin: 0; font-size: 28px; }

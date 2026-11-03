@@ -806,17 +806,22 @@ test("Joylashuv L5: asosiy rangli tugmalardagi yozuv o'qiladi — kontrast ≥ 4
   for (const theme of ['turquoise', 'gold', 'plum']) {
     const p = await page(u);
     await p.evaluateOnNewDocument((th) => localStorage.setItem('justChessSettings', JSON.stringify({ siteTheme: th })), theme);
-    await p.goto(srv.base + '/kutubxona', { waitUntil: 'load' });
-    await p.waitForSelector('.lib-btn', { timeout: 15000 });
-    await sleep(500);
-    const r = await p.evaluate(() => {
-      const rgb = (c) => c.match(/[\d.]+/g).slice(0, 3).map(Number);
-      const lum = ([r, g, b]) => { const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
-      const ratio = (x, y) => { const [a, b] = [lum(x), lum(y)].sort((m, n) => n - m); return (a + 0.05) / (b + 0.05); };
-      const btn = document.querySelector('.lib-btn:not(.ghost)');
-      return ratio(rgb(getComputedStyle(btn).color), rgb(getComputedStyle(btn).backgroundColor));
-    });
-    assert.ok(r >= 4.5, theme + ': tugma yozuvi kontrasti ' + r.toFixed(2));
+    // Har bir tugma/havola yozuvi o'zining HAQIQIY foni (shaffof bo'lsa — ota elementniki) ustida tekshiriladi:
+    // 2026-11-03 gacha faqat to'liq rangli tugma tekshirilardi va shaffof .lib-btn.ghost dagi to'q yozuv (1.07:1) o'tib ketgan edi
+    for (const route of ['/kutubxona', '/kutubxona?m=muzey']) {
+      await p.goto(srv.base + route, { waitUntil: 'load' });
+      await p.waitForSelector(route.includes('muzey') ? '.mu-play' : '.lib-btn.ghost', { timeout: 15000 });
+      await sleep(500);
+      const bad = await p.evaluate(() => {
+        const rgb = (c) => (String(c).match(/[\d.]+/g) || [0, 0, 0, 0]).map(Number);
+        const lum = ([r, g, b]) => { const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+        const ratio = (x, y) => { const [a, b] = [lum(x), lum(y)].sort((m, n) => n - m); return (a + 0.05) / (b + 0.05); };
+        const bgOf = (el) => { for (let e = el; e; e = e.parentElement) { const c = rgb(getComputedStyle(e).backgroundColor); if (c.length < 4 || c[3] > 0.5) return c; } return [10, 18, 20]; };
+        return [...document.querySelectorAll('.view-section.active-view button, .view-section.active-view a')].filter((el) => el.offsetWidth && el.textContent.trim())
+          .map((el) => ({ t: el.textContent.trim().slice(0, 24), r: ratio(rgb(getComputedStyle(el).color), bgOf(el)) })).filter((x) => x.r < 4.5).map((x) => x.t + ' ' + x.r.toFixed(2));
+      });
+      assert.deepEqual(bad, [], theme + ' ' + route + ': kontrasti past tugmalar');
+    }
     assert.deepEqual(p.errors, []);
   }
 });

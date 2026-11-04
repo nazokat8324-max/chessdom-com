@@ -90,3 +90,39 @@ test("Turnirlar olib tashlangan: eski bazadagi turnir jadvallari, \"Turnir g'oli
     for (const p of ['/api/swiss', '/api/swiss/t1', '/api/admin/tournaments']) assert.equal((await fetch(s.base + p)).status, 404, p);
   } finally { await s.stop(); }
 });
+
+test("Eski tarix arxivi (user_history_archive) startda o'chiriladi; eski formatdagi users.history baribir user_games ga ko'chadi", async () => {
+  const os = require('os'), fs = require('fs');
+  const file = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'chesscaravan-archive-')), 'legacy.sqlite');
+  const run = (sqlText, params) => new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(file);
+    d.run(sqlText, params || [], (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  const all = (sqlText) => new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(file);
+    d.all(sqlText, [], (err, rows) => d.close(() => (err ? reject(err) : resolve(rows))));
+  });
+  let s = await startServer({ SQLITE_FILE: file });
+  const u = await s.register('Arc');
+  await s.stop();
+  // 2026-11-04 gacha bo'lgan holat: arxiv jadvali to'la, va (masalan, eski zaxiradan tiklangan) o'yinchida JSON tarix
+  await run('CREATE TABLE IF NOT EXISTS user_history_archive (id TEXT PRIMARY KEY, user_id TEXT, history TEXT, archived_at TEXT NOT NULL)');
+  await run("INSERT INTO user_history_archive (id, user_id, history, archived_at) VALUES ('h1', ?, '[]', '2026-10-21')", [u.id]);
+  const legacy = [
+    { id: 'old-1', result: 'win', opponent: 'Raqib1', timeControl: '5+0', color: 'w', reason: 'checkmate', timestamp: '2026-10-01T10:00:00.000Z', moves: ['e4', 'e5', 'Qh5', 'Nc6', 'Bc4', 'Nf6', 'Qxf7#'] },
+    { id: 'old-2', result: 'loss', opponent: 'Raqib2', timeControl: '3+2', color: 'b', reason: 'resign', timestamp: '2026-10-02T10:00:00.000Z', moves: ['d4', 'd5'] }
+  ];
+  await run('UPDATE users SET history = ? WHERE id = ?', [JSON.stringify(legacy), u.id]);
+  s = await startServer({ SQLITE_FILE: file });
+  try {
+    const tables = (await all("SELECT name FROM sqlite_master WHERE type = 'table'")).map((r) => r.name);
+    assert.ok(!tables.includes('user_history_archive'), "arxiv jadvali o'chirildi");
+    assert.ok(tables.includes('user_games'));
+    assert.deepEqual((await all(`SELECT id FROM user_games WHERE user_id = '${u.id}' ORDER BY id`)).map((r) => r.id), ['old-1', 'old-2'], "eski tarix yo'qolmadi");
+    assert.equal((await all(`SELECT history FROM users WHERE id = '${u.id}'`))[0].history, '[]');
+    // Qayta ishga tushganda ham xato yo'q (arxiv yo'q bo'lsa ham)
+    await s.stop();
+    s = await startServer({ SQLITE_FILE: file });
+    assert.equal((await all(`SELECT COUNT(*) AS n FROM user_games WHERE user_id = '${u.id}'`))[0].n, 2);
+  } finally { await s.stop(); }
+});

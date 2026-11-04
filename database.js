@@ -642,15 +642,6 @@ async function initDatabase() {
       created_at TEXT NOT NULL
     )
   `);
-  // Ko'chirishdan oldingi asl JSON (xavfsizlik uchun; oddiy so'rovlarda o'qilmaydi, keyinchalik o'chirsa bo'ladi)
-  await dbExec(`
-    CREATE TABLE IF NOT EXISTS user_history_archive (
-      id TEXT PRIMARY KEY,
-      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      history TEXT,
-      archived_at TEXT NOT NULL
-    )
-  `);
   for (const sql of [
     'CREATE INDEX IF NOT EXISTS idx_user_games_user ON user_games (user_id, played_at)',
     'CREATE INDEX IF NOT EXISTS idx_user_games_played ON user_games (played_at)',
@@ -748,7 +739,7 @@ async function initDatabase() {
   // eski foydalanuvchi klublari jadvali (faqat tournaments unga bog'langan edi), "Turnir g'olibi" yutug'i va bildirishnomalar
   try { await dbRun("DELETE FROM user_achievements WHERE key = 'tournament_win'"); } catch (e) {}
   try { await dbRun("DELETE FROM notifications WHERE type = 'tournament_soon'"); } catch (e) {}
-  for (const t of ['games', 'sessions', 'news_posts', 'club_members', 'game_notes', 'mentorships', 'tournament_matches', 'tournament_participants', 'tournaments', 'clubs']) {
+  for (const t of ['games', 'sessions', 'news_posts', 'club_members', 'game_notes', 'mentorships', 'tournament_matches', 'tournament_participants', 'tournaments', 'clubs', 'user_history_archive']) {
     try { await dbExec(`DROP TABLE IF EXISTS ${t}`); } catch (e) { console.error(`${t} jadvalini o'chirib bo'lmadi:`, e.message); }
   }
 
@@ -943,6 +934,8 @@ async function opponentSummary(userId, opponent) {
 }
 // Bir martalik ko'chirish: users.history JSON → user_games. Takroriy ishga tushirishga chidamli
 // (id lar bo'yicha o'tkazib yuboriladi), har foydalanuvchi uchun soni tekshirilgandan keyingina history tozalanadi.
+// Asl JSON 2026-11-04 gacha user_history_archive da ham saqlanardi — jadval o'chirilgan (ko'chirish 2026-10-21 da tekshirilgan,
+// eski nusxa kunlik zaxiralarda); endi eski zaxiradan tiklangan history ham shu yerda ko'chiriladi, arxivsiz.
 async function migrateHistoryToTable() {
   const rows = await dbAll("SELECT id, history FROM users WHERE history IS NOT NULL AND history <> '' AND history <> '[]'");
   if (!rows.length) return;
@@ -961,8 +954,6 @@ async function migrateHistoryToTable() {
     }
     const ids = new Set((await dbAll('SELECT id FROM user_games WHERE user_id = ?', [row.id])).map(r => r.id));
     if (!games.every(g => ids.has(g.id))) { console.error("Tarix to'liq ko'chmadi, tozalanmaydi:", row.id); continue; }
-    await dbRun('DELETE FROM user_history_archive WHERE user_id = ?', [row.id]);
-    await dbRun('INSERT INTO user_history_archive (id, user_id, history, archived_at) VALUES (?, ?, ?, ?)', [uuidv4(), row.id, row.history, new Date().toISOString()]);
     await dbRun("UPDATE users SET history = '[]' WHERE id = ?", [row.id]);
     moved += fresh.length;
   }

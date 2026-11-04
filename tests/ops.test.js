@@ -79,10 +79,16 @@ test('Brauzer xatolari: foydalanuvchi bilan yoziladi, shovqin rad etiladi', asyn
   assert.equal((await srv.api(user, '/api/client-errors', 'POST', body)).success, true);
   assert.equal((await srv.api(null, '/api/client-errors', 'POST', { message: 'Script error.' })).ignored, true);
   assert.equal((await srv.api(null, '/api/client-errors', 'POST', { message: 'Oops', source: 'chrome-extension://abc/x.js' })).ignored, true);
+  // Qidiruv robotlari (skriptlarning bir qismisiz chizadi) — yozilmaydi; oddiy telefon brauzeri — yoziladi
+  const post = (ua, message) => fetch(srv.base + '/api/client-errors', { method: 'POST', headers: { 'Content-Type': 'application/json', 'User-Agent': ua }, body: JSON.stringify({ message, url: '/' }) }).then((r) => r.json());
+  assert.equal((await post('Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko; compatible; Baiduspider-render/2.0; +http://www.baidu.com/search/spider.html)', 'ReferenceError: socket is not defined')).ignored, true);
+  assert.equal((await post('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)', 'ReferenceError: tx is not defined')).ignored, true);
+  assert.equal((await post('Mozilla/5.0 (Linux; Android 13; SM-A145F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Mobile Safari/537.36', 'ReferenceError: haqiqiy telefon xatosi')).ignored, undefined);
   await sleep(400);
   const list = await srv.api(admin, '/api/admin/errors?source=client');
-  assert.equal(list.errors.length, 1);
-  const e = list.errors[0];
+  // Foydalanuvchining xatosi va oddiy telefon xatosi; robotlarniki yo'q
+  assert.deepEqual(list.errors.map((x) => x.message).sort(), ['ReferenceError: haqiqiy telefon xatosi', 'TypeError: x is undefined']);
+  const e = list.errors.find((x) => x.message === 'TypeError: x is undefined');
   assert.equal(e.source, 'client');
   assert.equal(e.context.user, user.name);
   assert.equal(e.context.url, '/oyin');

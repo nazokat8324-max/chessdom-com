@@ -1866,12 +1866,16 @@ async function start() {
   // --- 🐞 Brauzer xatolari (errors.js) — kirmagan foydalanuvchidan ham; IP bo'yicha cheklangan ---
   const clientErrorLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, skip: () => TEST_MODE, message: tooMany });
   const CLIENT_ERROR_IGNORE = /^Script error\.?$|ResizeObserver loop|chrome-extension:|moz-extension:|safari-extension:|^Load failed$|^NetworkError|Failed to fetch/i;
+  const BOT_UA = /bot\b|bot\/|spider|crawl|slurp|headlesschrome|lighthouse|baidu|yandex|bingpreview|facebookexternalhit|telegrambot|whatsapp|pinterest|duckduck/i;
   app.post('/api/client-errors', clientErrorLimiter, (req, res) => {
     const b = req.body || {};
     const message = String(b.message || '').slice(0, 500).trim();
     const stack = String(b.stack || '').slice(0, 4000);
     const src = String(b.source || '').slice(0, 300);
     if (!message || CLIENT_ERROR_IGNORE.test(message) || CLIENT_ERROR_IGNORE.test(src) || CLIENT_ERROR_IGNORE.test(stack)) return res.json({ success: true, ignored: true });
+    // Qidiruv/ko'rib chiquvchi robotlar (Baiduspider-render, Googlebot, bingbot …) sahifani skriptlarning bir qismisiz chizadi —
+    // "socket is not defined", "tx is not defined" kabi xatolar haqiqiy foydalanuvchilarda yo'q (2026-11-04 admin "Xatolar" da)
+    if (BOT_UA.test(String(req.headers['user-agent'] || ''))) return res.json({ success: true, ignored: true });
     let user = null;
     try {
       const h = req.headers.authorization;

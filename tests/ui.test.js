@@ -2006,13 +2006,22 @@ test("Telegram Mini App: birinchi marta — kirish sahifasida eslatma, kirgach T
     assert.ok(await linked(), 'Telegram ulandi');
     assert.equal(await p1.$('#authGate .tg-app-note'), null, 'eslatma yopildi');
     assert.deepEqual(p1.errors, []);
-    // Keyingi safar (yangi qurilma/oyna, saqlangan sessiyasiz) — parolsiz kiradi
+    // Keyingi safar (yangi qurilma/oyna, saqlangan sessiyasiz va tilsiz) — parolsiz kiradi, til akkauntdagidan (p1 da 'uz' bilan ulangan)
     const p2 = await page(null, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    await p2.evaluateOnNewDocument(() => localStorage.removeItem('justChessLang'));
     // (bildirishnoma tugmasi kabi aniq sahifa bilan) — kirgach o'sha sahifa ochiladi
     await p2.goto(own.base + '/xabarlar' + hash, { waitUntil: 'load' });
     await p2.waitForFunction((name) => window.currentUser && window.currentUser.username === name && !document.body.classList.contains('auth-locked'), { timeout: 15000 }, u.name);
     await p2.waitForFunction(() => location.pathname === '/xabarlar' && document.getElementById('messagesView').classList.contains('active-view'), { timeout: 10000 });
+    await p2.waitForFunction(() => localStorage.getItem('justChessLang') === 'uz' && document.documentElement.lang === 'uz', { timeout: 10000 });
     assert.deepEqual(p2.errors, []);
+    // Ulanmagan, saqlangan tili yo'q, Telegram ilovasi ruscha — sayt ruscha (avval doim inglizcha ochilardi)
+    const p3 = await page(null, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    await p3.evaluateOnNewDocument(() => localStorage.removeItem('justChessLang'));
+    const ruHash = '#' + new URLSearchParams({ tgWebAppData: makeInitData('123:TEST', { id: 7008, first_name: 'Ivan', language_code: 'ru' }), tgWebAppVersion: '8.0' }).toString();
+    await p3.goto(own.base + '/' + ruHash, { waitUntil: 'load' });
+    await p3.waitForFunction(() => document.documentElement.lang === 'ru' && /[а-я]/i.test(document.querySelector('#authGate .tg-app-note') ? document.querySelector('#authGate .tg-app-note').textContent : ''), { timeout: 15000 });
+    assert.deepEqual(p3.errors, []);
   } finally { await own.stop(); await tg.stop(); }
 });
 

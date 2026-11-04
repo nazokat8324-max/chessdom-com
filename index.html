@@ -36,7 +36,7 @@
     <!-- "⚡ Onlayn o'ynash" skriptlardan oldin ko'rinadi: online.js yuklanguncha bosilsa — eslab qolinadi (online.js oxirida bajariladi) -->
     <script>window.quickPlayOnline = function () { window.__quickPlayQueued = true; };</script>
     <!-- 📱 Telegram Mini App: kirish ma'lumoti hash'da keladi (#tgWebAppData=…) — saqlab, manzildan olib tashlaymiz (telegram-app.js) -->
-    <script>(function () { try { var h = location.hash; if (h.indexOf('tgWebAppData=') >= 0) { var d = new URLSearchParams(h.slice(1)).get('tgWebAppData'); if (d) sessionStorage.setItem('justChessTgApp', d); history.replaceState(history.state, '', location.pathname + location.search); } if (sessionStorage.getItem('justChessTgApp')) document.documentElement.classList.add('tg-app'); } catch (e) {} })();</script>
+    <script>(function () { try { var h = location.hash; if (h.indexOf('tgWebAppData=') >= 0) { var d = new URLSearchParams(h.slice(1)).get('tgWebAppData'); if (d) sessionStorage.setItem('justChessTgApp', d); history.replaceState(history.state, '', location.pathname + location.search); } if (sessionStorage.getItem('justChessTgApp')) { document.documentElement.classList.add('tg-app'); window.__tgLangChosen = !!localStorage.getItem('justChessLang'); } } catch (e) {} })();</script>
     <script src="uzcyrl.js"></script>
     <script src="vendor/i18next-23.11.5.min.js"></script>
     <link

@@ -55,12 +55,29 @@
     st.linking = false;
   }
 
+  // Til: Telegram ichidagi brauzer saytdagi tanlovni bilmaydi — saqlangan til bo'lmasa, akkauntdagi (bot ulanganda saqlangan) yoki
+  // Telegram ilovasining tili (initData user.language_code); qo'llab-quvvatlanmasa — standart (inglizcha)
+  const SITE_LANGS = ['uz', 'uzc', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk', 'tg', 'ky', 'tk', 'az', 'zh', 'it'];
+  function useLang(code) {
+    // Sayt ishga tushganda tilni o'zi saqlab qo'yadi ('en') — shuning uchun foydalanuvchi tanlaganmi, <head> da (skriptlardan oldin) eslab qolingan
+    const saved = window.__tgLangChosen;
+    const l = String(code || '').toLowerCase();
+    const pick = SITE_LANGS.includes(l) ? l : SITE_LANGS.includes(l.slice(0, 2)) ? l.slice(0, 2) : null;
+    if (saved || !pick || pick === 'en' || typeof window.setLanguage !== 'function') return;
+    try { localStorage.setItem('justChessLang', pick); } catch (e) {}
+    window.setLanguage(pick);
+    if (typeof window.updateLanguageButton === 'function') window.updateLanguageButton(pick);
+  }
+  let tgLang = null;
+  try { tgLang = (JSON.parse(new URLSearchParams(initData).get('user') || '{}') || {}).language_code || null; } catch (e) {}
+
   async function start() {
     if (st.asked) return;
     st.asked = true;
     try {
       const d = await json('/api/telegram/webapp/login', { initData });
       if (!d.success) return; // muddati o'tgan yoki noto'g'ri ma'lumot — oddiy sayt kabi ishlaydi
+      useLang(d.linked && d.lang ? d.lang : tgLang);
       if (d.linked) {
         // Ulangan: kirmagan bo'lsa — kiramiz (boshqa akkaunt bilan kirib turgan bo'lsa, unga tegmaymiz)
         if (!window.authToken && d.token && typeof window.applyAuthSession === 'function') {

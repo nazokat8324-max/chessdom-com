@@ -45,6 +45,7 @@ test("Mini App: kirgan o'yinchi Telegram'ini ulaydi — keyin parolsiz kiradi; m
   const r = await login(initData);
   assert.equal(r.linked, true);
   assert.equal(r.user.username, u.name);
+  assert.equal(r.lang, 'ru', 'akkauntdagi til (sayt tili shu bilan tanlanadi)');
   assert.equal((await srv.api({ token: r.token }, '/api/telegram')).linked, true);
   // Sozlamalardagi Telegram kartasi ham ulanganini ko'radi
   assert.equal((await srv.api(u, '/api/telegram')).tgUsername, 'vali_tg');

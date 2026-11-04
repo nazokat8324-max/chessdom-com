@@ -195,7 +195,7 @@ function init(d) {
       if (!user || d.isDeleted(user.id)) return res.json({ success: true, linked: false, tgUsername: tg.username });
       const ban = d.activeBan(user.id);
       if (ban) return res.status(403).json({ success: false, banned: true, message: d.banMessage(ban) });
-      res.json({ success: true, linked: true, ...(await d.issueSession(user)) });
+      res.json({ success: true, linked: true, lang: link.lang || null, ...(await d.issueSession(user)) });
     } catch (err) { console.error('Mini App kirish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   // Kirgan (yoki ro'yxatdan o'tgan) o'yinchining akkauntiga shu Telegram'ni ulash — keyingi safar avtomatik kiradi

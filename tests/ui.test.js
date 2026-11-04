@@ -52,7 +52,9 @@ async function page(user, viewport) {
   await p.setViewport(viewport || { width: 1366, height: 860 });
   p.errors = [];
   p.on('pageerror', (e) => p.errors.push(e.message));
-  p.on('dialog', (d) => d.accept());
+  // alert/confirm avtomatik yopiladi, matni saqlanadi — test yiqilsa sababini ko'rsatish uchun (p.dialogs)
+  p.dialogs = [];
+  p.on('dialog', (d) => { p.dialogs.push(d.message()); d.accept(); });
   await p.evaluateOnNewDocument((u) => {
     localStorage.setItem('justChessLang', 'uz');
     if (u) { localStorage.setItem('justChessAuthToken', u.token); localStorage.setItem('justChessCurrentUser', JSON.stringify(u.user)); }
@@ -249,7 +251,10 @@ test("Onlayn o'ynash: skriptlar yuklanguncha tugma bosilsa ham xato yo'q — yuk
   await p.evaluate(() => document.getElementById('playOnlineBtn').click());
   release();
   await nav;
-  await p.waitForFunction(() => location.pathname === '/oyin' && window.isSearchingOpponent === true, { timeout: 15000 });
+  // Sekin CI da 15 s yetmay qolgan (2026-11-04); yiqilsa — sayt chiqargan oyna (masalan "Serverga ulanib bo'lmadi") xabarda ko'rinadi
+  await p.waitForFunction(() => location.pathname === '/oyin' && window.isSearchingOpponent === true, { timeout: 30000 })
+    .catch(async (e) => { throw new Error(e.message + ' | dialogs: ' + JSON.stringify(p.dialogs) + ' | path: ' + await p.evaluate(() => location.pathname + ' searching=' + window.isSearchingOpponent + ' socket=' + !!(window.socket && window.socket.connected))); });
+  assert.deepEqual(p.dialogs, []);
   assert.deepEqual(p.errors, []);
   await p.evaluate(() => window.cancelSearch && window.cancelSearch());
 });

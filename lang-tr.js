@@ -1455,6 +1455,8 @@ window.TRANSLATIONS_TR = {
   tgLinkedToast: "Telegram bağlandı ✈️",
   srvTgDisabled: "Telegram botu ayarlanmamış",
   srvTgNotLinked: "Telegram bağlı değil",
+
+  srvTgAppInvalid: "Telegram verileri geçersiz",
   shShareBtn: "Paylaş",
   shTitle: "Oyunu paylaş",
   shImage: "Resim",
@@ -1812,6 +1814,12 @@ window.TRANSLATIONS_TR = {
   libViews: "İzlenme: {{n}}",
 
   libAllVideos: "Tüm videolar kanalda",
+
+
+  tgAppNote: "Bir kez giriş yap veya kaydol — bir dahaki sefere Telegram seni otomatik olarak giriş yaptırır.",
+
+
+  tgAppLinked: "✈️ Telegram bağlandı — bir dahaki sefere otomatik giriş yapacaksın",
   admLibIntro: "Kütüphaneye kod yazmadan materyal ekle: bir yazı, bir oyun (PGN) veya bir kitap/bağlantı. Yalnızca kendi metinlerin veya kamu malı kitaplar — telif hakkını asla ihlal etme. Bir dil seçilirse yalnızca o dili kullanan okurlar görür.",
   admLibKindArticle: "Yazı",
   admLibKindGame: "Oyun",

@@ -14979,3 +14979,6 @@ body.auth-locked .view-section > h1.sr-only, body:has(#profileModal[style*="flex
 /* Qayta ko'rish oynasidan (.rp-overlay 12500) ochiladigan oynalar uning USTIDA bo'lsin: O'yin hikoyasi, O'yinni ulashish
    (2026-11-03 gacha ortida ochilardi — foydalanuvchi ko'rmasdi) */
 .ch-overlay.st-overlay, .inv-modal.sh-modal { z-index: 13000; }
+
+/* ===== 📱 Telegram Mini App (telegram-app.js): kirish sahifasidagi eslatma */
+.tg-app-note { margin: 0 0 14px; padding: 10px 12px; border-radius: 12px; font-size: 14px; line-height: 1.45; color: var(--cd-text); background: rgba(var(--accent-rgb), 0.12); border: 1px solid rgba(var(--accent-rgb), 0.35); }

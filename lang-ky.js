@@ -1455,6 +1455,8 @@ window.TRANSLATIONS_KY = {
   tgLinkedToast: "Telegram туташты ✈️",
   srvTgDisabled: "Telegram боту жөндөлгөн эмес",
   srvTgNotLinked: "Telegram туташкан эмес",
+
+  srvTgAppInvalid: "Telegram маалыматы туура эмес",
   shShareBtn: "Бөлүшүү",
   shTitle: "Оюн менен бөлүшүү",
   shImage: "Сүрөт",
@@ -1812,6 +1814,12 @@ window.TRANSLATIONS_KY = {
   libViews: "Көрүүлөр: {{n}}",
 
   libAllVideos: "Бардык видеолор каналда",
+
+
+  tgAppNote: "Бир жолу кириңиз же катталыңыз — кийинки жолу Telegram аркылуу автоматтык түрдө киресиз.",
+
+
+  tgAppLinked: "✈️ Telegram туташты — эми бул жерде автоматтык түрдө киресиз",
   admLibIntro: "Китепканага кодсуз материал кошуңуз: макала, оюн (PGN) же китеп/шилтеме. Өзүңүздүн тексттериңиз же коомдук менчиктеги китептер гана — автордук укукту эч качан бузбаңыз. Тил тандалса, аны ошол тилдеги окурмандар гана көрөт.",
   admLibKindArticle: "Макала",
   admLibKindGame: "Оюн",

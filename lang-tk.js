@@ -1455,6 +1455,8 @@ window.TRANSLATIONS_TK = {
   tgLinkedToast: "Telegram birikdirildi ✈️",
   srvTgDisabled: "Telegram boty sazlanmadyk",
   srvTgNotLinked: "Telegram birikdirilmedik",
+
+  srvTgAppInvalid: "Telegram maglumatlary nädogry",
   shShareBtn: "Paýlaş",
   shTitle: "Oýny paýlaş",
   shImage: "Surat",
@@ -1812,6 +1814,12 @@ window.TRANSLATIONS_TK = {
   libViews: "Görülen: {{n}}",
 
   libAllVideos: "Ähli wideolar kanalda",
+
+
+  tgAppNote: "Bir gezek giriň ýa-da hasaba duruň — indiki gezek Telegram arkaly awtomatik girersiňiz.",
+
+
+  tgAppLinked: "✈️ Telegram birikdi — indi bu ýerde awtomatik girersiňiz",
   admLibIntro: "Kitaphana kodsuz material goşuň: makala, oýun (PGN) ýa-da kitap/salgy. Diňe öz tekstleriňiz ýa-da jemgyýetçilik eýeçiligindäki kitaplar — awtorlyk hukugyny hiç haçan bozmaň. Dil saýlansa, ony diňe şol dildäki okyjylar görýär.",
   admLibKindArticle: "Makala",
   admLibKindGame: "Oýun",

@@ -1455,6 +1455,8 @@ window.TRANSLATIONS_ZH = {
   tgLinkedToast: "Telegram 已连接 ✈️",
   srvTgDisabled: "Telegram 机器人尚未配置",
   srvTgNotLinked: "Telegram 未连接",
+
+  srvTgAppInvalid: "Telegram 数据无效",
   shShareBtn: "分享",
   shTitle: "分享对局",
   shImage: "图片",
@@ -1812,6 +1814,12 @@ window.TRANSLATIONS_ZH = {
   libViews: "{{n}} 次观看",
 
   libAllVideos: "频道里的全部视频",
+
+
+  tgAppNote: "登录或注册一次——下次 Telegram 会自动帮你登录。",
+
+
+  tgAppLinked: "✈️ Telegram 已连接——下次将自动登录",
   admLibIntro: "无需写代码即可向图书馆添加内容：文章、对局（PGN）或书籍/链接。只能使用你自己的文字或公有领域的书籍——绝不能侵犯版权。如果选择了某种语言，只有使用该语言的读者才能看到。",
   admLibKindArticle: "文章",
   admLibKindGame: "对局",

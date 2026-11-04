@@ -47,6 +47,28 @@ async function postAnimation({ gif, caption, buttonText, url }) {
 }
 
 const button = (text, url) => ({ inline_keyboard: [[{ text, url }]] });
+// 📱 Mini App: sayt Telegram ichida ochiladi (faqat shaxsiy chatda; kanal postida — oddiy havola)
+const appButton = (text, url) => ({ inline_keyboard: [[{ text, web_app: { url } }]] });
+
+// Mini App kirish ma'lumoti (Telegram.WebApp.initData): imzo bot tokenidan — HMAC_SHA256("WebAppData", token) kalit,
+// so'ng kalit bilan data_check_string (hash dan boshqa maydonlar, alifbo tartibida, "k=v" \n bilan). 24 soatdan eski — rad.
+const INIT_MAX_AGE_S = 24 * 3600;
+function verifyInitData(initData, now) {
+  if (!enabled() || typeof initData !== 'string' || !initData || initData.length > 4096) return null;
+  const params = new URLSearchParams(initData);
+  const hash = params.get('hash');
+  if (!hash || !/^[0-9a-f]{64}$/.test(hash)) return null;
+  const check = [...params.entries()].filter(([k]) => k !== 'hash').sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([k, v]) => k + '=' + v).join('\n');
+  const secret = crypto.createHmac('sha256', 'WebAppData').update(TOKEN).digest();
+  const expect = crypto.createHmac('sha256', secret).update(check).digest();
+  if (!crypto.timingSafeEqual(expect, Buffer.from(hash, 'hex'))) return null;
+  const authDate = Number(params.get('auth_date'));
+  if (!authDate || Math.abs((now || Date.now()) / 1000 - authDate) > INIT_MAX_AGE_S) return null;
+  let user = null;
+  try { user = JSON.parse(params.get('user') || 'null'); } catch (e) { return null; }
+  if (!user || !Number.isSafeInteger(user.id) || user.id <= 0) return null;
+  return { id: String(user.id), username: typeof user.username === 'string' ? user.username.slice(0, 64) : null, lang: typeof user.language_code === 'string' ? user.language_code : null };
+}
 function send(chatId, text, markup) {
   return call('sendMessage', { chat_id: chatId, text, disable_web_page_preview: true, ...(markup ? { reply_markup: markup } : {}) });
 }
@@ -66,7 +88,7 @@ async function sendNotification(userId, type, data, opts) {
     if (prefs[m.category] === false) return false;
   }
   try {
-    await send(link.chatId, m.body, button(botText('openShort', link.lang), deps.SITE_URL + m.url));
+    await send(link.chatId, m.body, appButton(botText('openShort', link.lang), deps.SITE_URL + m.url));
     return true;
   } catch (err) {
     // Foydalanuvchi botni bloklagan yoki chat yo'q — ulanishni o'chiramiz
@@ -74,6 +96,11 @@ async function sendNotification(userId, type, data, opts) {
     else console.log('Telegram yuborish xatoligi:', err.message);
     return false;
   }
+}
+
+// Chat pastidagi menyu tugmasi — Mini App (shu chat uchun, foydalanuvchi tilida); xato bo'lsa jim
+function setMenuButton(chatId, lang) {
+  return call('setChatMenuButton', { chat_id: chatId, menu_button: { type: 'web_app', text: botText('open', lang), web_app: { url: deps.SITE_URL + '/' } } }).catch(() => {});
 }
 
 async function inviteReply(chatId, link) {
@@ -102,11 +129,13 @@ async function handleUpdate(update) {
       const l = entry.lang || lang;
       await deps.db.linkTelegram(user.id, chatId, msg.from && msg.from.username, l);
       deps.io.to(`user_${user.id}`).emit('telegram-linked', { linked: true });
-      return send(chatId, botText('linked', l, { name: user.username }), button(botText('open', l), deps.SITE_URL + '/'));
+      await setMenuButton(chatId, l);
+      return send(chatId, botText('linked', l, { name: user.username }), appButton(botText('open', l), deps.SITE_URL + '/'));
     }
     if (arg) return send(chatId, botText('badCode', lang));
-    if (link) return send(chatId, botText('already', lang, { name: link.username }), button(botText('open', lang), deps.SITE_URL + '/'));
-    return send(chatId, botText('welcome', lang), button(botText('open', lang), deps.SITE_URL + '/'));
+    await setMenuButton(chatId, lang);
+    if (link) return send(chatId, botText('already', lang, { name: link.username }), appButton(botText('open', lang), deps.SITE_URL + '/'));
+    return send(chatId, botText('welcome', lang), appButton(botText('open', lang), deps.SITE_URL + '/'));
   }
   if (cmd === '/stop') {
     if (link) {
@@ -151,9 +180,35 @@ function init(d) {
     try {
       const link = enabled() && await db.getTelegramLink(req.user.userId);
       if (!link) return res.status(400).json({ success: false, message: 'Telegram ulanmagan' });
-      await send(link.chatId, botText('test', link.lang), button(botText('open', link.lang), deps.SITE_URL + '/'));
+      await send(link.chatId, botText('test', link.lang), appButton(botText('open', link.lang), deps.SITE_URL + '/'));
       res.json({ success: true });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  // 📱 Mini App: Telegram'i ulangan o'yinchi parolsiz kiradi; ulanmagan bo'lsa — linked: false (klient oddiy kirish/ro'yxatni ko'rsatadi)
+  app.post('/api/telegram/webapp/login', async (req, res) => {
+    try {
+      const tg = verifyInitData(req.body && req.body.initData);
+      if (!tg) return res.status(401).json({ success: false, message: "Telegram ma'lumoti noto'g'ri" });
+      const link = await db.getTelegramLinkByChat(tg.id);
+      if (!link) return res.json({ success: true, linked: false, tgUsername: tg.username });
+      const user = await db.getUserById(link.userId);
+      if (!user || d.isDeleted(user.id)) return res.json({ success: true, linked: false, tgUsername: tg.username });
+      const ban = d.activeBan(user.id);
+      if (ban) return res.status(403).json({ success: false, banned: true, message: d.banMessage(ban) });
+      res.json({ success: true, linked: true, ...(await d.issueSession(user)) });
+    } catch (err) { console.error('Mini App kirish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  // Kirgan (yoki ro'yxatdan o'tgan) o'yinchining akkauntiga shu Telegram'ni ulash — keyingi safar avtomatik kiradi
+  app.post('/api/telegram/webapp/link', authMiddleware, async (req, res) => {
+    try {
+      const tg = verifyInitData(req.body && req.body.initData);
+      if (!tg) return res.status(401).json({ success: false, message: "Telegram ma'lumoti noto'g'ri" });
+      const lang = LANGS.concat(['uzc']).includes(req.body.lang) ? req.body.lang : langOf(tg.lang);
+      await db.linkTelegram(req.user.userId, tg.id, tg.username, lang);
+      deps.io.to(`user_${req.user.userId}`).emit('telegram-linked', { linked: true });
+      setMenuButton(tg.id, lang);
+      res.json({ success: true });
+    } catch (err) { console.error('Mini App ulash xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   // Telegram → server
   app.post('/api/telegram/webhook', (req, res) => {
@@ -175,9 +230,10 @@ function init(d) {
           ...(l === 'en' ? {} : { language_code: l })
         });
       }
+      await call('setChatMenuButton', { menu_button: { type: 'web_app', text: '♞ ChessCaravan', web_app: { url: deps.SITE_URL + '/' } } });
       console.log('✈️ Telegram bot tayyor: @' + botUsername);
     } catch (err) { console.error('Telegram botni sozlab bo\'lmadi:', err.message); }
   })();
 }
 
-module.exports = { init, enabled, sendNotification, channelEnabled, postAnimation };
+module.exports = { init, enabled, sendNotification, channelEnabled, postAnimation, verifyInitData };

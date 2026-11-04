@@ -52,7 +52,10 @@ const io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } 
 // Render (va boshqa hostinglar) so'rovlarni proksi orqali uzatadi: haqiqiy IP X-Forwarded-For da.
 // Busiz barcha foydalanuvchilar bitta IP bo'lib ko'rinadi va rate limit butun sayt uchun umumiy bo'lib qoladi.
 app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS) || 1);
-app.use(helmet({ contentSecurityPolicy: false }));
+// Ramkada ochish: faqat o'zimiz va Telegram veb-versiyasi (Mini App web.telegram.org da iframe ichida ochiladi).
+// X-Frame-Options ro'yxatni bilmaydi (SAMEORIGIN Telegram'ni ham to'sardi) — o'rniga CSP frame-ancestors.
+app.use(helmet({ contentSecurityPolicy: false, frameguard: false }));
+app.use((req, res, next) => { res.setHeader('Content-Security-Policy', "frame-ancestors 'self' https://web.telegram.org"); next(); });
 app.use(cors({ origin: true, credentials: true }));
 // Eng katta so'rov — profil rasmi (≤ 200 KB, base64 ~270 KB); 10 MB xotirani band qilishga yo'l ochardi
 app.use(express.json({ limit: '1mb' }));
@@ -1903,6 +1906,12 @@ async function start() {
     }
   });
 
+  // Kirish javobi (parol bilan kirish va Telegram Mini App uchun bir xil): JWT 7 kun + klientga kerakli maydonlar
+  async function issueSession(user) {
+    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    await db.touchUserLastActive(user.id);
+    return { user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, ratingsByMode: user.ratings_by_mode, country: user.country || null, club: db.userClub(user), avatarVersion: user.avatar_version || null, role: user.role || null }, token };
+  }
   app.post('/api/auth/login', loginLimiter, [
     body('username').notEmpty().withMessage('Username is required'),
     body('password').notEmpty().withMessage('Password is required')
@@ -1917,9 +1926,7 @@ async function start() {
       if (!valid) return res.status(401).json({ success: false, message: 'Ism yoki parol xato!' });
       const ban = activeBan(user.id);
       if (ban) return res.status(403).json({ success: false, banned: true, message: banMessage(ban) });
-      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
-      await db.touchUserLastActive(user.id);
-      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, ratingsByMode: user.ratings_by_mode, country: user.country || null, club: db.userClub(user), avatarVersion: user.avatar_version || null, role: user.role || null }, token });
+      res.json({ success: true, message: 'Muvaffaqiyatli kirildi!', ...(await issueSession(user)) });
     } catch (err) { console.error('Login xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
@@ -3612,7 +3619,7 @@ async function start() {
     }
   }, 4000);
 
-  telegram.init({ app, db, io, SITE_URL, isActive, authMiddleware, inviteUrl: async (userId) => `${SITE_URL}/?invite=${await db.getInviteCode(userId)}` });
+  telegram.init({ app, db, io, SITE_URL, isActive, authMiddleware, issueSession, activeBan, banMessage, isDeleted: (id) => deletedUsers.has(id), inviteUrl: async (userId) => `${SITE_URL}/?invite=${await db.getInviteCode(userId)}` });
   scheduleChannelPost(true);
   league.init({ db, io, rooms, createGameRoom, scheduleRoomTimer, clockMode, generateRoomId, notify, inActiveGame });
   // Bloklar, banlar va adminlar (ADMIN_USERNAMES="ism1,ism2" — Render env)

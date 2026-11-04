@@ -1455,6 +1455,8 @@ window.TRANSLATIONS_IT = {
   tgLinkedToast: "Telegram collegato ✈️",
   srvTgDisabled: "Il bot Telegram non è configurato",
   srvTgNotLinked: "Telegram non è collegato",
+
+  srvTgAppInvalid: "Dati Telegram non validi",
   shShareBtn: "Condividi",
   shTitle: "Condividi la partita",
   shImage: "Immagine",
@@ -1812,6 +1814,12 @@ window.TRANSLATIONS_IT = {
   libViews: "Visualizzazioni: {{n}}",
 
   libAllVideos: "Tutti i video sul canale",
+
+
+  tgAppNote: "Accedi o registrati una volta: la prossima volta Telegram ti farà entrare automaticamente.",
+
+
+  tgAppLinked: "✈️ Telegram collegato: la prossima volta entrerai automaticamente",
   admLibIntro: "Aggiungi materiale alla Biblioteca senza codice: un articolo, una partita (PGN) o un libro/link. Solo testi tuoi o libri di pubblico dominio — non violare mai il diritto d'autore. Se scegli una lingua, lo vedono solo i lettori che usano quella lingua.",
   admLibKindArticle: "Articolo",
   admLibKindGame: "Partita",

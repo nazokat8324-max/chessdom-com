@@ -101,6 +101,7 @@ const SERVER_MESSAGE_KEYS = {
   "Taklif havolasi topilmadi": 'invErrNotFound',
   "Telegram bot sozlanmagan": 'srvTgDisabled',
   "Telegram ulanmagan": 'srvTgNotLinked',
+  "Telegram ma'lumoti noto'g'ri": 'srvTgAppInvalid',
   "Noto'g'ri so'rov": 'srvBadRequest',
   "Foydalanuvchi nomi mos kelmadi!": 'srvNameMismatch',
   "Avval joriy o'yiningizni tugating!": 'srvFinishGameFirst',

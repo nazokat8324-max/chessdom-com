@@ -1455,6 +1455,8 @@ window.TRANSLATIONS_TG = {
   tgLinkedToast: "Telegram пайваст шуд ✈️",
   srvTgDisabled: "Боти Telegram танзим нашудааст",
   srvTgNotLinked: "Telegram пайваст нест",
+
+  srvTgAppInvalid: "Маълумоти Telegram нодуруст аст",
   shShareBtn: "Мубодила",
   shTitle: "Мубодилаи бозӣ",
   shImage: "Тасвир",
@@ -1812,6 +1814,12 @@ window.TRANSLATIONS_TG = {
   libViews: "Тамошо: {{n}}",
 
   libAllVideos: "Ҳамаи видеоҳо дар канал",
+
+
+  tgAppNote: "Як бор ворид шавед ё сабти ном кунед — дафъаи оянда Telegram шуморо худкор ворид мекунад.",
+
+
+  tgAppLinked: "✈️ Telegram пайваст шуд — акнун дар ин ҷо худкор ворид мешавед",
   admLibIntro: "Ба Китобхона бе код мавод илова кунед: мақола, бозӣ (PGN) ё китоб/истинод. Танҳо матнҳои худатон ё китобҳои моликияти умумӣ — ҳеҷ гоҳ ҳуқуқи муаллифиро вайрон накунед. Агар забон интихоб шавад, онро танҳо хонандагони ҳамон забон мебинанд.",
   admLibKindArticle: "Мақола",
   admLibKindGame: "Бозӣ",

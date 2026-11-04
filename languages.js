@@ -2670,6 +2670,8 @@ const translationsExtra = {
     tgLinkedToast: "Telegram ulandi ✈️",
     srvTgDisabled: "Telegram bot sozlanmagan",
     srvTgNotLinked: "Telegram ulanmagan",
+
+    srvTgAppInvalid: "Telegram ma'lumoti noto'g'ri",
     shShareBtn: "Ulashish",
     shTitle: "O'yinni ulashish",
     shImage: "Rasm",
@@ -3028,6 +3030,12 @@ const translationsExtra = {
     libViews: "{{n}} marta ko'rilgan",
 
     libAllVideos: "Barcha videolar kanalda",
+
+
+    tgAppNote: "Bir marta kiring yoki ro'yxatdan o'ting — keyingi safar Telegram orqali avtomatik kirasiz.",
+
+
+    tgAppLinked: "✈️ Telegram ulandi — endi bu yerda avtomatik kirasiz",
     admLibIntro: "Kutubxonaga kod yozmasdan material qo'shing: maqola, partiya (PGN) yoki kitob/havola. Faqat o'zingiz yozgan matnlar yoki jamoat mulkidagi kitoblar — begona mualliflik huquqini buzmang. \"Til\" tanlansa, material faqat o'sha tilda o'qiyotganlarga ko'rinadi.",
     admLibKindArticle: "Maqola",
     admLibKindGame: "Partiya",
@@ -4278,6 +4286,8 @@ const translationsExtra = {
     tgLinkedToast: "Telegram connected ✈️",
     srvTgDisabled: "The Telegram bot is not configured",
     srvTgNotLinked: "Telegram is not connected",
+
+    srvTgAppInvalid: "Invalid Telegram data",
     shShareBtn: "Share",
     shTitle: "Share the game",
     shImage: "Image",
@@ -4636,6 +4646,12 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+
+
+    tgAppNote: "Sign in or sign up once — next time Telegram will sign you in automatically.",
+
+
+    tgAppLinked: "✈️ Telegram connected — next time you will be signed in automatically",
     admLibIntro: "Add material to the Library without code: an article, a game (PGN) or a book/link. Only your own texts or public-domain books — never infringe copyright. If a language is chosen, only readers using that language see it.",
     admLibKindArticle: "Article",
     admLibKindGame: "Game",
@@ -5886,6 +5902,8 @@ const translationsExtra = {
     tgLinkedToast: "Telegram подключён ✈️",
     srvTgDisabled: "Telegram-бот не настроен",
     srvTgNotLinked: "Telegram не подключён",
+
+    srvTgAppInvalid: "Неверные данные Telegram",
     shShareBtn: "Поделиться",
     shTitle: "Поделиться партией",
     shImage: "Картинка",
@@ -6244,6 +6262,12 @@ const translationsExtra = {
     libViews: "Просмотров: {{n}}",
 
     libAllVideos: "Все видео на канале",
+
+
+    tgAppNote: "Войдите или зарегистрируйтесь один раз — в следующий раз Telegram выполнит вход автоматически.",
+
+
+    tgAppLinked: "✈️ Telegram подключён — теперь вход здесь будет автоматическим",
     admLibIntro: "Добавляйте материалы в Библиотеку без кода: статью, партию (PGN) или книгу/ссылку. Только свои тексты или книги в общественном достоянии — не нарушайте авторские права. Если выбран язык, материал видят только читатели на этом языке.",
     admLibKindArticle: "Статья",
     admLibKindGame: "Партия",
@@ -7494,6 +7518,8 @@ const translationsExtra = {
     tgLinkedToast: "Telegram conectado ✈️",
     srvTgDisabled: "El bot de Telegram no está configurado",
     srvTgNotLinked: "Telegram no está conectado",
+
+    srvTgAppInvalid: "Datos de Telegram no válidos",
     shShareBtn: "Compartir",
     shTitle: "Compartir la partida",
     shImage: "Imagen",
@@ -7852,6 +7878,12 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+
+
+    tgAppNote: "Inicia sesión o regístrate una vez: la próxima vez Telegram te conectará automáticamente.",
+
+
+    tgAppLinked: "✈️ Telegram conectado: la próxima vez entrarás automáticamente",
     admLibIntro: "Añade material a la Biblioteca sin código: un artículo, una partida (PGN) o un libro/enlace. Solo textos propios o libros de dominio público; no infrinjas derechos de autor. Si eliges un idioma, solo lo verán quienes usen ese idioma.",
     admLibKindArticle: "Artículo",
     admLibKindGame: "Partida",
@@ -9102,6 +9134,8 @@ const translationsExtra = {
     tgLinkedToast: "Telegram verbunden ✈️",
     srvTgDisabled: "Der Telegram-Bot ist nicht eingerichtet",
     srvTgNotLinked: "Telegram ist nicht verbunden",
+
+    srvTgAppInvalid: "Ungültige Telegram-Daten",
     shShareBtn: "Teilen",
     shTitle: "Partie teilen",
     shImage: "Bild",
@@ -9460,6 +9494,12 @@ const translationsExtra = {
     libViews: "Aufrufe: {{n}}",
 
     libAllVideos: "Alle Videos auf dem Kanal",
+
+
+    tgAppNote: "Melde dich einmal an oder registriere dich – beim nächsten Mal meldet Telegram dich automatisch an.",
+
+
+    tgAppLinked: "✈️ Telegram verbunden – beim nächsten Mal wirst du automatisch angemeldet",
     admLibIntro: "Füge der Bibliothek ohne Code Material hinzu: einen Artikel, eine Partie (PGN) oder ein Buch/einen Link. Nur eigene Texte oder gemeinfreie Bücher — keine Urheberrechte verletzen. Ist eine Sprache gewählt, sehen es nur Leser dieser Sprache.",
     admLibKindArticle: "Artikel",
     admLibKindGame: "Partie",
@@ -10710,6 +10750,8 @@ const translationsExtra = {
     tgLinkedToast: "Telegram connecté ✈️",
     srvTgDisabled: "Le bot Telegram n'est pas configuré",
     srvTgNotLinked: "Telegram n'est pas connecté",
+
+    srvTgAppInvalid: "Données Telegram invalides",
     shShareBtn: "Partager",
     shTitle: "Partager la partie",
     shImage: "Image",
@@ -11068,6 +11110,12 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+
+    tgAppNote: "Connectez-vous ou inscrivez-vous une fois : la prochaine fois, Telegram vous connectera automatiquement.",
+
+
+    tgAppLinked: "✈️ Telegram connecté : la prochaine fois, connexion automatique",
     admLibIntro: "Ajoutez du contenu à la Bibliothèque sans code : un article, une partie (PGN) ou un livre/lien. Uniquement vos propres textes ou des livres du domaine public — ne violez pas le droit d'auteur. Si une langue est choisie, seuls les lecteurs de cette langue le voient.",
     admLibKindArticle: "Article",
     admLibKindGame: "Partie",

@@ -1478,9 +1478,11 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   await p.click('.set-nav [data-section="board"]');
   await p.waitForSelector('[data-piece-set="clear"]');
   await p.click('[data-piece-set="clear"]');
-  await p.waitForFunction(() => { const b = document.querySelector('.set-bar.show'); return b && b.getBoundingClientRect().bottom <= document.getElementById('cvRoute').getBoundingClientRect().top - 20; }, { timeout: 8000 }).catch(() => {});
+  await p.waitForFunction(() => { const b = document.querySelector('.set-bar.show'); return b && b.getBoundingClientRect().bottom <= document.getElementById('cvRoute').getBoundingClientRect().top - 8; }, { timeout: 8000 }).catch(() => {});
   const bar = await p.evaluate(() => [document.querySelector('.set-bar.show').getBoundingClientRect().bottom, document.getElementById('cvRoute').getBoundingClientRect().top]);
-  assert.ok(bar[0] <= bar[1] - 20, "saqlash paneli yo'l ustida: " + JSON.stringify(bar));
+  // Panel yo'lni yopmasin (8 px zaxira). Yo'l oddiy holatda (CI) oraliq 16 px, ixcham holatda (sahifa aylansa) 38 px — ikkalasi to'g'ri;
+  // 2026-11-04 gacha 20 px talab qilinardi va CI da yo'l ixchamga o'tmaganda yiqilardi
+  assert.ok(bar[0] <= bar[1] - 8, "saqlash paneli yo'l ustida: " + JSON.stringify(bar));
   await p.evaluate(() => { const c = document.querySelector('[data-cancel], .set-bar button'); if (c) c.click(); });
   // Menyuda bandi yo'q sahifa — 5-bekat o'sha sahifa nomi bilan
   await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
@@ -1973,6 +1975,39 @@ test("Service worker ro'yxatdan o'tadi", opts, async () => {
   await p.goto(srv.base + '/', { waitUntil: 'load' });
   const scope = await p.evaluate(async () => (await navigator.serviceWorker.ready).scope);
   assert.equal(scope, srv.base + '/');
+});
+
+test("Telegram Mini App: birinchi marta — kirish sahifasida eslatma, kirgach Telegram ulanadi; keyingi safar parolsiz o'zi kiradi", opts, async () => {
+  const { startFakeTelegram, makeInitData } = require('./fixtures/telegram');
+  const tg = await startFakeTelegram();
+  const own = await startServer({ TELEGRAM_BOT_TOKEN: '123:TEST', TELEGRAM_API: tg.api });
+  try {
+    const u = await own.register('TgApp');
+    // Telegram manzilga hash qo'shib ochadi: #tgWebAppData=<imzoli ma'lumot>&tgWebAppVersion=…
+    const hash = '#' + new URLSearchParams({ tgWebAppData: makeInitData('123:TEST', { id: 7007, first_name: 'Test', username: 'tg_test' }), tgWebAppVersion: '8.0', tgWebAppPlatform: 'android' }).toString();
+    const p1 = await page(null, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    await p1.goto(own.base + '/' + hash, { waitUntil: 'load' });
+    await p1.waitForSelector('#authGate .tg-app-note', { timeout: 15000 });
+    assert.equal(await p1.evaluate(() => location.hash), '', "kirish ma'lumoti manzildan olib tashlandi");
+    assert.ok(await p1.evaluate(() => document.documentElement.classList.contains('tg-app') && window.isTelegramApp === true));
+    // Oddiy kirish (parol bilan) — shundan keyin shu Telegram akkauntga ulanadi
+    await p1.evaluate(async (name) => {
+      const d = await fetch('/api/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: name, password: 'secret1' }) }).then((r) => r.json());
+      window.applyAuthSession(d.user, d.token);
+    }, u.name);
+    const linked = async () => (await own.api(u, '/api/telegram')).linked === true;
+    for (let i = 0; i < 40 && !(await linked()); i++) await sleep(150);
+    assert.ok(await linked(), 'Telegram ulandi');
+    assert.equal(await p1.$('#authGate .tg-app-note'), null, 'eslatma yopildi');
+    assert.deepEqual(p1.errors, []);
+    // Keyingi safar (yangi qurilma/oyna, saqlangan sessiyasiz) — parolsiz kiradi
+    const p2 = await page(null, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    // (bildirishnoma tugmasi kabi aniq sahifa bilan) — kirgach o'sha sahifa ochiladi
+    await p2.goto(own.base + '/xabarlar' + hash, { waitUntil: 'load' });
+    await p2.waitForFunction((name) => window.currentUser && window.currentUser.username === name && !document.body.classList.contains('auth-locked'), { timeout: 15000 }, u.name);
+    await p2.waitForFunction(() => location.pathname === '/xabarlar' && document.getElementById('messagesView').classList.contains('active-view'), { timeout: 10000 });
+    assert.deepEqual(p2.errors, []);
+  } finally { await own.stop(); await tg.stop(); }
 });
 
 test("Videodarslar: Kutubxonada kanal videolari — muqova server orqali, bosilganda YouTube yangi oynada", opts, async () => {

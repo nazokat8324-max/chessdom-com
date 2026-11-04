@@ -129,7 +129,8 @@ test('Telegram: ulash, bildirishnoma, /invite, /stop, bloklangan bot', async () 
   assert.ok(await waitFor(() => sent(555).length === 2));
   const note = sent(555)[1].data;
   assert.equal(note.text, `${f.name} sizga do'stlik so'rovi yubordi`);
-  assert.match(note.reply_markup.inline_keyboard[0][0].url, new RegExp('/\\?profile=' + f.name + '$'));
+  // Tugma sahifani Telegram ichida (Mini App) ochadi — profil sahifasining o'zi
+  assert.match(note.reply_markup.inline_keyboard[0][0].web_app.url, new RegExp('/\\?profile=' + f.name + '$'));
   // Sayt ochiq va ko'rinib turibdi → Telegram'ga yuborilmaydi
   const s = await srv.connect(u);
   await srv.api(f, '/api/chat/messages', 'POST', { roomId: 'user_' + u.id, message: 'salom' });

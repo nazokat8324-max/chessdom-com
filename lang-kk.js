@@ -1455,6 +1455,8 @@ window.TRANSLATIONS_KK = {
   tgLinkedToast: "Telegram қосылды ✈️",
   srvTgDisabled: "Telegram боты бапталмаған",
   srvTgNotLinked: "Telegram қосылмаған",
+
+  srvTgAppInvalid: "Telegram деректері қате",
   shShareBtn: "Бөлісу",
   shTitle: "Ойынмен бөлісу",
   shImage: "Сурет",
@@ -1812,6 +1814,12 @@ window.TRANSLATIONS_KK = {
   libViews: "Қаралым: {{n}}",
 
   libAllVideos: "Барлық бейне арнада",
+
+
+  tgAppNote: "Бір рет кіріңіз немесе тіркеліңіз — келесі жолы Telegram арқылы автоматты түрде кіресіз.",
+
+
+  tgAppLinked: "✈️ Telegram қосылды — енді мұнда автоматты түрде кіресіз",
   admLibIntro: "Кітапханаға кодсыз материал қосыңыз: мақала, ойын (PGN) немесе кітап/сілтеме. Тек өз мәтіндеріңіз немесе қоғамдық игілік кітаптары — авторлық құқықты ешқашан бұзбаңыз. Тіл таңдалса, оны тек сол тілдегі оқырмандар көреді.",
   admLibKindArticle: "Мақала",
   admLibKindGame: "Ойын",

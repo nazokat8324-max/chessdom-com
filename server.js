@@ -3059,28 +3059,34 @@ async function start() {
       res.json({ success: true, users: list, queue: fairplayAnalyzer ? fairplayAnalyzer.size() : 0, engineEnabled: !!fairplayAnalyzer });
     } catch (err) { console.error('Fair-play xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
-  // 🏛 Muzey videolari: faqat YouTube'da ochiq bo'lgan Shorts (rejalashtirilganlari chiqquncha yopiq).
-  // Har video oEmbed orqali tekshiriladi (bazaga murojaat yo'q); ochiq deb topilgani qayta tekshirilmaydi, qolganlari — soatiga bir marta.
-  // Testlarda tarmoqsiz: MUSEUM_VIDEOS_PUBLIC="chaturanga,chatrang"
-  const MUSEUM_VIDEOS = require('./museum-data').VIDEOS;
-  const museumVideoState = new Map(); // stopId → { public, checkedAt }
-  let museumVideoCheck = null;
-  async function museumVideos() {
-    if (TEST_MODE) {
-      const allow = new Set(String(process.env.MUSEUM_VIDEOS_PUBLIC || '').split(',').filter(Boolean));
-      return Object.fromEntries(Object.entries(MUSEUM_VIDEOS).filter(([stop]) => allow.has(stop)));
-    }
-    const due = Object.entries(MUSEUM_VIDEOS).filter(([stop]) => { const s = museumVideoState.get(stop); return !s || (!s.public && Date.now() - s.checkedAt > 3600000); });
-    if (due.length && !museumVideoCheck) {
-      museumVideoCheck = Promise.all(due.map(async ([stop, id]) => {
-        let ok = false;
-        try { ok = (await fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/shorts/' + id), { signal: AbortSignal.timeout(4000) })).ok; } catch (e) {}
-        museumVideoState.set(stop, { public: ok, checkedAt: Date.now() });
-      })).finally(() => { museumVideoCheck = null; });
-    }
-    if (museumVideoCheck) await museumVideoCheck;
-    return Object.fromEntries(Object.entries(MUSEUM_VIDEOS).filter(([stop]) => (museumVideoState.get(stop) || {}).public));
+  // ▶ Kanal videolari aniq joylarda (muzey bekatlari, dona kartalari): faqat YouTube'da ochiq bo'lgan Shorts (rejalashtirilganlari
+  // chiqquncha yopiq). Har video oEmbed orqali tekshiriladi (bazaga murojaat yo'q); ochiq deb topilgani qayta tekshirilmaydi, qolganlari —
+  // soatiga bir marta. Testlarda tarmoqsiz: <ENV>="kalit1,kalit2" (MUSEUM_VIDEOS_PUBLIC, PIECE_VIDEOS_PUBLIC).
+  function publicVideoList(map, testEnv) {
+    const state = new Map(); // kalit → { public, checkedAt }
+    let check = null;
+    return async function () {
+      if (TEST_MODE) {
+        const allow = new Set(String(process.env[testEnv] || '').split(',').filter(Boolean));
+        return Object.fromEntries(Object.entries(map).filter(([k]) => allow.has(k)));
+      }
+      const due = Object.entries(map).filter(([k]) => { const s = state.get(k); return !s || (!s.public && Date.now() - s.checkedAt > 3600000); });
+      if (due.length && !check) {
+        check = Promise.all(due.map(async ([k, id]) => {
+          let ok = false;
+          try { ok = (await fetch('https://www.youtube.com/oembed?format=json&url=' + encodeURIComponent('https://www.youtube.com/shorts/' + id), { signal: AbortSignal.timeout(4000) })).ok; } catch (e) {}
+          state.set(k, { public: ok, checkedAt: Date.now() });
+        })).finally(() => { check = null; });
+      }
+      if (check) await check;
+      return Object.fromEntries(Object.entries(map).filter(([k]) => (state.get(k) || {}).public));
+    };
   }
+  const museumVideos = publicVideoList(require('./museum-data').VIDEOS, 'MUSEUM_VIDEOS_PUBLIC');
+  // ♟ "So'z tarixi" Shorts'lari (2026-11-20…30) — "Donalar bilan tanishing" oynasida (piece-guide.js): intro — «Shaxmat» so'zi,
+  // qolganlari — dona kartasi. Yangi video qo'shilsa — shu ro'yxatga.
+  const PIECE_VIDEOS = { intro: 'M9oBqPI93_I', R: 'mQfuw0VWZUU', Q: 'VNcLZ6OC7n8', B: 'wL3qQVwn75U', P: 'Bn2mHoIteX4', N: 'yyD0wHR7TQI' };
+  const pieceVideos = publicVideoList(PIECE_VIDEOS, 'PIECE_VIDEOS_PUBLIC');
   // ⭐ Admin: bugungi Kun o'yinini kanalga hozir yuborish (sinash uchun; keyin 20:00 dagi post o'sha kuni takrorlanmaydi)
   app.post('/api/admin/telegram/channel-post', adminMiddleware, async (req, res) => {
     try {
@@ -3107,6 +3113,10 @@ async function start() {
 
   app.get('/api/museum/videos', apiLimiter, async (req, res) => {
     try { res.json({ success: true, videos: await museumVideos() }); }
+    catch (err) { res.json({ success: true, videos: {} }); }
+  });
+  app.get('/api/pieces/videos', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, videos: await pieceVideos() }); }
     catch (err) { res.json({ success: true, videos: {} }); }
   });
 

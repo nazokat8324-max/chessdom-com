@@ -14982,3 +14982,9 @@ body.auth-locked .view-section > h1.sr-only, body:has(#profileModal[style*="flex
 
 /* ===== 📱 Telegram Mini App (telegram-app.js): kirish sahifasidagi eslatma */
 .tg-app-note { margin: 0 0 14px; padding: 10px 12px; border-radius: 12px; font-size: 14px; line-height: 1.45; color: var(--cd-text); background: rgba(var(--accent-rgb), 0.12); border: 1px solid rgba(var(--accent-rgb), 0.35); }
+
+/* ===== ♟ Donalar bilan tanishing: "So'z tarixi" videolari (piece-guide.js addVideos) */
+.pc-video { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--cd-text); border: 1px solid var(--cd-border-strong); background: transparent; align-self: flex-start; }
+.pc-video:hover, .pc-video:focus-visible { border-color: var(--accent); }
+.pc-video.intro { margin: 0 0 12px; }
+.pc-video .yt-ic { flex: none; }

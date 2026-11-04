@@ -82,7 +82,7 @@ test("Shaxmat tarixi muzeyi: noyob bekatlar, har matn 14 tilda, ko'rgazmalar haq
 });
 
 let srv;
-before(async () => { srv = await startServer({ MUSEUM_VIDEOS_PUBLIC: 'chaturanga,chatrang' }); });
+before(async () => { srv = await startServer({ MUSEUM_VIDEOS_PUBLIC: 'chaturanga,chatrang', PIECE_VIDEOS_PUBLIC: 'intro,R' }); });
 after(async () => { await srv.stop(); });
 
 test("Sahifa: /kutubxona ochiladi (SEO sarlavha), sitemap'da bor, ma'lumot fayllari ommaviy", async () => {
@@ -140,4 +140,10 @@ test("Muzey videolari: har bekatga bitta YouTube Shorts (noyob), API faqat ochiq
   const d = await (await fetch(srv.base + '/api/museum/videos')).json();
   assert.equal(d.success, true);
   assert.deepEqual(d.videos, { chaturanga: VIDEOS.chaturanga, chatrang: VIDEOS.chatrang }, 'yopiq (rejalashtirilgan) videolar berilmaydi');
+});
+
+test("So'z tarixi videolari: \"Donalar bilan tanishing\" uchun faqat ochiqlari (intro — «Shaxmat» so'zi, dona harfi — o'sha dona)", async () => {
+  const d = await (await fetch(srv.base + '/api/pieces/videos')).json();
+  assert.equal(d.success, true);
+  assert.deepEqual(d.videos, { intro: 'M9oBqPI93_I', R: 'mQfuw0VWZUU' }, "testda ochiq deb belgilanganlar; qolganlari (Q, B, P, N) hali yopiq");
 });

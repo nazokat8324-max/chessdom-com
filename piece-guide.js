@@ -120,7 +120,40 @@
     el.onclick = (e) => { if (e.target === el || e.target.closest('[data-pc-close]')) close(); };
     const x = el.querySelector('[data-pc-close]');
     if (x) x.focus();
+    addVideos(el);
   };
+
+  // ▶ YouTube'dagi "So'z tarixi" Shorts'lari: dona nomi qayerdan kelgani (rux, farzin, fil, piyoda, ot) va «Shaxmat» so'zi —
+  // faqat ochiq bo'lganlari (GET /api/pieces/videos, server tekshiradi), havola yangi oynada (sahifaga joylanmaydi)
+  let videoCache = null;
+  async function addVideos(el) {
+    try {
+      if (!videoCache || Date.now() - videoCache.at > 10 * 60000) {
+        const d = await fetch('/api/pieces/videos').then((r) => r.json());
+        videoCache = { at: Date.now(), videos: (d && d.videos) || {} };
+      }
+    } catch (e) { return; }
+    if (!el.isConnected) return;
+    const link = (id, label) => {
+      const a = document.createElement('a');
+      a.className = 'pc-video';
+      a.href = 'https://www.youtube.com/shorts/' + id;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.innerHTML = (window.youtubeIcon ? window.youtubeIcon() : '▶') + ' <span>' + esc(label) + '</span>';
+      return a;
+    };
+    for (const [key, id] of Object.entries(videoCache.videos)) {
+      if (!/^[\w-]{6,20}$/.test(id)) continue;
+      if (key === 'intro') {
+        const sub = el.querySelector('.pc-sub');
+        if (sub && !el.querySelector('.pc-video.intro')) { const a = link(id, tx('pcWordVideo', "«Shaxmat» so'zi qayerdan kelgan?")); a.classList.add('intro'); sub.after(a); }
+        continue;
+      }
+      const card = el.querySelector('.pc-card[data-pc="' + key + '"]');
+      if (card && !card.querySelector('.pc-video')) card.appendChild(link(id, tx('pcNameVideo', 'Nomi qayerdan kelgan?')));
+    }
+  }
 
   // Taxtadagi dona ustiga sichqoncha — nomi va rangi: "Ot (Oq)"
   document.addEventListener('mouseover', (e) => {

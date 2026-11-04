@@ -23,6 +23,10 @@ window.TRANSLATIONS_TK = {
   pcGuideBtn: "Daşlar barada",
   pcGuideTitle: "Daşlar bilen tanyşyň",
   pcGuideSub: "Her daş nähili görünýär we nähili ýöreýär",
+
+  pcNameVideo: "Ady nireden gelýär?",
+
+  pcWordVideo: "«Küşt» sözi nireden gelýär?",
   pcKing: "Şa",
   pcPawn: "Piýada",
   pcKMove: "Islendik tarapa diňe 1 öýjük ýöreýär.",

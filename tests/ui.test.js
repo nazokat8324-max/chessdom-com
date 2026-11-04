@@ -14,7 +14,7 @@ const opts = { skip: QUICK ? 'test:quick — brauzer testlari o\'tkazildi' : CHR
 let srv, browser;
 before(async () => {
   if (!CHROME || QUICK) return;
-  srv = await startServer({ MUSEUM_VIDEOS_PUBLIC: 'chaturanga' });
+  srv = await startServer({ MUSEUM_VIDEOS_PUBLIC: 'chaturanga', PIECE_VIDEOS_PUBLIC: 'intro,R' });
   browser = await require('puppeteer-core').launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox'] });
 });
 after(async () => { if (browser) await browser.close(); if (srv) await srv.stop(); });
@@ -227,6 +227,10 @@ test("Donalar haqida: ❓ oynasi 6 ta donani nomi, chizmasi va qoidasi bilan ko'
   assert.deepEqual(cards.map((c) => [c.moves, c.caps]), [[8, 0], [24, 0], [12, 0], [12, 0], [8, 0], [2, 2]]);
   // Shatranj: farzin — 1 katak diagonal (4), fil — 2 katak sakraydi (4), piyoda — faqat 1 qadam
   assert.deepEqual(await p.evaluate(() => ['Q', 'B', 'P'].map((k) => window.PieceGuide.moves(k, 'shatranj').move.length)), [4, 4, 1]);
+  // ▶ "So'z tarixi" videolari: faqat ochiqlari — tepada «Shaxmat» so'zi, rux kartasida; boshqa kartalarda yo'q; yangi oynada
+  await p.waitForSelector('#pieceGuide .pc-card[data-pc="R"] .pc-video', { timeout: 8000 });
+  const vids = await p.evaluate(() => [...document.querySelectorAll('#pieceGuide .pc-video')].map((a) => ({ href: a.href, card: a.closest('.pc-card') ? a.closest('.pc-card').dataset.pc : 'top', blank: a.target === '_blank' && /noopener/.test(a.rel) })));
+  assert.deepEqual(vids, [{ href: 'https://www.youtube.com/shorts/M9oBqPI93_I', card: 'top', blank: true }, { href: 'https://www.youtube.com/shorts/mQfuw0VWZUU', card: 'R', blank: true }]);
   await p.keyboard.press('Escape');
   assert.equal(await p.evaluate(() => !!document.getElementById('pieceGuide')), false);
   // Taxtadagi dona ustiga sichqoncha — nomi

@@ -1478,6 +1478,10 @@ const translationsExtra = {
     pcGuideBtn: "Donalar haqida",
     pcGuideTitle: "Donalar bilan tanishing",
     pcGuideSub: "Har bir dona qanday ko'rinadi va qanday yuradi",
+
+    pcNameVideo: "Nomi qayerdan kelgan?",
+
+    pcWordVideo: "«Shaxmat» so'zi qayerdan kelgan?",
     pcKing: "Shoh",
     pcPawn: "Piyoda",
     pcKMove: "Istalgan tomonga — faqat 1 katak yuradi.",
@@ -3106,6 +3110,10 @@ const translationsExtra = {
     pcGuideBtn: "About the pieces",
     pcGuideTitle: "Meet the pieces",
     pcGuideSub: "What each piece looks like and how it moves",
+
+    pcNameVideo: "Where does the name come from?",
+
+    pcWordVideo: "Where does the word “chess” come from?",
     pcKing: "King",
     pcPawn: "Pawn",
     pcKMove: "Moves one square in any direction.",
@@ -4734,6 +4742,10 @@ const translationsExtra = {
     pcGuideBtn: "О фигурах",
     pcGuideTitle: "Знакомство с фигурами",
     pcGuideSub: "Как выглядит и как ходит каждая фигура",
+
+    pcNameVideo: "Откуда это название?",
+
+    pcWordVideo: "Откуда слово «шахматы»?",
     pcKing: "Король",
     pcPawn: "Пешка",
     pcKMove: "Ходит на одну клетку в любом направлении.",
@@ -6362,6 +6374,10 @@ const translationsExtra = {
     pcGuideBtn: "Sobre las piezas",
     pcGuideTitle: "Conoce las piezas",
     pcGuideSub: "Cómo es cada pieza y cómo se mueve",
+
+    pcNameVideo: "¿De dónde viene el nombre?",
+
+    pcWordVideo: "¿De dónde viene la palabra «ajedrez»?",
     pcKing: "Rey",
     pcPawn: "Peón",
     pcKMove: "Se mueve una casilla en cualquier dirección.",
@@ -7990,6 +8006,10 @@ const translationsExtra = {
     pcGuideBtn: "Über die Figuren",
     pcGuideTitle: "Die Figuren kennenlernen",
     pcGuideSub: "Wie jede Figur aussieht und wie sie zieht",
+
+    pcNameVideo: "Woher kommt der Name?",
+
+    pcWordVideo: "Woher kommt das Wort „Schach“?",
     pcKing: "König",
     pcPawn: "Bauer",
     pcKMove: "Zieht ein Feld in jede Richtung.",
@@ -9618,6 +9638,10 @@ const translationsExtra = {
     pcGuideBtn: "À propos des pièces",
     pcGuideTitle: "Découvrez les pièces",
     pcGuideSub: "À quoi ressemble chaque pièce et comment elle se déplace",
+
+    pcNameVideo: "D’où vient ce nom ?",
+
+    pcWordVideo: "D’où vient le mot « échecs » ?",
     pcKing: "Roi",
     pcPawn: "Pion",
     pcKMove: "Se déplace d'une case dans n'importe quelle direction.",

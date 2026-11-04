@@ -23,6 +23,10 @@ window.TRANSLATIONS_AZ = {
   pcGuideBtn: "Fiqurlar haqqında",
   pcGuideTitle: "Fiqurlarla tanış ol",
   pcGuideSub: "Hər fiqur necə görünür və necə hərəkət edir",
+
+  pcNameVideo: "Adı haradan gəlir?",
+
+  pcWordVideo: "«Şahmat» sözü haradan gəlir?",
   pcKing: "Şah",
   pcPawn: "Piyada",
   pcKMove: "İstənilən istiqamətə yalnız 1 xana gedir.",

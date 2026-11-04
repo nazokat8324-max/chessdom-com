@@ -23,6 +23,10 @@ window.TRANSLATIONS_KK = {
   pcGuideBtn: "Фигуралар туралы",
   pcGuideTitle: "Фигуралармен танысыңыз",
   pcGuideSub: "Әр фигура қалай көрінеді және қалай жүреді",
+
+  pcNameVideo: "Атауы қайдан шыққан?",
+
+  pcWordVideo: "«Шахмат» сөзі қайдан шыққан?",
   pcKing: "Патша",
   pcPawn: "Пешка",
   pcKMove: "Кез келген бағытқа тек 1 шаршы жүреді.",

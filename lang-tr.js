@@ -23,6 +23,10 @@ window.TRANSLATIONS_TR = {
   pcGuideBtn: "Taşlar hakkında",
   pcGuideTitle: "Taşlarla tanışın",
   pcGuideSub: "Her taş neye benzer ve nasıl hareket eder",
+
+  pcNameVideo: "Adı nereden geliyor?",
+
+  pcWordVideo: "«Satranç» kelimesi nereden geliyor?",
   pcKing: "Şah",
   pcPawn: "Piyon",
   pcKMove: "Her yöne yalnızca 1 kare gider.",

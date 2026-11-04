@@ -263,6 +263,10 @@ window.TRANSLATIONS_IT = {
   pcGuideBtn: "I pezzi",
   pcGuideTitle: "Conosci i pezzi",
   pcGuideSub: "Com'è fatto ogni pezzo e come si muove",
+
+  pcNameVideo: "Da dove viene il nome?",
+
+  pcWordVideo: "Da dove viene la parola «scacchi»?",
   pcKing: "Re",
   pcPawn: "Pedone",
   pcKMove: "Si muove di una casa in qualsiasi direzione.",

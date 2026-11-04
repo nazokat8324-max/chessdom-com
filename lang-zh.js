@@ -263,6 +263,10 @@ window.TRANSLATIONS_ZH = {
   pcGuideBtn: "关于棋子",
   pcGuideTitle: "认识棋子",
   pcGuideSub: "每个棋子的样子和走法",
+
+  pcNameVideo: "这个名字从何而来？",
+
+  pcWordVideo: "“国际象棋”一词从何而来？",
   pcKing: "王",
   pcPawn: "兵",
   pcKMove: "向任意方向走一格。",

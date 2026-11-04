@@ -43,6 +43,12 @@ async function useCdnCache(p) {
   });
 }
 
+// Sahifa qayta chizilsa ham ishlaydigan bosish: element topilgan zahoti shu brauzer ichida bosiladi (puppeteer avval topib, keyin
+// aylantirib bosadi — oraliqda sahifa qayta chizilsa "Node is detached from document"; CI da shu sababli tasodifiy yiqilishlar bo'lgan)
+async function clickFresh(p, sel, timeout = 10000) {
+  await p.waitForFunction((q) => { const el = document.querySelector(q); if (!el) return false; el.click(); return true; }, { timeout, polling: 200 }, sel);
+}
+
 async function page(user, viewport) {
   const ctx = await browser.createBrowserContext();
   openContexts.push(ctx);
@@ -1264,7 +1270,7 @@ test("Profil bo'limlari alohida sahifada: manzil, havola orqali ochish, ← Orqa
     await p.goto(srv.base + '/?profile=' + u.name, { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('#profAchBtn', { visible: true, timeout: 15000 });
     await sleep(800);
-    await p.click('#profAchBtn');
+    await clickFresh(p, '#profAchBtn');
     await p.waitForSelector('#profsecView.active-view #profAchPanel:not([hidden])', { timeout: 8000 });
     await p.waitForSelector('#profAchievements .ach-item', { timeout: 8000 });
     await sleep(200);
@@ -1273,12 +1279,12 @@ test("Profil bo'limlari alohida sahifada: manzil, havola orqali ochish, ← Orqa
     assert.notEqual(st.modal, 'flex', 'profil oynasi yopiladi');
     assert.deepEqual(st.others, [true, true, true]);
     if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/sect-ach-' + (vp ? 'phone' : 'pc') + '.png' });
-    await p.click('#psHead [data-ps-back]');
+    await clickFresh(p, '#psHead [data-ps-back]');
     await p.waitForFunction(() => document.getElementById('profileModal').style.display === 'flex', { timeout: 8000 });
     // Barcha o'yinlar ham — ← Orqaga bilan
     await p.evaluate(() => window.openGameHistory(window.currentProfileUser()));
     await p.waitForSelector('#historyRoot [data-gh-back]', { visible: true, timeout: 8000 });
-    await p.click('#historyRoot [data-gh-back]');
+    await clickFresh(p, '#historyRoot [data-gh-back]');
     await p.waitForFunction(() => document.getElementById('profileModal').style.display === 'flex', { timeout: 8000 });
     assert.deepEqual(p.errors, []);
   }

@@ -133,18 +133,20 @@
       <div class="adm-box adm-backup">
         <b>✈️ ${esc(tx('admTgTitle', "Telegram kanal: Kun o'yini"))}</b>
         <p class="adm-note">${esc(tx('admTgHint', "Har kuni 20:00 da (Toshkent vaqti) kechagi eng qiziqarli o'yin GIF bilan kanalga chiqadi. Sinash uchun hozir yuborishingiz mumkin — o'sha kuni 20:00 da qayta chiqmaydi."))}</p>
+        <p class="adm-note">${esc(tx('admTgWeeklyHint', "Har yakshanba 20:00 da Kun o'yini o'rniga haftalik yakun chiqadi: top 5 o'yinchi, reyting o'sishi, Bayroqlar bellashuvi va hafta raqamlari."))}</p>
         <button class="set-mini accent" id="admTgPostBtn">✈️ ${esc(tx('admTgPost', 'Hozir kanalga yuborish'))}</button>
+        <button class="set-mini" id="admTgWeeklyBtn">📊 ${esc(tx('admTgWeekly', 'Haftalik yakunni yuborish'))}</button>
       </div>` : ''}`;
   }
 
   // ⭐ Kun o'yinini Telegram kanalga hozir yuborish (POST /api/admin/telegram/channel-post)
-  async function postChannel(btn) {
+  async function postChannel(btn, weekly) {
     btn.disabled = true;
     try {
-      const r = await fetch('/api/admin/telegram/channel-post', { method: 'POST', headers: headers() });
+      const r = await fetch(weekly ? '/api/admin/telegram/channel-weekly' : '/api/admin/telegram/channel-post', { method: 'POST', headers: headers() });
       const d = await r.json().catch(() => ({}));
       if (d.success) showToast(tx('admTgDone', 'Kanalga yuborildi'), 'success');
-      else if (d.reason === 'no_game') showToast(tx('admTgNoGame', "Kechagi o'yinlar orasida mos o'yin yo'q"), 'warning');
+      else if (d.reason === 'no_game') showToast(weekly ? tx('admTgNoWeekGames', "Bu hafta hali o'yin bo'lmagan") : tx('admTgNoGame', "Kechagi o'yinlar orasida mos o'yin yo'q"), 'warning');
       else showToast(tx('admTgFail', 'Telegram rad etdi — bot kanalda admin ekanini tekshiring'), 'warning');
     } catch (e) { showToast(tx('errGeneric', 'Xatolik yuz berdi!'), 'warning'); }
     btn.disabled = false;
@@ -195,6 +197,7 @@
     chat_delete: ['💬', () => tx('audChatDelete', "Klub chatidagi xabarni o'chirdi")],
     backup_download: ['💾', () => tx('audBackup', 'Zaxira nusxani yuklab oldi')],
     tg_channel_post: ['✈️', () => tx('audTgPost', "Kun o'yinini kanalga yubordi")],
+    tg_channel_weekly: ['📊', () => tx('audTgWeekly', 'Haftalik yakunni kanalga yubordi')],
     errors_clear: ['🐞', () => tx('audErrorsClear', "Hal qilingan xatolarni o'chirdi")],
     library_add: ['📚', () => tx('audLibraryAdd', "Kutubxonaga material qo'shdi")],
     library_edit: ['✏️', () => tx('audLibraryEdit', 'Kutubxona materialini tahrirladi')],
@@ -408,6 +411,8 @@
     if (backupBtn) backupBtn.addEventListener('click', () => downloadBackup(backupBtn));
     const tgBtn = el.querySelector('#admTgPostBtn');
     if (tgBtn) tgBtn.addEventListener('click', () => postChannel(tgBtn));
+    const tgWeekBtn = el.querySelector('#admTgWeeklyBtn');
+    if (tgWeekBtn) tgWeekBtn.addEventListener('click', () => postChannel(tgWeekBtn, true));
     el.querySelectorAll('[data-rstatus]').forEach(b => b.addEventListener('click', () => { st.reportStatus = b.dataset.rstatus; load(); }));
     const search = el.querySelector('#admSearch');
     if (search) search.addEventListener('submit', (e) => { e.preventDefault(); st.query = el.querySelector('#admQuery').value.trim(); load(); });

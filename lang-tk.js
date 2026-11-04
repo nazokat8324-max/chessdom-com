@@ -1375,6 +1375,18 @@ window.TRANSLATIONS_TK = {
   admTgFail: "Telegram ret etdi — botuň kanalda admin bolandygyny barlaň",
 
   audTgPost: "Günüň oýnuny kanala iberdi",
+
+
+  admTgWeeklyHint: "Her ýekşenbe 20:00-da günüň oýnunyň ýerine hepdäniň jemi çykýar: iň gowy 5 oýunçy, reýting ösüşi, Baýdaklar bäsleşigi we hepdäniň sanlary.",
+
+
+  admTgWeekly: "Hepdäniň jemini ibermek",
+
+
+  admTgNoWeekGames: "Bu hepde entek oýun bolmady",
+
+
+  audTgWeekly: "Hepdäniň jemini kanala iberdi",
   admBackupDone: "Nusga ýüklendi",
   admErrOpen: "Açyk",
   admErrResolved: "Çözüldi",

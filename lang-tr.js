@@ -1375,6 +1375,18 @@ window.TRANSLATIONS_TR = {
   admTgFail: "Telegram reddetti — botun kanalda yönetici olduğunu kontrol et",
 
   audTgPost: "Günün oyununu kanala gönderdi",
+
+
+  admTgWeeklyHint: "Her pazar 20:00’de günün oyunu yerine haftalık özet paylaşılır: ilk 5 oyuncu, puan artışları, Bayrak Yarışı ve haftanın rakamları.",
+
+
+  admTgWeekly: "Haftalık özeti gönder",
+
+
+  admTgNoWeekGames: "Bu hafta henüz oyun oynanmadı",
+
+
+  audTgWeekly: "Haftalık özeti kanala gönderdi",
   admBackupDone: "Yedek indirildi",
   admErrOpen: "Açık",
   admErrResolved: "Çözüldü",

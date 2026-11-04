@@ -47,6 +47,10 @@ async function postAnimation({ gif, caption, buttonText, url }) {
 }
 
 const button = (text, url) => ({ inline_keyboard: [[{ text, url }]] });
+// Kanalga matnli post (haftalik yakun — server.js postWeeklyToChannel); HTML, havola oldindan ko'rinishisiz
+function postChannelText({ text, buttonText, url }) {
+  return call('sendMessage', { chat_id: CHANNEL, text, parse_mode: 'HTML', disable_web_page_preview: true, reply_markup: button(buttonText, url) });
+}
 // 📱 Mini App: sayt Telegram ichida ochiladi (faqat shaxsiy chatda; kanal postida — oddiy havola)
 const appButton = (text, url) => ({ inline_keyboard: [[{ text, web_app: { url } }]] });
 
@@ -236,4 +240,4 @@ function init(d) {
   })();
 }
 
-module.exports = { init, enabled, sendNotification, channelEnabled, postAnimation, verifyInitData };
+module.exports = { init, enabled, sendNotification, channelEnabled, postAnimation, postChannelText, verifyInitData };

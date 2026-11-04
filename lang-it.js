@@ -1375,6 +1375,18 @@ window.TRANSLATIONS_IT = {
   admTgFail: "Telegram ha rifiutato: verifica che il bot sia amministratore del canale",
 
   audTgPost: "Ha pubblicato la partita del giorno nel canale",
+
+
+  admTgWeeklyHint: "Ogni domenica alle 20:00 viene pubblicato il riepilogo della settimana al posto della partita del giorno: i 5 migliori giocatori, i progressi di punteggio, la Sfida delle Bandiere e i numeri della settimana.",
+
+
+  admTgWeekly: "Pubblica il riepilogo settimanale",
+
+
+  admTgNoWeekGames: "Questa settimana non è ancora stata giocata nessuna partita",
+
+
+  audTgWeekly: "Ha pubblicato il riepilogo settimanale nel canale",
   admBackupDone: "Backup scaricato",
   admErrOpen: "Aperti",
   admErrResolved: "Risolti",

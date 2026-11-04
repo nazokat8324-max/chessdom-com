@@ -2590,6 +2590,18 @@ const translationsExtra = {
     admTgFail: "Telegram rad etdi — bot kanalda admin ekanini tekshiring",
 
     audTgPost: "Kun o'yinini kanalga yubordi",
+
+
+    admTgWeeklyHint: "Har yakshanba 20:00 da Kun o'yini o'rniga haftalik yakun chiqadi: top 5 o'yinchi, reyting o'sishi, Bayroqlar bellashuvi va hafta raqamlari.",
+
+
+    admTgWeekly: "Haftalik yakunni yuborish",
+
+
+    admTgNoWeekGames: "Bu hafta hali o'yin bo'lmagan",
+
+
+    audTgWeekly: "Haftalik yakunni kanalga yubordi",
     admBackupDone: "Zaxira nusxa yuklab olindi",
     admErrOpen: "Ochiq",
     admErrResolved: "Hal qilingan",
@@ -4206,6 +4218,18 @@ const translationsExtra = {
     admTgFail: "Telegram refused — check that the bot is an admin of the channel",
 
     audTgPost: "Posted the Game of the Day to the channel",
+
+
+    admTgWeeklyHint: "Every Sunday at 20:00 the weekly recap is posted instead of the Game of the Day: top 5 players, rating gains, Battle of Flags and the week's numbers.",
+
+
+    admTgWeekly: "Post the weekly recap",
+
+
+    admTgNoWeekGames: "No games have been played this week yet",
+
+
+    audTgWeekly: "Posted the weekly recap to the channel",
     admBackupDone: "Backup downloaded",
     admErrOpen: "Open",
     admErrResolved: "Resolved",
@@ -5822,6 +5846,18 @@ const translationsExtra = {
     admTgFail: "Telegram отказал — проверьте, что бот — администратор канала",
 
     audTgPost: "Отправил партию дня в канал",
+
+
+    admTgWeeklyHint: "Каждое воскресенье в 20:00 вместо партии дня выходит итог недели: топ-5 игроков, рост рейтинга, битва флагов и цифры недели.",
+
+
+    admTgWeekly: "Отправить итог недели",
+
+
+    admTgNoWeekGames: "На этой неделе ещё не было партий",
+
+
+    audTgWeekly: "Отправил итог недели в канал",
     admBackupDone: "Копия скачана",
     admErrOpen: "Открытые",
     admErrResolved: "Решённые",
@@ -7438,6 +7474,18 @@ const translationsExtra = {
     admTgFail: "Telegram lo rechazó: comprueba que el bot es administrador del canal",
 
     audTgPost: "Publicó la partida del día en el canal",
+
+
+    admTgWeeklyHint: "Cada domingo a las 20:00 se publica el resumen semanal en lugar de la partida del día: top 5 jugadores, subidas de rating, la batalla de banderas y las cifras de la semana.",
+
+
+    admTgWeekly: "Publicar el resumen semanal",
+
+
+    admTgNoWeekGames: "Esta semana aún no se ha jugado ninguna partida",
+
+
+    audTgWeekly: "Publicó el resumen semanal en el canal",
     admBackupDone: "Copia descargada",
     admErrOpen: "Abiertos",
     admErrResolved: "Resueltos",
@@ -9054,6 +9102,18 @@ const translationsExtra = {
     admTgFail: "Telegram hat abgelehnt – prüfe, ob der Bot Admin des Kanals ist",
 
     audTgPost: "Partie des Tages im Kanal gepostet",
+
+
+    admTgWeeklyHint: "Jeden Sonntag um 20:00 Uhr erscheint statt der Partie des Tages der Wochenrückblick: Top 5 Spieler, Wertungsgewinne, Flaggenduell und Zahlen der Woche.",
+
+
+    admTgWeekly: "Wochenrückblick posten",
+
+
+    admTgNoWeekGames: "Diese Woche wurde noch keine Partie gespielt",
+
+
+    audTgWeekly: "Wochenrückblick im Kanal gepostet",
     admBackupDone: "Sicherung heruntergeladen",
     admErrOpen: "Offen",
     admErrResolved: "Erledigt",
@@ -10670,6 +10730,18 @@ const translationsExtra = {
     admTgFail: "Telegram a refusé — vérifiez que le bot est administrateur du canal",
 
     audTgPost: "A publié la partie du jour dans le canal",
+
+
+    admTgWeeklyHint: "Chaque dimanche à 20 h 00, le bilan de la semaine remplace la partie du jour : top 5 des joueurs, progression du classement, bataille des drapeaux et chiffres de la semaine.",
+
+
+    admTgWeekly: "Publier le bilan de la semaine",
+
+
+    admTgNoWeekGames: "Aucune partie jouée cette semaine pour l’instant",
+
+
+    audTgWeekly: "A publié le bilan de la semaine dans le canal",
     admBackupDone: "Sauvegarde téléchargée",
     admErrOpen: "Ouvertes",
     admErrResolved: "Résolues",

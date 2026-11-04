@@ -52,6 +52,7 @@ test("Kun o'yini GIF: har yurish alohida kadr, boshida va oxirida pauza, Chess96
 
 let srv, tg, failAnimation = false;
 const posts = [];
+const texts = []; // kanalga matnli postlar (sendMessage — haftalik yakun)
 before(async () => {
   // Soxta Telegram Bot API: JSON (getMe, setWebhook…) va multipart (sendAnimation)
   tg = http.createServer((req, res) => {
@@ -61,6 +62,7 @@ before(async () => {
       const method = req.url.split('/').pop();
       const body = Buffer.concat(chunks);
       res.setHeader('Content-Type', 'application/json');
+      if (method === 'sendMessage') { try { const j = JSON.parse(body.toString('utf8')); if (j.chat_id === '@cc_test_channel') texts.push(j); } catch (e) {} }
       if (method === 'sendAnimation') {
         if (failAnimation) { res.statusCode = 400; return res.end(JSON.stringify({ ok: false, error_code: 400, description: 'Bad Request: chat not found' })); }
         posts.push({ type: req.headers['content-type'], body });
@@ -142,4 +144,40 @@ test("Kun o'yini kanalda: admin hozir yubora oladi (jurnalga yoziladi), oddiy o'
   const bad = await srv.api(null, '/api/test/channel-post?now=' + tomorrow + '&force=1', 'POST');
   assert.equal(bad.status, 502);
   failAnimation = false;
+});
+
+test("Haftalik yakun: top o'yinchilar, reyting o'sishi, Bayroqlar bellashuvi va raqamlar — haftada bir marta; o'yinsiz haftada post yo'q", async () => {
+  const a = await srv.register('Wka'), b = await srv.register('Wkb');
+  await srv.api(a, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
+  for (let i = 0; i < 2; i++) {
+    const game = await startGame(srv, a, b, { rated: true });
+    await play(game, RUY);
+    // a qaysi rangda bo'lsa ham — a yutadi (b taslim bo'ladi)
+    await finish(game, game.white.name === a.name ? 'black-resigns' : 'white-resigns');
+    closeAll(a, b);
+  }
+  const r = await srv.api(null, '/api/test/channel-weekly', 'POST');
+  assert.equal(r.ok, true, JSON.stringify(r));
+  assert.equal(texts.length, 1);
+  const m = texts[0];
+  if (process.env.SHOW_POST) console.log('POST>>>\n' + m.text + '\n<<<');
+  assert.equal(m.parse_mode, 'HTML');
+  assert.match(m.text, /^📊 <b>Haftalik yakun<\/b> · \d\d\.\d\d – \d\d\.\d\d\.\d{4}/);
+  assert.ok(m.text.includes('🥇 ' + a.name + " — 2 g'alaba ("), m.text);
+  assert.match(m.text, new RegExp('1\\. ' + a.name + ' \\+\\d+'), "reyting o'sishi");
+  assert.ok(!m.text.includes(b.name + ' +'), "reytingi tushgan o'sganlar orasida yo'q");
+  assert.match(m.text, /🚩 <b>Bayroqlar bellashuvi<\/b> · (Yanvar|Fevral|Mart|Aprel|May|Iyun|Iyul|Avgust|Sentabr|Oktabr|Noyabr|Dekabr)/);
+  assert.match(m.text, /🇺🇿 O'zbekiston — \d+ hudud, \d+ ochko/, "o'zbekcha davlat nomi va bayroq");
+  assert.match(m.text, /♟ \d+ o'yin · 👥 \d+ faol o'yinchi · 🆕 \d+ yangi o'yinchi/);
+  assert.equal(m.reply_markup.inline_keyboard[0][0].url, 'https://chesscaravan.com/reyting');
+  // Shu haftada qayta — yo'q; 3 hafta keyin (o'yinsiz hafta) — post yo'q
+  assert.equal((await srv.api(null, '/api/test/channel-weekly', 'POST')).reason, 'done');
+  assert.equal((await srv.api(null, '/api/test/channel-weekly?now=' + (Date.now() + 21 * 864e5), 'POST')).reason, 'no_game');
+  assert.equal(texts.length, 1);
+  // Admin "Haftalik yakunni yuborish" — majburan, jurnalga yoziladi
+  const reg = await srv.api(null, '/api/auth/login', 'POST', { username: 'ChanAdmin', password: 'secret1' });
+  const ADM = { token: reg.token };
+  assert.equal((await srv.api(ADM, '/api/admin/telegram/channel-weekly', 'POST')).success, true);
+  assert.equal(texts.length, 2);
+  assert.ok((await srv.api(ADM, '/api/admin/audit?action=tg_channel_weekly')).actions.length >= 1);
 });

@@ -1375,6 +1375,18 @@ window.TRANSLATIONS_ZH = {
   admTgFail: "Telegram 拒绝了——请确认机器人是频道管理员",
 
   audTgPost: "已将每日对局发布到频道",
+
+
+  admTgWeeklyHint: "每周日 20:00 将发布每周回顾，代替当天的每日对局：前 5 名棋手、等级分涨幅、旗帜之争和本周数据。",
+
+
+  admTgWeekly: "发布每周回顾",
+
+
+  admTgNoWeekGames: "本周还没有对局",
+
+
+  audTgWeekly: "已将每周回顾发布到频道",
   admBackupDone: "备份已下载",
   admErrOpen: "未解决",
   admErrResolved: "已解决",

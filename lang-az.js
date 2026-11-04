@@ -1375,6 +1375,18 @@ window.TRANSLATIONS_AZ = {
   admTgFail: "Telegram rədd etdi — botun kanalda admin olduğunu yoxla",
 
   audTgPost: "Günün oyununu kanala göndərdi",
+
+
+  admTgWeeklyHint: "Hər bazar günü 20:00-da günün oyunu əvəzinə həftəlik yekun çıxır: ən yaxşı 5 oyunçu, reytinq artımı, Bayraqlar yarışı və həftənin rəqəmləri.",
+
+
+  admTgWeekly: "Həftəlik yekunu göndər",
+
+
+  admTgNoWeekGames: "Bu həftə hələ oyun olmayıb",
+
+
+  audTgWeekly: "Həftəlik yekunu kanala göndərdi",
   admBackupDone: "Nüsxə yükləndi",
   admErrOpen: "Açıq",
   admErrResolved: "Həll edildi",

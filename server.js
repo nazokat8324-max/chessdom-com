@@ -1135,6 +1135,61 @@ async function postGameOfDayToChannel(now, force) {
   await db.setAppSetting('tg_channel_day', day);
   return { ok: true, day };
 }
+// 📊 Haftalik yakun (har yakshanba 20:00, foydalanuvchi tanlovi 2026-11-04): post chiqqan paytgacha oxirgi 7 kun (168 soat) —
+// dushanbadan hisoblansa yakshanba 20:00 dan keyingi o'yinlar hech qaysi yakunga tushmasdi. Top 5 g'olib, reyting o'sishi (top 3), Bayroqlar bellashuvi (oy yetakchilari), hafta raqamlari. Bir haftada bir marta
+// (app_settings 'tg_channel_week'); o'yin bo'lmagan haftada post yo'q.
+const UZ_MONTHS = ['Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun', 'Iyul', 'Avgust', 'Sentabr', 'Oktabr', 'Noyabr', 'Dekabr'];
+let UZ_COUNTRIES = null;
+// Davlatlarning o'zbekcha nomi — social.js dagi lug'atdan (brauzer fayli; bitta manba bo'lsin)
+function uzCountry(name) {
+  if (!UZ_COUNTRIES) {
+    try {
+      const src = fs.readFileSync(path.join(__dirname, 'social.js'), 'utf8');
+      const m = src.match(/const uzCountryNames = (\{[\s\S]*?\});/);
+      UZ_COUNTRIES = m ? require('vm').runInNewContext('(' + m[1] + ')') : {};
+    } catch (e) { UZ_COUNTRIES = {}; }
+  }
+  return UZ_COUNTRIES[name] || name;
+}
+const flagEmoji = (code) => (/^[a-z]{2}$/i.test(code || '') ? String.fromCodePoint(...code.toUpperCase().split('').map((c) => 0x1f1e6 + c.charCodeAt(0) - 65)) : '🏳');
+function weeklyCaption(w) {
+  const d = (t) => { const x = new Date(t + WAR_TZ_MS); return String(x.getUTCDate()).padStart(2, '0') + '.' + String(x.getUTCMonth() + 1).padStart(2, '0'); };
+  const lines = ['📊 <b>Haftalik yakun</b> · ' + d(w.from) + ' – ' + d(w.to) + '.' + new Date(w.to + WAR_TZ_MS).getUTCFullYear()];
+  const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
+  if (w.s.winners.length) {
+    lines.push('', "🏆 <b>Haftaning eng ko'p yutganlari</b>");
+    w.s.winners.forEach((u, i) => lines.push(medals[i] + ' ' + htmlEsc(u.username) + " — " + u.wins + " g'alaba (" + u.rating + ')'));
+  }
+  if (w.s.gainers.length) {
+    lines.push('', "📈 <b>Reytingi eng ko'p o'sganlar</b>");
+    w.s.gainers.forEach((u, i) => lines.push((i + 1) + '. ' + htmlEsc(u.username) + ' +' + u.gain));
+  }
+  const top = (w.war.clubs || []).filter((c) => c.points > 0).slice(0, 3);
+  if (top.length) {
+    lines.push('', '🚩 <b>Bayroqlar bellashuvi</b> · ' + UZ_MONTHS[Number(w.war.season.slice(5, 7)) - 1]);
+    top.forEach((c) => lines.push(flagEmoji(c.code) + ' ' + htmlEsc(uzCountry(c.country)) + ' — ' + c.territories + ' hudud, ' + c.points + ' ochko'));
+  }
+  const nums = ['♟ ' + w.s.games + " o'yin", '👥 ' + w.s.players + " faol o'yinchi", '🆕 ' + w.s.newPlayers + " yangi o'yinchi"];
+  if (w.s.quests) nums.push('🎯 ' + w.s.quests + ' kishi haftalik vazifalarni bajardi');
+  lines.push('', '📊 <b>Hafta raqamlari</b>', nums.join(' · '));
+  lines.push('', '#haftalikyakun #shaxmat #chesscaravan');
+  return lines.join('\n');
+}
+async function postWeeklyToChannel(now, force) {
+  if (!telegram.channelEnabled()) return { ok: false, reason: 'disabled' };
+  const from = now - 7 * 864e5;
+  const week = Quests.weekKey(now);
+  if (!force && (await db.getAppSetting('tg_channel_week')) === week) return { ok: false, reason: 'done' };
+  const s = await db.weeklySummary(new Date(from).toISOString(), new Date(now).toISOString(), week);
+  if (!s.games) return { ok: false, reason: 'no_game' };
+  const war = await computeWar(warSeasonKey(now));
+  await telegram.postChannelText({ text: weeklyCaption({ from, to: now, s, war }), buttonText: "♞ Reytingni ko'rish", url: SITE_URL + '/reyting' });
+  await db.setAppSetting('tg_channel_week', week);
+  // Yakshanba kechasi Kun o'yini o'rniga — shu kun uchun ham belgilanadi
+  await db.setAppSetting('tg_channel_day', dayKeyOf(tashkentDayStart(now)));
+  return { ok: true, week };
+}
+
 // Keyingi 20:00 gacha kutadi; server 20:00 dan keyin ishga tushsa va bugun hali chiqmagan bo'lsa — 1 daqiqadan keyin
 function scheduleChannelPost(first) {
   if (!telegram.channelEnabled()) return;
@@ -1143,8 +1198,10 @@ function scheduleChannelPost(first) {
   const at = first && now >= today ? now + 60000 : now < today ? today : today + 864e5;
   const t = setTimeout(async () => {
     try {
-      const r = await postGameOfDayToChannel(Date.now());
-      if (r.ok) console.log("✈️ Kun o'yini kanalga yuborildi:", r.day);
+      // Yakshanba kechasi — haftalik yakun (o'sha kuni Kun o'yini chiqmaydi), boshqa kunlari — Kun o'yini
+      const sunday = new Date(Date.now() + WAR_TZ_MS).getUTCDay() === 0;
+      const r = sunday ? await postWeeklyToChannel(Date.now()) : await postGameOfDayToChannel(Date.now());
+      if (r.ok) console.log(sunday ? '✈️ Haftalik yakun kanalga yuborildi:' : "✈️ Kun o'yini kanalga yuborildi:", r.day || r.week);
     } catch (err) { console.error("Kun o'yini kanalga yuborilmadi:", err.message); }
     scheduleChannelPost(false);
   }, at - now);
@@ -3031,6 +3088,17 @@ async function start() {
       if (r.ok) auditLog(req, 'tg_channel_post', null, { day: r.day });
       res.status(r.ok ? 200 : 400).json({ success: r.ok, reason: r.reason || null });
     } catch (err) { console.error("Kun o'yini kanalga yuborilmadi:", err.message); res.status(502).json({ success: false, reason: 'telegram', message: err.message }); }
+  });
+  app.post('/api/admin/telegram/channel-weekly', adminMiddleware, async (req, res) => {
+    try {
+      const r = await postWeeklyToChannel(Date.now(), true);
+      if (r.ok) auditLog(req, 'tg_channel_weekly', null, { week: r.week });
+      res.status(r.ok ? 200 : 400).json({ success: r.ok, reason: r.reason || null });
+    } catch (err) { console.error('Haftalik yakun kanalga yuborilmadi:', err.message); res.status(502).json({ success: false, reason: 'telegram', message: err.message }); }
+  });
+  if (TEST_MODE) app.post('/api/test/channel-weekly', async (req, res) => {
+    try { res.json({ success: true, ...(await postWeeklyToChannel(Number(req.query.now) || Date.now(), req.query.force === '1')) }); }
+    catch (err) { res.status(502).json({ success: false, message: err.message }); }
   });
   if (TEST_MODE) app.post('/api/test/channel-post', async (req, res) => {
     try { res.json({ success: true, ...(await postGameOfDayToChannel(Number(req.query.now) || Date.now(), req.query.force === '1')) }); }

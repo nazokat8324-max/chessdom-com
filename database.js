@@ -1330,6 +1330,34 @@ async function getDailyWinners(period) {
   return { success: true, period: span === 7 ? 'week' : 'day', winners };
 }
 
+// 📊 Telegram kanaldagi haftalik yakun (server.js postWeeklyToChannel): [from, to) oralig'i, mehmonlarsiz
+async function weeklySummary(fromIso, toIso, week) {
+  const winners = (await dbAll(`SELECT u.username, u.rating, COUNT(*) as "games", SUM(CASE WHEN g.result = 'win' THEN 1 ELSE 0 END) as "wins"
+    FROM user_games g JOIN users u ON u.id = g.user_id WHERE g.played_at >= ? AND g.played_at < ? AND COALESCE(u.is_guest, 0) = 0
+    GROUP BY u.id, u.username, u.rating`, [fromIso, toIso]))
+    .map(u => ({ username: u.username, rating: u.rating || 1500, games: Number(u.games) || 0, wins: Number(u.wins) || 0 }))
+    .filter(u => u.wins > 0)
+    .sort((a, b) => b.wins - a.wins || a.games - b.games || b.rating - a.rating)
+    .slice(0, 5);
+  // Reyting o'sishi: hafta ichidagi barcha reytingli o'yinlar (har rejim) o'zgarishlari yig'indisi
+  const gainers = (await dbAll(`SELECT u.username, SUM(r.rating - r.rating_before) as "gain" FROM rating_history r JOIN users u ON u.id = r.user_id
+    WHERE r.created_at >= ? AND r.created_at < ? AND COALESCE(u.is_guest, 0) = 0 GROUP BY u.id, u.username`, [fromIso, toIso]))
+    .map(g => ({ username: g.username, gain: Number(g.gain) || 0 }))
+    .filter(g => g.gain > 0)
+    .sort((a, b) => b.gain - a.gain || a.username.localeCompare(b.username))
+    .slice(0, 3);
+  const one = async (sql, params) => Number(((await dbGet(sql, params)) || {}).n) || 0;
+  // Har o'yin ikkala o'yinchida yozilgan (mehmonniki ham) — qatorlar soni / 2
+  const rows = await one('SELECT COUNT(*) as "n" FROM user_games WHERE played_at >= ? AND played_at < ?', [fromIso, toIso]);
+  return {
+    winners, gainers,
+    games: Math.round(rows / 2),
+    players: await one('SELECT COUNT(DISTINCT g.user_id) as "n" FROM user_games g JOIN users u ON u.id = g.user_id WHERE g.played_at >= ? AND g.played_at < ? AND COALESCE(u.is_guest, 0) = 0', [fromIso, toIso]),
+    newPlayers: await one('SELECT COUNT(*) as "n" FROM users WHERE created_at >= ? AND created_at < ? AND COALESCE(is_guest, 0) = 0', [fromIso, toIso]),
+    quests: week ? await one('SELECT COUNT(*) as "n" FROM quest_weeks WHERE week = ?', [week]) : 0
+  };
+}
+
 async function getStatsByUsername(username) {
   const user = await getUserByUsername(username);
   if (!user) return null;
@@ -2356,6 +2384,7 @@ module.exports = {
   updateUserCountry,
   getLeaderboard,
   getDailyWinners,
+  weeklySummary,
   getStatsByUsername,
   getUserGames,
   updateUserRatingByResult,

@@ -319,10 +319,128 @@ const ZI_BOT = {
   cmdHelp: ['帮助', 'Aiuto']
 };
 Object.keys(ZI_BOT).forEach((k) => ZI.forEach((l, i) => { BOT[k][l] = ZI_BOT[k][i]; }));
+// ⚔️ Inline chaqiruv matnlari (telegram.js handleInline) — 14 til, uzc avtomatik
+const INLINE_LANGS = ["uz","en","ru","es","de","fr","tr","kk","tg","ky","tk","az","zh","it"];
+const INLINE_BOT = {
+  "inlineTitle": [
+    "♞ {{clock}} — o'yinga chaqirish",
+    "♞ {{clock}} — challenge to a game",
+    "♞ {{clock}} — вызвать на партию",
+    "♞ {{clock}} — retar a una partida",
+    "♞ {{clock}} — zu einer Partie herausfordern",
+    "♞ {{clock}} — défier à une partie",
+    "♞ {{clock}} — oyuna davet et",
+    "♞ {{clock}} — ойынға шақыру",
+    "♞ {{clock}} — ба бозӣ даъват кардан",
+    "♞ {{clock}} — оюнга чакыруу",
+    "♞ {{clock}} — oýna çagyrmak",
+    "♞ {{clock}} — oyuna dəvət et",
+    "♞ {{clock}} — 发起对局邀请",
+    "♞ {{clock}} — sfida a una partita"
+  ],
+  "inlineDesc": [
+    "{{name}} ({{rating}}) — taklifni shu chatga yuborish",
+    "{{name}} ({{rating}}) — send the challenge to this chat",
+    "{{name}} ({{rating}}) — отправить вызов в этот чат",
+    "{{name}} ({{rating}}) — enviar el reto a este chat",
+    "{{name}} ({{rating}}) — Herausforderung in diesen Chat senden",
+    "{{name}} ({{rating}}) — envoyer le défi dans ce chat",
+    "{{name}} ({{rating}}) — daveti bu sohbete gönder",
+    "{{name}} ({{rating}}) — шақыруды осы чатқа жіберу",
+    "{{name}} ({{rating}}) — даъватро ба ин чат фиристодан",
+    "{{name}} ({{rating}}) — чакырууну ушул чатка жөнөтүү",
+    "{{name}} ({{rating}}) — çakylygy şu çata ibermek",
+    "{{name}} ({{rating}}) — dəvəti bu söhbətə göndər",
+    "{{name}}（{{rating}}）— 把邀请发到这个聊天",
+    "{{name}} ({{rating}}) — invia la sfida in questa chat"
+  ],
+  "inlineMsg": [
+    "♞ {{name}} sizni shaxmat o'yiniga chaqiryapti!\n⏱ {{clock}}\n\nPastdagi tugmani bosing — o'yin ChessCaravan'da boshlanadi.",
+    "♞ {{name}} challenges you to a game of chess!\n⏱ {{clock}}\n\nTap the button below — the game starts on ChessCaravan.",
+    "♞ {{name}} вызывает вас на шахматную партию!\n⏱ {{clock}}\n\nНажмите кнопку ниже — партия начнётся на ChessCaravan.",
+    "♞ ¡{{name}} te reta a una partida de ajedrez!\n⏱ {{clock}}\n\nPulsa el botón de abajo: la partida empieza en ChessCaravan.",
+    "♞ {{name}} fordert dich zu einer Schachpartie heraus!\n⏱ {{clock}}\n\nTippe unten auf den Button – die Partie startet auf ChessCaravan.",
+    "♞ {{name}} vous défie à une partie d'échecs !\n⏱ {{clock}}\n\nAppuyez sur le bouton ci-dessous : la partie commence sur ChessCaravan.",
+    "♞ {{name}} seni bir satranç oyununa davet ediyor!\n⏱ {{clock}}\n\nAşağıdaki düğmeye bas — oyun ChessCaravan'da başlar.",
+    "♞ {{name}} сізді шахмат ойнауға шақырады!\n⏱ {{clock}}\n\nТөмендегі түймені басыңыз — ойын ChessCaravan-да басталады.",
+    "♞ {{name}} шуморо ба бозии шоҳмот даъват мекунад!\n⏱ {{clock}}\n\nТугмаи поёнро пахш кунед — бозӣ дар ChessCaravan оғоз мешавад.",
+    "♞ {{name}} сизди шахмат ойноого чакырат!\n⏱ {{clock}}\n\nТөмөнкү баскычты басыңыз — оюн ChessCaravan'да башталат.",
+    "♞ {{name}} sizi küşt oýnamaga çagyrýar!\n⏱ {{clock}}\n\nAşakdaky düwmä basyň — oýun ChessCaravan-da başlar.",
+    "♞ {{name}} səni şahmat oynamağa dəvət edir!\n⏱ {{clock}}\n\nAşağıdakı düyməyə bas — oyun ChessCaravan-da başlayır.",
+    "♞ {{name}} 邀请你下一盘国际象棋！\n⏱ {{clock}}\n\n点击下面的按钮，对局将在 ChessCaravan 开始。",
+    "♞ {{name}} ti sfida a una partita a scacchi!\n⏱ {{clock}}\n\nTocca il pulsante qui sotto: la partita inizia su ChessCaravan."
+  ],
+  "inlinePlay": [
+    "▶ O'ynash",
+    "▶ Play",
+    "▶ Играть",
+    "▶ Jugar",
+    "▶ Spielen",
+    "▶ Jouer",
+    "▶ Oyna",
+    "▶ Ойнау",
+    "▶ Бозӣ кардан",
+    "▶ Ойноо",
+    "▶ Oýnamak",
+    "▶ Oyna",
+    "▶ 开始对局",
+    "▶ Gioca"
+  ],
+  "inlineLink": [
+    "Chaqiruv yuborish uchun akkauntni ulang",
+    "Connect your account to send challenges",
+    "Подключите аккаунт, чтобы отправлять вызовы",
+    "Conecta tu cuenta para enviar retos",
+    "Verbinde dein Konto, um Herausforderungen zu senden",
+    "Connectez votre compte pour envoyer des défis",
+    "Davet göndermek için hesabını bağla",
+    "Шақыру жіберу үшін аккаунтты қосыңыз",
+    "Барои фиристодани даъват ҳисобатонро пайваст кунед",
+    "Чакыруу жөнөтүү үчүн аккаунтту туташтырыңыз",
+    "Çakylyk ibermek üçin hasabyňyzy birikdiriň",
+    "Dəvət göndərmək üçün hesabını qoş",
+    "连接账号后即可发送邀请",
+    "Collega il tuo account per inviare sfide"
+  ],
+  "inlineHow": [
+    "Istalgan chatda do'stingizni o'yinga chaqirish uchun avval akkauntingizni ulang: saytda Sozlamalar → Ovoz va bildirishnomalar → Telegram → «Ulash». Keyin chatda @{{bot}} deb yozing.",
+    "To challenge friends in any chat, connect your account first: on the site, Settings → Sound & notifications → Telegram → “Connect”. Then type @{{bot}} in any chat.",
+    "Чтобы вызывать друзей в любом чате, сначала подключите аккаунт: на сайте Настройки → Звук и уведомления → Telegram → «Подключить». Затем наберите @{{bot}} в любом чате.",
+    "Para retar a amigos en cualquier chat, conecta primero tu cuenta: en el sitio, Ajustes → Sonido y notificaciones → Telegram → «Conectar». Luego escribe @{{bot}} en cualquier chat.",
+    "Um Freunde in jedem Chat herauszufordern, verbinde zuerst dein Konto: Einstellungen → Ton & Benachrichtigungen → Telegram → „Verbinden“. Tippe dann @{{bot}} in einen beliebigen Chat.",
+    "Pour défier des amis dans n'importe quel chat, connectez d'abord votre compte : Paramètres → Son et notifications → Telegram → « Connecter ». Tapez ensuite @{{bot}} dans un chat.",
+    "Herhangi bir sohbette arkadaşlarını davet etmek için önce hesabını bağla: sitede Ayarlar → Ses ve bildirimler → Telegram → «Bağla». Sonra herhangi bir sohbette @{{bot}} yaz.",
+    "Кез келген чатта достарыңызды шақыру үшін алдымен аккаунтыңызды қосыңыз: сайтта Баптаулар → Дыбыс және хабарландырулар → Telegram → «Қосу». Содан кейін кез келген чатта @{{bot}} деп жазыңыз.",
+    "Барои даъват кардани дӯстон дар ҳар чат аввал ҳисобатонро пайваст кунед: дар сайт Танзимот → Садо ва огоҳиномаҳо → Telegram → «Пайваст кардан». Баъд дар ҳар чат @{{bot}} нависед.",
+    "Каалаган чатта досторуңузду чакыруу үчүн адегенде аккаунтуңузду туташтырыңыз: сайтта Жөндөөлөр → Үн жана билдирмелер → Telegram → «Туташтыруу». Андан кийин каалаган чатта @{{bot}} деп жазыңыз.",
+    "Islendik çatda dostlaryňyzy çagyrmak üçin ilki hasabyňyzy birikdiriň: saýtda Sazlamalar → Ses we bildirişler → Telegram → «Birikdir». Soňra islendik çatda @{{bot}} ýazyň.",
+    "İstənilən söhbətdə dostlarını dəvət etmək üçün əvvəlcə hesabını qoş: saytda Ayarlar → Səs və bildirişlər → Telegram → «Qoş». Sonra istənilən söhbətdə @{{bot}} yaz.",
+    "要在任何聊天中邀请好友，请先连接你的账号：在网站上打开 设置 → 声音与通知 → Telegram → “连接”。然后在任意聊天中输入 @{{bot}}。",
+    "Per sfidare gli amici in qualsiasi chat, collega prima il tuo account: sul sito, Impostazioni → Suoni e notifiche → Telegram → «Collega». Poi scrivi @{{bot}} in una chat."
+  ],
+  "inlineTip": [
+    "💡 Istalgan chatda @{{bot}} deb yozing — do'stingizga o'yin taklifi yuboriladi (masalan: @{{bot}} 5+3).",
+    "💡 Type @{{bot}} in any chat to send a friend a game challenge (e.g. @{{bot}} 5+3).",
+    "💡 Наберите @{{bot}} в любом чате — другу придёт вызов на партию (например: @{{bot}} 5+3).",
+    "💡 Escribe @{{bot}} en cualquier chat para retar a un amigo (p. ej.: @{{bot}} 5+3).",
+    "💡 Tippe @{{bot}} in einen beliebigen Chat, um einen Freund herauszufordern (z. B. @{{bot}} 5+3).",
+    "💡 Tapez @{{bot}} dans n'importe quel chat pour défier un ami (ex. : @{{bot}} 5+3).",
+    "💡 Herhangi bir sohbette @{{bot}} yaz — arkadaşına oyun daveti gider (örneğin: @{{bot}} 5+3).",
+    "💡 Кез келген чатта @{{bot}} деп жазыңыз — досыңызға ойын шақыруы барады (мысалы: @{{bot}} 5+3).",
+    "💡 Дар ҳар чат @{{bot}} нависед — ба дӯстатон даъвати бозӣ меравад (масалан: @{{bot}} 5+3).",
+    "💡 Каалаган чатта @{{bot}} деп жазыңыз — досуңузга оюнга чакыруу барат (мисалы: @{{bot}} 5+3).",
+    "💡 Islendik çatda @{{bot}} ýazyň — dostuňyza oýun çakylygy barar (meselem: @{{bot}} 5+3).",
+    "💡 İstənilən söhbətdə @{{bot}} yaz — dostuna oyun dəvəti gedəcək (məsələn: @{{bot}} 5+3).",
+    "💡 在任意聊天中输入 @{{bot}}，即可向好友发送对局邀请（例如：@{{bot}} 5+3）。",
+    "💡 Scrivi @{{bot}} in qualsiasi chat per sfidare un amico (es.: @{{bot}} 5+3)."
+  ]
+};
+Object.keys(INLINE_BOT).forEach((k) => { BOT[k] = {}; INLINE_LANGS.forEach((l, i) => { BOT[k][l] = INLINE_BOT[k][i]; }); });
 // Telegram language_code (masalan "ru", "uz", "en-US") → sayt tili
 function langOf(code) { const c = String(code || '').slice(0, 2).toLowerCase(); return LANGS.includes(c) ? c : 'en'; }
 function botText(key, lang, vars) {
-  if (lang === 'uzc') return UzCyrl.toCyrl(botText(key, 'uz', vars));
+  // Kirillga andoza o'giriladi, o'zgaruvchilar (ism, havola) keyin qo'yiladi — "Ali" "Али" bo'lib qolmasin
+  if (lang === 'uzc') return fill(UzCyrl.toCyrl((BOT[key] || BOT.help).uz), vars || {});
   const l = LANGS.includes(lang) ? lang : 'en'; return fill((BOT[key] || BOT.help)[l], vars || {}); }
 
 module.exports = { pushMessage, CATEGORY, botText, langOf, LANGS };

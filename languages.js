@@ -3022,6 +3022,8 @@ const translationsExtra = {
 
     libAllVideos: "Barcha videolar kanalda",
 
+    tgInlineTip: "💡 Istalgan Telegram chatida @{{bot}} deb yozing — do'stingizga o'yin taklifi yuboriladi (masalan: @{{bot}} 5+3).",
+
     clHonours: "Klub yutuqlari",
 
     clResults: "Musobaqalardagi natijalar",
@@ -4665,6 +4667,8 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+
+    tgInlineTip: "💡 Type @{{bot}} in any Telegram chat to send a friend a game challenge (e.g. @{{bot}} 5+3).",
 
     clHonours: "Club honours",
 
@@ -6310,6 +6314,8 @@ const translationsExtra = {
 
     libAllVideos: "Все видео на канале",
 
+    tgInlineTip: "💡 Наберите @{{bot}} в любом чате Telegram — другу придёт вызов на партию (например: @{{bot}} 5+3).",
+
     clHonours: "Достижения клуба",
 
     clResults: "Результаты в соревнованиях",
@@ -7953,6 +7959,8 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+
+    tgInlineTip: "💡 Escribe @{{bot}} en cualquier chat de Telegram para retar a un amigo (p. ej.: @{{bot}} 5+3).",
 
     clHonours: "Palmarés del club",
 
@@ -9598,6 +9606,8 @@ const translationsExtra = {
 
     libAllVideos: "Alle Videos auf dem Kanal",
 
+    tgInlineTip: "💡 Tippe @{{bot}} in einen beliebigen Telegram-Chat, um einen Freund herauszufordern (z. B. @{{bot}} 5+3).",
+
     clHonours: "Vereinserfolge",
 
     clResults: "Wettbewerbsergebnisse",
@@ -11241,6 +11251,8 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+    tgInlineTip: "💡 Tapez @{{bot}} dans n'importe quel chat Telegram pour défier un ami (ex. : @{{bot}} 5+3).",
 
     clHonours: "Palmarès du club",
 

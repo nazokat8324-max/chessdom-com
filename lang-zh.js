@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_ZH = {
 
   libAllVideos: "频道里的全部视频",
 
+  tgInlineTip: "💡 在任意 Telegram 聊天中输入 @{{bot}}，即可向好友发送对局邀请（例如：@{{bot}} 5+3）。",
+
   clHonours: "俱乐部荣誉",
 
   clResults: "赛事成绩",

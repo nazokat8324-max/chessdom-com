@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_TK = {
 
   libAllVideos: "Ähli wideolar kanalda",
 
+  tgInlineTip: "💡 Islendik Telegram çatynda @{{bot}} ýazyň — dostuňyza oýun çakylygy barar (meselem: @{{bot}} 5+3).",
+
   clHonours: "Klubuň üstünlikleri",
 
   clResults: "Bäsleşiklerdäki netijeler",

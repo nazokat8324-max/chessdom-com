@@ -2051,6 +2051,12 @@ test("Telegram Mini App: birinchi marta — kirish sahifasida eslatma, kirgach T
     for (let i = 0; i < 40 && !(await linked()); i++) await sleep(150);
     assert.ok(await linked(), 'Telegram ulandi');
     assert.equal(await p1.$('#authGate .tg-app-note'), null, 'eslatma yopildi');
+    // Sozlamalar → Telegram: ulangan — istalgan chatda @bot bilan chaqiruv yuborish maslahati (inline rejim yoqilgan)
+    await p1.evaluate(() => switchView('settings'));
+    await p1.waitForSelector('#settingsRoot [data-section="sound"]', { timeout: 10000 });
+    await p1.evaluate(() => document.querySelector('#settingsRoot [data-section="sound"]').click());
+    await p1.waitForSelector('#setTgCard .tg-inline-tip', { timeout: 10000 });
+    assert.match(await p1.$eval('#setTgCard .tg-inline-tip', (e) => e.textContent), /@cc_test_bot deb yozing/);
     assert.deepEqual(p1.errors, []);
     // Keyingi safar (yangi qurilma/oyna, saqlangan sessiyasiz va tilsiz) — parolsiz kiradi, til akkauntdagidan (p1 da 'uz' bilan ulangan)
     const p2 = await page(null, { width: 390, height: 844, isMobile: true, hasTouch: true });

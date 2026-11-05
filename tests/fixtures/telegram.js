@@ -13,7 +13,7 @@ function startFakeTelegram() {
       try { data = body ? JSON.parse(body) : {}; } catch (e) { data = { raw: body }; }
       calls.push({ method, data });
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ ok: true, result: method === 'getMe' ? { id: 1, is_bot: true, username: 'cc_test_bot' } : {} }));
+      res.end(JSON.stringify({ ok: true, result: method === 'getMe' ? { id: 1, is_bot: true, username: 'cc_test_bot', supports_inline_queries: true } : {} }));
     });
   });
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({

@@ -12,6 +12,7 @@ const LINK_TTL_MS = 15 * 60 * 1000;
 
 let deps = null;          // { app, db, io, SITE_URL, isActive, authMiddleware, inviteUrl }
 let botUsername = process.env.TELEGRAM_BOT_USERNAME || null;
+let inlineEnabled = false; // BotFather → /setinline yoqilganmi (getMe.supports_inline_queries)
 const linkCodes = new Map(); // kod → { userId, lang, exp }
 
 const enabled = () => !!TOKEN;
@@ -111,10 +112,67 @@ async function inviteReply(chatId, link) {
   const user = await deps.db.getUserById(link.userId);
   const url = await deps.inviteUrl(link.userId);
   const share = 'https://t.me/share/url?url=' + encodeURIComponent(url) + '&text=' + encodeURIComponent(botText('shareText', link.lang, { name: user ? user.username : '' }));
-  return send(chatId, botText('invite', link.lang, { url }), button(botText('share', link.lang), share));
+  return send(chatId, botText('invite', link.lang, { url }) + inlineTip(link.lang), button(botText('share', link.lang), share));
+}
+// BotFather'da keyin yoqilsa — server qayta ishga tushmasdan bilinadi (10 daqiqada bir marta getMe, faqat Sozlamalar ochilganda)
+let inlineCheckedAt = 0;
+function refreshInline() {
+  if (inlineEnabled || Date.now() - inlineCheckedAt < 10 * 60 * 1000) return;
+  inlineCheckedAt = Date.now();
+  call('getMe').then((me) => { inlineEnabled = !!me.supports_inline_queries; }).catch(() => {});
+}
+const inlineTip = (lang) => (inlineEnabled && botUsername ? '\n\n' + botText('inlineTip', lang, { bot: botUsername }) : '');
+
+// --- ⚔️ Inline chaqiruv: istalgan chatda "@bot" (yoki "@bot 5+3", "@bot 960", "@bot shatranj") → o'yinga chaqirish kartalari ---
+// Karta xabari tugmasi — shaxsiy taklif havolasi (/?invite=<kod>&tc=<soniya>+<qo'shimcha>&r=1[&v=...]): do'st bossa sayt ochiladi,
+// taklif qabul qilinadi (kirmagan bo'lsa — ro'yxatdan o'tish yoki mehmon), yuboruvchiga chaqiruv/bildirishnoma boradi (invite.js).
+const INLINE_CLOCKS = [[180, 2], [300, 0], [600, 0], [60, 0]];
+function clockLabel(initial, inc) {
+  const m = initial / 60;
+  const t = { 0.25: '¼', 0.5: '½', 0.75: '¾' }[m] || String(Math.round(m * 100) / 100);
+  return t + '+' + inc;
+}
+function parseInlineQuery(text) {
+  const s = String(text || '').toLowerCase().slice(0, 64);
+  const variant = /960/.test(s) ? 'chess960' : /shatran|шатран|şatran|沙特/.test(s) ? 'shatranj' : 'standard';
+  const m = /(?:^|\s)(\d{1,3}(?:[.,]\d{1,2})?)\s*(?:\+\s*(\d{1,2}))?(?=\s|$)/.exec(s.replace(/960/g, ' '));
+  let custom = null;
+  if (m) {
+    const min = Number(m[1].replace(',', '.')), inc = Number(m[2] || 0);
+    if (min >= 0.5 && min <= 180 && inc <= 60) custom = [Math.round(min * 60), inc];
+  }
+  return { variant, custom };
+}
+async function handleInline(q) {
+  const lang0 = langOf(q.from && q.from.language_code);
+  const link = q.from ? await deps.db.getTelegramLinkByChat(String(q.from.id)) : null;
+  const user = link && await deps.db.getUserById(link.userId);
+  if (!user || (deps.isDeleted && deps.isDeleted(user.id)) || (deps.activeBan && deps.activeBan(user.id))) {
+    return call('answerInlineQuery', { inline_query_id: q.id, results: [], cache_time: 0, is_personal: true, button: { text: botText('inlineLink', lang0), start_parameter: 'inline' } });
+  }
+  const lang = link.lang || lang0;
+  const { variant, custom } = parseInlineQuery(q.query);
+  const clocks = custom ? [custom, ...INLINE_CLOCKS.filter(c => c[0] !== custom[0] || c[1] !== custom[1])] : INLINE_CLOCKS;
+  const base = await deps.inviteUrl(user.id);
+  const vName = variant === 'chess960' ? ' · Chess960' : variant === 'shatranj' ? ' · Shatranj' : '';
+  const vParam = variant === 'chess960' ? '&v=960' : variant === 'shatranj' ? '&v=shatranj' : '';
+  const vars = { name: user.username, rating: Math.round(Number(user.rating) || 1500) };
+  const results = clocks.slice(0, 5).map(([initial, inc]) => {
+    const clock = clockLabel(initial, inc) + vName;
+    return {
+      type: 'article', id: initial + '_' + inc + '_' + variant,
+      title: botText('inlineTitle', lang, { clock }),
+      description: botText('inlineDesc', lang, vars),
+      thumbnail_url: deps.SITE_URL + '/assets/icons/icon-192.png',
+      input_message_content: { message_text: botText('inlineMsg', lang, { ...vars, clock }) },
+      reply_markup: button(botText('inlinePlay', lang), base + '&tc=' + initial + '+' + inc + '&r=1' + vParam)
+    };
+  });
+  return call('answerInlineQuery', { inline_query_id: q.id, results, cache_time: 0, is_personal: true });
 }
 
 async function handleUpdate(update) {
+  if (update && update.inline_query) { inlineEnabled = true; return handleInline(update.inline_query); } // so'rov keldi — demak yoqilgan
   const msg = update && update.message;
   if (!msg || !msg.chat || msg.chat.type !== 'private' || typeof msg.text !== 'string') return;
   const chatId = String(msg.chat.id);
@@ -134,8 +192,10 @@ async function handleUpdate(update) {
       await deps.db.linkTelegram(user.id, chatId, msg.from && msg.from.username, l);
       deps.io.to(`user_${user.id}`).emit('telegram-linked', { linked: true });
       await setMenuButton(chatId, l);
-      return send(chatId, botText('linked', l, { name: user.username }), appButton(botText('open', l), deps.SITE_URL + '/'));
+      return send(chatId, botText('linked', l, { name: user.username }) + inlineTip(l), appButton(botText('open', l), deps.SITE_URL + '/'));
     }
+    // Inline'dagi "akkauntni ulang" tugmasi → /start inline
+    if (arg === 'inline') return send(chatId, link ? botText('inlineTip', lang, { bot: botUsername || '' }) : botText('inlineHow', lang, { bot: botUsername || '' }), appButton(botText('open', lang), deps.SITE_URL + '/'));
     if (arg) return send(chatId, botText('badCode', lang));
     await setMenuButton(chatId, lang);
     if (link) return send(chatId, botText('already', lang, { name: link.username }), appButton(botText('open', lang), deps.SITE_URL + '/'));
@@ -163,8 +223,9 @@ function init(d) {
   app.get('/api/telegram', authMiddleware, async (req, res) => {
     try {
       if (!enabled()) return res.json({ success: true, enabled: false });
+      refreshInline();
       const link = await db.getTelegramLink(req.user.userId);
-      res.json({ success: true, enabled: true, bot: botUsername, linked: !!link, tgUsername: link ? link.tgUsername : null });
+      res.json({ success: true, enabled: true, bot: botUsername, inline: inlineEnabled, linked: !!link, tgUsername: link ? link.tgUsername : null });
     } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   // Ulash: bir martalik kod → t.me/<bot>?start=<kod> (15 daqiqa)
@@ -227,7 +288,10 @@ function init(d) {
     try {
       const me = await call('getMe');
       botUsername = me.username;
-      await call('setWebhook', { url: deps.SITE_URL + '/api/telegram/webhook', secret_token: SECRET, allowed_updates: ['message'], drop_pending_updates: false });
+      inlineEnabled = !!me.supports_inline_queries;
+      inlineCheckedAt = Date.now();
+      if (!inlineEnabled) console.log("✈️ Telegram inline rejimi o'chiq (BotFather → /setinline) — chatlarda @" + botUsername + ' chaqiruvi ishlamaydi');
+      await call('setWebhook', { url: deps.SITE_URL + '/api/telegram/webhook', secret_token: SECRET, allowed_updates: ['message', 'inline_query'], drop_pending_updates: false });
       for (const l of LANGS) {
         await call('setMyCommands', {
           commands: [{ command: 'invite', description: botText('cmdInvite', l) }, { command: 'stop', description: botText('cmdStop', l) }, { command: 'help', description: botText('cmdHelp', l) }],
@@ -240,4 +304,4 @@ function init(d) {
   })();
 }
 
-module.exports = { init, enabled, sendNotification, channelEnabled, postAnimation, postChannelText, verifyInitData };
+module.exports = { init, enabled, sendNotification, channelEnabled, postAnimation, postChannelText, verifyInitData, parseInlineQuery, clockLabel };

@@ -218,6 +218,7 @@
     const head = `<h3>✈️ Telegram</h3><p class="set-hint">${esc(tx('tgHint', "Chaqiruvlar, xabarlar va boshqa voqealar Telegram'ga keladi — sayt yopiq bo'lsa ham. Qaysi turlar kelishi yuqoridagi sozlamalar bilan bir xil."))}</p>`;
     el.innerHTML = head + (d.linked
       ? `<div class="set-row"><span><b>${esc(tx('tgLinked', 'Ulangan'))} ✓</b>${d.tgUsername ? `<small>@${esc(d.tgUsername)}</small>` : ''}</span><span class="pwa-status"><button type="button" class="set-mini" data-tg-test>🔔 ${esc(tx('pwaPushTest', "Sinab ko'rish"))}</button><button type="button" class="set-mini" data-tg-unlink>${esc(tx('tgUnlink', 'Uzish'))}</button></span></div>`
+        + (d.inline && d.bot ? `<p class="set-hint tg-inline-tip">${esc(tx('tgInlineTip', "💡 Istalgan Telegram chatida @{{bot}} deb yozing — do'stingizga o'yin taklifi yuboriladi (masalan: @{{bot}} 5+3).", { bot: d.bot }))}</p>` : '')
       : `<div class="set-row"><span><b>@${esc(d.bot || '')}</b><small>${esc(tx('tgLinkSub', "Tugmani bosing, Telegram ochiladi — «Start» ni bossangiz bo'ldi"))}</small></span><button type="button" class="set-mini accent" data-tg-link>✈️ ${esc(tx('tgLink', 'Ulash'))}</button></div>`);
     el.querySelectorAll('[data-tg-link]').forEach(b => b.addEventListener('click', async () => {
       // Oyna bosish vaqtida ochiladi (keyin ochilsa brauzer bloklaydi), manzil javobdan keyin beriladi

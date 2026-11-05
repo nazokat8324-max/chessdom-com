@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_IT = {
 
   libAllVideos: "Tutti i video sul canale",
 
+  tgInlineTip: "💡 Scrivi @{{bot}} in qualsiasi chat di Telegram per sfidare un amico (es.: @{{bot}} 5+3).",
+
   clHonours: "Palmarès del club",
 
   clResults: "Risultati nelle competizioni",

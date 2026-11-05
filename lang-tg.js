@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_TG = {
 
   libAllVideos: "Ҳамаи видеоҳо дар канал",
 
+  tgInlineTip: "💡 Дар ҳар чати Telegram @{{bot}} нависед — ба дӯстатон даъвати бозӣ меравад (масалан: @{{bot}} 5+3).",
+
   clHonours: "Дастовардҳои клуб",
 
   clResults: "Натиҷаҳо дар мусобиқаҳо",

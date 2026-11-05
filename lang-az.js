@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_AZ = {
 
   libAllVideos: "Bütün videolar kanalda",
 
+  tgInlineTip: "💡 İstənilən Telegram söhbətində @{{bot}} yaz — dostuna oyun dəvəti gedəcək (məsələn: @{{bot}} 5+3).",
+
   clHonours: "Klubun nailiyyətləri",
 
   clResults: "Yarışlardakı nəticələr",

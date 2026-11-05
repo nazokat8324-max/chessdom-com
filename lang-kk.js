@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_KK = {
 
   libAllVideos: "Барлық бейне арнада",
 
+  tgInlineTip: "💡 Кез келген Telegram чатында @{{bot}} деп жазыңыз — досыңызға ойын шақыруы барады (мысалы: @{{bot}} 5+3).",
+
   clHonours: "Клуб жетістіктері",
 
   clResults: "Жарыстардағы нәтижелер",

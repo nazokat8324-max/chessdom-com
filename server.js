@@ -3176,7 +3176,11 @@ async function start() {
   function countryCodeOfTitle(title) {
     const m = String(title || '').match(/(\S+)\s*\|\s*190\s*davlat/i);
     if (!m) return null;
-    const code = [...m[1]].map((ch) => SMALL_CAPS[ch] || ch).join('').toLowerCase();
+    // Bayroq emojisi 🇺🇿 = ikki "regional indicator" belgi (U+1F1E6…U+1F1FF → a…z); Windows 10 uni "ᴜᴢ" deb ko'rsatadi
+    const code = [...m[1]].map((ch) => {
+      const cp = ch.codePointAt(0);
+      return cp >= 0x1F1E6 && cp <= 0x1F1FF ? String.fromCharCode(97 + cp - 0x1F1E6) : (SMALL_CAPS[ch] || ch);
+    }).join('').toLowerCase();
     return /^[a-z]{2}$/.test(code) ? code : null;
   }
   let countryVideoMap = null; // {kod: video id}

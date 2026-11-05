@@ -2031,7 +2031,7 @@ test("Telegram Mini App: birinchi marta — kirish sahifasida eslatma, kirgach T
 
 test("190 davlat: klub sahifasida o'sha davlat videosi, Bayroqlar sahifasida video chiqqan davlatlar qatori (YouTube'da, yangi oynada)", opts, async () => {
   const { startFakeYoutube } = require('./fixtures/youtube');
-  const yt = await startFakeYoutube({ extra: [{ id: 'GpCDMHR6Exw', title: "O'zbekiston shaxmatda qanchalik kuchli? ᴜᴢ | 190 davlat 1/190 #shorts" }] });
+  const yt = await startFakeYoutube({ extra: [{ id: 'GpCDMHR6Exw', title: "O'zbekiston shaxmatda qanchalik kuchli? 🇺🇿 | 190 davlat 1/190 #shorts" }] });
   const own = await startServer({ YOUTUBE_BASE: yt.base, YTIMG_BASE: yt.base });
   try {
     const u = await own.register('CvUi');

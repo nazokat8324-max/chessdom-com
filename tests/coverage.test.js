@@ -191,10 +191,14 @@ test("Admin statistikasi: adminsiz o'yinlar (24 soat) adminning o'yinini sanamay
     await finish(g, 'white-resigns');
     closeAll(w, b);
   }
-  await sleep(300);
-  let after = await stats();
-  assert.equal(after.games24h - before.games24h, 2, "jami o'yinlar +2");
-  assert.equal(after.gamesNoAdmin24h - before.gamesNoAdmin24h, 1, "adminsiz — faqat X–Y o'yini");
+  // Sekin CI da natija bazaga kechroq yozilishi mumkin — ikkala o'yin ko'ringuncha kutiladi
+  const until = async (ok, ms = 8000) => { const end = Date.now() + ms; let v; do { v = await stats(); if (ok(v)) return v; await sleep(200); } while (Date.now() < end); return v; };
+  let after = await until((v) => v.games24h - before.games24h >= 2 && v.gamesNoAdmin24h - before.gamesNoAdmin24h >= 1);
+  // Oldingi testlarning o'yinlari (masalan uzilgan o'yinchi — 8 s dan keyin "tark etildi") shu oraliqda yozilishi mumkin:
+  // ular ikkala songa teng qo'shiladi — farq faqat admin o'yinida bo'ladi (sekin CI da qat'iy "+2" yiqilgan, 2026-11-05)
+  const all = after.games24h - before.games24h, noAdmin = after.gamesNoAdmin24h - before.gamesNoAdmin24h;
+  assert.ok(all >= 2 && noAdmin >= 1, `jami +${all}, adminsiz +${noAdmin}`);
+  assert.equal(all - noAdmin, 1, `admin o'yini adminsizlarga kirmaydi (jami +${all}, adminsiz +${noAdmin})`);
   // Qaytgan o'yinchi: R kecha ham kirgan (bazada kechagi kun), bugun saytga kirdi; S faqat bugun
   const R = await srv.register('Sr'), S = await srv.register('Ss');
   const dayKey = (ms) => new Date(ms + 5 * 3600000).toISOString().slice(0, 10);
@@ -205,7 +209,8 @@ test("Admin statistikasi: adminsiz o'yinlar (24 soat) adminning o'yinini sanamay
   });
   const before2 = (await stats()).returning;
   const r = await srv.connect(R), s = await srv.connect(S);
-  await sleep(400);
+  after = await until((v) => v.returning - before2 >= 1);
+  await sleep(500); // S ning yozuvi ham tushsin — u sanalmasligi kerak
   after = await stats();
   assert.equal(after.returning - before2, 1, "faqat R (kecha + bugun); S — faqat bugun");
   // Bir kunda bir necha marta kirsa ham bitta yozuv

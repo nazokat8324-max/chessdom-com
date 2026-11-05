@@ -8074,15 +8074,19 @@ html.hide-last-move #chessBoard .sq-last {
   bottom: 78px;
   z-index: 5;
   width: min(380px, calc(100% - 28px));
-  /* Past suhbat oynasida (telefon yon holatda) tepadan chiqib ketmasin — ichida aylanadi */
-  max-height: calc(100% - 92px);
+  /* O'yin va klub chatida oyna kichik yozish qatoriga joylashadi — foiz emas, ekranga nisbatan (2026-11-05 gacha
+     hamma joyda calc(100% - 92px) edi: u yerda balandlik 0 bo'lib, 😊 bosilganda oyna ko'rinmasdi) */
+  max-height: min(420px, 60vh);
   overflow-y: auto;
   border-radius: 18px;
   background: var(--cd-surface-2);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 18px 44px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
   animation: chPop 0.18s ease;
+}
+/* Xabarlar: oyna butun suhbatga joylashadi — past suhbat oynasida (telefon yon holatda) tepadan chiqib ketmasin, ichida aylanadi */
+.msg-chat > .msg-picker {
+  max-height: calc(100% - 92px);
 }
 .msg-picker-tabs {
   display: flex;

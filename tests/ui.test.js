@@ -1006,6 +1006,48 @@ test("O'yin davomida sahifa yangilansa: o'yin tiklanadi (yurishlar, rang, xona),
   assert.deepEqual(p.errors, []);
 });
 
+// 😊 oynasi haqiqatan ko'rinadimi: balandligi bor va o'rtasidagi nuqta shu oynaning o'zi (yopilib/kesilib qolmagan)
+async function pickerVisible(p, btnSel) {
+  await p.evaluate((s) => document.querySelector(s).click(), btnSel);
+  await sleep(300);
+  return p.evaluate(() => {
+    const el = document.querySelector('.msg-picker');
+    if (!el) return 'yo\'q';
+    const r = el.getBoundingClientRect();
+    if (r.height < 120 || r.width < 200) return 'kichik: ' + Math.round(r.width) + 'x' + Math.round(r.height);
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + Math.min(60, r.height / 2));
+    return hit && el.contains(hit) ? 'ok' : 'yopilgan: ' + (hit ? hit.className : 'null');
+  });
+}
+
+test("Stikerlar oynasi: o'yin chati va klub chatida 😊 bosilsa oyna ko'rinadi, emoji matnga qo'shiladi, stiker yuboriladi (kompyuter va telefon)", opts, async () => {
+  const { p, sb, roomId } = await browserGame('SkA', 'SkB');
+  await p.waitForSelector('#gameChatEmoji', { visible: true, timeout: 8000 });
+  assert.equal(await pickerVisible(p, '#gameChatEmoji'), 'ok', "o'yin chati");
+  await p.evaluate(() => document.querySelector('.msg-picker [data-ptab="emoji"]').click());
+  await sleep(200);
+  const emoji = await p.evaluate(() => { const b = document.querySelector('.msg-picker [data-emoji]'); b.click(); return b.dataset.emoji; });
+  assert.ok((await p.$eval('#gameChatInput, #gameChatForm input', (i) => i.value)).includes(emoji), 'emoji matnga qo\'shildi');
+  await p.evaluate(() => document.querySelector('.msg-picker [data-ptab="stickers"]').click());
+  await sleep(200);
+  const got = new Promise((r) => sb.once('game-chat', r));
+  await p.evaluate(() => document.querySelector('.msg-picker [data-sticker]').click());
+  assert.match((await got).message, /^\[sticker:/);
+  assert.equal(roomId.length > 0, true);
+  sb.disconnect();
+  // Klub chati — kompyuter va telefon
+  const u = await srv.register('SkC');
+  await srv.api(u, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
+  for (const vp of [null, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const q = await page(u, vp || undefined);
+    await q.goto(srv.base + '/klublar?club=Uzbekistan&tab=chat', { waitUntil: 'load' });
+    await q.waitForSelector('#clPane #clubChatEmojiBtn', { visible: true, timeout: 15000 });
+    assert.equal(await pickerVisible(q, '#clubChatEmojiBtn'), 'ok', 'klub chati ' + (vp ? 'telefon' : 'kompyuter'));
+    assert.deepEqual(q.errors, []);
+  }
+  assert.deepEqual(p.errors, []);
+});
+
 test("Premove: raqib navbatida qo'yilgan yurish raqib yurgach darhol serverga ketadi", opts, async () => {
   const { p, sb, roomId, aColor } = await browserGame('PmA', 'PmB');
   if (aColor === 'w') { const got = nextOppMove(sb); await p.click('#chessBoard [data-square="e2"]'); await p.click('#chessBoard [data-square="e4"]'); await got; }

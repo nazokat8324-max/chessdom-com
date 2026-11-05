@@ -279,7 +279,8 @@ function init(d) {
   app.post('/api/telegram/webhook', (req, res) => {
     if (!enabled() || req.headers['x-telegram-bot-api-secret-token'] !== SECRET) return res.status(403).end();
     res.json({ ok: true }); // Telegram kutib qolmasin — javob darhol
-    handleUpdate(req.body).catch(err => console.log('Telegram update xatoligi:', err.message));
+    // Inline javob xatosi admin "Xatolar" ga tushadi (karta chiqmasa sababini ko'rish uchun); oddiy xabarlarda — faqat jurnal
+    handleUpdate(req.body).catch(err => (req.body && req.body.inline_query ? console.error : console.log)('Telegram update xatoligi:', err.message));
   });
 
   if (!enabled()) return;

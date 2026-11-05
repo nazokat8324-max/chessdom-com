@@ -946,26 +946,9 @@ window.TRANSLATIONS_ZH = {
   rkMaster: "大师",
   rkGrandmaster: "特级大师",
   rkLegend: "段位",
-  csStaff: "俱乐部管理团队",
-  csStaffHint: "队长和版主负责发布新闻并维护俱乐部聊天秩序。",
   csCaptain: "队长",
   csModerator: "版主",
-  csMakeCaptain: "移交队长职位",
-  csAssign: "任命",
-  csUsernamePh: "成员的用户名",
-  csRemove: "移除",
-  csNoCaptain: "俱乐部还没有成员",
-  csTransferConfirm: "要把队长职位移交给 {{name}} 吗？你将保留版主身份。",
-  csSaved: "已保存",
-  csNews: "俱乐部新闻",
-  csNewsTitlePh: "标题",
-  csNewsBodyPh: "写给俱乐部成员的消息……",
-  csPin: "置顶",
-  csPublish: "发布",
-  csPublished: "新闻已发布",
-  csNoNews: "还没有新闻",
   csDelete: "删除",
-  csDeleteConfirm: "要删除这条新闻吗？",
   csDeleteMsgConfirm: "要删除这条消息吗？",
   nfTitle: "通知",
   nfClear: "清空",
@@ -979,15 +962,7 @@ window.TRANSLATIONS_ZH = {
   nfMessage: "{{name}}：{{text}}",
   nfMessages: "来自 {{name}} 的 {{count}} 条新消息",
   nfLeagueReady: "联赛对局：{{name}} 已准备好，正在等你",
-  nfClubNews: "{{club}} 俱乐部新闻：{{title}}",
-  nfClubRole: "你现在是 {{club}} 俱乐部的“{{role}}”",
-  nfClubRoleRemoved: "你在 {{club}} 俱乐部的职位已被撤销",
   nfRankUp: "新段位！{{mode}}：{{rank}}（{{rating}}）",
-  srvOnlyCaptain: "只有队长才能管理职位！",
-  srvNotClubMember: "该棋手不是俱乐部成员！",
-  srvOnlyStaffNews: "只有队长和版主才能发布新闻！",
-  srvNewsRequired: "需要填写标题和正文！",
-  srvNewsNotFound: "未找到新闻！",
   srvMessageNotFound: "未找到消息！",
   mNews: "新闻",
   nwSub: "ChessCaravan 的新闻、公告和新功能",
@@ -1830,6 +1805,34 @@ window.TRANSLATIONS_ZH = {
   libViews: "{{n}} 次观看",
 
   libAllVideos: "频道里的全部视频",
+
+  clHonours: "俱乐部荣誉",
+
+  clResults: "赛事成绩",
+
+  clTrLeague: "联赛冠军",
+
+  clTrChampions: "冠军联赛冠军",
+
+  clTrFlags: "旗帜之争冠军",
+
+  clResLeague: "{{league}} · 第 {{n}} 赛季",
+
+  clResChampions: "冠军联赛 · 第 {{n}} 赛季",
+
+  clResFlags: "旗帜之争 · {{month}}",
+
+  clResPlace: "第 {{place}} 名 / {{clubs}}",
+
+  clResRecord: "胜 {{won}} · 和 {{drawn}} · 负 {{lost}} · {{points}} 分",
+
+  clResFlagsSub: "{{territories}} 块领地 · {{points}} 分",
+
+  clResLive: "进行中",
+
+  clResChampion: "冠军",
+
+  clHonoursEmpty: "俱乐部尚未参加任何赛事。联赛和旗帜之争的成绩将显示在这里。",
 
 
   clCountryVideo: "{{country}}国际象棋视频",

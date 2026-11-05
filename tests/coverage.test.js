@@ -1,5 +1,5 @@
 // C3 (2026-11-02): CLAUDE.md dagi, avval umuman testi bo'lmagan imkoniyatlar — uzilish va qaytish, shikoyat,
-// profil rasmi, parolni tiklash (MAIL_LOG), email, klub rahbariyati va yangiliklari, reyting grafigi ma'lumoti
+// profil rasmi, parolni tiklash (MAIL_LOG), email, reyting grafigi ma'lumoti
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { startServer, once, startGame, play, finish, closeAll, sleep } = require('./helpers');
@@ -131,42 +131,6 @@ test("Email: biriktiriladi, boshqa akkauntniki 409, noto'g'ri format 400; yangi 
   assert.equal((await srv.api(null, '/api/auth/forgot', 'POST', { login: ok.email })).success, true);
   await sleep(200);
   assert.match(srv.log().slice(before), new RegExp('\\[MAIL\\] ' + ok.email.replace(/\./g, '\\.')));
-});
-
-test("Klub rahbariyati: birinchi a'zo — kapitan, moderator tayinlanadi, yangilik yoziladi / mahkamlanadi / o'chiriladi, a'zolarga bildirishnoma", async () => {
-  const club = 'Mongolia';
-  const A = await srv.register('Ka'), B = await srv.register('Kb'), C = await srv.register('Kc');
-  for (const u of [A, B]) assert.equal((await srv.api(u, '/api/country-clubs/join', 'POST', { country: club, code: 'mn' })).success, true);
-  let st = await srv.api(A, '/api/country-clubs/' + club + '/staff');
-  assert.equal(st.captain.username, A.name, 'birinchi a\'zo kapitan');
-  assert.equal(st.canManage, true);
-  assert.equal((await srv.api(B, '/api/country-clubs/' + club + '/staff')).canModerate, false);
-  assert.equal((await srv.api(B, '/api/country-clubs/' + club + '/news', 'POST', { title: 'Salom', body: 'Matn' })).status, 403);
-  assert.equal((await srv.api(B, '/api/country-clubs/' + club + '/roles', 'POST', { username: B.name, role: 'moderator' })).status, 403, "a'zo rol bera olmaydi");
-  assert.equal((await srv.api(A, '/api/country-clubs/' + club + '/roles', 'POST', { username: C.name, role: 'moderator' })).status, 400, "a'zo bo'lmaganga rol yo'q");
-  st = await srv.api(A, '/api/country-clubs/' + club + '/roles', 'POST', { username: B.name, role: 'moderator' });
-  assert.deepEqual(st.moderators.map((m) => m.username), [B.name]);
-  const n = await srv.api(B, '/api/country-clubs/' + club + '/news', 'POST', { title: 'Shanba kuni turnir emas, blitz kechasi', body: "Soat 20:00 da hammamiz Choyxonada!" });
-  assert.equal(n.success, true);
-  await sleep(300);
-  const notes = await srv.api(A, '/api/notifications');
-  assert.ok(notes.notifications.some((x) => x.type === 'club_news' && x.data.newsId === n.id), "kapitanga yangilik bildirishnomasi");
-  const pinned = await srv.api(A, '/api/country-clubs/news/' + n.id + '/pin', 'POST');
-  assert.equal(Number(pinned.news.find((x) => x.id === n.id).pinned), 1);
-  assert.equal((await srv.api(C, '/api/country-clubs/news/' + n.id, 'DELETE')).status, 403, 'begona o\'chira olmaydi');
-  // Ommaviy: kirmagan ham yangiliklarni ko'radi
-  assert.ok((await srv.api(null, '/api/country-clubs/' + club + '/staff')).news.some((x) => x.id === n.id));
-  const del = await srv.api(B, '/api/country-clubs/news/' + n.id, 'DELETE');
-  assert.equal(del.success, true);
-  assert.ok(!del.news.some((x) => x.id === n.id));
-  // Kapitanlik topshiriladi — eski kapitan moderator bo'ladi
-  st = await srv.api(A, '/api/country-clubs/' + club + '/roles', 'POST', { username: B.name, role: 'captain' });
-  assert.equal(st.captain.username, B.name);
-  assert.ok(st.moderators.some((m) => m.username === A.name));
-  // Klubdan chiqqan moderatorning roli o'chadi
-  await srv.api(A, '/api/country-clubs/leave', 'POST', {});
-  st = await srv.api(null, '/api/country-clubs/' + club + '/staff');
-  assert.ok(!st.moderators.some((m) => m.username === A.name));
 });
 
 test("Reyting grafigi: reytingli o'yindan keyin profil ratingHistory da rejim nuqtalari (boshlang'ich va yangi), reytingsizda yo'q", async () => {

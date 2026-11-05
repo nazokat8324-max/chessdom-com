@@ -946,26 +946,9 @@ window.TRANSLATIONS_KY = {
   rkMaster: "Чебер",
   rkGrandmaster: "Гроссмейстер",
   rkLegend: "Даражалар",
-  csStaff: "Клубдун жетекчилиги",
-  csStaffHint: "Капитан жана модераторлор жаңылык жарыялап, клуб чатында тартип сакташат.",
   csCaptain: "Капитан",
   csModerator: "Модератор",
-  csMakeCaptain: "Капитандыкты өткөрүп берүү",
-  csAssign: "Дайындоо",
-  csUsernamePh: "Мүчөнүн колдонуучу аты",
-  csRemove: "Алып салуу",
-  csNoCaptain: "Клубда азырынча мүчө жок",
-  csTransferConfirm: "Капитандык {{name}} оюнчусуна берилсинби? Сиз модератор бойдон каласыз.",
-  csSaved: "Сакталды",
-  csNews: "Клубдун жаңылыктары",
-  csNewsTitlePh: "Аталышы",
-  csNewsBodyPh: "Клуб мүчөлөрүнө билдирүү...",
-  csPin: "Бекитүү",
-  csPublish: "Жарыялоо",
-  csPublished: "Жаңылык жарыяланды",
-  csNoNews: "Азырынча жаңылык жок",
   csDelete: "Өчүрүү",
-  csDeleteConfirm: "Бул жаңылык өчүрүлсүнбү?",
   csDeleteMsgConfirm: "Бул билдирүү өчүрүлсүнбү?",
   nfTitle: "Билдирмелер",
   nfClear: "Тазалоо",
@@ -979,15 +962,7 @@ window.TRANSLATIONS_KY = {
   nfMessage: "{{name}}: {{text}}",
   nfMessages: "{{name}} оюнчусунан {{count}} жаңы билдирүү",
   nfLeagueReady: "Лига оюну: {{name}} даяр жана сизди күтүп жатат",
-  nfClubNews: "{{club}} клубунун жаңылыгы: {{title}}",
-  nfClubRole: "Сиз эми {{club}} клубунда «{{role}}»",
-  nfClubRoleRemoved: "{{club}} клубундагы ролуңуз алынды",
   nfRankUp: "Жаңы даража! {{mode}}: {{rank}} ({{rating}})",
-  srvOnlyCaptain: "Ролдорду капитан гана башкара алат!",
-  srvNotClubMember: "Бул оюнчу клубдун мүчөсү эмес!",
-  srvOnlyStaffNews: "Жаңылыкты капитан жана модераторлор гана жарыялай алат!",
-  srvNewsRequired: "Аталыш жана текст керек!",
-  srvNewsNotFound: "Жаңылык табылган жок!",
   srvMessageNotFound: "Билдирүү табылган жок!",
   mNews: "Жаңылыктар",
   nwSub: "ChessCaravan'дын жаңылыктары, кулактандыруулары жана жаңы мүмкүнчүлүктөрү",
@@ -1830,6 +1805,34 @@ window.TRANSLATIONS_KY = {
   libViews: "Көрүүлөр: {{n}}",
 
   libAllVideos: "Бардык видеолор каналда",
+
+  clHonours: "Клубдун жетишкендиктери",
+
+  clResults: "Мелдештердеги жыйынтыктар",
+
+  clTrLeague: "Лиганын чемпиону",
+
+  clTrChampions: "Чемпиондор лигасынын жеңүүчүсү",
+
+  clTrFlags: "Желектер жарышынын чемпиону",
+
+  clResLeague: "{{league}} · {{n}}-сезон",
+
+  clResChampions: "Чемпиондор лигасы · {{n}}-сезон",
+
+  clResFlags: "Желектер жарышы · {{month}}",
+
+  clResPlace: "{{place}}-орун / {{clubs}}",
+
+  clResRecord: "{{won}} жеңиш · {{drawn}} тең · {{lost}} жеңилүү · {{points}} упай",
+
+  clResFlagsSub: "{{territories}} аймак · {{points}} упай",
+
+  clResLive: "уланууда",
+
+  clResChampion: "Чемпион",
+
+  clHonoursEmpty: "Клуб азырынча мелдештерге катыша элек. Лига беттешүүлөрү жана Желектер жарышынын жыйынтыктары ушул жерде чыгат.",
 
 
   clCountryVideo: "{{country}} шахматы жөнүндө видео",

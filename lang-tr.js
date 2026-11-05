@@ -946,26 +946,9 @@ window.TRANSLATIONS_TR = {
   rkMaster: "Usta",
   rkGrandmaster: "Büyükusta",
   rkLegend: "Rütbeler",
-  csStaff: "Kulüp yönetimi",
-  csStaffHint: "Kaptan ve moderatörler haber paylaşır ve kulüp sohbetini düzenli tutar.",
   csCaptain: "Kaptan",
   csModerator: "Moderatör",
-  csMakeCaptain: "Kaptanlığı devret",
-  csAssign: "Ata",
-  csUsernamePh: "Üyenin kullanıcı adı",
-  csRemove: "Kaldır",
-  csNoCaptain: "Kulübün henüz üyesi yok",
-  csTransferConfirm: "Kaptanlık {{name}} adlı oyuncuya devredilsin mi? Sen moderatör olarak kalacaksın.",
-  csSaved: "Kaydedildi",
-  csNews: "Kulüp haberleri",
-  csNewsTitlePh: "Başlık",
-  csNewsBodyPh: "Kulüp üyelerine bir mesaj...",
-  csPin: "Sabitle",
-  csPublish: "Yayınla",
-  csPublished: "Haber yayınlandı",
-  csNoNews: "Henüz haber yok",
   csDelete: "Sil",
-  csDeleteConfirm: "Bu haber silinsin mi?",
   csDeleteMsgConfirm: "Bu mesaj silinsin mi?",
   nfTitle: "Bildirimler",
   nfClear: "Temizle",
@@ -979,15 +962,7 @@ window.TRANSLATIONS_TR = {
   nfMessage: "{{name}}: {{text}}",
   nfMessages: "{{name}} kişisinden {{count}} yeni mesaj",
   nfLeagueReady: "Lig oyunu: {{name}} hazır ve seni bekliyor",
-  nfClubNews: "{{club}} kulübünde haber: {{title}}",
-  nfClubRole: "Artık {{club}} kulübünde “{{role}}” rolündesin",
-  nfClubRoleRemoved: "{{club}} kulübündeki rolün kaldırıldı",
   nfRankUp: "Yeni rütbe! {{mode}}: {{rank}} ({{rating}})",
-  srvOnlyCaptain: "Rolleri yalnızca kaptan yönetebilir!",
-  srvNotClubMember: "Bu oyuncu kulübün üyesi değil!",
-  srvOnlyStaffNews: "Haberi yalnızca kaptan ve moderatörler paylaşabilir!",
-  srvNewsRequired: "Başlık ve metin gerekli!",
-  srvNewsNotFound: "Haber bulunamadı!",
   srvMessageNotFound: "Mesaj bulunamadı!",
   mNews: "Haberler",
   nwSub: "ChessCaravan'daki haberler, duyurular ve yeni özellikler",
@@ -1830,6 +1805,34 @@ window.TRANSLATIONS_TR = {
   libViews: "İzlenme: {{n}}",
 
   libAllVideos: "Tüm videolar kanalda",
+
+  clHonours: "Kulüp başarıları",
+
+  clResults: "Turnuva sonuçları",
+
+  clTrLeague: "Lig şampiyonu",
+
+  clTrChampions: "Şampiyonlar Ligi galibi",
+
+  clTrFlags: "Bayraklar şampiyonu",
+
+  clResLeague: "{{league}} · {{n}}. sezon",
+
+  clResChampions: "Şampiyonlar Ligi · {{n}}. sezon",
+
+  clResFlags: "Bayraklar yarışması · {{month}}",
+
+  clResPlace: "{{place}}. sıra / {{clubs}}",
+
+  clResRecord: "{{won}} galibiyet · {{drawn}} beraberlik · {{lost}} mağlubiyet · {{points}} puan",
+
+  clResFlagsSub: "{{territories}} bölge · {{points}} puan",
+
+  clResLive: "devam ediyor",
+
+  clResChampion: "Şampiyon",
+
+  clHonoursEmpty: "Kulüp henüz bir yarışmaya katılmadı. Lig maçları ve Bayraklar yarışması sonuçları burada görünecek.",
 
 
   clCountryVideo: "{{country}} satrancı hakkında video",

@@ -2029,6 +2029,38 @@ test("Telegram Mini App: birinchi marta — kirish sahifasida eslatma, kirgach T
   } finally { await own.stop(); await tg.stop(); }
 });
 
+test("Klub yutuqlari: rahbariyat va yangiliklar o'rnida kuboklar va musobaqalardagi natijalar (Bayroqlar mavsumi bosilsa — Bayroqlar sahifasi)", opts, async () => {
+  const u = await srv.register('Hon');
+  await srv.api(u, '/api/country-clubs/join', 'POST', { country: 'Mongolia', code: 'mn' });
+  await new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(require('path').join(srv.dir, 'test.sqlite'));
+    d.run("INSERT INTO war_points (id, season, club_country, club_code, user_id, opponent_code, points, created_at) VALUES ('ui-hon-1', '2026-02', 'Mongolia', 'mn', ?, 'cn', 5, ?)", [u.id, new Date().toISOString()], (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  await p.goto(srv.base + '/klublar?club=Mongolia', { waitUntil: 'load' });
+  await p.waitForSelector('#clHonours .cl-trophies', { timeout: 15000 });
+  const h = await p.evaluate(() => ({
+    title: document.querySelector('#clHonours h3').textContent.trim(),
+    trophies: [...document.querySelectorAll('#clHonours .cl-trophy')].map((t) => [t.classList.contains('none'), t.querySelector('b').textContent]),
+    rows: [...document.querySelectorAll('#clHonours .cl-res')].map((r) => r.textContent.replace(/\s+/g, ' ').trim()),
+    staff: !!document.querySelector('#clubStaffNews, .cs-root'),
+    wide: document.documentElement.scrollWidth > innerWidth
+  }));
+  assert.equal(h.title, '🏅 Klub yutuqlari');
+  assert.deepEqual(h.trophies, [[true, '—'], [true, '—'], [false, '×1']], 'liga, Chempionlar ligasi, Bayroqlar');
+  assert.equal(h.rows.length, 1);
+  assert.match(h.rows[0], /Bayroqlar bellashuvi · Fevral 2026.*5 ochko.*1-o'rin \/ \d+.*Chempion/);
+  assert.equal(h.staff, false, "kapitan/moderator va yangiliklar bloki yo'q");
+  assert.equal(h.wide, false, 'telefonda ekrandan chiqmaydi');
+  await p.evaluate(() => document.querySelector('#clHonours .cl-res').click());
+  await p.waitForSelector('#warView.active-view', { timeout: 10000 });
+  // Hech qatnashmagan klub — bo'sh kuboklar va izoh
+  await p.goto(srv.base + '/klublar?club=Chile', { waitUntil: 'load' });
+  await p.waitForSelector('#clHonours .cl-trophies', { timeout: 15000 });
+  assert.match(await p.$eval('#clHonours', (e) => e.textContent), /Klub hali musobaqalarda qatnashmagan/);
+  assert.deepEqual(p.errors, []);
+});
+
 test("190 davlat: klub sahifasida o'sha davlat videosi, Bayroqlar sahifasida video chiqqan davlatlar qatori (YouTube'da, yangi oynada)", opts, async () => {
   const { startFakeYoutube } = require('./fixtures/youtube');
   const yt = await startFakeYoutube({ extra: [{ id: 'GpCDMHR6Exw', title: "O'zbekiston shaxmatda qanchalik kuchli? 🇺🇿 | 190 davlat 1/190 #shorts" }] });

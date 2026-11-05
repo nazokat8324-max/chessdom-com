@@ -10164,179 +10164,12 @@ body:has(#gameView.active-view) .top-bar {
   opacity: 0.6;
 }
 
-/* ===== Klub rahbariyati va yangiliklari (clubstaff.js) ===== */
-.cs-root {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
-  gap: 16px;
-  max-width: 900px;
-  margin: 20px auto 0;
-}
-.cs-root:empty {
-  display: none;
-}
-.cs-card {
-  padding: 18px 20px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--cd-border-strong);
-}
-.cs-card h4 {
-  margin: 0 0 8px;
-  font-size: 13px;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  color: var(--accent);
-}
-.cs-hint {
-  margin: 0 0 12px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--cd-muted);
-}
-.cs-people {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.cs-person {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  background: var(--cd-surface-2);
-  color: #fff;
-  font-size: 14px;
-}
-.cs-role {
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 800;
-}
-.cs-role.captain {
-  background: rgba(242, 201, 76, 0.15);
-  color: #f2c94c;
-}
-.cs-role.mod {
-  background: rgba(var(--accent-rgb), 0.15);
-  color: var(--accent-light);
-}
-.cs-x {
-  margin-left: auto;
-  border: none;
-  background: none;
-  color: var(--cd-muted);
-  cursor: pointer;
-}
-.cs-x:hover {
-  color: #eb5757;
-}
-.cs-manage {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 8px;
-  margin-top: 12px;
-}
-.cs-compose {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.cs-compose textarea {
-  resize: vertical;
-  min-height: 70px;
-  font-family: inherit;
-}
-.cs-compose-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.cs-pin-check {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #dfe7e3;
-}
-.cs-publish {
-  width: auto !important;
-  padding: 9px 18px !important;
-  font-size: 14px !important;
-}
-.cs-news-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.cs-news {
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: var(--cd-surface-2);
-  border: 1px solid transparent;
-}
-.cs-news.pinned {
-  border-color: rgba(var(--accent-rgb), 0.45);
-}
-.cs-news-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 8px;
-}
-.cs-news h5 {
-  margin: 0;
-  font-size: 15px;
-  color: #fff;
-}
-.cs-news p {
-  margin: 6px 0 8px;
-  font-size: 13px;
-  line-height: 1.55;
-  color: #cdd6d2;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.cs-news small {
-  font-size: 11px;
-  color: var(--cd-muted);
-}
-.cs-news-tools {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-.cs-news-tools button {
-  border: none;
-  background: none;
-  cursor: pointer;
-  font-size: 14px;
-  opacity: 0.7;
-}
-.cs-news-tools button:hover {
-  opacity: 1;
-}
-.cs-empty {
-  padding: 14px 0;
-  font-size: 13px;
-  color: var(--cd-muted);
-}
 /* Toast xabarlar qo'ng'iroqcha (🔔) ni yopmasin — yuqori panel ostidan chiqadi */
 .toast-container {
   top: 80px;
 }
 body:has(#gameView.active-view) .toast-container {
   top: 20px;
-}
-.cs-news-tools button {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06) !important;
 }
 .club-chat-del {
   border: none;
@@ -10371,9 +10204,6 @@ body:has(#gameView.active-view) .toast-container {
   }
   body.auth-locked .nf-wrap {
     display: none;
-  }
-  .cs-root {
-    grid-template-columns: 1fr;
   }
 }
 
@@ -14039,7 +13869,6 @@ body.auth-locked {
 .cl-tab.active { background: rgba(var(--accent-rgb), 0.18); color: #fff; }
 .cl-overview { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .cl-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
-.cl-col .cs-root { margin: 0; grid-template-columns: minmax(0, 1fr); max-width: none; }
 .cl-card { padding: 16px 18px; border-radius: 16px; background: var(--cd-surface, #111c1f); border: 1px solid var(--cd-border-strong, #223439); }
 .cl-card h3 { margin: 0 0 10px; font-size: 15px; color: #fff; }
 .cl-card h3 small { color: #7f8f8a; font-weight: 600; }
@@ -14996,3 +14825,28 @@ body.auth-locked .view-section > h1.sr-only, body:has(#profileModal[style*="flex
 .war-videos > b { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; }
 .war-video { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; text-decoration: none; color: var(--cd-text); border: 1px solid var(--cd-border-strong); }
 .war-video:hover, .war-video:focus-visible { border-color: var(--accent); }
+
+/* ===== 🏅 Klub yutuqlari (clubs.js honoursHtml): kuboklar va musobaqalardagi natijalar ===== */
+.cl-trophies { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 10px 0 16px; }
+.cl-trophy { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 12px 6px; border-radius: 12px; text-align: center; background: rgba(var(--accent-rgb), 0.08); border: 1px solid rgba(var(--accent-rgb), 0.25); }
+.cl-trophy.none { background: rgba(255, 255, 255, 0.03); border-color: var(--cd-border-strong); }
+.cl-trophy.none .cl-trophy-ico { filter: grayscale(1); opacity: 0.45; }
+.cl-trophy-ico { font-size: 26px; line-height: 1.1; }
+.cl-trophy b { font-size: 16px; }
+.cl-trophy small { font-size: 11px; color: var(--cd-muted); line-height: 1.25; }
+.cl-res-title { margin: 0 0 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--cd-muted); }
+.cl-res-list { display: flex; flex-direction: column; gap: 6px; }
+.cl-res { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; border-radius: 10px; text-align: left; cursor: pointer; color: var(--cd-text); background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cd-border-strong); font: inherit; }
+.cl-res:hover, .cl-res:focus-visible { border-color: var(--accent); }
+.cl-res-ico { font-size: 20px; flex: none; }
+.cl-res-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.cl-res-main b { font-size: 14px; overflow-wrap: anywhere; }
+.cl-res-main small { font-size: 12px; color: var(--cd-muted); }
+.cl-res-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex: none; }
+.cl-res-place { font-weight: 700; font-size: 13px; white-space: nowrap; }
+.cl-res-place.p1 { color: #f5c542; }
+.cl-res-place.p2 { color: #c9d3dc; }
+.cl-res-place.p3 { color: #d8965a; }
+.cl-res-tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.cl-res-tag.win { background: rgba(245, 197, 66, 0.16); color: #f5c542; }
+.cl-res-tag.live { background: rgba(var(--accent-rgb), 0.14); color: var(--accent); }

@@ -173,28 +173,6 @@ async function initDatabase() {
     )
   `);
 
-  // Davlat klublari: rollar (kapitan, moderator) va klub yangiliklari
-  await dbExec(`
-    CREATE TABLE IF NOT EXISTS club_roles (
-      id TEXT PRIMARY KEY,
-      club_country TEXT NOT NULL,
-      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
-      role TEXT NOT NULL,
-      created_at TEXT NOT NULL,
-      UNIQUE(club_country, user_id)
-    )
-  `);
-  await dbExec(`
-    CREATE TABLE IF NOT EXISTS club_news (
-      id TEXT PRIMARY KEY,
-      club_country TEXT NOT NULL,
-      author_id TEXT REFERENCES users(id) ON DELETE SET NULL,
-      title TEXT NOT NULL,
-      body TEXT NOT NULL,
-      pinned INTEGER DEFAULT 0,
-      created_at TEXT NOT NULL
-    )
-  `);
   // Bildirishnomalar markazi (🔔): data — JSON matn, turiga qarab klient o'zi matn yasaydi
   await dbExec(`
     CREATE TABLE IF NOT EXISTS notifications (
@@ -451,7 +429,6 @@ async function initDatabase() {
     'CREATE INDEX IF NOT EXISTS idx_rating_history_opp ON rating_history (opponent_id)',
     'CREATE INDEX IF NOT EXISTS idx_follows_followee ON follows (followee_id)',
     'CREATE INDEX IF NOT EXISTS idx_fairplay_user ON fairplay_games (user_id, created_at)',
-    'CREATE INDEX IF NOT EXISTS idx_club_news_club ON club_news (club_country)',
     'CREATE INDEX IF NOT EXISTS idx_chat_reads_user ON chat_reads (user_id, room_id)'
   ]) { try { await dbExec(sql); } catch (e) {} }
 
@@ -739,7 +716,9 @@ async function initDatabase() {
   // eski foydalanuvchi klublari jadvali (faqat tournaments unga bog'langan edi), "Turnir g'olibi" yutug'i va bildirishnomalar
   try { await dbRun("DELETE FROM user_achievements WHERE key = 'tournament_win'"); } catch (e) {}
   try { await dbRun("DELETE FROM notifications WHERE type = 'tournament_soon'"); } catch (e) {}
-  for (const t of ['games', 'sessions', 'news_posts', 'club_members', 'game_notes', 'mentorships', 'tournament_matches', 'tournament_participants', 'tournaments', 'clubs', 'user_history_archive']) {
+  // 2026-11-05: klub rahbariyati (kapitan, moderatorlar) va klub yangiliklari foydalanuvchi so'rovi bilan olib tashlandi
+  try { await dbRun("DELETE FROM notifications WHERE type IN ('club_news', 'club_role')"); } catch (e) {}
+  for (const t of ['games', 'sessions', 'news_posts', 'club_members', 'game_notes', 'mentorships', 'tournament_matches', 'tournament_participants', 'tournaments', 'clubs', 'user_history_archive', 'club_roles', 'club_news']) {
     try { await dbExec(`DROP TABLE IF EXISTS ${t}`); } catch (e) { console.error(`${t} jadvalini o'chirib bo'lmadi:`, e.message); }
   }
 
@@ -1756,61 +1735,12 @@ async function setUserCountryClub(userId, name, code) {
 
 async function clearUserCountryClub(userId) {
   await dbRun('UPDATE users SET club_country = NULL, club_code = NULL, club_joined_at = NULL WHERE id = ?', [userId]);
-  await dbRun('DELETE FROM club_roles WHERE user_id = ?', [userId]);
 }
 
-// --- Klub rollari: bitta kapitan + moderatorlar. Kapitan bo'lmasa — klubga eng birinchi qo'shilgan a'zo ---
-async function getClubStaff(club) {
-  const rows = await dbAll('SELECT r.user_id as "userId", r.role, u.username, u.club_country as "club" FROM club_roles r JOIN users u ON u.id = r.user_id WHERE r.club_country = ?', [club]);
-  const current = [];
-  for (const r of rows) {
-    if (r.club === club) current.push(r);
-    else await dbRun('DELETE FROM club_roles WHERE club_country = ? AND user_id = ?', [club, r.userId]);
-  }
-  let captain = current.find(r => r.role === 'captain') || null;
-  let autoCaptain = null;
-  if (!captain) {
-    const first = await dbGet('SELECT id, username FROM users WHERE club_country = ? ORDER BY (club_joined_at IS NULL), club_joined_at ASC, username ASC LIMIT 1', [club]);
-    if (first) {
-      await setClubRole(club, first.id, 'captain');
-      captain = { userId: first.id, username: first.username, role: 'captain' };
-      autoCaptain = captain;
-    }
-  }
-  const moderators = current.filter(r => r.role === 'moderator' && (!captain || r.userId !== captain.userId))
-    .map(r => ({ userId: r.userId, username: r.username }));
-  return { captain: captain ? { userId: captain.userId, username: captain.username } : null, moderators, autoCaptain };
-}
-
-// role: 'captain' | 'moderator' | 'member' (member — rol olib tashlanadi)
-async function setClubRole(club, userId, role) {
-  if (role !== 'captain' && role !== 'moderator') return dbRun('DELETE FROM club_roles WHERE club_country = ? AND user_id = ?', [club, userId]);
-  await dbRun('INSERT INTO club_roles (id, club_country, user_id, role, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (club_country, user_id) DO UPDATE SET role = excluded.role',
-    [uuidv4(), club, userId, role, new Date().toISOString()]);
-}
-
-async function listClubNews(club) {
-  const rows = await dbAll('SELECT n.id, n.title, n.body, n.pinned, n.created_at as "createdAt", n.author_id as "authorId", u.username as "author" FROM club_news n LEFT JOIN users u ON u.id = n.author_id WHERE n.club_country = ? ORDER BY n.created_at DESC LIMIT 30', [club]);
-  return rows.map(r => ({ ...r, pinned: !!Number(r.pinned) }))
-    .sort((a, b) => (Number(b.pinned) - Number(a.pinned)) || String(b.createdAt).localeCompare(String(a.createdAt)));
-}
-
-async function addClubNews(club, authorId, title, body, pinned) {
-  const id = uuidv4();
-  await dbRun('INSERT INTO club_news (id, club_country, author_id, title, body, pinned, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, club, authorId, title, body, pinned ? 1 : 0, new Date().toISOString()]);
-  return id;
-}
-
-async function getClubNews(id) {
-  return dbGet('SELECT id, club_country as "club", title, pinned FROM club_news WHERE id = ?', [id]);
-}
-
-async function deleteClubNews(id) {
-  await dbRun('DELETE FROM club_news WHERE id = ?', [id]);
-}
-
-async function setClubNewsPinned(id, pinned) {
-  await dbRun('UPDATE club_news SET pinned = ? WHERE id = ?', [pinned ? 1 : 0, id]);
+// 🏅 Klub yutuqlari: klub Bayroqlar bellashuvida ochko olgan mavsumlar (yangisidan, ko'pi bilan 12)
+async function clubWarSeasons(club) {
+  const rows = await dbAll('SELECT DISTINCT season FROM war_points WHERE club_country = ? ORDER BY season DESC LIMIT 12', [club]);
+  return rows.map(r => r.season);
 }
 
 async function getClubMemberIds(club) {
@@ -2478,14 +2408,8 @@ module.exports = {
   addChatFilterWord,
   removeChatFilterWord,
   recentClubMessages,
-  getClubStaff,
-  setClubRole,
-  listClubNews,
-  addClubNews,
-  getClubNews,
-  deleteClubNews,
-  setClubNewsPinned,
   getClubMemberIds,
+  clubWarSeasons,
   getChatMessageById,
   deleteChatMessage,
   addNotification,

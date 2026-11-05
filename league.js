@@ -223,6 +223,24 @@ async function standings(divisionId) {
     .sort((a, b) => (b.points - a.points) || (b.boardPoints - a.boardPoints) || a.club.localeCompare(b.club));
 }
 
+// 🏅 Klub yutuqlari: klub qatnashgan liga va Chempionlar ligasi divizionlari — o'rni, natijasi, chempionligi (yangisidan)
+async function clubHonours(club) {
+  const rows = await q.all(`SELECT d.id, d.kind, d.continent, d.status, d.champion_club as "champion", s.number, s.initial_time as "initial", s.increment
+    FROM league_clubs c JOIN league_divisions d ON d.id = c.division_id JOIN league_seasons s ON s.id = d.season_id
+    WHERE c.club_name = ? ORDER BY s.number DESC, d.kind ASC LIMIT 20`, [club]);
+  const out = [];
+  for (const r of rows) {
+    const table = await standings(r.id);
+    const i = table.findIndex(t => t.club === club);
+    if (i < 0) continue;
+    const t = table[i];
+    out.push({ divisionId: r.id, kind: r.kind, continent: r.continent, season: Number(r.number), initial: r.kind === 'league' ? Number(r.initial) : null, increment: r.kind === 'league' ? Number(r.increment) : null,
+      finished: r.status !== 'active', champion: r.champion === club, place: i + 1, clubs: table.length,
+      played: t.played, won: t.won, drawn: t.drawn, lost: t.lost, points: t.points });
+  }
+  return out;
+}
+
 // Divizionni oldinga surish: muddati o'tgan bahslarni yakunlash, tur tugasa — keyingi tur yoki divizion yakuni
 async function processDivision(division) {
   const matches = await q.all('SELECT * FROM league_matches WHERE division_id = ? AND round = ?', [division.id, division.current_round]);
@@ -498,4 +516,4 @@ async function myGames(userId) {
   });
 }
 
-module.exports = { CFG, init, tick, ready, cancel, socketGone, recordGameResult, overview, divisionDetail, championsDivision, myGames, roundRobin };
+module.exports = { CFG, init, tick, ready, cancel, socketGone, recordGameResult, overview, divisionDetail, championsDivision, myGames, roundRobin, clubHonours };

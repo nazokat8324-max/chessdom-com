@@ -89,3 +89,47 @@ test("Liga: xonasi yo'q \"playing\" o'yin muddat tugagach durrang bilan yopiladi
   await waitFor(async () => (await q('SELECT status FROM league_matches WHERE id = ?', [m.id]))[0].status === 'finished');
   closeAll(a, b);
 });
+
+test("Klub yutuqlari: liga natijasi (o'rin, G/D/M, ochko), chempionlik kubogi va Bayroqlar mavsumlari; kapitan/moderator va yangiliklar yo'q", async () => {
+  // Bahs yakunlangach divizion ham yopiladi (1 turli liga) — chempion aniqlanadi
+  const champ = await waitFor(async () => { const r = await q("SELECT champion_club FROM league_divisions WHERE kind = 'league'"); return r[0] && r[0].champion_club; });
+  const current = new Date(Date.now() + 5 * 3600000).toISOString().slice(0, 7);
+  const now = new Date().toISOString();
+  await q("INSERT INTO war_points (id, season, club_country, club_code, user_id, opponent_code, points, created_at) VALUES ('wp1', '2026-01', 'Uzbekistan', 'uz', ?, 'kz', 4, ?), ('wp2', ?, 'Uzbekistan', 'uz', ?, 'kz', 3, ?)", [a.id, now, current, a.id, now]);
+  const uz = await srv.api(null, '/api/country-clubs/Uzbekistan/honours');
+  const kz = await srv.api(null, '/api/country-clubs/Kazakhstan/honours');
+  for (const [name, h] of [['Uzbekistan', uz], ['Kazakhstan', kz]]) {
+    assert.equal(h.success, true);
+    assert.equal(h.leagues.length, 1, name + ': bitta liga');
+    const l = h.leagues[0];
+    assert.equal(l.kind, 'league');
+    assert.equal(l.season, 1);
+    assert.equal(l.clubs, 2);
+    assert.equal(l.finished, true);
+    assert.ok(l.played >= 1, "bahs o'ynalgan"); // oldingi test bahsni qayta ochib yopadi — 2 bo'lishi mumkin
+    assert.equal(l.champion, champ === name);
+    assert.equal(l.place, champ === name ? 1 : 2);
+    assert.equal(l.won + l.drawn + l.lost, l.played);
+    assert.equal(h.trophies.league, champ === name ? 1 : 0);
+    assert.equal(h.trophies.champions, 0);
+  }
+  // Bayroqlar: o'tgan mavsumda yagona ochkoli klub — chempion; joriy oy — "davom etmoqda", kubok berilmaydi
+  assert.deepEqual(uz.flags.map((f) => [f.season, f.place, f.points, f.champion, f.current]), [[current, 1, 3, false, true], ['2026-01', 1, 4, true, false]]);
+  assert.ok(uz.flags[1].territories > 0);
+  assert.equal(uz.trophies.flags, 1);
+  assert.deepEqual(kz.flags, []);
+  // Hech qatnashmagan klub — bo'sh
+  const none = await srv.api(null, '/api/country-clubs/Chile/honours');
+  assert.deepEqual([none.leagues, none.flags, none.trophies], [[], [], { league: 0, champions: 0, flags: 0 }]);
+  assert.equal((await srv.api(null, '/api/country-clubs/' + encodeURIComponent('<x>') + '/honours')).status, 404);
+  // Olib tashlangan: rahbariyat va yangiliklar API, jadvallar
+  for (const [m, p] of [['GET', '/staff'], ['POST', '/roles'], ['POST', '/news']]) {
+    assert.equal((await fetch(srv.base + '/api/country-clubs/Uzbekistan' + p, { method: m, headers: { Authorization: 'Bearer ' + a.token, 'Content-Type': 'application/json' }, body: m === 'POST' ? '{}' : undefined })).status, 404, m + ' ' + p);
+  }
+  assert.deepEqual(await q("SELECT name FROM sqlite_master WHERE type = 'table' AND name IN ('club_roles', 'club_news')"), []);
+  // Klub chatidagi xabarni faqat sayt admini o'chiradi (avval kapitan/moderator ham)
+  const msg = await srv.api(a, '/api/chat/messages', 'POST', { roomId: 'club_Uzbekistan', message: 'salom' });
+  const id = msg.messageId;
+  assert.ok(id, 'xabar yozildi');
+  assert.equal((await srv.api(a, '/api/chat/messages/' + id, 'DELETE')).status, 403);
+});

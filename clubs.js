@@ -1,7 +1,7 @@
 // 🛡️ Klublar bo'limi (yangi ko'rinish, 2026-10-23): ixcham ro'yxat (mening klubim, faol klublar tepada) va bitta klub sahifasi
 // to'rt tab bilan — Umumiy, A'zolar, Liga, Chat. social.js dagi eski funksiyalar (openClubDetail, showClubChat, showClubLeaderboard,
 // showClubHistory, showClubLeague, loadClubs ...) shu yerda almashtiriladi; router.js ularni keyin o'raydi (manzillar o'zgarmaydi:
-// /klublar?club=<davlat>[&tab=reyting|tarix|liga|chat]). Klub rahbariyati/yangiliklari — clubstaff.js (#clubStaffNews).
+// /klublar?club=<davlat>[&tab=reyting|tarix|liga|chat]). Umumiy tabda 🏅 Klub yutuqlari (#clHonours, GET /api/country-clubs/:name/honours).
 (function () {
   const esc = (v) => String(v == null ? '' : v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const flagUrl = (code, w) => `https://flagcdn.com/w${w || 80}/${encodeURIComponent(String(code || '').toLowerCase())}.png`;
@@ -150,8 +150,52 @@
           ${top.length ? `<ol class="cl-members">${top.map((m, i) => memberRow(m, i, true)).join('')}</ol>` : `<p class="cl-muted">${esc(tx('clubDetailNoMembers', "Hali a'zolar yo'q. Birinchi bo'lib qo'shiling!"))}</p>`}</div>
         <div class="cl-card"><h3>📖 ${esc(tx('clubDetailAboutTitle', 'Klub haqida'))}</h3><p class="cl-about">${esc(String(tx('clubDetailAboutText', "Rasmiy {country} shaxmat klubiga xush kelibsiz!")).replace(/\{country\}/g, localName(st.name, st.code)))}</p></div>
       </div>
-      <div class="cl-col"><div id="clubStaffNews" class="cs-root"></div></div>
+      <div class="cl-col"><div class="cl-card cl-honours" id="clHonours"><h3>🏅 ${esc(tx('clHonours', 'Klub yutuqlari'))}</h3><div class="cl-loading">${esc(tx('loadingText', 'Yuklanmoqda...'))}</div></div></div>
     </div>`;
+  }
+
+  // 🏅 Klub yutuqlari: kuboklar (liga, Chempionlar ligasi, Bayroqlar) va musobaqalardagi natijalar
+  const honoursCache = new Map();
+  async function loadHonours() {
+    const name = st.name;
+    let d = honoursCache.get(name);
+    if (!d || Date.now() - d.at > 60000) {
+      const r = await fetch('/api/country-clubs/' + encodeURIComponent(name) + '/honours').then((x) => x.json()).catch(() => null);
+      if (r && r.success) { d = { at: Date.now(), data: r }; honoursCache.set(name, d); }
+    }
+    const box = document.getElementById('clHonours');
+    if (!box || st.name !== name || st.tab !== 'overview') return;
+    box.innerHTML = honoursHtml(d ? d.data : null);
+    box.querySelectorAll('[data-cl-div]').forEach((b) => b.addEventListener('click', () => window.openLeagueDivision && window.openLeagueDivision(b.dataset.clDiv)));
+    box.querySelectorAll('[data-cl-war]').forEach((b) => b.addEventListener('click', () => switchView('war')));
+  }
+  function honoursHtml(d) {
+    const head = `<h3>🏅 ${esc(tx('clHonours', 'Klub yutuqlari'))}</h3>`;
+    if (!d) return head + `<p class="cl-muted">${esc(tx('errLoadFailed', 'Yuklashda xatolik yuz berdi'))}</p>`;
+    const t = d.trophies || {};
+    const cup = (icon, n, label) => `<div class="cl-trophy${n ? '' : ' none'}"><span class="cl-trophy-ico">${icon}</span><b>${n ? '×' + n : '—'}</b><small>${esc(label)}</small></div>`;
+    const place = (r) => `<span class="cl-res-place${r.place <= 3 ? ' p' + r.place : ''}">${esc(tx('clResPlace', "{{place}}-o'rin / {{clubs}}", { place: r.place, clubs: r.clubs }))}</span>`;
+    const tags = (r) => (r.champion ? `<span class="cl-res-tag win">🏆 ${esc(tx('clResChampion', 'Chempion'))}</span>` : '')
+      + (r.current || r.finished === false ? `<span class="cl-res-tag live">${esc(tx('clResLive', 'davom etmoqda'))}</span>` : '');
+    const rows = [];
+    for (const l of d.leagues || []) {
+      const title = l.kind === 'champions'
+        ? tx('clResChampions', 'Chempionlar ligasi · {{n}}-mavsum', { n: l.season })
+        : tx('clResLeague', '{{league}} · {{n}}-mavsum', { league: leagueLabel(l.continent), n: l.season });
+      const clock = l.initial != null && window.clockText ? ' · ' + window.clockText(l.initial, l.increment) : '';
+      rows.push(`<button type="button" class="cl-res" data-cl-div="${esc(l.divisionId)}"><span class="cl-res-ico">${l.kind === 'champions' ? '⭐' : '🏆'}</span>
+        <span class="cl-res-main"><b>${esc(title)}${esc(clock)}</b><small>${esc(tx('clResRecord', "{{won}} g'alaba · {{drawn}} durrang · {{lost}} mag'lubiyat · {{points}} ochko", l))}</small></span>
+        <span class="cl-res-side">${place(l)}${tags(l)}</span></button>`);
+    }
+    for (const f of d.flags || []) {
+      const month = window.warMonthName ? window.warMonthName(f.season) : f.season;
+      rows.push(`<button type="button" class="cl-res" data-cl-war="${esc(f.season)}"><span class="cl-res-ico">🚩</span>
+        <span class="cl-res-main"><b>${esc(tx('clResFlags', 'Bayroqlar bellashuvi · {{month}}', { month }))}</b><small>${esc(tx('clResFlagsSub', '{{territories}} hudud · {{points}} ochko', f))}</small></span>
+        <span class="cl-res-side">${place(f)}${tags(f)}</span></button>`);
+    }
+    return head + `<div class="cl-trophies">${cup('🏆', t.league, tx('clTrLeague', 'Liga chempioni'))}${cup('⭐', t.champions, tx('clTrChampions', "Chempionlar ligasi g'olibi"))}${cup('🚩', t.flags, tx('clTrFlags', 'Bayroqlar chempioni'))}</div>
+      <h4 class="cl-res-title">${esc(tx('clResults', 'Musobaqalardagi natijalar'))}</h4>
+      ${rows.length ? `<div class="cl-res-list">${rows.join('')}</div>` : `<p class="cl-muted">${esc(tx('clHonoursEmpty', "Klub hali musobaqalarda qatnashmagan. Liga bahslari va Bayroqlar bellashuvidagi natijalar shu yerda paydo bo'ladi."))}</p>`}`;
   }
 
   function membersHtml() {
@@ -232,7 +276,7 @@
     if (st.tab !== 'chat') parkChat();
     if (st.tab === 'overview') {
       pane.innerHTML = overviewHtml();
-      if (st.data && typeof window.renderClubStaffNews === 'function') window.renderClubStaffNews(st.name);
+      if (st.data) loadHonours();
     } else if (st.tab === 'members') pane.innerHTML = membersHtml();
     else if (st.tab === 'league') pane.innerHTML = leagueHtml();
     else if (st.tab === 'chat') {

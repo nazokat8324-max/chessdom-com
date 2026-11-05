@@ -946,26 +946,9 @@ window.TRANSLATIONS_TG = {
   rkMaster: "Устод",
   rkGrandmaster: "Гроссмейстер",
   rkLegend: "Дараҷаҳо",
-  csStaff: "Роҳбарияти клуб",
-  csStaffHint: "Капитан ва модераторҳо хабар нашр мекунанд ва тартиботи чати клубро нигоҳ медоранд.",
   csCaptain: "Капитан",
   csModerator: "Модератор",
-  csMakeCaptain: "Супоридани капитанӣ",
-  csAssign: "Таъин кардан",
-  csUsernamePh: "Номи корбари аъзо",
-  csRemove: "Хориҷ кардан",
-  csNoCaptain: "Клуб ҳоло аъзо надорад",
-  csTransferConfirm: "Капитанӣ ба {{name}} супорида шавад? Шумо модератор мемонед.",
-  csSaved: "Нигоҳ дошта шуд",
-  csNews: "Хабарҳои клуб",
-  csNewsTitlePh: "Сарлавҳа",
-  csNewsBodyPh: "Паём барои аъзоёни клуб...",
-  csPin: "Часпондан",
-  csPublish: "Нашр кардан",
-  csPublished: "Хабар нашр шуд",
-  csNoNews: "Ҳоло хабар нест",
   csDelete: "Нест кардан",
-  csDeleteConfirm: "Ин хабар нест карда шавад?",
   csDeleteMsgConfirm: "Ин паём нест карда шавад?",
   nfTitle: "Огоҳиномаҳо",
   nfClear: "Тоза кардан",
@@ -979,15 +962,7 @@ window.TRANSLATIONS_TG = {
   nfMessage: "{{name}}: {{text}}",
   nfMessages: "{{count}} паёми нав аз {{name}}",
   nfLeagueReady: "Бозии лига: {{name}} омода аст ва шуморо интизор аст",
-  nfClubNews: "Хабар дар клуби {{club}}: {{title}}",
-  nfClubRole: "Шумо акнун дар клуби {{club}} «{{role}}» ҳастед",
-  nfClubRoleRemoved: "Нақши шумо дар клуби {{club}} гирифта шуд",
   nfRankUp: "Дараҷаи нав! {{mode}}: {{rank}} ({{rating}})",
-  srvOnlyCaptain: "Нақшҳоро танҳо капитан идора карда метавонад!",
-  srvNotClubMember: "Ин бозингар аъзои клуб нест!",
-  srvOnlyStaffNews: "Хабарро танҳо капитан ва модераторҳо нашр карда метавонанд!",
-  srvNewsRequired: "Сарлавҳа ва матн лозим аст!",
-  srvNewsNotFound: "Хабар ёфт нашуд!",
   srvMessageNotFound: "Паём ёфт нашуд!",
   mNews: "Хабарҳо",
   nwSub: "Хабарҳо, эълонҳо ва имкониятҳои нави ChessCaravan",
@@ -1830,6 +1805,34 @@ window.TRANSLATIONS_TG = {
   libViews: "Тамошо: {{n}}",
 
   libAllVideos: "Ҳамаи видеоҳо дар канал",
+
+  clHonours: "Дастовардҳои клуб",
+
+  clResults: "Натиҷаҳо дар мусобиқаҳо",
+
+  clTrLeague: "Қаҳрамони лига",
+
+  clTrChampions: "Ғолиби Лигаи қаҳрамонон",
+
+  clTrFlags: "Қаҳрамони Мусобиқаи парчамҳо",
+
+  clResLeague: "{{league}} · мавсими {{n}}",
+
+  clResChampions: "Лигаи қаҳрамонон · мавсими {{n}}",
+
+  clResFlags: "Мусобиқаи парчамҳо · {{month}}",
+
+  clResPlace: "Ҷойи {{place}} / {{clubs}}",
+
+  clResRecord: "{{won}} ғалаба · {{drawn}} мусовӣ · {{lost}} шикаст · {{points}} хол",
+
+  clResFlagsSub: "{{territories}} қаламрав · {{points}} хол",
+
+  clResLive: "идома дорад",
+
+  clResChampion: "Қаҳрамон",
+
+  clHonoursEmpty: "Клуб ҳанӯз дар мусобиқаҳо иштирок накардааст. Натиҷаҳои лига ва Мусобиқаи парчамҳо дар ин ҷо пайдо мешаванд.",
 
 
   clCountryVideo: "Видео дар бораи шатранҷи {{country}}",

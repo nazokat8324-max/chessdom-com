@@ -946,26 +946,9 @@ window.TRANSLATIONS_AZ = {
   rkMaster: "Usta",
   rkGrandmaster: "Qrossmeyster",
   rkLegend: "Dərəcələr",
-  csStaff: "Klub rəhbərliyi",
-  csStaffHint: "Kapitan və moderatorlar xəbər paylaşır və klub çatında qaydanı qoruyur.",
   csCaptain: "Kapitan",
   csModerator: "Moderator",
-  csMakeCaptain: "Kapitanlığı ötür",
-  csAssign: "Təyin et",
-  csUsernamePh: "Üzvün istifadəçi adı",
-  csRemove: "Çıxar",
-  csNoCaptain: "Klubun hələ üzvü yoxdur",
-  csTransferConfirm: "Kapitanlıq {{name}} adlı oyunçuya ötürülsün? Sən moderator olaraq qalacaqsan.",
-  csSaved: "Yadda saxlanıldı",
-  csNews: "Klub xəbərləri",
-  csNewsTitlePh: "Başlıq",
-  csNewsBodyPh: "Klub üzvlərinə mesaj...",
-  csPin: "Sancaqla",
-  csPublish: "Dərc et",
-  csPublished: "Xəbər dərc edildi",
-  csNoNews: "Hələ xəbər yoxdur",
   csDelete: "Sil",
-  csDeleteConfirm: "Bu xəbər silinsin?",
   csDeleteMsgConfirm: "Bu mesaj silinsin?",
   nfTitle: "Bildirişlər",
   nfClear: "Təmizlə",
@@ -979,15 +962,7 @@ window.TRANSLATIONS_AZ = {
   nfMessage: "{{name}}: {{text}}",
   nfMessages: "{{name}} adlı oyunçudan {{count}} yeni mesaj",
   nfLeagueReady: "Liqa oyunu: {{name}} hazırdır və səni gözləyir",
-  nfClubNews: "{{club}} klubunda xəbər: {{title}}",
-  nfClubRole: "Sən artıq {{club}} klubunda «{{role}}»sən",
-  nfClubRoleRemoved: "{{club}} klubundakı rolun götürüldü",
   nfRankUp: "Yeni dərəcə! {{mode}}: {{rank}} ({{rating}})",
-  srvOnlyCaptain: "Rolları yalnız kapitan idarə edə bilər!",
-  srvNotClubMember: "Bu oyunçu klubun üzvü deyil!",
-  srvOnlyStaffNews: "Xəbəri yalnız kapitan və moderatorlar dərc edə bilər!",
-  srvNewsRequired: "Başlıq və mətn tələb olunur!",
-  srvNewsNotFound: "Xəbər tapılmadı!",
   srvMessageNotFound: "Mesaj tapılmadı!",
   mNews: "Xəbərlər",
   nwSub: "ChessCaravan xəbərləri, elanları və yeni imkanları",
@@ -1830,6 +1805,34 @@ window.TRANSLATIONS_AZ = {
   libViews: "Baxış: {{n}}",
 
   libAllVideos: "Bütün videolar kanalda",
+
+  clHonours: "Klubun nailiyyətləri",
+
+  clResults: "Yarışlardakı nəticələr",
+
+  clTrLeague: "Liqa çempionu",
+
+  clTrChampions: "Çempionlar Liqasının qalibi",
+
+  clTrFlags: "Bayraqlar çempionu",
+
+  clResLeague: "{{league}} · {{n}}-ci mövsüm",
+
+  clResChampions: "Çempionlar Liqası · {{n}}-ci mövsüm",
+
+  clResFlags: "Bayraqlar yarışı · {{month}}",
+
+  clResPlace: "{{place}}-ci yer / {{clubs}}",
+
+  clResRecord: "{{won}} qələbə · {{drawn}} heç-heçə · {{lost}} məğlubiyyət · {{points}} xal",
+
+  clResFlagsSub: "{{territories}} ərazi · {{points}} xal",
+
+  clResLive: "davam edir",
+
+  clResChampion: "Çempion",
+
+  clHonoursEmpty: "Klub hələ yarışlarda iştirak etməyib. Liqa matçlarının və Bayraqlar yarışının nəticələri burada görünəcək.",
 
 
   clCountryVideo: "{{country}} şahmatı haqqında video",

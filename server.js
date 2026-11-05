@@ -2714,96 +2714,44 @@ async function start() {
     catch (err) { console.error('Country club leave xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  // --- Klub rahbariyati (kapitan, moderatorlar) va klub yangiliklari ---
-  async function clubContext(club, userId) {
-    const staff = await db.getClubStaff(club);
-    if (staff.autoCaptain) {
-      const code = (await db.getUserById(staff.autoCaptain.userId) || {}).club_code || null;
-      notify(staff.autoCaptain.userId, 'club_role', { club, code, role: 'captain' });
+  // --- 🏅 Klub yutuqlari: liga va Chempionlar ligasi natijalari, Bayroqlar bellashuvi mavsumlari (kesh 60 s) ---
+  // (Klub rahbariyati — kapitan/moderatorlar — va klub yangiliklari 2026-11-05 da foydalanuvchi so'rovi bilan olib tashlangan)
+  async function clubHonours(club) {
+    const leagues = await league.clubHonours(club);
+    const current = warSeasonKey();
+    const flags = [];
+    for (const season of await db.clubWarSeasons(club)) {
+      const state = await cached('war:' + season, 20000, () => computeWar(season));
+      const i = state.clubs.findIndex(c => c.country === club);
+      if (i < 0) continue;
+      const c = state.clubs[i];
+      flags.push({ season, place: i + 1, clubs: state.clubs.length, points: c.points, territories: c.territories,
+        current: season === current, champion: season !== current && i === 0 && c.territories > 0 });
     }
-    const me = userId ? await db.getUserById(userId) : null;
-    const isAdmin = !!(me && me.role === 'admin');
-    const isCaptain = !!(staff.captain && staff.captain.userId === userId);
-    const isModerator = staff.moderators.some(m => m.userId === userId);
-    return { staff, me, isAdmin, isCaptain, isModerator, canModerate: isAdmin || isCaptain || isModerator };
+    return {
+      trophies: {
+        league: leagues.filter(l => l.kind === 'league' && l.champion).length,
+        champions: leagues.filter(l => l.kind === 'champions' && l.champion).length,
+        flags: flags.filter(f => f.champion).length
+      },
+      leagues, flags
+    };
   }
-  const publicStaff = (s) => ({ captain: s.captain ? { username: s.captain.username } : null, moderators: s.moderators.map(m => ({ username: m.username })) });
-  app.get('/api/country-clubs/:name/staff', apiLimiter, async (req, res) => {
+  app.get('/api/country-clubs/:name/honours', apiLimiter, async (req, res) => {
     try {
       const club = String(req.params.name);
       if (!isValidClubName(club)) return res.status(404).json({ success: false, message: 'Klub topilmadi!' });
-      const ctx = await clubContext(club, optionalUserId(req));
-      const myRole = ctx.isCaptain ? 'captain' : (ctx.isModerator ? 'moderator' : null);
-      res.json({ success: true, ...publicStaff(ctx.staff), myRole, canModerate: ctx.canModerate, canManage: ctx.isCaptain || ctx.isAdmin, news: await db.listClubNews(club) });
-    } catch (err) { console.error('Klub rahbariyati xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+      res.json({ success: true, ...(await cached('honours:' + club, 60000, () => clubHonours(club))) });
+    } catch (err) { console.error('Klub yutuqlari xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
-  // Kapitan (yoki sayt admini): moderator tayinlash/olib tashlash, kapitanlikni topshirish
-  app.post('/api/country-clubs/:name/roles', authMiddleware, async (req, res) => {
-    try {
-      const club = String(req.params.name);
-      const role = String((req.body && req.body.role) || '');
-      if (!isValidClubName(club) || !['captain', 'moderator', 'member'].includes(role)) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
-      const ctx = await clubContext(club, req.user.userId);
-      if (!ctx.isCaptain && !ctx.isAdmin) return res.status(403).json({ success: false, message: 'Faqat kapitan rollarni boshqara oladi!' });
-      const target = await db.getUserByUsername(String((req.body && req.body.username) || ''));
-      if (!target || target.club_country !== club) return res.status(400).json({ success: false, message: "O'yinchi bu klub a'zosi emas!" });
-      if (role === 'captain') {
-        // Kapitanlik topshiriladi: eski kapitan moderator bo'lib qoladi
-        if (ctx.staff.captain && ctx.staff.captain.userId !== target.id) await db.setClubRole(club, ctx.staff.captain.userId, 'moderator');
-        await db.setClubRole(club, target.id, 'captain');
-      } else {
-        if (ctx.staff.captain && ctx.staff.captain.userId === target.id) return res.status(400).json({ success: false, message: 'Ruxsat yo\'q' });
-        await db.setClubRole(club, target.id, role);
-      }
-      if (target.id !== req.user.userId) notify(target.id, 'club_role', { club, code: target.club_code || null, role });
-      if (ctx.isAdmin && !ctx.isCaptain) auditLog(req, 'club_role', { type: 'user', id: target.id, name: target.username }, { club, role });
-      const staff = await db.getClubStaff(club);
-      res.json({ success: true, ...publicStaff(staff) });
-    } catch (err) { console.error('Klub roli xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  app.post('/api/country-clubs/:name/news', authMiddleware, async (req, res) => {
-    try {
-      const club = String(req.params.name);
-      if (!isValidClubName(club)) return res.status(404).json({ success: false, message: 'Klub topilmadi!' });
-      const ctx = await clubContext(club, req.user.userId);
-      if (!ctx.canModerate) return res.status(403).json({ success: false, message: 'Faqat kapitan va moderatorlar yangilik yoza oladi!' });
-      const title = String((req.body && req.body.title) || '').trim().slice(0, 120);
-      const text = String((req.body && req.body.body) || '').trim().slice(0, 3000);
-      if (!title || !text) return res.status(400).json({ success: false, message: 'Sarlavha va matn kerak!' });
-      const id = await db.addClubNews(club, req.user.userId, title, text, !!(req.body && req.body.pinned));
-      const code = (ctx.me && ctx.me.club_code) || null;
-      for (const uid of await db.getClubMemberIds(club)) if (uid !== req.user.userId) notify(uid, 'club_news', { club, code, title, newsId: id, author: req.user.username });
-      res.json({ success: true, id, news: await db.listClubNews(club) });
-    } catch (err) { console.error('Klub yangiligi xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  });
-
-  // Yangilikni o'chirish yoki mahkamlash (📌)
-  const newsAction = (action) => async (req, res) => {
-    try {
-      const news = await db.getClubNews(String(req.params.id));
-      if (!news) return res.status(404).json({ success: false, message: 'Yangilik topilmadi!' });
-      const ctx = await clubContext(news.club, req.user.userId);
-      if (!ctx.canModerate) return res.status(403).json({ success: false, message: 'Faqat kapitan va moderatorlar yangilik yoza oladi!' });
-      if (action === 'delete') await db.deleteClubNews(news.id);
-      else await db.setClubNewsPinned(news.id, !Number(news.pinned));
-      if (ctx.isAdmin && !ctx.isCaptain && !ctx.isModerator) auditLog(req, action === 'delete' ? 'club_news_delete' : 'club_news_pin', { type: 'club', name: news.club }, { title: news.title });
-      res.json({ success: true, news: await db.listClubNews(news.club) });
-    } catch (err) { console.error('Klub yangiligi xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
-  };
-  app.delete('/api/country-clubs/news/:id', authMiddleware, newsAction('delete'));
-  app.post('/api/country-clubs/news/:id/pin', authMiddleware, newsAction('pin'));
-
-  // Klub chatidagi xabarni o'chirish — kapitan, moderator yoki sayt admini
-  app.delete('/api/chat/messages/:id', authMiddleware, async (req, res) => {
+  // Klub chatidagi xabarni o'chirish — faqat sayt admini
+  app.delete('/api/chat/messages/:id', adminMiddleware, async (req, res) => {
     try {
       const msg = await db.getChatMessageById(String(req.params.id));
       if (!msg || !msg.roomId || !msg.roomId.startsWith('club_')) return res.status(404).json({ success: false, message: 'Xabar topilmadi!' });
-      const ctx = await clubContext(msg.roomId.slice(5), req.user.userId);
-      if (!ctx.canModerate) return res.status(403).json({ success: false, message: 'Ruxsat yo\'q' });
       await db.deleteChatMessage(msg.id);
-      if (ctx.isAdmin && !ctx.isCaptain && !ctx.isModerator) auditLog(req, 'chat_delete', { type: 'user', id: msg.senderId, name: msg.sender }, { club: msg.roomId.slice(5), message: String(msg.message || '').slice(0, 200) });
+      auditLog(req, 'chat_delete', { type: 'user', id: msg.senderId, name: msg.sender }, { club: msg.roomId.slice(5), message: String(msg.message || '').slice(0, 200) });
       io.to(msg.roomId).emit('chat-message-deleted', { roomId: msg.roomId, messageId: msg.id });
       res.json({ success: true });
     } catch (err) { console.error('Chat xabarini o\'chirish xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }

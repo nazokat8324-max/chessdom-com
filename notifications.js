@@ -36,16 +36,6 @@
         };
       case 'league_ready':
         return { icon: '🏆', text: tx('nfLeagueReady', "Liga o'yini: {{name}} o'ynashga tayyor — sizni kutmoqda", { name: d.opponent }), go: () => switchView('leagues') };
-      case 'club_news':
-        return { icon: '📰', text: tx('nfClubNews', '{{club}} klubida yangilik: {{title}}', { club: clubName(d), title: d.title }), go: () => window.openClubDetail && window.openClubDetail(d.club, d.code) };
-      case 'club_role': {
-        const role = { captain: tx('csCaptain', 'Kapitan'), moderator: tx('csModerator', 'Moderator') }[d.role];
-        return {
-          icon: d.role === 'captain' ? '👑' : '🛡️',
-          text: role ? tx('nfClubRole', '{{club}} klubida sizga «{{role}}» roli berildi', { club: clubName(d), role }) : tx('nfClubRoleRemoved', '{{club}} klubidagi rolingiz olib tashlandi', { club: clubName(d) }),
-          go: () => window.openClubDetail && window.openClubDetail(d.club, d.code)
-        };
-      }
       case 'rank_up': {
         const rank = window.rankByKey ? window.rankByKey(d.rank) : null;
         return { icon: rank ? rank.icon : '⭐', text: tx('nfRankUp', 'Yangi daraja! {{mode}}: {{rank}} ({{rating}})', { mode: modeName(d.mode), rank: rank ? rank.label : d.rank, rating: d.rating }), go: () => window.openProfileModal && window.openProfileModal() };

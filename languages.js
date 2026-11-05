@@ -2161,26 +2161,9 @@ const translationsExtra = {
     rkMaster: "Usta",
     rkGrandmaster: "Grossmeyster",
     rkLegend: "Darajalar",
-    csStaff: "Klub rahbariyati",
-    csStaffHint: "Kapitan va moderatorlar yangilik e'lon qiladi va klub chatini tartibga soladi.",
     csCaptain: "Kapitan",
     csModerator: "Moderator",
-    csMakeCaptain: "Kapitanlikni topshirish",
-    csAssign: "Tayinlash",
-    csUsernamePh: "A'zoning nomi",
-    csRemove: "Olib tashlash",
-    csNoCaptain: "Klubda hali a'zolar yo'q",
-    csTransferConfirm: "Kapitanlikni {{name}} ga topshirasizmi? Siz moderator bo'lib qolasiz.",
-    csSaved: "Saqlandi",
-    csNews: "Klub yangiliklari",
-    csNewsTitlePh: "Sarlavha",
-    csNewsBodyPh: "Klub a'zolariga xabar...",
-    csPin: "Mahkamlash",
-    csPublish: "E'lon qilish",
-    csPublished: "Yangilik e'lon qilindi",
-    csNoNews: "Hali yangilik yo'q",
     csDelete: "O'chirish",
-    csDeleteConfirm: "Yangilikni o'chirasizmi?",
     csDeleteMsgConfirm: "Xabarni o'chirasizmi?",
     nfTitle: "Bildirishnomalar",
     nfClear: "Tozalash",
@@ -2194,15 +2177,7 @@ const translationsExtra = {
     nfMessage: "{{name}}: {{text}}",
     nfMessages: "{{name}} dan {{count}} ta yangi xabar",
     nfLeagueReady: "Liga o'yini: {{name}} o'ynashga tayyor — sizni kutmoqda",
-    nfClubNews: "{{club}} klubida yangilik: {{title}}",
-    nfClubRole: "{{club}} klubida sizga «{{role}}» roli berildi",
-    nfClubRoleRemoved: "{{club}} klubidagi rolingiz olib tashlandi",
     nfRankUp: "Yangi daraja! {{mode}}: {{rank}} ({{rating}})",
-    srvOnlyCaptain: "Faqat kapitan rollarni boshqara oladi!",
-    srvNotClubMember: "O'yinchi bu klub a'zosi emas!",
-    srvOnlyStaffNews: "Faqat kapitan va moderatorlar yangilik yoza oladi!",
-    srvNewsRequired: "Sarlavha va matn kerak!",
-    srvNewsNotFound: "Yangilik topilmadi!",
     srvMessageNotFound: "Xabar topilmadi!",
     mNews: "Yangiliklar",
     nwSub: "ChessCaravan'dagi yangiliklar, e'lonlar va yangi imkoniyatlar",
@@ -3047,6 +3022,34 @@ const translationsExtra = {
 
     libAllVideos: "Barcha videolar kanalda",
 
+    clHonours: "Klub yutuqlari",
+
+    clResults: "Musobaqalardagi natijalar",
+
+    clTrLeague: "Liga chempioni",
+
+    clTrChampions: "Chempionlar ligasi g'olibi",
+
+    clTrFlags: "Bayroqlar chempioni",
+
+    clResLeague: "{{league}} · {{n}}-mavsum",
+
+    clResChampions: "Chempionlar ligasi · {{n}}-mavsum",
+
+    clResFlags: "Bayroqlar bellashuvi · {{month}}",
+
+    clResPlace: "{{place}}-o'rin / {{clubs}}",
+
+    clResRecord: "{{won}} g'alaba · {{drawn}} durrang · {{lost}} mag'lubiyat · {{points}} ochko",
+
+    clResFlagsSub: "{{territories}} hudud · {{points}} ochko",
+
+    clResLive: "davom etmoqda",
+
+    clResChampion: "Chempion",
+
+    clHonoursEmpty: "Klub hali musobaqalarda qatnashmagan. Liga bahslari va Bayroqlar bellashuvidagi natijalar shu yerda paydo bo'ladi.",
+
 
     clCountryVideo: "{{country}} shaxmati haqida video",
 
@@ -3802,26 +3805,9 @@ const translationsExtra = {
     rkMaster: "Master",
     rkGrandmaster: "Grandmaster",
     rkLegend: "Ranks",
-    csStaff: "Club staff",
-    csStaffHint: "The captain and moderators post news and keep the club chat tidy.",
     csCaptain: "Captain",
     csModerator: "Moderator",
-    csMakeCaptain: "Hand over captaincy",
-    csAssign: "Assign",
-    csUsernamePh: "Member's username",
-    csRemove: "Remove",
-    csNoCaptain: "The club has no members yet",
-    csTransferConfirm: "Hand over captaincy to {{name}}? You will stay a moderator.",
-    csSaved: "Saved",
-    csNews: "Club news",
-    csNewsTitlePh: "Title",
-    csNewsBodyPh: "A message for club members...",
-    csPin: "Pin",
-    csPublish: "Publish",
-    csPublished: "News published",
-    csNoNews: "No news yet",
     csDelete: "Delete",
-    csDeleteConfirm: "Delete this news post?",
     csDeleteMsgConfirm: "Delete this message?",
     nfTitle: "Notifications",
     nfClear: "Clear",
@@ -3835,15 +3821,7 @@ const translationsExtra = {
     nfMessage: "{{name}}: {{text}}",
     nfMessages: "{{count}} new messages from {{name}}",
     nfLeagueReady: "League game: {{name}} is ready and waiting for you",
-    nfClubNews: "News in {{club}} club: {{title}}",
-    nfClubRole: "You are now “{{role}}” in the {{club}} club",
-    nfClubRoleRemoved: "Your role in the {{club}} club was removed",
     nfRankUp: "New rank! {{mode}}: {{rank}} ({{rating}})",
-    srvOnlyCaptain: "Only the captain can manage roles!",
-    srvNotClubMember: "This player is not a member of the club!",
-    srvOnlyStaffNews: "Only the captain and moderators can post news!",
-    srvNewsRequired: "A title and text are required!",
-    srvNewsNotFound: "News post not found!",
     srvMessageNotFound: "Message not found!",
     mNews: "News",
     nwSub: "News, announcements and new features on ChessCaravan",
@@ -4688,6 +4666,34 @@ const translationsExtra = {
 
     libAllVideos: "All videos on the channel",
 
+    clHonours: "Club honours",
+
+    clResults: "Competition results",
+
+    clTrLeague: "League champion",
+
+    clTrChampions: "Champions League winner",
+
+    clTrFlags: "Battle of Flags champion",
+
+    clResLeague: "{{league}} · season {{n}}",
+
+    clResChampions: "Champions League · season {{n}}",
+
+    clResFlags: "Battle of Flags · {{month}}",
+
+    clResPlace: "Place {{place}} / {{clubs}}",
+
+    clResRecord: "{{won}} won · {{drawn}} drawn · {{lost}} lost · {{points}} pts",
+
+    clResFlagsSub: "{{territories}} territories · {{points}} pts",
+
+    clResLive: "in progress",
+
+    clResChampion: "Champion",
+
+    clHonoursEmpty: "The club has not competed yet. League matches and Battle of Flags results will appear here.",
+
 
     clCountryVideo: "Video about chess in {{country}}",
 
@@ -5443,26 +5449,9 @@ const translationsExtra = {
     rkMaster: "Мастер",
     rkGrandmaster: "Гроссмейстер",
     rkLegend: "Ранги",
-    csStaff: "Руководство клуба",
-    csStaffHint: "Капитан и модераторы публикуют новости и следят за чатом клуба.",
     csCaptain: "Капитан",
     csModerator: "Модератор",
-    csMakeCaptain: "Передать капитанство",
-    csAssign: "Назначить",
-    csUsernamePh: "Имя участника",
-    csRemove: "Снять",
-    csNoCaptain: "В клубе пока нет участников",
-    csTransferConfirm: "Передать капитанство {{name}}? Вы останетесь модератором.",
-    csSaved: "Сохранено",
-    csNews: "Новости клуба",
-    csNewsTitlePh: "Заголовок",
-    csNewsBodyPh: "Сообщение для участников клуба...",
-    csPin: "Закрепить",
-    csPublish: "Опубликовать",
-    csPublished: "Новость опубликована",
-    csNoNews: "Новостей пока нет",
     csDelete: "Удалить",
-    csDeleteConfirm: "Удалить эту новость?",
     csDeleteMsgConfirm: "Удалить это сообщение?",
     nfTitle: "Уведомления",
     nfClear: "Очистить",
@@ -5476,15 +5465,7 @@ const translationsExtra = {
     nfMessage: "{{name}}: {{text}}",
     nfMessages: "Новые сообщения от {{name}}: {{count}}",
     nfLeagueReady: "Матч лиги: {{name}} готов и ждёт вас",
-    nfClubNews: "Новость клуба {{club}}: {{title}}",
-    nfClubRole: "В клубе {{club}} вам дана роль «{{role}}»",
-    nfClubRoleRemoved: "Ваша роль в клубе {{club}} снята",
     nfRankUp: "Новый ранг! {{mode}}: {{rank}} ({{rating}})",
-    srvOnlyCaptain: "Только капитан может управлять ролями!",
-    srvNotClubMember: "Этот игрок не состоит в клубе!",
-    srvOnlyStaffNews: "Только капитан и модераторы могут публиковать новости!",
-    srvNewsRequired: "Нужны заголовок и текст!",
-    srvNewsNotFound: "Новость не найдена!",
     srvMessageNotFound: "Сообщение не найдено!",
     mNews: "Новости",
     nwSub: "Новости, объявления и новые возможности ChessCaravan",
@@ -6329,6 +6310,34 @@ const translationsExtra = {
 
     libAllVideos: "Все видео на канале",
 
+    clHonours: "Достижения клуба",
+
+    clResults: "Результаты в соревнованиях",
+
+    clTrLeague: "Чемпион лиги",
+
+    clTrChampions: "Победитель Лиги чемпионов",
+
+    clTrFlags: "Чемпион Битвы флагов",
+
+    clResLeague: "{{league}} · сезон {{n}}",
+
+    clResChampions: "Лига чемпионов · сезон {{n}}",
+
+    clResFlags: "Битва флагов · {{month}}",
+
+    clResPlace: "{{place}}-е место / {{clubs}}",
+
+    clResRecord: "Победы: {{won}} · ничьи: {{drawn}} · поражения: {{lost}} · очки: {{points}}",
+
+    clResFlagsSub: "Территории: {{territories}} · очки: {{points}}",
+
+    clResLive: "идёт",
+
+    clResChampion: "Чемпион",
+
+    clHonoursEmpty: "Клуб ещё не участвовал в соревнованиях. Здесь появятся результаты лиги и Битвы флагов.",
+
 
     clCountryVideo: "Видео о шахматах: {{country}}",
 
@@ -7084,26 +7093,9 @@ const translationsExtra = {
     rkMaster: "Maestro",
     rkGrandmaster: "Gran maestro",
     rkLegend: "Rangos",
-    csStaff: "Directiva del club",
-    csStaffHint: "El capitán y los moderadores publican noticias y moderan el chat.",
     csCaptain: "Capitán",
     csModerator: "Moderador",
-    csMakeCaptain: "Ceder la capitanía",
-    csAssign: "Asignar",
-    csUsernamePh: "Nombre del miembro",
-    csRemove: "Quitar",
-    csNoCaptain: "El club aún no tiene miembros",
-    csTransferConfirm: "¿Ceder la capitanía a {{name}}? Seguirás como moderador.",
-    csSaved: "Guardado",
-    csNews: "Noticias del club",
-    csNewsTitlePh: "Título",
-    csNewsBodyPh: "Un mensaje para los miembros...",
-    csPin: "Fijar",
-    csPublish: "Publicar",
-    csPublished: "Noticia publicada",
-    csNoNews: "Aún no hay noticias",
     csDelete: "Eliminar",
-    csDeleteConfirm: "¿Eliminar esta noticia?",
     csDeleteMsgConfirm: "¿Eliminar este mensaje?",
     nfTitle: "Notificaciones",
     nfClear: "Borrar",
@@ -7117,15 +7109,7 @@ const translationsExtra = {
     nfMessage: "{{name}}: {{text}}",
     nfMessages: "{{count}} mensajes nuevos de {{name}}",
     nfLeagueReady: "Partida de liga: {{name}} está listo y te espera",
-    nfClubNews: "Noticia del club {{club}}: {{title}}",
-    nfClubRole: "Ahora eres «{{role}}» en el club {{club}}",
-    nfClubRoleRemoved: "Se retiró tu rol en el club {{club}}",
     nfRankUp: "¡Nuevo rango! {{mode}}: {{rank}} ({{rating}})",
-    srvOnlyCaptain: "¡Solo el capitán puede gestionar los roles!",
-    srvNotClubMember: "¡Este jugador no es miembro del club!",
-    srvOnlyStaffNews: "¡Solo el capitán y los moderadores pueden publicar noticias!",
-    srvNewsRequired: "¡Se necesitan título y texto!",
-    srvNewsNotFound: "¡Noticia no encontrada!",
     srvMessageNotFound: "¡Mensaje no encontrado!",
     mNews: "Noticias",
     nwSub: "Noticias, anuncios y novedades de ChessCaravan",
@@ -7970,6 +7954,34 @@ const translationsExtra = {
 
     libAllVideos: "Todos los vídeos en el canal",
 
+    clHonours: "Palmarés del club",
+
+    clResults: "Resultados en competiciones",
+
+    clTrLeague: "Campeón de liga",
+
+    clTrChampions: "Ganador de la Liga de Campeones",
+
+    clTrFlags: "Campeón de la Batalla de Banderas",
+
+    clResLeague: "{{league}} · temporada {{n}}",
+
+    clResChampions: "Liga de Campeones · temporada {{n}}",
+
+    clResFlags: "Batalla de Banderas · {{month}}",
+
+    clResPlace: "Puesto {{place}} / {{clubs}}",
+
+    clResRecord: "{{won}} victorias · {{drawn}} tablas · {{lost}} derrotas · {{points}} pts",
+
+    clResFlagsSub: "{{territories}} territorios · {{points}} pts",
+
+    clResLive: "en curso",
+
+    clResChampion: "Campeón",
+
+    clHonoursEmpty: "El club aún no ha competido. Aquí aparecerán los resultados de la liga y de la Batalla de Banderas.",
+
 
     clCountryVideo: "Vídeo sobre el ajedrez en {{country}}",
 
@@ -8725,26 +8737,9 @@ const translationsExtra = {
     rkMaster: "Meister",
     rkGrandmaster: "Großmeister",
     rkLegend: "Ränge",
-    csStaff: "Club-Leitung",
-    csStaffHint: "Kapitän und Moderatoren posten Neuigkeiten und moderieren den Chat.",
     csCaptain: "Kapitän",
     csModerator: "Moderator",
-    csMakeCaptain: "Kapitänsamt übergeben",
-    csAssign: "Zuweisen",
-    csUsernamePh: "Name des Mitglieds",
-    csRemove: "Entfernen",
-    csNoCaptain: "Der Club hat noch keine Mitglieder",
-    csTransferConfirm: "Kapitänsamt an {{name}} übergeben? Du bleibst Moderator.",
-    csSaved: "Gespeichert",
-    csNews: "Club-Neuigkeiten",
-    csNewsTitlePh: "Titel",
-    csNewsBodyPh: "Eine Nachricht an die Mitglieder...",
-    csPin: "Anheften",
-    csPublish: "Veröffentlichen",
-    csPublished: "Neuigkeit veröffentlicht",
-    csNoNews: "Noch keine Neuigkeiten",
     csDelete: "Löschen",
-    csDeleteConfirm: "Diese Neuigkeit löschen?",
     csDeleteMsgConfirm: "Diese Nachricht löschen?",
     nfTitle: "Benachrichtigungen",
     nfClear: "Leeren",
@@ -8758,15 +8753,7 @@ const translationsExtra = {
     nfMessage: "{{name}}: {{text}}",
     nfMessages: "{{count}} neue Nachrichten von {{name}}",
     nfLeagueReady: "Ligapartie: {{name}} ist bereit und wartet auf dich",
-    nfClubNews: "Neuigkeit im Club {{club}}: {{title}}",
-    nfClubRole: "Du bist jetzt „{{role}}“ im Club {{club}}",
-    nfClubRoleRemoved: "Deine Rolle im Club {{club}} wurde entfernt",
     nfRankUp: "Neuer Rang! {{mode}}: {{rank}} ({{rating}})",
-    srvOnlyCaptain: "Nur der Kapitän kann Rollen verwalten!",
-    srvNotClubMember: "Dieser Spieler ist kein Clubmitglied!",
-    srvOnlyStaffNews: "Nur Kapitän und Moderatoren dürfen Neuigkeiten posten!",
-    srvNewsRequired: "Titel und Text sind erforderlich!",
-    srvNewsNotFound: "Neuigkeit nicht gefunden!",
     srvMessageNotFound: "Nachricht nicht gefunden!",
     mNews: "Neuigkeiten",
     nwSub: "Neuigkeiten, Ankündigungen und neue Funktionen auf ChessCaravan",
@@ -9611,6 +9598,34 @@ const translationsExtra = {
 
     libAllVideos: "Alle Videos auf dem Kanal",
 
+    clHonours: "Vereinserfolge",
+
+    clResults: "Wettbewerbsergebnisse",
+
+    clTrLeague: "Ligameister",
+
+    clTrChampions: "Champions-League-Sieger",
+
+    clTrFlags: "Sieger der Flaggen-Duelle",
+
+    clResLeague: "{{league}} · Saison {{n}}",
+
+    clResChampions: "Champions League · Saison {{n}}",
+
+    clResFlags: "Flaggen-Duell · {{month}}",
+
+    clResPlace: "Platz {{place}} / {{clubs}}",
+
+    clResRecord: "{{won}} Siege · {{drawn}} Remis · {{lost}} Niederlagen · {{points}} Pkt.",
+
+    clResFlagsSub: "{{territories}} Gebiete · {{points}} Pkt.",
+
+    clResLive: "läuft",
+
+    clResChampion: "Meister",
+
+    clHonoursEmpty: "Der Club hat noch an keinem Wettbewerb teilgenommen. Ergebnisse aus Liga und Flaggen-Duell erscheinen hier.",
+
 
     clCountryVideo: "Video über Schach in {{country}}",
 
@@ -10366,26 +10381,9 @@ const translationsExtra = {
     rkMaster: "Maître",
     rkGrandmaster: "Grand maître",
     rkLegend: "Rangs",
-    csStaff: "Direction du club",
-    csStaffHint: "Le capitaine et les modérateurs publient des nouvelles et modèrent le chat.",
     csCaptain: "Capitaine",
     csModerator: "Modérateur",
-    csMakeCaptain: "Céder le capitanat",
-    csAssign: "Attribuer",
-    csUsernamePh: "Pseudo du membre",
-    csRemove: "Retirer",
-    csNoCaptain: "Le club n'a pas encore de membres",
-    csTransferConfirm: "Céder le capitanat à {{name}} ? Vous resterez modérateur.",
-    csSaved: "Enregistré",
-    csNews: "Actualités du club",
-    csNewsTitlePh: "Titre",
-    csNewsBodyPh: "Un message pour les membres...",
-    csPin: "Épingler",
-    csPublish: "Publier",
-    csPublished: "Actualité publiée",
-    csNoNews: "Pas encore d'actualités",
     csDelete: "Supprimer",
-    csDeleteConfirm: "Supprimer cette actualité ?",
     csDeleteMsgConfirm: "Supprimer ce message ?",
     nfTitle: "Notifications",
     nfClear: "Effacer",
@@ -10399,15 +10397,7 @@ const translationsExtra = {
     nfMessage: "{{name}} : {{text}}",
     nfMessages: "{{count}} nouveaux messages de {{name}}",
     nfLeagueReady: "Match de ligue : {{name}} est prêt et vous attend",
-    nfClubNews: "Actualité du club {{club}} : {{title}}",
-    nfClubRole: "Vous êtes maintenant « {{role}} » du club {{club}}",
-    nfClubRoleRemoved: "Votre rôle dans le club {{club}} a été retiré",
     nfRankUp: "Nouveau rang ! {{mode}} : {{rank}} ({{rating}})",
-    srvOnlyCaptain: "Seul le capitaine peut gérer les rôles !",
-    srvNotClubMember: "Ce joueur n'est pas membre du club !",
-    srvOnlyStaffNews: "Seuls le capitaine et les modérateurs peuvent publier !",
-    srvNewsRequired: "Un titre et un texte sont requis !",
-    srvNewsNotFound: "Actualité introuvable !",
     srvMessageNotFound: "Message introuvable !",
     mNews: "Actualités",
     nwSub: "Actualités, annonces et nouveautés de ChessCaravan",
@@ -11251,6 +11241,34 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+    clHonours: "Palmarès du club",
+
+    clResults: "Résultats en compétition",
+
+    clTrLeague: "Champion de ligue",
+
+    clTrChampions: "Vainqueur de la Ligue des champions",
+
+    clTrFlags: "Champion de la Bataille des drapeaux",
+
+    clResLeague: "{{league}} · saison {{n}}",
+
+    clResChampions: "Ligue des champions · saison {{n}}",
+
+    clResFlags: "Bataille des drapeaux · {{month}}",
+
+    clResPlace: "{{place}}e place / {{clubs}}",
+
+    clResRecord: "{{won}} victoires · {{drawn}} nulles · {{lost}} défaites · {{points}} pts",
+
+    clResFlagsSub: "{{territories}} territoires · {{points}} pts",
+
+    clResLive: "en cours",
+
+    clResChampion: "Champion",
+
+    clHonoursEmpty: "Le club n'a pas encore participé à une compétition. Les résultats de la ligue et de la Bataille des drapeaux apparaîtront ici.",
 
 
     clCountryVideo: "Vidéo sur les échecs : {{country}}",

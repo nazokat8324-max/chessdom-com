@@ -946,26 +946,9 @@ window.TRANSLATIONS_IT = {
   rkMaster: "Maestro",
   rkGrandmaster: "Grande Maestro",
   rkLegend: "Livelli",
-  csStaff: "Staff del club",
-  csStaffHint: "Il capitano e i moderatori pubblicano le notizie e tengono in ordine la chat del club.",
   csCaptain: "Capitano",
   csModerator: "Moderatore",
-  csMakeCaptain: "Cedi la fascia di capitano",
-  csAssign: "Assegna",
-  csUsernamePh: "Nome utente del membro",
-  csRemove: "Rimuovi",
-  csNoCaptain: "Il club non ha ancora membri",
-  csTransferConfirm: "Cedere la fascia di capitano a {{name}}? Resterai moderatore.",
-  csSaved: "Salvato",
-  csNews: "Notizie del club",
-  csNewsTitlePh: "Titolo",
-  csNewsBodyPh: "Un messaggio per i membri del club...",
-  csPin: "Fissa",
-  csPublish: "Pubblica",
-  csPublished: "Notizia pubblicata",
-  csNoNews: "Ancora nessuna notizia",
   csDelete: "Elimina",
-  csDeleteConfirm: "Eliminare questa notizia?",
   csDeleteMsgConfirm: "Eliminare questo messaggio?",
   nfTitle: "Notifiche",
   nfClear: "Svuota",
@@ -979,15 +962,7 @@ window.TRANSLATIONS_IT = {
   nfMessage: "{{name}}: {{text}}",
   nfMessages: "{{count}} nuovi messaggi da {{name}}",
   nfLeagueReady: "Partita di lega: {{name}} è pronto e ti aspetta",
-  nfClubNews: "Notizie dal club {{club}}: {{title}}",
-  nfClubRole: "Ora sei “{{role}}” nel club {{club}}",
-  nfClubRoleRemoved: "Il tuo ruolo nel club {{club}} è stato rimosso",
   nfRankUp: "Nuovo livello! {{mode}}: {{rank}} ({{rating}})",
-  srvOnlyCaptain: "Solo il capitano può gestire i ruoli!",
-  srvNotClubMember: "Questo giocatore non è membro del club!",
-  srvOnlyStaffNews: "Solo il capitano e i moderatori possono pubblicare notizie!",
-  srvNewsRequired: "Servono un titolo e un testo!",
-  srvNewsNotFound: "Notizia non trovata!",
   srvMessageNotFound: "Messaggio non trovato!",
   mNews: "Notizie",
   nwSub: "Notizie, annunci e nuove funzioni di ChessCaravan",
@@ -1830,6 +1805,34 @@ window.TRANSLATIONS_IT = {
   libViews: "Visualizzazioni: {{n}}",
 
   libAllVideos: "Tutti i video sul canale",
+
+  clHonours: "Palmarès del club",
+
+  clResults: "Risultati nelle competizioni",
+
+  clTrLeague: "Campione di lega",
+
+  clTrChampions: "Vincitore della Champions League",
+
+  clTrFlags: "Campione della Sfida delle Bandiere",
+
+  clResLeague: "{{league}} · stagione {{n}}",
+
+  clResChampions: "Champions League · stagione {{n}}",
+
+  clResFlags: "Sfida delle Bandiere · {{month}}",
+
+  clResPlace: "{{place}}º posto / {{clubs}}",
+
+  clResRecord: "{{won}} vittorie · {{drawn}} patte · {{lost}} sconfitte · {{points}} punti",
+
+  clResFlagsSub: "{{territories}} territori · {{points}} punti",
+
+  clResLive: "in corso",
+
+  clResChampion: "Campione",
+
+  clHonoursEmpty: "Il club non ha ancora partecipato a competizioni. Qui appariranno i risultati della lega e della Sfida delle Bandiere.",
 
 
   clCountryVideo: "Video sugli scacchi in {{country}}",

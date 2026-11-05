@@ -555,6 +555,18 @@ function updateClubChatComposer(countryName, countryCode) {
   note.appendChild(btn);
 }
 
+window.deleteClubChatMessage = async function (id) {
+  if (!confirm(tx('csDeleteMsgConfirm', "Xabarni o'chirasizmi?"))) return;
+  const d = await fetch('/api/chat/messages/' + encodeURIComponent(id), { method: 'DELETE', headers: window.authToken ? { 'Authorization': `Bearer ${window.authToken}` } : {} }).then(r => r.json()).catch(() => null);
+  if (!d || !d.success) showToast(tServer(d && d.message) || tx('errGeneric', 'Xatolik yuz berdi!'), 'warning');
+};
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof socket === 'undefined') return;
+  socket.on('chat-message-deleted', (data) => {
+    if (window.currentClubName && data && data.roomId === 'club_' + window.currentClubName && typeof window.loadClubChatMessages === 'function') window.loadClubChatMessages();
+  });
+});
+
 window.loadClubChatMessages = function() {
   if (!window.currentClubName) return;
   const container = document.getElementById("clubChatMessagesContainer");
@@ -562,12 +574,8 @@ window.loadClubChatMessages = function() {
 
   const roomId = 'club_' + window.currentClubName;
   const url = `/api/chat/messages?roomId=${encodeURIComponent(roomId)}`;
-  // Kapitan/moderator xabarlarni o'chira oladi — huquq bir marta so'raladi, keyin qayta chiziladi
-  if (typeof window.loadClubStaff === 'function' && window.clubModClub !== window.currentClubName) {
-    window.clubModClub = window.currentClubName;
-    window.clubCanModerate = false;
-    window.loadClubStaff(window.currentClubName).then(() => { if (window.clubCanModerate) window.loadClubChatMessages(); });
-  }
+  // Klub chatidagi xabarni faqat sayt admini o'chira oladi (🗑)
+  window.clubCanModerate = !!(window.currentUser && window.currentUser.role === 'admin');
 
   container.innerHTML = '<div style="font-size: 13px; color: #88a; text-align: center; padding: 20px;">' + tx('loadingText', 'Yuklanmoqda...') + '</div>';
 

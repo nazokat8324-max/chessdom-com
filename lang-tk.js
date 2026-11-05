@@ -946,26 +946,9 @@ window.TRANSLATIONS_TK = {
   rkMaster: "Ussat",
   rkGrandmaster: "Grossmeýster",
   rkLegend: "Derejeler",
-  csStaff: "Klubuň ýolbaşçylygy",
-  csStaffHint: "Kapitan we moderatorlar täzelik çap edýär we klub çatynda tertibi saklaýar.",
   csCaptain: "Kapitan",
   csModerator: "Moderator",
-  csMakeCaptain: "Kapitanlygy tabşyr",
-  csAssign: "Bellemek",
-  csUsernamePh: "Agzanyň ulanyjy ady",
-  csRemove: "Aýyr",
-  csNoCaptain: "Klubda entek agza ýok",
-  csTransferConfirm: "Kapitanlyk {{name}} oýunça tabşyrylsynmy? Siz moderator bolup galarsyňyz.",
-  csSaved: "Saklandy",
-  csNews: "Klub täzelikleri",
-  csNewsTitlePh: "Sözbaşy",
-  csNewsBodyPh: "Klub agzalaryna habar...",
-  csPin: "Berkit",
-  csPublish: "Çap et",
-  csPublished: "Täzelik çap edildi",
-  csNoNews: "Entek täzelik ýok",
   csDelete: "Poz",
-  csDeleteConfirm: "Bu täzelik pozulsynmy?",
   csDeleteMsgConfirm: "Bu habar pozulsynmy?",
   nfTitle: "Bildirişler",
   nfClear: "Arassala",
@@ -979,15 +962,7 @@ window.TRANSLATIONS_TK = {
   nfMessage: "{{name}}: {{text}}",
   nfMessages: "{{name}}-dan {{count}} täze habar",
   nfLeagueReady: "Liga oýny: {{name}} taýýar we size garaşýar",
-  nfClubNews: "{{club}} klubunda täzelik: {{title}}",
-  nfClubRole: "Siz indi {{club}} klubunda «{{role}}»",
-  nfClubRoleRemoved: "{{club}} klubundaky wezipäňiz aýryldy",
   nfRankUp: "Täze dereje! {{mode}}: {{rank}} ({{rating}})",
-  srvOnlyCaptain: "Wezipeleri diňe kapitan dolandyryp biler!",
-  srvNotClubMember: "Bu oýunçy klubuň agzasy däl!",
-  srvOnlyStaffNews: "Täzeligi diňe kapitan we moderatorlar çap edip biler!",
-  srvNewsRequired: "Sözbaşy we tekst gerek!",
-  srvNewsNotFound: "Täzelik tapylmady!",
   srvMessageNotFound: "Habar tapylmady!",
   mNews: "Täzelikler",
   nwSub: "ChessCaravan-yň täzelikleri, bildirişleri we täze mümkinçilikleri",
@@ -1830,6 +1805,34 @@ window.TRANSLATIONS_TK = {
   libViews: "Görülen: {{n}}",
 
   libAllVideos: "Ähli wideolar kanalda",
+
+  clHonours: "Klubuň üstünlikleri",
+
+  clResults: "Bäsleşiklerdäki netijeler",
+
+  clTrLeague: "Liganyň çempiony",
+
+  clTrChampions: "Çempionlar ligasynyň ýeňijisi",
+
+  clTrFlags: "Baýdaklar çempiony",
+
+  clResLeague: "{{league}} · {{n}}-nji möwsüm",
+
+  clResChampions: "Çempionlar ligasy · {{n}}-nji möwsüm",
+
+  clResFlags: "Baýdaklar bäsleşigi · {{month}}",
+
+  clResPlace: "{{place}}-nji orun / {{clubs}}",
+
+  clResRecord: "{{won}} ýeňiş · {{drawn}} deňme-deň · {{lost}} ýeňliş · {{points}} utuk",
+
+  clResFlagsSub: "{{territories}} sebit · {{points}} utuk",
+
+  clResLive: "dowam edýär",
+
+  clResChampion: "Çempion",
+
+  clHonoursEmpty: "Klub entek bäsleşiklere gatnaşmady. Liga duşuşyklarynyň we Baýdaklar bäsleşiginiň netijeleri şu ýerde peýda bolar.",
 
 
   clCountryVideo: "{{country}} küşdi barada wideo",

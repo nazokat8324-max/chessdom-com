@@ -50,6 +50,8 @@
     catch (e) { return season; }
   }
 
+  window.warMonthName = monthName;
+
   async function fetchWar(season) {
     const headers = window.authToken ? { Authorization: 'Bearer ' + window.authToken } : {};
     return fetch('/api/war' + (season ? '?season=' + encodeURIComponent(season) : ''), { headers }).then(r => r.json()).catch(() => null);

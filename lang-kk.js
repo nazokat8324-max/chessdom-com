@@ -1806,6 +1806,14 @@ window.TRANSLATIONS_KK = {
 
   libAllVideos: "Барлық бейне арнада",
 
+  admGamesNoAdmin: "Админсіз ойындар (24 сағат)",
+
+  admGamesNoAdminHint: "Ешбір админ (сіздің аккаунтыңыз) қатыспаған ойындар",
+
+  admReturning: "Қайта келген ойыншылар",
+
+  admReturningHint: "Кеше де, бүгін де кірген ойыншылар",
+
   tgInlineTip: "💡 Кез келген Telegram чатында @{{bot}} деп жазыңыз — досыңызға ойын шақыруы барады (мысалы: @{{bot}} 5+3).",
 
   clHonours: "Клуб жетістіктері",

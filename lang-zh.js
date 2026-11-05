@@ -1806,6 +1806,14 @@ window.TRANSLATIONS_ZH = {
 
   libAllVideos: "频道里的全部视频",
 
+  admGamesNoAdmin: "无管理员参与的对局（24 小时）",
+
+  admGamesNoAdminHint: "没有任何管理员（你的账号）参与的对局",
+
+  admReturning: "回访玩家",
+
+  admReturningHint: "昨天和今天都访问过的玩家",
+
   tgInlineTip: "💡 在任意 Telegram 聊天中输入 @{{bot}}，即可向好友发送对局邀请（例如：@{{bot}} 5+3）。",
 
   clHonours: "俱乐部荣誉",

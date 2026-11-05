@@ -1806,6 +1806,14 @@ window.TRANSLATIONS_AZ = {
 
   libAllVideos: "Bütün videolar kanalda",
 
+  admGamesNoAdmin: "Adminsiz oyunlar (24 saat)",
+
+  admGamesNoAdminHint: "Heç bir adminin (sənin hesabının) iştirak etmədiyi oyunlar",
+
+  admReturning: "Geri qayıdan oyunçular",
+
+  admReturningHint: "Həm dünən, həm bu gün daxil olan oyunçular",
+
   tgInlineTip: "💡 İstənilən Telegram söhbətində @{{bot}} yaz — dostuna oyun dəvəti gedəcək (məsələn: @{{bot}} 5+3).",
 
   clHonours: "Klubun nailiyyətləri",

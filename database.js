@@ -173,6 +173,15 @@ async function initDatabase() {
     )
   `);
 
+  // 📈 Kunlik faollik (admin "Qaytgan o'yinchilar"): o'yinchi saytga kirgan har kun (Toshkent vaqti) — bitta qator; 60 kundan eskisi o'chiriladi
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS user_days (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      day TEXT NOT NULL,
+      UNIQUE(user_id, day)
+    )
+  `);
   // Bildirishnomalar markazi (🔔): data — JSON matn, turiga qarab klient o'zi matn yasaydi
   await dbExec(`
     CREATE TABLE IF NOT EXISTS notifications (
@@ -1166,10 +1175,24 @@ async function adminSearchUsers(q) {
   return rows.map(u => ({ ...u, reports: counts.get(u.id) || 0 }));
 }
 
-async function adminStats() {
+async function markUserDay(userId, day) {
+  await dbRun('INSERT INTO user_days (id, user_id, day) VALUES (?, ?, ?) ON CONFLICT (user_id, day) DO NOTHING', [uuidv4(), userId, day]);
+}
+async function pruneUserDays(beforeDay) {
+  await dbRun('DELETE FROM user_days WHERE day < ?', [beforeDay]);
+}
+
+// days: { today, yesterday } — Toshkent kunlari (YYYY-MM-DD)
+async function adminStats(days) {
   const one = async (sql, params) => Number((await dbGet(sql, params || [])).n) || 0;
   const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const d = days || {};
   return {
+    // Hech bir admin qatnashmagan o'yinlar: admin o'z qatori (user_id) ham, raqib qatori (opponent = admin nomi) ham chiqariladi
+    gamesNoAdmin24h: Math.round(await one(`SELECT COUNT(*) as "n" FROM user_games WHERE played_at >= ?
+      AND user_id NOT IN (SELECT id FROM users WHERE role = 'admin')
+      AND COALESCE(opponent, '') NOT IN (SELECT username FROM users WHERE role = 'admin')`, [dayAgo]) / 2),
+    returning: d.today ? await one('SELECT COUNT(*) as "n" FROM user_days t WHERE t.day = ? AND EXISTS (SELECT 1 FROM user_days y WHERE y.user_id = t.user_id AND y.day = ?)', [d.today, d.yesterday]) : 0,
     users: await one('SELECT COUNT(*) as "n" FROM users'),
     newUsers24h: await one('SELECT COUNT(*) as "n" FROM users WHERE created_at >= ?', [dayAgo]),
     games24h: Math.round(await one('SELECT COUNT(*) as "n" FROM user_games WHERE played_at >= ?', [dayAgo]) / 2),
@@ -2429,6 +2452,8 @@ module.exports = {
   loadBans,
   adminSearchUsers,
   adminStats,
+  markUserDay,
+  pruneUserDays,
   saveActiveGame,
   deleteActiveGame,
   loadActiveGames,

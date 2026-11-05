@@ -1807,6 +1807,11 @@ test("C5 admin paneli: 8 ta tab, shikoyat → ban → blokdan chiqarish, jim qil
   // 📊 Statistika — kartalar va zaxira nusxa
   await p.waitForSelector('.adm-stat', { timeout: 10000 });
   assert.ok((await p.$$('.adm-stat')).length >= 8);
+  // Adminsiz o'yinlar va qaytgan o'yinchilar kartalari (izohi title da)
+  const extra = await p.evaluate(() => [...document.querySelectorAll('.adm-stat')]
+    .filter((c) => /Adminsiz o'yinlar|Qaytgan o'yinchilar/.test(c.textContent))
+    .map((c) => [c.querySelector('small').textContent, /^\d+$/.test(c.querySelector('b').textContent), !!c.title]));
+  assert.deepEqual(extra, [["Adminsiz o'yinlar (24 soat)", true, true], ["Qaytgan o'yinchilar", true, true]]);
   const backup = p.waitForResponse((r) => r.url().endsWith('/api/admin/backup'), { timeout: 15000 });
   await clickEl('#admBackupBtn');
   assert.equal((await backup).status(), 200);

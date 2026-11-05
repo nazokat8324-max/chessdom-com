@@ -1074,6 +1074,21 @@ function tashkentDayStart(t) {
   return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()) - WAR_TZ_MS;
 }
 const dayKeyOf = (startMs) => new Date(startMs + WAR_TZ_MS).toISOString().slice(0, 10);
+// 📈 Kunlik faollik (admin "Qaytgan o'yinchilar"): har o'yinchi kuniga bir marta yoziladi (xotirada — shu kun yozilganlar),
+// kun almashganda 60 kundan eski qatorlar o'chiriladi. Faqat kimdir kirganda — bo'sh serverda bazaga murojaat yo'q.
+const activeDays = { day: null, seen: new Set() };
+function markActiveDay(userId) {
+  const start = tashkentDayStart();
+  const day = dayKeyOf(start);
+  if (activeDays.day !== day) {
+    activeDays.day = day;
+    activeDays.seen = new Set();
+    db.pruneUserDays(dayKeyOf(start - 60 * 864e5)).catch(() => {});
+  }
+  if (activeDays.seen.has(userId)) return;
+  activeDays.seen.add(userId);
+  db.markUserDay(userId, day).catch((err) => { activeDays.seen.delete(userId); console.error('Kunlik faollik xatoligi:', err.message); });
+}
 async function pickGameOfDay(now) {
   const start = tashkentDayStart(now);
   const day = dayKeyOf(start);
@@ -2288,7 +2303,8 @@ async function start() {
     try {
       let activeGames = 0;
       for (const room of rooms.values()) if (room.status === 'active') activeGames++;
-      res.json({ success: true, stats: { ...(await db.adminStats()), online: onlineUsers.size, activeGames, errors: await db.errorCounts(), tgChannel: telegram.channelEnabled() } });
+      const today = tashkentDayStart();
+      res.json({ success: true, stats: { ...(await db.adminStats({ today: dayKeyOf(today), yesterday: dayKeyOf(today - 864e5) })), online: onlineUsers.size, activeGames, errors: await db.errorCounts(), tgChannel: telegram.channelEnabled() } });
     } catch (err) { console.error('Admin stats xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
   // 🐞 Xatolar jurnali
@@ -3291,6 +3307,7 @@ async function start() {
         socket.data.userId = decoded.userId;
         socket.data.username = decoded.username;
         socket.join(`user_${decoded.userId}`);
+        markActiveDay(decoded.userId);
         // Onlayn holat: birinchi socket ulanganda hammaga xabar
         const set = onlineUsers.get(decoded.userId) || new Set();
         const wasOnline = set.size > 0;

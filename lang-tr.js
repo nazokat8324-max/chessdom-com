@@ -1806,6 +1806,14 @@ window.TRANSLATIONS_TR = {
 
   libAllVideos: "Tüm videolar kanalda",
 
+  admGamesNoAdmin: "Yöneticisiz oyunlar (24 saat)",
+
+  admGamesNoAdminHint: "Hiçbir yöneticinin (senin hesabın) katılmadığı oyunlar",
+
+  admReturning: "Geri dönen oyuncular",
+
+  admReturningHint: "Hem dün hem bugün giriş yapan oyuncular",
+
   tgInlineTip: "💡 Herhangi bir Telegram sohbetinde @{{bot}} yaz — arkadaşına oyun daveti gider (örneğin: @{{bot}} 5+3).",
 
   clHonours: "Kulüp başarıları",

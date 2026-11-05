@@ -121,10 +121,10 @@
     const s = st.stats;
     if (!s) return `<div class="adm-empty">${esc(tx('loadingText', 'Yuklanmoqda...'))}</div>`;
     const cards = [['👥', s.users, tx('admUsers', "O'yinchilar")], ['🟢', s.online, tx('admOnline', 'Hozir onlayn')], ['♟️', s.activeGames, tx('admActiveGames', "Davom etayotgan o'yinlar")],
-      ['🆕', s.newUsers24h, tx('admNewUsers', "Yangi (24 soat)")], ['🎮', s.games24h, tx('admGames24', "O'yinlar (24 soat)")], ['⚠️', s.openReports, tx('admOpenReports', 'Ochiq shikoyatlar')], ['🚫', s.banned, tx('admBanned', 'Bloklanganlar')]];
+      ['🆕', s.newUsers24h, tx('admNewUsers', "Yangi (24 soat)")], ['🎮', s.games24h, tx('admGames24', "O'yinlar (24 soat)")], ['🤝', s.gamesNoAdmin24h, tx('admGamesNoAdmin', "Adminsiz o'yinlar (24 soat)"), tx('admGamesNoAdminHint', "Hech bir admin (sizning akkauntingiz) qatnashmagan o'yinlar")], ['🔁', s.returning, tx('admReturning', "Qaytgan o'yinchilar"), tx('admReturningHint', 'Kecha ham, bugun ham kirgan o\'yinchilar')], ['⚠️', s.openReports, tx('admOpenReports', 'Ochiq shikoyatlar')], ['🚫', s.banned, tx('admBanned', 'Bloklanganlar')]];
     const errs = s.errors || { server: 0, client: 0 };
     cards.push(['🐞', errs.server + errs.client, tx('admOpenErrors', 'Hal qilinmagan xatolar')]);
-    return `<div class="adm-stats">${cards.map(([i, n, l]) => `<div class="adm-stat"><span>${i}</span><b>${n}</b><small>${esc(l)}</small></div>`).join('')}</div>
+    return `<div class="adm-stats">${cards.map(([i, n, l, h]) => `<div class="adm-stat"${h ? ` title="${esc(h)}"` : ''}><span>${i}</span><b>${n == null ? 0 : n}</b><small>${esc(l)}</small></div>`).join('')}</div>
       <div class="adm-box adm-backup">
         <b>💾 ${esc(tx('admBackupTitle', 'Zaxira nusxa'))}</b>
         <p class="adm-note">${esc(tx('admBackupHint', "Butun bazaning nusxasi (siqilgan JSON). Faylda parol xeshlari va emaillar bor — ishonchli joyda saqlang. Avtomatik kunlik nusxa GitHub Actions orqali shifrlangan holda olinadi."))}</p>

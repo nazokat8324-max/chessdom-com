@@ -1806,6 +1806,14 @@ window.TRANSLATIONS_IT = {
 
   libAllVideos: "Tutti i video sul canale",
 
+  admGamesNoAdmin: "Partite senza admin (24 h)",
+
+  admGamesNoAdminHint: "Partite a cui non ha partecipato nessun admin (il tuo account)",
+
+  admReturning: "Giocatori di ritorno",
+
+  admReturningHint: "Giocatori entrati sia ieri sia oggi",
+
   tgInlineTip: "💡 Scrivi @{{bot}} in qualsiasi chat di Telegram per sfidare un amico (es.: @{{bot}} 5+3).",
 
   clHonours: "Palmarès del club",

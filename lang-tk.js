@@ -1806,6 +1806,14 @@ window.TRANSLATIONS_TK = {
 
   libAllVideos: "Ähli wideolar kanalda",
 
+  admGamesNoAdmin: "Adminsiz oýunlar (24 sagat)",
+
+  admGamesNoAdminHint: "Hiç bir adminiň (siziň hasabyňyz) gatnaşmadyk oýunlary",
+
+  admReturning: "Gaýdyp gelen oýunçylar",
+
+  admReturningHint: "Düýn hem, şu gün hem giren oýunçylar",
+
   tgInlineTip: "💡 Islendik Telegram çatynda @{{bot}} ýazyň — dostuňyza oýun çakylygy barar (meselem: @{{bot}} 5+3).",
 
   clHonours: "Klubuň üstünlikleri",

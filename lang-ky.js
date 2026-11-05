@@ -1806,6 +1806,14 @@ window.TRANSLATIONS_KY = {
 
   libAllVideos: "Бардык видеолор каналда",
 
+  admGamesNoAdmin: "Админсиз оюндар (24 саат)",
+
+  admGamesNoAdminHint: "Бир дагы админ (сиздин аккаунтуңуз) катышпаган оюндар",
+
+  admReturning: "Кайра келген оюнчулар",
+
+  admReturningHint: "Кечээ да, бүгүн да кирген оюнчулар",
+
   tgInlineTip: "💡 Каалаган Telegram чатында @{{bot}} деп жазыңыз — досуңузга оюнга чакыруу барат (мисалы: @{{bot}} 5+3).",
 
   clHonours: "Клубдун жетишкендиктери",

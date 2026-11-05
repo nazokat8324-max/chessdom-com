@@ -3022,6 +3022,14 @@ const translationsExtra = {
 
     libAllVideos: "Barcha videolar kanalda",
 
+    admGamesNoAdmin: "Adminsiz o'yinlar (24 soat)",
+
+    admGamesNoAdminHint: "Hech bir admin (sizning akkauntingiz) qatnashmagan o'yinlar",
+
+    admReturning: "Qaytgan o'yinchilar",
+
+    admReturningHint: "Kecha ham, bugun ham kirgan o'yinchilar",
+
     tgInlineTip: "💡 Istalgan Telegram chatida @{{bot}} deb yozing — do'stingizga o'yin taklifi yuboriladi (masalan: @{{bot}} 5+3).",
 
     clHonours: "Klub yutuqlari",
@@ -4667,6 +4675,14 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+
+    admGamesNoAdmin: "Games without admins (24 h)",
+
+    admGamesNoAdminHint: "Games in which no admin (your account) took part",
+
+    admReturning: "Returning players",
+
+    admReturningHint: "Players who visited both yesterday and today",
 
     tgInlineTip: "💡 Type @{{bot}} in any Telegram chat to send a friend a game challenge (e.g. @{{bot}} 5+3).",
 
@@ -6314,6 +6330,14 @@ const translationsExtra = {
 
     libAllVideos: "Все видео на канале",
 
+    admGamesNoAdmin: "Игры без админов (24 ч)",
+
+    admGamesNoAdminHint: "Игры, в которых не участвовал ни один админ (ваш аккаунт)",
+
+    admReturning: "Вернувшиеся игроки",
+
+    admReturningHint: "Игроки, заходившие и вчера, и сегодня",
+
     tgInlineTip: "💡 Наберите @{{bot}} в любом чате Telegram — другу придёт вызов на партию (например: @{{bot}} 5+3).",
 
     clHonours: "Достижения клуба",
@@ -7959,6 +7983,14 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+
+    admGamesNoAdmin: "Partidas sin administradores (24 h)",
+
+    admGamesNoAdminHint: "Partidas en las que no participó ningún administrador (tu cuenta)",
+
+    admReturning: "Jugadores que vuelven",
+
+    admReturningHint: "Jugadores que entraron ayer y también hoy",
 
     tgInlineTip: "💡 Escribe @{{bot}} en cualquier chat de Telegram para retar a un amigo (p. ej.: @{{bot}} 5+3).",
 
@@ -9606,6 +9638,14 @@ const translationsExtra = {
 
     libAllVideos: "Alle Videos auf dem Kanal",
 
+    admGamesNoAdmin: "Partien ohne Admins (24 Std.)",
+
+    admGamesNoAdminHint: "Partien, an denen kein Admin (dein Konto) teilgenommen hat",
+
+    admReturning: "Wiederkehrende Spieler",
+
+    admReturningHint: "Spieler, die gestern und heute da waren",
+
     tgInlineTip: "💡 Tippe @{{bot}} in einen beliebigen Telegram-Chat, um einen Freund herauszufordern (z. B. @{{bot}} 5+3).",
 
     clHonours: "Vereinserfolge",
@@ -11251,6 +11291,14 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+    admGamesNoAdmin: "Parties sans admin (24 h)",
+
+    admGamesNoAdminHint: "Parties auxquelles aucun admin (votre compte) n'a participé",
+
+    admReturning: "Joueurs revenus",
+
+    admReturningHint: "Joueurs venus hier et aujourd’hui",
 
     tgInlineTip: "💡 Tapez @{{bot}} dans n'importe quel chat Telegram pour défier un ami (ex. : @{{bot}} 5+3).",
 

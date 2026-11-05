@@ -174,3 +174,43 @@ test("Admin qidiruvi: '_' li ism topiladi, '_' yovvoyi belgi emas; jurnal filtri
   assert.ok(muted.actions.some((x) => x.target === U.name));
   assert.ok((await srv.api(ADM, '/api/admin/audit?q=' + encodeURIComponent(U.name))).actions.length >= 1, "nishon nomi ('_' bilan) bo'yicha qidiruv");
 });
+
+test("Admin statistikasi: adminsiz o'yinlar (24 soat) adminning o'yinini sanamaydi; qaytgan o'yinchilar — kecha ham, bugun ham kirganlar", async () => {
+  let reg = await srv.api(null, '/api/auth/login', 'POST', { username: 'CovAdmin', password: 'secret1' });
+  if (!reg.success) reg = await srv.api(null, '/api/auth/register', 'POST', { username: 'CovAdmin', email: 'covadmin@test.uz', password: 'secret1' });
+  const ADM = { token: reg.token, id: reg.user.id, name: reg.user.username, user: reg.user, password: 'secret1' };
+  const stats = async () => (await srv.api(ADM, '/api/admin/stats')).stats;
+  const before = await stats();
+  assert.equal(typeof before.gamesNoAdmin24h, 'number');
+  assert.equal(typeof before.returning, 'number');
+  // Admin o'ynagan o'yin va ikki oddiy o'yinchining o'yini
+  const X = await srv.register('Sx'), Y = await srv.register('Sy');
+  for (const [w, b] of [[ADM, X], [X, Y]]) {
+    const g = await startGame(srv, w, b);
+    await play(g, ['e2e4', 'e7e5']);
+    await finish(g, 'white-resigns');
+    closeAll(w, b);
+  }
+  await sleep(300);
+  let after = await stats();
+  assert.equal(after.games24h - before.games24h, 2, "jami o'yinlar +2");
+  assert.equal(after.gamesNoAdmin24h - before.gamesNoAdmin24h, 1, "adminsiz — faqat X–Y o'yini");
+  // Qaytgan o'yinchi: R kecha ham kirgan (bazada kechagi kun), bugun saytga kirdi; S faqat bugun
+  const R = await srv.register('Sr'), S = await srv.register('Ss');
+  const dayKey = (ms) => new Date(ms + 5 * 3600000).toISOString().slice(0, 10);
+  await new Promise((resolve, reject) => {
+    const d = new (require('sqlite3').Database)(require('path').join(srv.dir, 'test.sqlite'));
+    d.configure('busyTimeout', 5000);
+    d.run('INSERT INTO user_days (id, user_id, day) VALUES (?, ?, ?)', ['ud-' + R.id, R.id, dayKey(Date.now() - 864e5)], (err) => d.close(() => (err ? reject(err) : resolve())));
+  });
+  const before2 = (await stats()).returning;
+  const r = await srv.connect(R), s = await srv.connect(S);
+  await sleep(400);
+  after = await stats();
+  assert.equal(after.returning - before2, 1, "faqat R (kecha + bugun); S — faqat bugun");
+  // Bir kunda bir necha marta kirsa ham bitta yozuv
+  const r2 = await srv.connect(R);
+  await sleep(300);
+  assert.equal((await stats()).returning - before2, 1);
+  r.disconnect(); r2.disconnect(); s.disconnect();
+});

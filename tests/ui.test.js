@@ -2029,6 +2029,32 @@ test("Telegram Mini App: birinchi marta — kirish sahifasida eslatma, kirgach T
   } finally { await own.stop(); await tg.stop(); }
 });
 
+test("190 davlat: klub sahifasida o'sha davlat videosi, Bayroqlar sahifasida video chiqqan davlatlar qatori (YouTube'da, yangi oynada)", opts, async () => {
+  const { startFakeYoutube } = require('./fixtures/youtube');
+  const yt = await startFakeYoutube({ extra: [{ id: 'GpCDMHR6Exw', title: "O'zbekiston shaxmatda qanchalik kuchli? ᴜᴢ | 190 davlat 1/190 #shorts" }] });
+  const own = await startServer({ YOUTUBE_BASE: yt.base, YTIMG_BASE: yt.base });
+  try {
+    const u = await own.register('CvUi');
+    const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+    await p.goto(own.base + '/klublar?club=Uzbekistan', { waitUntil: 'load' });
+    await p.waitForSelector('#clubDetailView .cl-hero .cl-video', { timeout: 15000 });
+    const link = await p.$eval('#clubDetailView .cl-video', (a) => ({ href: a.href, blank: a.target === '_blank' && /noopener/.test(a.rel), text: a.textContent.trim() }));
+    assert.deepEqual([link.href, link.blank], ['https://www.youtube.com/shorts/GpCDMHR6Exw', true]);
+    assert.match(link.text, /O'zbekiston shaxmati haqida video/);
+    // Video yo'q davlat — tugma yo'q
+    await p.goto(own.base + '/klublar?club=Germany', { waitUntil: 'load' });
+    await p.waitForSelector('#clubDetailView .cl-hero', { timeout: 15000 });
+    await sleep(800);
+    assert.equal(await p.$('#clubDetailView .cl-video'), null);
+    // Bayroqlar bellashuvi: xarita ostida videolar qatori
+    await p.goto(own.base + '/bayroqlar', { waitUntil: 'load' });
+    await p.waitForSelector('#warVideos:not([hidden]) a.war-video', { timeout: 15000 });
+    assert.deepEqual(await p.$$eval('#warVideos a.war-video', (as) => as.map((a) => [a.href, a.target, a.textContent.trim()])), [['https://www.youtube.com/shorts/GpCDMHR6Exw', '_blank', "O'zbekiston"]]);
+    assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'telefonda ekrandan chiqmaydi');
+    assert.deepEqual(p.errors, []);
+  } finally { await own.stop(); await yt.stop(); }
+});
+
 test("Videodarslar: Kutubxonada kanal videolari — muqova server orqali, bosilganda YouTube yangi oynada", opts, async () => {
   const { startFakeYoutube } = require('./fixtures/youtube');
   const yt = await startFakeYoutube();

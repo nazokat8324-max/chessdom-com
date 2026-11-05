@@ -1832,6 +1832,15 @@ window.TRANSLATIONS_TG = {
   libAllVideos: "Ҳамаи видеоҳо дар канал",
 
 
+  clCountryVideo: "Видео дар бораи шатранҷи {{country}}",
+
+
+  warCountryVideos: "Видеоҳои «190 кишвар»",
+
+
+  warHasVideo: "Дар бораи ин кишвар видео ҳаст",
+
+
   tgAppNote: "Як бор ворид шавед ё сабти ном кунед — дафъаи оянда Telegram шуморо худкор ворид мекунад.",
 
 

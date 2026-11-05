@@ -26,18 +26,25 @@ const FEED = `<?xml version="1.0" encoding="UTF-8"?>
 // 1×1 JPEG
 const JPEG = Buffer.from('/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AKp//2Q==', 'base64');
 
-function startFakeYoutube() {
+// Qo'shimcha yozuvlar (masalan "190 davlat" Shorts'lari): [{id, title}] — lenta boshiga qo'yiladi; setExtra bilan almashtiriladi
+const entryXml = ({ id, title }) => {
+  const t = String(title).replace(/&/g, '&amp;').replace(/'/g, '&#39;');
+  return `\n <entry>\n  <yt:videoId>${id}</yt:videoId>\n  <title>${t}</title>\n  <link rel="alternate" href="https://www.youtube.com/shorts/${id}"/>\n  <published>2026-11-05T08:00:00+00:00</published>\n  <media:group><media:title>${t}</media:title><media:community><media:statistics views="3"/></media:community></media:group>\n </entry>`;
+};
+
+function startFakeYoutube(opts) {
   const hits = [];
+  let extra = (opts && opts.extra) || [];
   const server = http.createServer((req, res) => {
     hits.push(req.url);
-    if (req.url.startsWith('/feeds/videos.xml')) { res.setHeader('content-type', 'application/atom+xml'); return res.end(FEED); }
+    if (req.url.startsWith('/feeds/videos.xml')) { res.setHeader('content-type', 'application/atom+xml'); return res.end(FEED.replace(' <title>ChessCaravan</title>', ' <title>ChessCaravan</title>' + extra.map(entryXml).join(''))); }
     const m = req.url.match(/^\/vi\/([\w-]{11})\/hqdefault\.jpg$/);
     if (m) { res.setHeader('content-type', 'image/jpeg'); return res.end(JPEG); }
     res.statusCode = 404; res.end();
   });
   return new Promise((resolve) => server.listen(0, '127.0.0.1', () => {
     const base = 'http://127.0.0.1:' + server.address().port;
-    resolve({ base, hits, stop: () => new Promise((r) => server.close(r)) });
+    resolve({ base, hits, setExtra: (list) => { extra = list || []; }, stop: () => new Promise((r) => server.close(r)) });
   }));
 }
 

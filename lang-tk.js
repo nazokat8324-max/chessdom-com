@@ -1832,6 +1832,15 @@ window.TRANSLATIONS_TK = {
   libAllVideos: "Ähli wideolar kanalda",
 
 
+  clCountryVideo: "{{country}} küşdi barada wideo",
+
+
+  warCountryVideos: "«190 ýurt» wideolary",
+
+
+  warHasVideo: "Bu ýurt barada wideo bar",
+
+
   tgAppNote: "Bir gezek giriň ýa-da hasaba duruň — indiki gezek Telegram arkaly awtomatik girersiňiz.",
 
 

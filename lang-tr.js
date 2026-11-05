@@ -1832,6 +1832,15 @@ window.TRANSLATIONS_TR = {
   libAllVideos: "Tüm videolar kanalda",
 
 
+  clCountryVideo: "{{country}} satrancı hakkında video",
+
+
+  warCountryVideos: "«190 ülke» videoları",
+
+
+  warHasVideo: "Bu ülke hakkında video var",
+
+
   tgAppNote: "Bir kez giriş yap veya kaydol — bir dahaki sefere Telegram seni otomatik olarak giriş yaptırır.",
 
 

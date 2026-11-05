@@ -14988,3 +14988,11 @@ body.auth-locked .view-section > h1.sr-only, body:has(#profileModal[style*="flex
 .pc-video:hover, .pc-video:focus-visible { border-color: var(--accent); }
 .pc-video.intro { margin: 0 0 12px; }
 .pc-video .yt-ic { flex: none; }
+
+/* ===== 🌍 "190 davlat" videolari: klub sahifasi (clubs.js addCountryVideo) va Bayroqlar xaritasi (warmap.js renderCountryVideos) */
+.cl-video { display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; text-decoration: none; color: var(--cd-text); background: rgba(0, 0, 0, 0.35); border: 1px solid var(--cd-border-strong); }
+.cl-video:hover, .cl-video:focus-visible { border-color: var(--accent); }
+.war-videos { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 4px; font-size: 13px; }
+.war-videos > b { display: inline-flex; align-items: center; gap: 6px; margin-right: 4px; }
+.war-video { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; text-decoration: none; color: var(--cd-text); border: 1px solid var(--cd-border-strong); }
+.war-video:hover, .war-video:focus-visible { border-color: var(--accent); }

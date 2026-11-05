@@ -60,6 +60,18 @@ window.YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@chesscaravan';
 window.youtubeIcon = function() {
   return '<svg class="yt-ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2C.5 9 .5 12 .5 12s0 3 .5 4.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.5-1.8.5-4.8.5-4.8s0-3-.5-4.8ZM9.7 15.2V8.8l5.6 3.2Z"/></svg>';
 };
+// 🌍 "190 davlat" Shorts'lari: {davlat kodi: video id} (GET /api/country-videos; 10 daqiqa xotirada) — klub sahifasi va Bayroqlar xaritasi
+window.countryVideos = (function () {
+  let cache = null, at = 0, pending = null;
+  return function () {
+    if (cache && Date.now() - at < 10 * 60000) return Promise.resolve(cache);
+    if (!pending) pending = fetch('/api/country-videos').then((r) => r.json()).then((d) => { cache = (d && d.videos) || {}; at = Date.now(); return cache; })
+      .catch(() => cache || {}).finally(() => { pending = null; });
+    return pending;
+  };
+})();
+window.countryVideoUrl = (id) => (/^[\w-]{11}$/.test(id || '') ? 'https://www.youtube.com/shorts/' + id : null);
+
 window.youtubeChannelLink = function(label, cls) {
   const safe = String(label).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   return `<a class="yt-channel${cls ? ' ' + cls : ''}" href="${window.YOUTUBE_CHANNEL_URL}" target="_blank" rel="noopener noreferrer">${window.youtubeIcon()}<span>${safe}</span></a>`;

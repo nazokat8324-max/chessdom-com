@@ -1832,6 +1832,15 @@ window.TRANSLATIONS_IT = {
   libAllVideos: "Tutti i video sul canale",
 
 
+  clCountryVideo: "Video sugli scacchi in {{country}}",
+
+
+  warCountryVideos: "Video «190 paesi»",
+
+
+  warHasVideo: "C'è un video su questo paese",
+
+
   tgAppNote: "Accedi o registrati una volta: la prossima volta Telegram ti farà entrare automaticamente.",
 
 

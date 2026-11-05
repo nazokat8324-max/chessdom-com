@@ -1832,6 +1832,15 @@ window.TRANSLATIONS_ZH = {
   libAllVideos: "频道里的全部视频",
 
 
+  clCountryVideo: "{{country}}国际象棋视频",
+
+
+  warCountryVideos: "“190 个国家”视频",
+
+
+  warHasVideo: "有关于这个国家的视频",
+
+
   tgAppNote: "登录或注册一次——下次 Telegram 会自动帮你登录。",
 
 

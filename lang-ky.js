@@ -1832,6 +1832,15 @@ window.TRANSLATIONS_KY = {
   libAllVideos: "Бардык видеолор каналда",
 
 
+  clCountryVideo: "{{country}} шахматы жөнүндө видео",
+
+
+  warCountryVideos: "«190 өлкө» видеолору",
+
+
+  warHasVideo: "Бул өлкө жөнүндө видео бар",
+
+
   tgAppNote: "Бир жолу кириңиз же катталыңыз — кийинки жолу Telegram аркылуу автоматтык түрдө киресиз.",
 
 

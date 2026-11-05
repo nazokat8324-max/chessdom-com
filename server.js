@@ -3167,6 +3167,35 @@ async function start() {
     try { res.json({ success: true, videos: await channelVideos() }); }
     catch (err) { res.json({ success: true, videos: [] }); }
   });
+
+  // 🌍 "190 davlat" Shorts'lari → davlat klubi sahifasi va Bayroqlar xaritasi (2026-11-05, foydalanuvchi tanlovi: avtomatik).
+  // Video nomida davlat kodi bo'ladi: "O'zbekiston shaxmatda qanchalik kuchli? ᴜᴢ | 190 davlat 1/190" (kod ko'pincha kichik bosh harflarda —
+  // ᴜᴢ, ᴋᴢ, ᴛʀ — oddiy harfga o'giriladi). Lentada faqat oxirgi ~15 ta ochiq video bo'ladi, shuning uchun topilganlari bazada
+  // (app_settings 'country_videos') to'planib boradi; faqat so'rov kelganda o'qiladi/yoziladi.
+  const SMALL_CAPS = { 'ᴀ': 'a', 'ʙ': 'b', 'ᴄ': 'c', 'ᴅ': 'd', 'ᴇ': 'e', 'ꜰ': 'f', 'ɢ': 'g', 'ʜ': 'h', 'ɪ': 'i', 'ᴊ': 'j', 'ᴋ': 'k', 'ʟ': 'l', 'ᴍ': 'm', 'ɴ': 'n', 'ᴏ': 'o', 'ᴘ': 'p', 'ǫ': 'q', 'ʀ': 'r', 'ꜱ': 's', 'ᴛ': 't', 'ᴜ': 'u', 'ᴠ': 'v', 'ᴡ': 'w', 'ʏ': 'y', 'ᴢ': 'z' };
+  function countryCodeOfTitle(title) {
+    const m = String(title || '').match(/(\S+)\s*\|\s*190\s*davlat/i);
+    if (!m) return null;
+    const code = [...m[1]].map((ch) => SMALL_CAPS[ch] || ch).join('').toLowerCase();
+    return /^[a-z]{2}$/.test(code) ? code : null;
+  }
+  let countryVideoMap = null; // {kod: video id}
+  async function countryVideos() {
+    if (!countryVideoMap) {
+      try { countryVideoMap = JSON.parse((await db.getAppSetting('country_videos')) || '{}') || {}; } catch (e) { countryVideoMap = {}; }
+    }
+    let changed = false;
+    for (const v of await channelVideos()) {
+      const code = countryCodeOfTitle(v.title);
+      if (code && countryVideoMap[code] !== v.id) { countryVideoMap[code] = v.id; changed = true; }
+    }
+    if (changed) await db.setAppSetting('country_videos', JSON.stringify(countryVideoMap)).catch((e) => console.error('Davlat videolarini saqlab bo\'lmadi:', e.message));
+    return countryVideoMap;
+  }
+  app.get('/api/country-videos', apiLimiter, async (req, res) => {
+    try { res.json({ success: true, videos: await cached('country-videos', 60000, countryVideos) }); }
+    catch (err) { res.json({ success: true, videos: {} }); }
+  });
   const thumbCache = new Map(); // id → { type, body }
   app.get('/api/videos/thumb/:id', apiLimiter, async (req, res) => {
     const id = String(req.params.id);

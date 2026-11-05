@@ -1832,6 +1832,15 @@ window.TRANSLATIONS_KK = {
   libAllVideos: "Барлық бейне арнада",
 
 
+  clCountryVideo: "{{country}} шахматы туралы бейне",
+
+
+  warCountryVideos: "«190 ел» бейнелері",
+
+
+  warHasVideo: "Бұл ел туралы бейне бар",
+
+
   tgAppNote: "Бір рет кіріңіз немесе тіркеліңіз — келесі жолы Telegram арқылы автоматты түрде кіресіз.",
 
 

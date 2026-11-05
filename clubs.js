@@ -253,6 +253,25 @@
     v.querySelectorAll('.cl-hero [data-cl-join]').forEach((b) => b.addEventListener('click', join));
     v.querySelectorAll('.cl-tabs [data-cl-tab]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.clTab)));
     renderPane();
+    addCountryVideo(v);
+  }
+
+  // ▶ "190 davlat" turkumida shu davlat haqidagi video (YouTube'da ochiq bo'lsa) — klub nomi ostida
+  function addCountryVideo(v) {
+    if (typeof window.countryVideos !== 'function') return;
+    const code = st.code, name = st.name;
+    window.countryVideos().then((videos) => {
+      const url = window.countryVideoUrl(videos[String(code || '').toLowerCase()]);
+      const text = v.querySelector('.cl-hero-text');
+      if (!url || !text || st.code !== code || text.querySelector('.cl-video')) return;
+      const a = document.createElement('a');
+      a.className = 'cl-video';
+      a.href = url;
+      a.target = '_blank';
+      a.rel = 'noopener noreferrer';
+      a.innerHTML = (window.youtubeIcon ? window.youtubeIcon() : '▶') + ' <span>' + esc(tx('clCountryVideo', '{{country}} shaxmati haqida video', { country: localName(name, code) })) + '</span>';
+      text.appendChild(a);
+    });
   }
 
   function setTab(tab) {

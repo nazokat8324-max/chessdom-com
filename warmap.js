@@ -100,6 +100,7 @@
         <section class="war-card war-map-card">
           <div class="war-map" id="warMap"><div class="war-loading">🌍</div></div>
           <div class="war-tip" id="warTip" hidden></div>
+          <div class="war-videos" id="warVideos" hidden></div>
           <div class="war-legend">
             <span><i class="own"></i>${esc(tx('warLegendOwn', 'Klub o\'z hududi'))}</span>
             <span><i class="captured"></i>${esc(tx('warLegendCaptured', "Ta'sir doirasidagi hudud"))}</span>
@@ -141,6 +142,23 @@
     root.querySelector('#warSeasonSel').addEventListener('change', (e) => { st.season = e.target.value; window.renderWarView(); });
     root.querySelectorAll('.war-row[data-club]').forEach(r => r.addEventListener('click', () => window.openClubDetail && window.openClubDetail(r.dataset.club, r.dataset.code)));
     root.querySelectorAll('[data-war-go]').forEach(b => b.addEventListener('click', () => switchView(b.dataset.warGo)));
+    renderCountryVideos(root);
+  }
+
+  // ▶ "190 davlat" videolari: video chiqqan davlatlar bayrog'i bilan (bosilsa YouTube, yangi oynada); xarita tooltipida ham belgi
+  let videoCodes = {};
+  function renderCountryVideos(root) {
+    if (typeof window.countryVideos !== 'function') return;
+    window.countryVideos().then((videos) => {
+      videoCodes = videos || {};
+      const box = root.querySelector('#warVideos');
+      const codes = Object.keys(videoCodes).filter((c) => window.countryVideoUrl(videoCodes[c]));
+      if (!box || !codes.length) return;
+      const nameOf = (c) => (window.countryNameByCode && window.countryNameByCode(c)) || c.toUpperCase();
+      box.innerHTML = '<b>' + (window.youtubeIcon ? window.youtubeIcon() : '▶') + ' ' + esc(tx('warCountryVideos', '«190 davlat» videolari')) + '</b>'
+        + codes.sort((a, b) => String(nameOf(a)).localeCompare(String(nameOf(b)))).map((c) => '<a href="' + esc(window.countryVideoUrl(videoCodes[c])) + '" target="_blank" rel="noopener noreferrer" class="war-video" aria-label="' + esc(nameOf(c)) + '">' + flag(c) + esc(nameOf(c)) + '</a>').join('');
+      box.hidden = false;
+    });
   }
 
   function seasonOptions(d) {
@@ -205,7 +223,7 @@
         const ruler = r && (clubs.get(r.ruler) || { country: r.ruler, code: r.ruler });
         tip.innerHTML = `<b>${flag(c)}${esc(labelOf(f))}</b>` + (r
           ? `<small>${r.ruler === c ? '🛡️ ' + esc(tx('warHeldBy', "O'z klubi nazoratida")) : '🚩 ' + esc(tx('warCapturedBy', "{{club}} ta'sir doirasida", { club: clubName(ruler) }))}</small><small>${esc(tx('warPower', 'Kuch: {{p}} · o\'z ochkosi: {{o}}', { p: r.power, o: r.own }))}</small>`
-          : `<small>${esc(tx('warFree', "Bo'sh — hech kim egallamagan"))}</small>`);
+          : `<small>${esc(tx('warFree', "Bo'sh — hech kim egallamagan"))}</small>`) + (c && window.countryVideoUrl && window.countryVideoUrl(videoCodes[c]) ? `<small>▶ ${esc(tx('warHasVideo', 'Bu davlat haqida video bor'))}</small>` : '');
         const rect = box.getBoundingClientRect();
         tip.hidden = false;
         tip.style.left = Math.min(rect.width - 190, Math.max(4, ev.clientX - rect.left + 12)) + 'px';

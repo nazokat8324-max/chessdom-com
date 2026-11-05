@@ -3048,6 +3048,15 @@ const translationsExtra = {
     libAllVideos: "Barcha videolar kanalda",
 
 
+    clCountryVideo: "{{country}} shaxmati haqida video",
+
+
+    warCountryVideos: "«190 davlat» videolari",
+
+
+    warHasVideo: "Bu davlat haqida video bor",
+
+
     tgAppNote: "Bir marta kiring yoki ro'yxatdan o'ting — keyingi safar Telegram orqali avtomatik kirasiz.",
 
 
@@ -4678,6 +4687,15 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+
+
+    clCountryVideo: "Video about chess in {{country}}",
+
+
+    warCountryVideos: "“190 countries” videos",
+
+
+    warHasVideo: "There is a video about this country",
 
 
     tgAppNote: "Sign in or sign up once — next time Telegram will sign you in automatically.",
@@ -6312,6 +6330,15 @@ const translationsExtra = {
     libAllVideos: "Все видео на канале",
 
 
+    clCountryVideo: "Видео о шахматах: {{country}}",
+
+
+    warCountryVideos: "Видео «190 стран»",
+
+
+    warHasVideo: "Есть видео об этой стране",
+
+
     tgAppNote: "Войдите или зарегистрируйтесь один раз — в следующий раз Telegram выполнит вход автоматически.",
 
 
@@ -7942,6 +7969,15 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+
+
+    clCountryVideo: "Vídeo sobre el ajedrez en {{country}}",
+
+
+    warCountryVideos: "Vídeos «190 países»",
+
+
+    warHasVideo: "Hay un vídeo sobre este país",
 
 
     tgAppNote: "Inicia sesión o regístrate una vez: la próxima vez Telegram te conectará automáticamente.",
@@ -9576,6 +9612,15 @@ const translationsExtra = {
     libAllVideos: "Alle Videos auf dem Kanal",
 
 
+    clCountryVideo: "Video über Schach in {{country}}",
+
+
+    warCountryVideos: "Videos „190 Länder“",
+
+
+    warHasVideo: "Es gibt ein Video über dieses Land",
+
+
     tgAppNote: "Melde dich einmal an oder registriere dich – beim nächsten Mal meldet Telegram dich automatisch an.",
 
 
@@ -11206,6 +11251,15 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+
+    clCountryVideo: "Vidéo sur les échecs : {{country}}",
+
+
+    warCountryVideos: "Vidéos « 190 pays »",
+
+
+    warHasVideo: "Une vidéo existe sur ce pays",
 
 
     tgAppNote: "Connectez-vous ou inscrivez-vous une fois : la prochaine fois, Telegram vous connectera automatiquement.",

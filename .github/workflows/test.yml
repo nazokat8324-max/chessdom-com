@@ -29,8 +29,10 @@ jobs:
           # Avval yiqilgan testlar nomi (CI da reporter TAP — "not ok N - nom"; terminalda "✖ nom"), keyin tafsilotlar.
           # GitHub bitta qadamda ko'pi bilan 10 ta annotatsiya ko'rsatadi — nomlar birinchi bo'lsin.
           # Har yiqilgan test — bitta annotatsiya: nomi + xato matni + qator (TAP blokidagi error:/location:)
-          awk '/^ *not ok [0-9]+ - /{ if (n) print n" | "e" | "l; n=$0; e=""; l=""; next }
-               n && /^ *error: /{ if (!e) { e=$0 } next }
+          # Ko'p qatorli xato ("error: |-") — keyingi 2 qator ham olinadi (assert xabari shu yerda)
+          awk '/^ *not ok [0-9]+ - /{ if (n) print n" | "e" | "l; n=$0; e=""; l=""; m=0; next }
+               n && m > 0 { e=e" "$0; m--; next }
+               n && /^ *error: /{ if (!e) { e=$0; if ($0 ~ /\|-$/) m=2 } next }
                n && /^ *location: /{ if (!l) { l=$0 } next }
                n && /^ *(ok|not ok) [0-9]+ /{ print n" | "e" | "l; n="" }
                END { if (n) print n" | "e" | "l }' test.log | sed 's/  */ /g' | head -9 | while IFS= read -r line; do echo "::error::$line"; done

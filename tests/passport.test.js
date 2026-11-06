@@ -21,7 +21,8 @@ test("Pasport: g'alaba — oltin muhr, mag'lubiyat/durrang — oddiy muhr; takro
   const endedBlack = once(g.black.socket, 'game-ended');
   const endedWhite = await finish(g, 'black-resigns');
   const endedB = await endedBlack;
-  const [pa, pb] = winnerIsA ? [endedWhite.passport, endedB.passport] : [endedB.passport, endedWhite.passport];
+  // Qora taslim — g'olib doim oq (ranglar tasodifiy: oq A ham, B ham bo'lishi mumkin)
+  const pa = endedWhite.passport, pb = endedB.passport;
   assert.deepEqual(pa, { country: winnerIsA ? 'kz' : 'uz', isNew: true, gold: true }, "g'olibga oltin muhr");
   assert.deepEqual(pb, { country: winnerIsA ? 'uz' : 'kz', isNew: true, gold: false }, "yutqazganga oddiy muhr");
   closeAll(A, B);

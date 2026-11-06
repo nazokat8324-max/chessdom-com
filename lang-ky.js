@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_KY = {
 
   libAllVideos: "Бардык видеолор каналда",
 
+  admUsersHint: "Катталган оюнчулар — конок аккаунттарсыз",
+
   ppTitle: "Шахмат паспорту",
 
   ppFirst: "Биринчи оюн: {{date}} · {{name}}",

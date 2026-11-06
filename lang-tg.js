@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_TG = {
 
   libAllVideos: "Ҳамаи видеоҳо дар канал",
 
+  admUsersHint: "Бозингарони сабтиномшуда — бе ҳисобҳои меҳмон",
+
   ppTitle: "Шиносномаи шоҳмот",
 
   ppFirst: "Бозии аввал: {{date}} · {{name}}",

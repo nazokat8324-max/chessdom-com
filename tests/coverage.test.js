@@ -183,6 +183,14 @@ test("Admin statistikasi: adminsiz o'yinlar (24 soat) adminning o'yinini sanamay
   const before = await stats();
   assert.equal(typeof before.gamesNoAdmin24h, 'number');
   assert.equal(typeof before.returning, 'number');
+  // Mehmon (<ism>@guest.local) «O'yinchilar» va «Yangi (24 soat)» ga kirmaydi; ro'yxatdan o'tgan — kiradi
+  const g0 = await srv.api(null, '/api/auth/guest', 'POST', { lang: 'uz' });
+  assert.equal(g0.success, true);
+  let mid = await stats();
+  assert.deepEqual([mid.users, mid.newUsers24h], [before.users, before.newUsers24h], 'mehmon sanalmaydi');
+  await srv.register('Sreal');
+  mid = await stats();
+  assert.deepEqual([mid.users - before.users, mid.newUsers24h - before.newUsers24h], [1, 1], "ro'yxatdan o'tgan sanaladi");
   // Admin o'ynagan o'yin va ikki oddiy o'yinchining o'yini
   const X = await srv.register('Sx'), Y = await srv.register('Sy');
   for (const [w, b] of [[ADM, X], [X, Y]]) {

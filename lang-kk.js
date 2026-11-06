@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_KK = {
 
   libAllVideos: "Барлық бейне арнада",
 
+  admUsersHint: "Тіркелген ойыншылар — қонақ аккаунттарсыз",
+
   ppTitle: "Шахмат төлқұжаты",
 
   ppFirst: "Алғашқы ойын: {{date}} · {{name}}",

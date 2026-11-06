@@ -1213,6 +1213,7 @@ async function pruneUserDays(beforeDay) {
   await dbRun('DELETE FROM user_days WHERE day < ?', [beforeDay]);
 }
 
+const REAL_USER = "COALESCE(is_guest, 0) = 0 AND COALESCE(email, '') NOT LIKE '%@guest.local'";
 // days: { today, yesterday } — Toshkent kunlari (YYYY-MM-DD)
 async function adminStats(days) {
   const one = async (sql, params) => Number((await dbGet(sql, params || [])).n) || 0;
@@ -1224,8 +1225,9 @@ async function adminStats(days) {
       AND user_id NOT IN (SELECT id FROM users WHERE role = 'admin')
       AND COALESCE(opponent, '') NOT IN (SELECT username FROM users WHERE role = 'admin')`, [dayAgo]) / 2),
     returning: d.today ? await one('SELECT COUNT(*) as "n" FROM user_days t WHERE t.day = ? AND EXISTS (SELECT 1 FROM user_days y WHERE y.user_id = t.user_id AND y.day = ?)', [d.today, d.yesterday]) : 0,
-    users: await one('SELECT COUNT(*) as "n" FROM users'),
-    newUsers24h: await one('SELECT COUNT(*) as "n" FROM users WHERE created_at >= ?', [dayAgo]),
+    // O'yinchilar va yangilar — mehmonlarsiz (is_guest yoki <ism>@guest.local; ro'yxatdan o'tgan mehmonning emaili va belgisi almashadi)
+    users: await one(`SELECT COUNT(*) as "n" FROM users WHERE ${REAL_USER}`),
+    newUsers24h: await one(`SELECT COUNT(*) as "n" FROM users WHERE created_at >= ? AND ${REAL_USER}`, [dayAgo]),
     games24h: Math.round(await one('SELECT COUNT(*) as "n" FROM user_games WHERE played_at >= ?', [dayAgo]) / 2),
     openReports: await one("SELECT COUNT(*) as \"n\" FROM reports WHERE status = 'open'"),
     banned: await one('SELECT COUNT(*) as "n" FROM users WHERE banned_until IS NOT NULL')

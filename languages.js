@@ -3022,6 +3022,8 @@ const translationsExtra = {
 
     libAllVideos: "Barcha videolar kanalda",
 
+    admUsersHint: "Ro'yxatdan o'tgan o'yinchilar — mehmon akkauntlarisiz",
+
     ppTitle: "Shaxmat pasporti",
 
     ppFirst: "Birinchi o'yin: {{date}} · {{name}}",
@@ -4705,6 +4707,8 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+
+    admUsersHint: "Registered players — guest accounts excluded",
 
     ppTitle: "Chess passport",
 
@@ -6390,6 +6394,8 @@ const translationsExtra = {
 
     libAllVideos: "Все видео на канале",
 
+    admUsersHint: "Зарегистрированные игроки — без гостевых аккаунтов",
+
     ppTitle: "Шахматный паспорт",
 
     ppFirst: "Первая партия: {{date}} · {{name}}",
@@ -8073,6 +8079,8 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+
+    admUsersHint: "Jugadores registrados — sin cuentas de invitado",
 
     ppTitle: "Pasaporte de ajedrez",
 
@@ -9758,6 +9766,8 @@ const translationsExtra = {
 
     libAllVideos: "Alle Videos auf dem Kanal",
 
+    admUsersHint: "Registrierte Spieler – ohne Gastkonten",
+
     ppTitle: "Schachpass",
 
     ppFirst: "Erste Partie: {{date}} · {{name}}",
@@ -11441,6 +11451,8 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+    admUsersHint: "Joueurs inscrits — sans les comptes invités",
 
     ppTitle: "Passeport d'échecs",
 

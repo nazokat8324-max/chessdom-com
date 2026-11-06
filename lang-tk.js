@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_TK = {
 
   libAllVideos: "Ähli wideolar kanalda",
 
+  admUsersHint: "Hasaba alnan oýunçylar — myhman hasaplarsyz",
+
   ppTitle: "Küşt pasporty",
 
   ppFirst: "Ilkinji oýun: {{date}} · {{name}}",

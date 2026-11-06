@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_ZH = {
 
   libAllVideos: "频道里的全部视频",
 
+  admUsersHint: "已注册玩家——不含访客账号",
+
   ppTitle: "国际象棋护照",
 
   ppFirst: "首局：{{date}} · {{name}}",

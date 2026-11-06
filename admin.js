@@ -120,7 +120,7 @@
   function statsHtml() {
     const s = st.stats;
     if (!s) return `<div class="adm-empty">${esc(tx('loadingText', 'Yuklanmoqda...'))}</div>`;
-    const cards = [['👥', s.users, tx('admUsers', "O'yinchilar")], ['🟢', s.online, tx('admOnline', 'Hozir onlayn')], ['♟️', s.activeGames, tx('admActiveGames', "Davom etayotgan o'yinlar")],
+    const cards = [['👥', s.users, tx('admUsers', "O'yinchilar"), tx('admUsersHint', "Ro'yxatdan o'tgan o'yinchilar — mehmon akkauntlarisiz")], ['🟢', s.online, tx('admOnline', 'Hozir onlayn')], ['♟️', s.activeGames, tx('admActiveGames', "Davom etayotgan o'yinlar")],
       ['🆕', s.newUsers24h, tx('admNewUsers', "Yangi (24 soat)")], ['🎮', s.games24h, tx('admGames24', "O'yinlar (24 soat)")], ['🤝', s.gamesNoAdmin24h, tx('admGamesNoAdmin', "Adminsiz o'yinlar (24 soat)"), tx('admGamesNoAdminHint', "Hech bir admin (sizning akkauntingiz) qatnashmagan o'yinlar")], ['🔁', s.returning, tx('admReturning', "Qaytgan o'yinchilar"), tx('admReturningHint', 'Kecha ham, bugun ham kirgan o\'yinchilar')], ['⚠️', s.openReports, tx('admOpenReports', 'Ochiq shikoyatlar')], ['🚫', s.banned, tx('admBanned', 'Bloklanganlar')]];
     const errs = s.errors || { server: 0, client: 0 };
     cards.push(['🐞', errs.server + errs.client, tx('admOpenErrors', 'Hal qilinmagan xatolar')]);

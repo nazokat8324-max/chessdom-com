@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_TR = {
 
   libAllVideos: "Tüm videolar kanalda",
 
+  admUsersHint: "Kayıtlı oyuncular — misafir hesaplar hariç",
+
   ppTitle: "Satranç pasaportu",
 
   ppFirst: "İlk oyun: {{date}} · {{name}}",

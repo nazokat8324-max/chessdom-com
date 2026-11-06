@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_AZ = {
 
   libAllVideos: "Bütün videolar kanalda",
 
+  admUsersHint: "Qeydiyyatdan keçmiş oyunçular — qonaq hesabları olmadan",
+
   ppTitle: "Şahmat pasportu",
 
   ppFirst: "İlk oyun: {{date}} · {{name}}",

@@ -1806,6 +1806,8 @@ window.TRANSLATIONS_IT = {
 
   libAllVideos: "Tutti i video sul canale",
 
+  admUsersHint: "Giocatori registrati — senza account ospite",
+
   ppTitle: "Passaporto degli scacchi",
 
   ppFirst: "Prima partita: {{date}} · {{name}}",

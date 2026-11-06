@@ -69,13 +69,30 @@
     </div>`;
   }
 
+  // 🛂 Ipak yo'li pasporti (GET /api/passport): 12 davlatdan nechtasi muhrlangan, daraja; bosilsa — pasport sahifasi
+  function silkHtml() {
+    const p = st.passport;
+    if (!p || !window.Caravan || !window.Caravan.SILK_ROAD || !window.currentUser || window.currentUser.guest) return '';
+    const s = window.Caravan.silkTier(p);
+    const tier = window.silkTierLabel ? window.silkTierLabel(s.tier) : '';
+    return `<button type="button" class="cv-card cv-silk" data-cv-silk>
+      <span class="cv-silk-ico">🛂</span>
+      <span class="cv-silk-text"><b>${esc(tx('cvSilkCard', "Ipak yo'li pasporti: {{n}}/{{total}}", s))}</b>
+        <small>${esc(tier)} · ${esc(tx('cvSilkHint', "Ipak yo'li davlatlari o'yinchilari bilan o'ynab, pasportga muhr yig'ing"))}</small>
+        <span class="cv-q-bar"><i style="width:${Math.round(s.n / s.total * 100)}%"></i></span></span>
+      <span class="cv-silk-go">${esc(tx('cvSilkOpen', 'Pasportni ochish'))} ›</span>
+    </button>`;
+  }
+
   function render() {
     const root = document.getElementById('caravanRoot');
     if (!root || !window.Caravan) return;
     const pr = window.Caravan.progress(myPoints());
-    root.innerHTML = heroHtml(pr) + questsHtml() + `<div class="cv-grid">${routeHtml(pr, st.data && st.data.perCity)}${leadersHtml(st.data)}</div>`;
+    root.innerHTML = heroHtml(pr) + questsHtml() + silkHtml() + `<div class="cv-grid">${routeHtml(pr, st.data && st.data.perCity)}${leadersHtml(st.data)}</div>`;
     const play = root.querySelector('[data-cv-play]');
     if (play) play.addEventListener('click', () => { if (typeof window.quickPlayOnline === 'function') window.quickPlayOnline(); else window.switchView('game'); });
+    const silk = root.querySelector('[data-cv-silk]');
+    if (silk) silk.addEventListener('click', () => window.openProfileSection && window.openProfileSection('pass', window.currentUser && window.currentUser.username));
   }
 
   window.renderCaravanView = async function () {
@@ -83,11 +100,14 @@
     try {
       // O'z statistikam serverdan yangilansin (boshqa qurilmada o'ynagan bo'lishi mumkin)
       if (window.currentUser && typeof window.refreshCurrentUserRatings === 'function') await window.refreshCurrentUserRatings();
-      const [d, q] = await Promise.all([
+      const auth = window.authToken && !(window.currentUser && window.currentUser.guest) ? { headers: { Authorization: 'Bearer ' + window.authToken } } : null;
+      const [d, q, pp] = await Promise.all([
         fetch('/api/caravan').then((r) => r.json()),
         window.authToken && !(window.currentUser && window.currentUser.guest)
-          ? fetch('/api/quests', { headers: { Authorization: 'Bearer ' + window.authToken } }).then((r) => r.json()).catch(() => null) : null
+          ? fetch('/api/quests', { headers: { Authorization: 'Bearer ' + window.authToken } }).then((r) => r.json()).catch(() => null) : null,
+        auth ? fetch('/api/passport', auth).then((r) => r.json()).catch(() => null) : null
       ]);
+      if (pp && pp.success) st.passport = pp.passport;
       if (d && d.success) st.data = d;
       if (q && q.success) st.quests = q;
     } catch (e) {}

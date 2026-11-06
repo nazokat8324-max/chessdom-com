@@ -600,7 +600,15 @@ async function endGame(roomId, room, winnerColor, reason) {
         let passport = null;
         const oppCountry = String((oppUser && oppUser.country) || '').toLowerCase();
         if (!isGuest(p.userId) && /^[a-z]{2}$/.test(oppCountry) && oppCountry !== 'un') {
-          try { passport = { country: oppCountry, ...(await db.addPassportStamp(p.userId, oppCountry, opp.username, result === 'win')) }; }
+          try {
+            const silkBefore = Caravan.SILK_ROAD.includes(oppCountry) ? Caravan.silkTier(await db.listPassport(p.userId)).tier : 0;
+            passport = { country: oppCountry, ...(await db.addPassportStamp(p.userId, oppCountry, opp.username, result === 'win')) };
+            // 🐪 Ipak yo'li to'plami: yangi daraja (bronza/kumush/oltin) — toast va bildirishnoma
+            if (Caravan.SILK_ROAD.includes(oppCountry) && (passport.isNew || passport.gold)) {
+              const silk = Caravan.silkTier(await db.listPassport(p.userId));
+              if (silk.tier > silkBefore) { passport.silk = silk.tier; notify(p.userId, 'silk_road', { tier: silk.tier }); }
+            }
+          }
           catch (err) { console.error('Pasport muhri xatoligi:', err.message); }
         }
         updates[p.color] = {
@@ -1343,6 +1351,8 @@ async function recordWarPoints(players, before, winnerColor, plies) {
   for (const p of players) {
     const me = before[p.color], opp = before[otherColor(p.color)];
     if (!me || !me.club_country || !me.club_code) continue;
+    // O'z davlati o'yinchisiga qarshi (bir klub yoki raqibning davlati — klubim davlati) ochko yo'q (2026-11-06, foydalanuvchi qarori)
+    if (opp && (opp.club_code === me.club_code || String(opp.country || '').toLowerCase() === me.club_code)) continue;
     const result = scoreFor(p.color, winnerColor);
     let points = result === 'win' ? 3 : (result === 'draw' ? 1 : 0);
     const oppCode = opp && opp.club_code ? opp.club_code : null;
@@ -2835,6 +2845,12 @@ async function start() {
         next: nx ? { key: nx.key, icon: nx.icon, year: nx.year, need: nx.need, startsAt: new Date(nx.start).toISOString() } : null
       });
     } catch (err) { console.error('Bayram xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
+  // 🛂 O'z pasportim (Karvon yo'li sahifasidagi Ipak yo'li kartasi uchun — extras dan yengil)
+  app.get('/api/passport', authMiddleware, async (req, res) => {
+    try { res.json({ success: true, passport: isGuest(req.user.userId) ? null : await db.listPassport(req.user.userId) }); }
+    catch (err) { console.error('Pasport xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
   app.get('/api/users/:username/extras', apiLimiter, async (req, res) => {

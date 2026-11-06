@@ -34,6 +34,9 @@
         chips: weeks.map((w) => tx('nbWeekOf', '{{date}} haftasi', { date: dayName(w) })) },
       { icon: '🐪', title: tx('nbCaravan', 'Karvon shaharlari'), how: tx('nbCaravanHow', "O'ynang — har o'yin karvoningizni Ipak yo'li bo'ylab oldinga yuradi"), n: Math.max(0, cities),
         stamps: window.Caravan ? window.Caravan.CITIES.map((c, i) => ({ icon: c.icon, name: window.Caravan.cityName(c.key, lang()), on: i <= cities })).slice(1) : [] },
+      ...(window.Caravan && window.Caravan.silkTier && d && Array.isArray(d.passport) ? [(() => { const s = window.Caravan.silkTier(d.passport); return {
+        icon: '🛂', title: tx('ppSilkTitle', "Ipak yo'li to'plami"), how: tx('nbSilkHow', "Ipak yo'lining 12 davlati o'yinchilari bilan o'ynab, pasportga muhr yig'ing"), n: s.tier,
+        chips: s.tier ? [(window.silkTierLabel ? window.silkTierLabel(s.tier) : '') + ' · ' + s.n + '/' + s.total] : [] }; })()] : []),
       { icon: '⭐', title: tx('gdTitle', "Kun o'yini"), how: tx('nbGodHow', "Qiziqarli o'yin o'ynang — har kuni kechagi eng yaxshi o'yin tanlanadi"), n: god.length,
         chips: god.map((g) => dayName(g.day) + (g.opponent ? ' · ' + g.opponent : '')) },
       { icon: '🌸', title: tx('nbHoliday', 'Bayram nishonlari'), how: tx('nbHolidayHow', "Bayram kunlarida (Navro'z, Yangi yil, hayitlar...) 3 ta o'yin o'ynang"), n: hol.length,

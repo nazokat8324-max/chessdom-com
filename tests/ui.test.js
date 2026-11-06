@@ -1299,7 +1299,7 @@ test("Nishonlar: profilda tugma, 6 tur, olinganlari ajralib turadi", opts, async
   assert.equal(await p.evaluate(() => document.getElementById('profBadgeCount').textContent), '0');
   await p.click('#profBadgeBtn');
   await p.waitForSelector('#profBadgePanel:not([hidden]) .nb-item', { timeout: 5000 });
-  assert.equal(await p.evaluate(() => document.querySelectorAll('#profBadges .nb-item').length), 7);
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#profBadges .nb-item').length), 8, "7 tur + 🛂 Ipak yo'li to'plami");
   assert.equal(await p.evaluate(() => document.querySelectorAll('#profBadges .nb-item.earned').length), 0);
   // Nishonlar bilan (sahifada chizish): 2 hafta, Samarqandgacha karvon, 1 oylik mukofot
   await p.evaluate(() => window.renderProfileBadges({ caravan: 190, badges: { questWeeks: ['2026-10-19', '2026-10-12'], gameOfDay: [{ day: '2026-10-20', opponent: 'Ali' }] }, sportsmanship: { awards: ['2026-09'] }, predictions: { awards: [] }, duels: { won: 2 } }));
@@ -1343,8 +1343,19 @@ test("Shaxmat pasporti: profilda tugma (N/190), alohida sahifada xarita, qit'ala
     // Ulashish kartasi (canvas PNG)
     const size = await p.evaluate(async () => (await window.passportCard()).size);
     assert.ok(size > 20000, 'karta PNG: ' + size);
+    // 🐪 Ipak yo'li to'plami: Qozog'iston oltin, qolgan 11 bo'sh, nishon hali yo'q
+    assert.deepEqual(await p.evaluate(() => [document.querySelectorAll('.pp-silk-c').length, document.querySelectorAll('.pp-silk-c.gold').length, document.querySelector('.pp-silk small').textContent]),
+      [12, 1, '1/12 muhr · 1/12 oltin']);
     assert.deepEqual(p.errors, []);
   }
+  // Karvon yo'li sahifasida «Ipak yo'li pasporti: 1/12» kartasi — bosilsa pasport
+  const kv = await page(a);
+  await kv.goto(srv.base + '/karvon', { waitUntil: 'load' });
+  await kv.waitForSelector('.cv-silk', { timeout: 15000 });
+  assert.match(await kv.$eval('.cv-silk', (e) => e.textContent), /Ipak yo'li pasporti: 1\/12/);
+  await kv.evaluate(() => document.querySelector('.cv-silk').click());
+  await kv.waitForSelector('#profPassPanel:not([hidden]) .pp-silk', { timeout: 10000 });
+  assert.deepEqual(kv.errors, []);
   // Boshqa o'yinchi pasporti: ulashish tugmasi yo'q, b — oddiy (oltin emas) O'zbekiston muhri
   const q = await page(a);
   await q.goto(srv.base + '/profil?u=' + b.name + '&b=pasport', { waitUntil: 'load' });

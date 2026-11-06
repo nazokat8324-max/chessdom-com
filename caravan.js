@@ -46,5 +46,13 @@
     const i = LANGS.indexOf(lang);
     return c.names[i < 0 ? 1 : i] || c.names[1];
   };
-  return { CITIES, STEP, pointsOf, cityIndex, progress, cityName };
+  // 🛂 Ipak yo'li to'plami (pasport): 12 davlat; daraja 1 — bronza (yarmi muhrlangan), 2 — kumush (hammasi), 3 — oltin (hammasi oltin muhr)
+  const SILK_ROAD = ['cn', 'mn', 'kz', 'kg', 'uz', 'tj', 'tm', 'af', 'ir', 'iq', 'sy', 'tr'];
+  const silkTier = (stamps) => {
+    const list = (stamps || []).filter((s) => SILK_ROAD.includes(s.country));
+    const n = list.length, gold = list.filter((s) => Number(s.wins) > 0).length;
+    const tier = gold === SILK_ROAD.length ? 3 : n === SILK_ROAD.length ? 2 : n >= SILK_ROAD.length / 2 ? 1 : 0;
+    return { n, gold, total: SILK_ROAD.length, tier };
+  };
+  return { CITIES, STEP, pointsOf, cityIndex, progress, cityName, SILK_ROAD, silkTier };
 });

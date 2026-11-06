@@ -1806,6 +1806,34 @@ window.TRANSLATIONS_TK = {
 
   libAllVideos: "Ähli wideolar kanalda",
 
+  ppSilkTitle: "Beýik Ýüpek ýoly ýygyndysy",
+
+  ppSilkHint: "Beýik Ýüpek ýolunyň 12 ýurdy: ýarysynyň möhüri — bürünç, hemmesiniň möhüri — kümüş, hemmesini ýeňseňiz (altyn möhürler) — altyn kerwen nyşany.",
+
+  ppSilkProgress: "{{n}}/{{total}} möhür · {{gold}}/{{total}} altyn",
+
+  ppTierNone: "Entek nyşan ýok",
+
+  ppTierBronze: "Bürünç kerwen",
+
+  ppTierSilver: "Kümüş kerwen",
+
+  ppTierGold: "Altyn kerwen",
+
+  ppSilkNew: "🐪 Beýik Ýüpek ýoly: «{{tier}}» nyşany açyldy!",
+
+  nfSilkRoad: "Beýik Ýüpek ýoly ýygyndysy: «{{tier}}» nyşany",
+
+  nbSilkHow: "Beýik Ýüpek ýolunyň 12 ýurdunyň oýunçylary bilen oýnap, pasporta möhür ýygnaň",
+
+  cvSilkCard: "Beýik Ýüpek ýoly pasporty: {{n}}/{{total}}",
+
+  cvSilkHint: "Beýik Ýüpek ýoly ýurtlarynyň oýunçylary bilen oýnap, pasporta möhür ýygnaň",
+
+  cvSilkOpen: "Pasporty açmak",
+
+  warRuleSame: "Öz ýurduňyzyň oýunçysyna garşy (bir klub ýa-da bir ýurt) oýun utuk bermeýär",
+
   admUsersHint: "Hasaba alnan oýunçylar — myhman hasaplarsyz",
 
   ppTitle: "Küşt pasporty",

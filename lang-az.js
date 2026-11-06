@@ -1806,6 +1806,34 @@ window.TRANSLATIONS_AZ = {
 
   libAllVideos: "Bütün videolar kanalda",
 
+  ppSilkTitle: "İpək Yolu kolleksiyası",
+
+  ppSilkHint: "İpək Yolunun 12 ölkəsi: yarısının möhürü — bürünc, hamısının möhürü — gümüş, hamısını məğlub etsən (qızıl möhürlər) — qızıl karvan nişanı.",
+
+  ppSilkProgress: "{{n}}/{{total}} möhür · {{gold}}/{{total}} qızıl",
+
+  ppTierNone: "Hələ nişan yoxdur",
+
+  ppTierBronze: "Bürünc karvan",
+
+  ppTierSilver: "Gümüş karvan",
+
+  ppTierGold: "Qızıl karvan",
+
+  ppSilkNew: "🐪 İpək Yolu: «{{tier}}» nişanı açıldı!",
+
+  nfSilkRoad: "İpək Yolu kolleksiyası: «{{tier}}» nişanı",
+
+  nbSilkHow: "İpək Yolunun 12 ölkəsinin oyunçuları ilə oyna, pasporta möhür topla",
+
+  cvSilkCard: "İpək Yolu pasportu: {{n}}/{{total}}",
+
+  cvSilkHint: "İpək Yolu ölkələrinin oyunçuları ilə oyna, pasporta möhür topla",
+
+  cvSilkOpen: "Pasportu aç",
+
+  warRuleSame: "Öz ölkənin oyunçusuna qarşı (eyni klub və ya eyni ölkə) oyun xal vermir",
+
   admUsersHint: "Qeydiyyatdan keçmiş oyunçular — qonaq hesabları olmadan",
 
   ppTitle: "Şahmat pasportu",

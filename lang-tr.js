@@ -1806,6 +1806,34 @@ window.TRANSLATIONS_TR = {
 
   libAllVideos: "Tüm videolar kanalda",
 
+  ppSilkTitle: "İpek Yolu koleksiyonu",
+
+  ppSilkHint: "İpek Yolu’nun 12 ülkesi: yarısının damgası bronz, hepsinin damgası gümüş, hepsini yenmek (altın damgalar) altın kervan rozeti verir.",
+
+  ppSilkProgress: "{{n}}/{{total}} damga · {{gold}}/{{total}} altın",
+
+  ppTierNone: "Henüz rozet yok",
+
+  ppTierBronze: "Bronz kervan",
+
+  ppTierSilver: "Gümüş kervan",
+
+  ppTierGold: "Altın kervan",
+
+  ppSilkNew: "🐪 İpek Yolu: «{{tier}}» rozeti açıldı!",
+
+  nfSilkRoad: "İpek Yolu koleksiyonu: «{{tier}}» rozeti",
+
+  nbSilkHow: "İpek Yolu’nun 12 ülkesinden oyuncularla oyna, pasaportuna damga topla",
+
+  cvSilkCard: "İpek Yolu pasaportu: {{n}}/{{total}}",
+
+  cvSilkHint: "İpek Yolu ülkelerinden oyuncularla oyna, pasaportuna damga topla",
+
+  cvSilkOpen: "Pasaportu aç",
+
+  warRuleSame: "Kendi ülkenden oyunculara karşı oyunlar (aynı kulüp veya aynı ülke) puan vermez",
+
   admUsersHint: "Kayıtlı oyuncular — misafir hesaplar hariç",
 
   ppTitle: "Satranç pasaportu",

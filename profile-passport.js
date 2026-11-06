@@ -68,6 +68,22 @@
     return url ? `<a class="${cls}" href="${esc(url)}" target="_blank" rel="noopener noreferrer">${inner}</a>` : `<div class="${cls}">${inner}</div>`;
   }
 
+  // 🐪 Ipak yo'li to'plami: 12 davlat bayrog'i (muhrlangan / oltin / bo'sh) va daraja
+  const TIERS = [['—', 'ppTierNone', "Hali nishon yo'q"], ['🥉', 'ppTierBronze', 'Bronza karvon'], ['🥈', 'ppTierSilver', 'Kumush karvon'], ['🥇', 'ppTierGold', 'Oltin karvon']];
+  const tierLabel = (t) => tx(TIERS[t][1], TIERS[t][2]);
+  window.silkTierLabel = tierLabel;
+  function silkHtml(map) {
+    if (!window.Caravan || !window.Caravan.SILK_ROAD) return '';
+    const s = window.Caravan.silkTier(st.stamps);
+    return `<div class="pp-silk tier-${s.tier}">
+      <div class="pp-silk-head"><b>🐪 ${esc(tx('ppSilkTitle', "Ipak yo'li to'plami"))}</b>
+        <span class="pp-silk-tier">${TIERS[s.tier][0]} ${esc(tierLabel(s.tier))}</span></div>
+      <small>${esc(tx('ppSilkProgress', '{{n}}/{{total}} muhr · {{gold}}/{{total}} oltin', s))}</small>
+      <div class="pp-silk-row">${window.Caravan.SILK_ROAD.map((c) => { const x = map.get(c); return `<span class="pp-silk-c${x ? (x.wins ? ' gold' : ' on') : ''}" title="${esc(nameOf(c))}">${flag(c, 40)}</span>`; }).join('')}</div>
+      <p>${esc(tx('ppSilkHint', "Ipak yo'lining 12 davlati: yarmidan muhr yig'sangiz — bronza, hammasidan — kumush, hammasini yutsangiz (oltin muhrlar) — oltin karvon nishoni."))}</p>
+    </div>`;
+  }
+
   function render() {
     const el = document.getElementById('profPassport');
     if (!el) return;
@@ -88,6 +104,7 @@
         <div class="pp-bar"><i style="--p:${Math.min(100, n / all * 100).toFixed(1)}%"></i></div>
         ${n && mine ? `<button type="button" class="pp-share" data-pp-share>📤 ${esc(tx('ppShare', 'Pasportni ulashish'))}</button>` : ''}
       </div>
+      ${silkHtml(map)}
       <div class="pp-map" id="ppMap"><div class="cl-loading">${esc(tx('loadingText', 'Yuklanmoqda...'))}</div></div>
       <div class="pp-legend"><span><i class="on"></i>${esc(tx('ppLegendPlayed', "O'ynalgan"))}</span><span><i class="gold"></i>${esc(tx('ppLegendWon', 'Yutilgan'))}</span></div>
       <div class="pp-conts">${conts}</div>
@@ -179,6 +196,7 @@
       const r = orig.apply(this, arguments);
       try {
         const p = data && data.passport;
+        if (p && p.silk && typeof window.showToast === 'function') setTimeout(() => window.showToast(tx('ppSilkNew', "🐪 Ipak yo'li: «{{tier}}» nishoni ochildi!", { tier: tierLabel(p.silk) }), 'success', 7000), 5200);
         if (p && (p.isNew || p.gold) && typeof window.showToast === 'function') {
           const country = nameOf(p.country);
           setTimeout(() => window.showToast(p.gold ? tx('ppNewGold', '🥇 Pasportingizga oltin muhr: {{country}}!', { country }) : tx('ppNew', '🛂 Pasportingizga yangi muhr: {{country}}!', { country }), 'success', 6000), 2600);

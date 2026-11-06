@@ -74,6 +74,29 @@ test('Bayroqlar bellashuvi: reytingli g\'alaba klubga ochko beradi (qo\'shni dav
   closeAll(a, b);
 });
 
+test("Bayroqlar bellashuvi: o'z davlati o'yinchisiga qarshi (bir klub yoki davlati — klubim davlati) ochko yo'q", async () => {
+  const a = await srv.register('Sa'), b = await srv.register('Sb'), c = await srv.register('Sc'), d = await srv.register('Sd');
+  await srv.api(a, '/api/country-clubs/join', 'POST', { country: 'Turkmenistan', code: 'tm' });
+  await srv.api(b, '/api/country-clubs/join', 'POST', { country: 'Turkmenistan', code: 'tm' }); // bir klub
+  await srv.api(c, '/api/users/me/country', 'POST', { country: 'tm' }); // klubsiz, davlati Turkmaniston
+  await srv.api(d, '/api/users/me/country', 'POST', { country: 'ge' }); // klubsiz, boshqa davlat
+  const LINE = ['e2e4', 'e7e5', 'g1f3', 'b8c6', 'f1c4', 'g8f6', 'd2d3', 'f8c5', 'b1c3', 'd7d6'];
+  const aBeats = async (opp) => {
+    const g = await startGame(srv, a, opp);
+    await play(g, LINE);
+    await finish(g, g.white === a ? 'black-resigns' : 'white-resigns');
+    await sleep(300);
+    closeAll(a, opp);
+  };
+  const tmPoints = async () => { const w = await srv.api(a, '/api/war'); const x = w.clubs.find((k) => k.code === 'tm'); return x ? x.points : 0; };
+  await aBeats(b);
+  assert.equal(await tmPoints(), 0, "klubdoshni yutish — ochko yo'q");
+  await aBeats(c);
+  assert.equal(await tmPoints(), 0, "klubsiz vatandoshni yutish — ochko yo'q");
+  await aBeats(d);
+  assert.equal(await tmPoints(), 3, "boshqa davlat o'yinchisini (klubsiz) yutish — 3");
+});
+
 test('Bashorat: natija taxmini, qabul yopilishi, ochkolar', async () => {
   const a = await srv.register('Pa'), b = await srv.register('Pb'), c = await srv.register('Pc');
   const g = await startGame(srv, a, b);

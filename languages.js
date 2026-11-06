@@ -3022,6 +3022,34 @@ const translationsExtra = {
 
     libAllVideos: "Barcha videolar kanalda",
 
+    ppSilkTitle: "Ipak yo'li to'plami",
+
+    ppSilkHint: "Ipak yo'lining 12 davlati: yarmidan muhr yig'sangiz — bronza, hammasidan — kumush, hammasini yutsangiz (oltin muhrlar) — oltin karvon nishoni.",
+
+    ppSilkProgress: "{{n}}/{{total}} muhr · {{gold}}/{{total}} oltin",
+
+    ppTierNone: "Hali nishon yo'q",
+
+    ppTierBronze: "Bronza karvon",
+
+    ppTierSilver: "Kumush karvon",
+
+    ppTierGold: "Oltin karvon",
+
+    ppSilkNew: "🐪 Ipak yo'li: «{{tier}}» nishoni ochildi!",
+
+    nfSilkRoad: "Ipak yo'li to'plami: «{{tier}}» nishoni",
+
+    nbSilkHow: "Ipak yo'lining 12 davlati o'yinchilari bilan o'ynab, pasportga muhr yig'ing",
+
+    cvSilkCard: "Ipak yo'li pasporti: {{n}}/{{total}}",
+
+    cvSilkHint: "Ipak yo'li davlatlari o'yinchilari bilan o'ynab, pasportga muhr yig'ing",
+
+    cvSilkOpen: "Pasportni ochish",
+
+    warRuleSame: "O'z davlati o'yinchisiga qarshi (bir klub yoki bir davlat) o'yin ochko bermaydi",
+
     admUsersHint: "Ro'yxatdan o'tgan o'yinchilar — mehmon akkauntlarisiz",
 
     ppTitle: "Shaxmat pasporti",
@@ -4707,6 +4735,34 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+
+    ppSilkTitle: "Silk Road collection",
+
+    ppSilkHint: "The 12 Silk Road countries: stamps from half of them earn bronze, from all of them silver, and beating all of them (gold stamps) earns the gold caravan badge.",
+
+    ppSilkProgress: "{{n}}/{{total}} stamps · {{gold}}/{{total}} gold",
+
+    ppTierNone: "No badge yet",
+
+    ppTierBronze: "Bronze caravan",
+
+    ppTierSilver: "Silver caravan",
+
+    ppTierGold: "Gold caravan",
+
+    ppSilkNew: "🐪 Silk Road: “{{tier}}” badge unlocked!",
+
+    nfSilkRoad: "Silk Road collection: “{{tier}}” badge",
+
+    nbSilkHow: "Play people from the 12 Silk Road countries and collect stamps in your passport",
+
+    cvSilkCard: "Silk Road passport: {{n}}/{{total}}",
+
+    cvSilkHint: "Play people from Silk Road countries and collect stamps in your passport",
+
+    cvSilkOpen: "Open passport",
+
+    warRuleSame: "Games against players from your own country (same club or same country) give no points",
 
     admUsersHint: "Registered players — guest accounts excluded",
 
@@ -6394,6 +6450,34 @@ const translationsExtra = {
 
     libAllVideos: "Все видео на канале",
 
+    ppSilkTitle: "Коллекция Шёлкового пути",
+
+    ppSilkHint: "12 стран Шёлкового пути: штампы половины — бронза, всех — серебро, победы над всеми (золотые штампы) — золотой караван.",
+
+    ppSilkProgress: "Штампов {{n}}/{{total}} · золотых {{gold}}/{{total}}",
+
+    ppTierNone: "Значка пока нет",
+
+    ppTierBronze: "Бронзовый караван",
+
+    ppTierSilver: "Серебряный караван",
+
+    ppTierGold: "Золотой караван",
+
+    ppSilkNew: "🐪 Шёлковый путь: открыт значок «{{tier}}»!",
+
+    nfSilkRoad: "Коллекция Шёлкового пути: значок «{{tier}}»",
+
+    nbSilkHow: "Играйте с игроками из 12 стран Шёлкового пути и собирайте штампы в паспорт",
+
+    cvSilkCard: "Паспорт Шёлкового пути: {{n}}/{{total}}",
+
+    cvSilkHint: "Играйте с игроками из стран Шёлкового пути и собирайте штампы в паспорт",
+
+    cvSilkOpen: "Открыть паспорт",
+
+    warRuleSame: "Партии против игроков своей страны (тот же клуб или та же страна) очков не дают",
+
     admUsersHint: "Зарегистрированные игроки — без гостевых аккаунтов",
 
     ppTitle: "Шахматный паспорт",
@@ -8079,6 +8163,34 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+
+    ppSilkTitle: "Colección de la Ruta de la Seda",
+
+    ppSilkHint: "Los 12 países de la Ruta de la Seda: sellos de la mitad dan bronce, de todos plata, y ganar a todos (sellos de oro) da la caravana de oro.",
+
+    ppSilkProgress: "{{n}}/{{total}} sellos · {{gold}}/{{total}} de oro",
+
+    ppTierNone: "Aún sin insignia",
+
+    ppTierBronze: "Caravana de bronce",
+
+    ppTierSilver: "Caravana de plata",
+
+    ppTierGold: "Caravana de oro",
+
+    ppSilkNew: "🐪 Ruta de la Seda: ¡insignia «{{tier}}» desbloqueada!",
+
+    nfSilkRoad: "Colección de la Ruta de la Seda: insignia «{{tier}}»",
+
+    nbSilkHow: "Juega con jugadores de los 12 países de la Ruta de la Seda y reúne sellos en tu pasaporte",
+
+    cvSilkCard: "Pasaporte de la Ruta de la Seda: {{n}}/{{total}}",
+
+    cvSilkHint: "Juega con jugadores de países de la Ruta de la Seda y reúne sellos en tu pasaporte",
+
+    cvSilkOpen: "Abrir pasaporte",
+
+    warRuleSame: "Las partidas contra jugadores de tu propio país (mismo club o mismo país) no dan puntos",
 
     admUsersHint: "Jugadores registrados — sin cuentas de invitado",
 
@@ -9766,6 +9878,34 @@ const translationsExtra = {
 
     libAllVideos: "Alle Videos auf dem Kanal",
 
+    ppSilkTitle: "Seidenstraßen-Sammlung",
+
+    ppSilkHint: "Die 12 Länder der Seidenstraße: Stempel der Hälfte bringen Bronze, aller Länder Silber, Siege gegen alle (Goldstempel) die goldene Karawane.",
+
+    ppSilkProgress: "{{n}}/{{total}} Stempel · {{gold}}/{{total}} Gold",
+
+    ppTierNone: "Noch kein Abzeichen",
+
+    ppTierBronze: "Bronze-Karawane",
+
+    ppTierSilver: "Silber-Karawane",
+
+    ppTierGold: "Gold-Karawane",
+
+    ppSilkNew: "🐪 Seidenstraße: Abzeichen „{{tier}}“ freigeschaltet!",
+
+    nfSilkRoad: "Seidenstraßen-Sammlung: Abzeichen „{{tier}}“",
+
+    nbSilkHow: "Spiele gegen Spieler aus den 12 Seidenstraßen-Ländern und sammle Stempel im Pass",
+
+    cvSilkCard: "Seidenstraßen-Pass: {{n}}/{{total}}",
+
+    cvSilkHint: "Spiele gegen Spieler aus Seidenstraßen-Ländern und sammle Stempel im Pass",
+
+    cvSilkOpen: "Pass öffnen",
+
+    warRuleSame: "Partien gegen Spieler aus dem eigenen Land (gleicher Club oder gleiches Land) bringen keine Punkte",
+
     admUsersHint: "Registrierte Spieler – ohne Gastkonten",
 
     ppTitle: "Schachpass",
@@ -11451,6 +11591,34 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+    ppSilkTitle: "Collection de la Route de la soie",
+
+    ppSilkHint: "Les 12 pays de la Route de la soie : des tampons de la moitié donnent le bronze, de tous l'argent, et battre tous (tampons d'or) la caravane d'or.",
+
+    ppSilkProgress: "{{n}}/{{total}} tampons · {{gold}}/{{total}} d'or",
+
+    ppTierNone: "Pas encore de badge",
+
+    ppTierBronze: "Caravane de bronze",
+
+    ppTierSilver: "Caravane d'argent",
+
+    ppTierGold: "Caravane d'or",
+
+    ppSilkNew: "🐪 Route de la soie : badge « {{tier}} » débloqué !",
+
+    nfSilkRoad: "Collection de la Route de la soie : badge « {{tier}} »",
+
+    nbSilkHow: "Jouez contre des joueurs des 12 pays de la Route de la soie et collectez des tampons",
+
+    cvSilkCard: "Passeport de la Route de la soie : {{n}}/{{total}}",
+
+    cvSilkHint: "Jouez contre des joueurs des pays de la Route de la soie et collectez des tampons",
+
+    cvSilkOpen: "Ouvrir le passeport",
+
+    warRuleSame: "Les parties contre des joueurs de votre propre pays (même club ou même pays) ne donnent aucun point",
 
     admUsersHint: "Joueurs inscrits — sans les comptes invités",
 

@@ -1806,6 +1806,34 @@ window.TRANSLATIONS_IT = {
 
   libAllVideos: "Tutti i video sul canale",
 
+  ppSilkTitle: "Collezione della Via della Seta",
+
+  ppSilkHint: "I 12 paesi della Via della Seta: i timbri di metà danno il bronzo, di tutti l'argento, e battere tutti (timbri d'oro) la carovana d'oro.",
+
+  ppSilkProgress: "{{n}}/{{total}} timbri · {{gold}}/{{total}} d'oro",
+
+  ppTierNone: "Nessun distintivo per ora",
+
+  ppTierBronze: "Carovana di bronzo",
+
+  ppTierSilver: "Carovana d'argento",
+
+  ppTierGold: "Carovana d'oro",
+
+  ppSilkNew: "🐪 Via della Seta: distintivo «{{tier}}» sbloccato!",
+
+  nfSilkRoad: "Collezione della Via della Seta: distintivo «{{tier}}»",
+
+  nbSilkHow: "Gioca con giocatori dei 12 paesi della Via della Seta e raccogli timbri nel passaporto",
+
+  cvSilkCard: "Passaporto della Via della Seta: {{n}}/{{total}}",
+
+  cvSilkHint: "Gioca con giocatori dei paesi della Via della Seta e raccogli timbri nel passaporto",
+
+  cvSilkOpen: "Apri il passaporto",
+
+  warRuleSame: "Le partite contro giocatori del tuo paese (stesso club o stesso paese) non danno punti",
+
   admUsersHint: "Giocatori registrati — senza account ospite",
 
   ppTitle: "Passaporto degli scacchi",

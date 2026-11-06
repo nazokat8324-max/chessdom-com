@@ -148,6 +148,8 @@ function fill(s, vars) { return String(s).replace(/\{\{(\w+)\}\}/g, (m, k) => (v
 
 // Ўзбекча (кирилл): o'zbekcha matn tayyorlanib, kirillga o'giriladi
 const UzCyrl = require('./uzcyrl');
+// 🐪 Ipak yo'li to'plami (pasport) — yangi daraja
+T.silk_road = {"uz":"🐪 Ipak yo'li to'plamida yangi karvon nishoni ochildi!","en":"🐪 A new caravan badge unlocked in your Silk Road collection!","ru":"🐪 В коллекции Шёлкового пути открыт новый значок каравана!","es":"🐪 ¡Nueva insignia de caravana en tu colección de la Ruta de la Seda!","de":"🐪 Neues Karawanen-Abzeichen in deiner Seidenstraßen-Sammlung!","fr":"🐪 Nouveau badge de caravane dans votre collection de la Route de la soie !","tr":"🐪 İpek Yolu koleksiyonunda yeni kervan rozeti açıldı!","kk":"🐪 Жібек жолы жинағында жаңа керуен белгісі ашылды!","tg":"🐪 Дар маҷмӯаи Роҳи Абрешим нишони нави корвон кушода шуд!","ky":"🐪 Жибек жолу топтомунда жаңы кербен белгиси ачылды!","tk":"🐪 Beýik Ýüpek ýoly ýygyndysynda täze kerwen nyşany açyldy!","az":"🐪 İpək Yolu kolleksiyasında yeni karvan nişanı açıldı!","zh":"🐪 丝绸之路收藏解锁了新的驼队徽章！","it":"🐪 Nuovo distintivo carovana nella tua collezione della Via della Seta!"};
 function pushMessage(type, data, lang, ownName) {
   if (lang === 'uzc') { const m = pushMessage(type, data, 'uz', ownName); return { ...m, title: UzCyrl.toCyrl(m.title), body: UzCyrl.toCyrl(m.body) }; }
   const l = LANGS.includes(lang) ? lang : 'en';
@@ -170,6 +172,7 @@ function pushMessage(type, data, lang, ownName) {
     case 'quests_done': url = '/karvon'; break;
     case 'duel_end': url = prof(ownName); break;
     case 'holiday_badge': url = prof(ownName); vars = { ...d, name: Holidays.name(d.holiday, l), icon: Holidays.icon(d.holiday) }; break;
+    case 'silk_road': url = '/karvon'; break;
     case 'caravan_city': url = '/karvon'; vars = { ...d, city: Caravan.cityName(d.city, l) }; break;
     case 'server_error': url = '/admin'; break;
   }

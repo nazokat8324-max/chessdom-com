@@ -50,6 +50,10 @@
       }
       case 'duel_end':
         return { icon: '⚔️', text: tx('nfDuelEnd', '{{opponent}} bilan bahs tugadi: {{me}} – {{opp}}', { opponent: d.opponent, me: window.formatDuelPoints ? window.formatDuelPoints(d.me) : d.me, opp: window.formatDuelPoints ? window.formatDuelPoints(d.opp) : d.opp }), go: () => window.openProfileModal && window.openProfileModal() };
+      case 'silk_road': {
+        const tier = [tx('ppTierBronze', 'Bronza karvon'), tx('ppTierSilver', 'Kumush karvon'), tx('ppTierGold', 'Oltin karvon')][(d.tier || 1) - 1];
+        return { icon: '🐪', text: tx('nfSilkRoad', "Ipak yo'li to'plami: «{{tier}}» nishoni", { tier }), go: () => window.openProfileSection && window.openProfileSection('pass', window.currentUser && window.currentUser.username) };
+      }
       case 'caravan_city': {
         const city = window.Caravan ? window.Caravan.cityName(d.city, window.currentLang || 'en') : d.city;
         return { icon: '🐪', text: tx('cvArrived', '🐪 Karvoningiz {{city}}ga yetib keldi!', { city }).replace(/^🐪\s*/, ''), go: () => window.switchView && window.switchView('caravan') };

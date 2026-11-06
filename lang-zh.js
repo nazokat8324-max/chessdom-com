@@ -1806,6 +1806,34 @@ window.TRANSLATIONS_ZH = {
 
   libAllVideos: "频道里的全部视频",
 
+  ppSilkTitle: "丝绸之路收藏",
+
+  ppSilkHint: "丝绸之路 12 国：集齐一半印章得铜牌，全部集齐得银牌，全部获胜（金色印章）得金色驼队徽章。",
+
+  ppSilkProgress: "印章 {{n}}/{{total}} · 金色 {{gold}}/{{total}}",
+
+  ppTierNone: "暂无徽章",
+
+  ppTierBronze: "铜色驼队",
+
+  ppTierSilver: "银色驼队",
+
+  ppTierGold: "金色驼队",
+
+  ppSilkNew: "🐪 丝绸之路：已解锁「{{tier}}」徽章！",
+
+  nfSilkRoad: "丝绸之路收藏：「{{tier}}」徽章",
+
+  nbSilkHow: "与丝绸之路 12 国的棋手对弈，在护照上收集印章",
+
+  cvSilkCard: "丝绸之路护照：{{n}}/{{total}}",
+
+  cvSilkHint: "与丝绸之路国家的棋手对弈，在护照上收集印章",
+
+  cvSilkOpen: "打开护照",
+
+  warRuleSame: "对阵本国棋手（同一俱乐部或同一国家）的对局不计分",
+
   admUsersHint: "已注册玩家——不含访客账号",
 
   ppTitle: "国际象棋护照",

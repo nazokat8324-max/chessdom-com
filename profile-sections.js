@@ -1,5 +1,5 @@
 // Profil bo'limlari alohida sahifada (2026-10-24): 🏅 Yutuqlar, 📊 Batafsil statistika, 📖 Debyutlarim, 🎖️ Nishonlar —
-// /profil?u=ism&b=yutuqlar|statistika|debyutlar|nishonlar (#profsecView, ps-*). Panellar (#profAchPanel ...) shu sahifada turadi,
+// /profil?u=ism&b=yutuqlar|statistika|debyutlar|nishonlar|pasport (profile-passport.js) (#profsecView, ps-*). Panellar (#profAchPanel ...) shu sahifada turadi,
 // ichini avvalgidek profile-extras.js / myopenings.js / profile-badges.js chizadi. "← Orqaga" (bu yerda va O'yinlar tarixida) —
 // profil oynasiga qaytaradi (window.backToProfile).
 (function () {
@@ -8,7 +8,8 @@
     ach: { slug: 'yutuqlar', panel: 'profAchPanel', icon: '🏅', key: 'achTitle', fb: 'Yutuqlar' },
     ext: { slug: 'statistika', panel: 'profExtPanel', icon: '📊', key: 'exTitle', fb: 'Batafsil statistika' },
     open: { slug: 'debyutlar', panel: 'profOpenPanel', icon: '📖', key: 'opTitle', fb: 'Debyutlarim' },
-    badge: { slug: 'nishonlar', panel: 'profBadgePanel', icon: '🎖️', key: 'nbTitle', fb: 'Nishonlar' }
+    badge: { slug: 'nishonlar', panel: 'profBadgePanel', icon: '🎖️', key: 'nbTitle', fb: 'Nishonlar' },
+    pass: { slug: 'pasport', panel: 'profPassPanel', icon: '🛂', key: 'ppTitle', fb: 'Shaxmat pasporti' }
   };
   const bySlug = (slug) => Object.keys(SECTIONS).find((k) => SECTIONS[k].slug === slug) || null;
   const st = { name: null, user: null };

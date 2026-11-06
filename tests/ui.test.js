@@ -1309,6 +1309,50 @@ test("Nishonlar: profilda tugma, 6 tur, olinganlari ajralib turadi", opts, async
   assert.deepEqual(p.errors, []);
 });
 
+test("Shaxmat pasporti: profilda tugma (N/190), alohida sahifada xarita, qit'alar, oltin muhr va ulashish kartasi (kompyuter va telefon)", opts, async () => {
+  const H = require('./helpers');
+  const a = await srv.register('PasA'), b = await srv.register('PasB');
+  await srv.api(a, '/api/users/me/country', 'POST', { country: 'uz' });
+  await srv.api(b, '/api/users/me/country', 'POST', { country: 'kz' });
+  const g = await H.startGame(srv, a, b);
+  await H.play(g, ['e2e4', 'e7e5']);
+  await H.finish(g, g.white === a ? 'black-resigns' : 'white-resigns'); // a yutadi → Qozog'iston oltin muhri
+  H.closeAll(a, b);
+  for (const vp of [null, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const p = await page(a, vp || undefined);
+    await p.goto(srv.base + '/?profile=' + a.name, { waitUntil: 'load' });
+    await p.waitForFunction(() => document.getElementById('profPassCount').textContent === '1/190', { timeout: 15000 });
+    await p.evaluate(() => document.getElementById('profPassBtn').click());
+    await p.waitForSelector('#profPassPanel:not([hidden]) .pp-stamp', { timeout: 10000 });
+    assert.equal(await p.evaluate(() => location.pathname + location.search), '/profil?u=' + a.name + '&b=pasport');
+    await p.waitForSelector('#ppMap .pp-c.gold', { timeout: 15000 });
+    const s = await p.evaluate(() => ({
+      stamps: [...document.querySelectorAll('#profPassport .pp-stamp')].map((x) => [x.classList.contains('gold'), x.querySelector('b').textContent]),
+      nums: document.querySelector('.pp-nums').textContent.replace(/\s+/g, ' ').trim(),
+      gold: document.querySelectorAll('#ppMap .pp-c.gold').length,
+      asia: [...document.querySelectorAll('.pp-cont')].map((c) => c.textContent.replace(/\s+/g, ' ').trim()).find((t) => /Osiyo/.test(t)),
+      share: !!document.querySelector('[data-pp-share]'),
+      wide: document.documentElement.scrollWidth > innerWidth
+    }));
+    assert.deepEqual(s.stamps, [[true, "Qozog'iston"]]);
+    assert.match(s.nums, /^1\/190\s*davlat muhri 1\s*oltin muhr$/);
+    assert.ok(s.gold >= 1, 'xaritada Qozog\'iston oltin');
+    assert.match(s.asia, /Osiyo\s*1\/\d+/);
+    assert.equal(s.share, true, "o'z pasportida ulashish tugmasi");
+    assert.equal(s.wide, false, 'ekrandan chiqmaydi');
+    // Ulashish kartasi (canvas PNG)
+    const size = await p.evaluate(async () => (await window.passportCard()).size);
+    assert.ok(size > 20000, 'karta PNG: ' + size);
+    assert.deepEqual(p.errors, []);
+  }
+  // Boshqa o'yinchi pasporti: ulashish tugmasi yo'q, b — oddiy (oltin emas) O'zbekiston muhri
+  const q = await page(a);
+  await q.goto(srv.base + '/profil?u=' + b.name + '&b=pasport', { waitUntil: 'load' });
+  await q.waitForSelector('#profPassPanel:not([hidden]) .pp-stamp', { timeout: 15000 });
+  assert.deepEqual(await q.evaluate(() => [[...document.querySelectorAll('.pp-stamp')].map((x) => x.classList.contains('gold')), !!document.querySelector('[data-pp-share]')]), [[false], false]);
+  assert.deepEqual(q.errors, []);
+});
+
 test("Profil bo'limlari alohida sahifada: manzil, havola orqali ochish, ← Orqaga profilga qaytaradi", opts, async () => {
   const u = await srv.register('Sect');
   for (const vp of [null, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {

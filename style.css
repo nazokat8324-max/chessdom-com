@@ -14854,3 +14854,53 @@ body.auth-locked .view-section > h1.sr-only, body:has(#profileModal[style*="flex
 .cl-res-tag { font-size: 11px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
 .cl-res-tag.win { background: rgba(245, 197, 66, 0.16); color: #f5c542; }
 .cl-res-tag.live { background: rgba(var(--accent-rgb), 0.14); color: var(--accent); }
+
+/* ===== 🛂 Shaxmat pasporti (profile-passport.js, pp-*) ===== */
+.pp-root { display: flex; flex-direction: column; gap: 14px; }
+.pp-hero { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 18px; align-items: center; padding: 18px; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.18), rgba(var(--accent-rgb), 0.04)); border: 1px solid rgba(var(--accent-rgb), 0.35); }
+.pp-cover { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.pp-cover b { display: block; font-size: 18px; }
+.pp-cover small { color: var(--cd-muted); overflow-wrap: anywhere; }
+.pp-emblem { font-size: 40px; line-height: 1; }
+.pp-nums { display: flex; gap: 18px; }
+.pp-nums > div { display: flex; flex-direction: column; align-items: center; }
+.pp-nums b { font-size: 26px; line-height: 1.1; }
+.pp-nums b small { font-size: 14px; color: var(--cd-muted); font-weight: 600; }
+.pp-nums > div:last-child b { color: #f5c542; }
+.pp-nums span { font-size: 12px; color: var(--cd-muted); }
+.pp-bar { grid-column: 1 / -1; height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.pp-bar i, .pp-cont i { display: block; height: 100%; width: var(--p); background: var(--accent); border-radius: inherit; }
+.pp-share { grid-column: 1 / -1; justify-self: start; padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer; font: inherit; font-weight: 700;
+  background: var(--accent); color: var(--on-accent); }
+.pp-map { border-radius: 14px; overflow: hidden; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cd-border-strong); min-height: 120px; }
+.pp-svg { display: block; width: 100%; height: auto; }
+.pp-c { fill: rgba(255, 255, 255, 0.12); stroke: rgba(0, 0, 0, 0.35); stroke-width: 0.5; }
+.pp-c.on { fill: var(--accent); }
+.pp-c.gold { fill: #f5c542; }
+.pp-legend { display: flex; gap: 16px; font-size: 13px; color: var(--cd-muted); }
+.pp-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--accent); }
+.pp-legend i.gold { background: #f5c542; }
+.pp-conts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pp-cont { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; padding: 8px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--cd-border-strong); font-size: 13px; }
+.pp-cont span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-cont i { grid-column: 1 / -1; height: 4px; }
+.pp-how, .pp-empty { margin: 0; font-size: 13px; color: var(--cd-muted); }
+.pp-empty { padding: 18px; text-align: center; border-radius: 12px; border: 1px dashed var(--cd-border-strong); }
+.pp-stamps { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+.pp-stamp { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 10px; text-align: center; text-decoration: none; color: var(--cd-text);
+  border-radius: 14px; border: 2px dashed rgba(var(--accent-rgb), 0.6); background: rgba(var(--accent-rgb), 0.06); transform: rotate(-1.2deg); }
+.pp-stamp:nth-child(even) { transform: rotate(1.4deg); }
+.pp-stamp.gold { border-color: #f5c542; background: rgba(245, 197, 66, 0.09); box-shadow: inset 0 0 0 3px rgba(245, 197, 66, 0.15); }
+a.pp-stamp:hover, a.pp-stamp:focus-visible { border-style: solid; }
+.pp-stamp .pp-flag { width: 56px; height: auto; border-radius: 4px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35); }
+.pp-stamp b { font-size: 14px; overflow-wrap: anywhere; }
+.pp-stamp small { font-size: 11px; color: var(--cd-muted); overflow-wrap: anywhere; }
+.pp-stamp small.pp-won { color: #f5c542; }
+.pp-games { font-size: 11px; color: var(--cd-muted); }
+.pp-video { font-size: 12px; font-weight: 600; color: var(--accent); }
+@media (max-width: 600px) {
+  .pp-hero { grid-template-columns: minmax(0, 1fr); }
+  .pp-conts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pp-stamps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

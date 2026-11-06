@@ -596,8 +596,16 @@ async function endGame(roomId, room, winnerColor, reason) {
           caravan = { points, gained, city: Caravan.CITIES[idx].key, arrived: idx > Caravan.cityIndex(points - gained) };
           if (caravan.arrived && !isGuest(p.userId)) notify(p.userId, 'caravan_city', { city: caravan.city });
         }
+        // 🛂 Shaxmat pasporti: raqibning davlati muhri (oddiy — o'ynaganda, oltin — birinchi g'alabada); "Xalqaro" va mehmon pasportisiz
+        let passport = null;
+        const oppCountry = String((oppUser && oppUser.country) || '').toLowerCase();
+        if (!isGuest(p.userId) && /^[a-z]{2}$/.test(oppCountry) && oppCountry !== 'un') {
+          try { passport = { country: oppCountry, ...(await db.addPassportStamp(p.userId, oppCountry, opp.username, result === 'win')) }; }
+          catch (err) { console.error('Pasport muhri xatoligi:', err.message); }
+        }
         updates[p.color] = {
           caravan,
+          passport,
           stats: statsData && statsData.stats,
           statsByMode: statsData && statsData.statsByMode,
           newRating: ratingData ? ratingData.newRating : (before[p.color] && before[p.color].rating) || 1500,
@@ -2847,6 +2855,7 @@ async function start() {
         banner: isGuest(u.id) ? null : bannerOf(u),
         questBadges: await db.countQuestWeeks(u.id),
         duels: await db.duelSummary(u.id),
+        passport: isGuest(u.id) ? null : await db.listPassport(u.id),
         badges: { questWeeks: await db.listQuestWeeks(u.id), gameOfDay: await db.gameOfDayFor(u.id, u.username), holidays: await db.listHolidayBadges(u.id) },
         predictions: await db.predictionSummary(u.id, monthStartIso(warSeasonKey())),
         extStats: await db.getExtendedStats(u)

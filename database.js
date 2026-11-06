@@ -173,6 +173,21 @@ async function initDatabase() {
     )
   `);
 
+  // 🛂 Shaxmat pasporti: o'yinchi qaysi davlat o'yinchisi bilan o'ynagan (oddiy muhr) va kimni yutgan (oltin muhr) — davlatga bitta qator
+  await dbExec(`
+    CREATE TABLE IF NOT EXISTS passport_stamps (
+      id TEXT PRIMARY KEY,
+      user_id TEXT REFERENCES users(id) ON DELETE CASCADE,
+      country TEXT NOT NULL,
+      first_at TEXT NOT NULL,
+      first_opponent TEXT,
+      games INTEGER DEFAULT 0,
+      wins INTEGER DEFAULT 0,
+      won_at TEXT,
+      win_opponent TEXT,
+      UNIQUE(user_id, country)
+    )
+  `);
   // 📈 Kunlik faollik (admin "Qaytgan o'yinchilar"): o'yinchi saytga kirgan har kun (Toshkent vaqti) — bitta qator; 60 kundan eskisi o'chiriladi
   await dbExec(`
     CREATE TABLE IF NOT EXISTS user_days (
@@ -1173,6 +1188,22 @@ async function adminSearchUsers(q) {
     FROM users WHERE LOWER(username) LIKE ? ESCAPE '\\' ORDER BY last_active DESC LIMIT 50`, [like]);
   const counts = await reportCounts();
   return rows.map(u => ({ ...u, reports: counts.get(u.id) || 0 }));
+}
+
+// 🛂 Pasport muhri: { isNew — bu davlat birinchi marta, gold — birinchi g'alaba (oltin muhr) }
+async function addPassportStamp(userId, country, opponent, won) {
+  const prev = await dbGet('SELECT games, wins FROM passport_stamps WHERE user_id = ? AND country = ?', [userId, country]);
+  const now = new Date().toISOString();
+  await dbRun(`INSERT INTO passport_stamps (id, user_id, country, first_at, first_opponent, games, wins, won_at, win_opponent)
+    VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?)
+    ON CONFLICT (user_id, country) DO UPDATE SET games = passport_stamps.games + 1, wins = passport_stamps.wins + excluded.wins,
+      won_at = COALESCE(passport_stamps.won_at, excluded.won_at), win_opponent = COALESCE(passport_stamps.win_opponent, excluded.win_opponent)`,
+  [uuidv4(), userId, country, now, opponent || null, won ? 1 : 0, won ? now : null, won ? (opponent || null) : null]);
+  return { isNew: !prev, gold: !!won && !(prev && Number(prev.wins) > 0) };
+}
+async function listPassport(userId) {
+  const rows = await dbAll('SELECT country, first_at as "firstAt", first_opponent as "firstOpponent", games, wins, won_at as "wonAt", win_opponent as "winOpponent" FROM passport_stamps WHERE user_id = ? ORDER BY first_at DESC', [userId]);
+  return rows.map(r => ({ ...r, games: Number(r.games) || 0, wins: Number(r.wins) || 0 }));
 }
 
 async function markUserDay(userId, day) {
@@ -2453,6 +2484,8 @@ module.exports = {
   adminSearchUsers,
   adminStats,
   markUserDay,
+  addPassportStamp,
+  listPassport,
   pruneUserDays,
   saveActiveGame,
   deleteActiveGame,

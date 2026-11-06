@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_AZ = {
 
   libAllVideos: "Bütün videolar kanalda",
 
+  ppTitle: "Şahmat pasportu",
+
+  ppFirst: "İlk oyun: {{date}} · {{name}}",
+
+  ppWon: "🥇 Qələbə: {{date}} · {{name}}",
+
+  ppPlayed: "Oyunlar: {{n}} · qələbələr: {{w}}",
+
+  ppWatch: "Bu ölkə haqqında video",
+
+  ppCountriesLabel: "ölkə möhürü",
+
+  ppGoldLabel: "qızıl möhür",
+
+  ppShare: "Pasportu paylaş",
+
+  ppLegendPlayed: "Oynanıb",
+
+  ppLegendWon: "Qazanılıb",
+
+  ppHow: "Başqa ölkənin oyunçusu ilə oyna — pasportuna həmin ölkənin möhürü vurulur. Qalib gəlsən, möhür qızıl olur. Möhürlər 6 noyabr 2026-dan toplanır.",
+
+  ppEmpty: "Pasport hələ boşdur — ilk möhür ilk oyundan sonra vurulur!",
+
+  ppShareText: "🛂 Mənim şahmat pasportum: {{n}}/{{total}} ölkə, {{gold}} qızıl möhür — ChessCaravan",
+
+  ppNew: "🛂 Pasportuna yeni möhür: {{country}}!",
+
+  ppNewGold: "🥇 Pasportuna qızıl möhür: {{country}}!",
+
   admGamesNoAdmin: "Adminsiz oyunlar (24 saat)",
 
   admGamesNoAdminHint: "Heç bir adminin (sənin hesabının) iştirak etmədiyi oyunlar",

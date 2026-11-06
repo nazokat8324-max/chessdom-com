@@ -3022,6 +3022,36 @@ const translationsExtra = {
 
     libAllVideos: "Barcha videolar kanalda",
 
+    ppTitle: "Shaxmat pasporti",
+
+    ppFirst: "Birinchi o'yin: {{date}} · {{name}}",
+
+    ppWon: "🥇 G'alaba: {{date}} · {{name}}",
+
+    ppPlayed: "O'yinlar: {{n}} · g'alabalar: {{w}}",
+
+    ppWatch: "Bu davlat haqida video",
+
+    ppCountriesLabel: "davlat muhri",
+
+    ppGoldLabel: "oltin muhr",
+
+    ppShare: "Pasportni ulashish",
+
+    ppLegendPlayed: "O'ynalgan",
+
+    ppLegendWon: "Yutilgan",
+
+    ppHow: "Boshqa davlat o'yinchisi bilan o'ynang — pasportga o'sha davlat muhri bosiladi. Yutsangiz, muhr oltin bo'ladi. Muhrlar 6-noyabr 2026 dan beri yig'iladi.",
+
+    ppEmpty: "Pasport hali bo'sh — birinchi muhr birinchi o'yindan keyin bosiladi!",
+
+    ppShareText: "🛂 Mening shaxmat pasportim: {{n}}/{{total}} davlat, {{gold}} ta oltin muhr — ChessCaravan",
+
+    ppNew: "🛂 Pasportingizga yangi muhr: {{country}}!",
+
+    ppNewGold: "🥇 Pasportingizga oltin muhr: {{country}}!",
+
     admGamesNoAdmin: "Adminsiz o'yinlar (24 soat)",
 
     admGamesNoAdminHint: "Hech bir admin (sizning akkauntingiz) qatnashmagan o'yinlar",
@@ -4675,6 +4705,36 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+
+    ppTitle: "Chess passport",
+
+    ppFirst: "First game: {{date}} · {{name}}",
+
+    ppWon: "🥇 Win: {{date}} · {{name}}",
+
+    ppPlayed: "Games: {{n}} · wins: {{w}}",
+
+    ppWatch: "Video about this country",
+
+    ppCountriesLabel: "country stamps",
+
+    ppGoldLabel: "gold stamps",
+
+    ppShare: "Share passport",
+
+    ppLegendPlayed: "Played",
+
+    ppLegendWon: "Won",
+
+    ppHow: "Play someone from another country and their country is stamped in your passport. Win, and the stamp turns gold. Stamps are collected since 6 November 2026.",
+
+    ppEmpty: "The passport is still empty — the first stamp comes after the first game!",
+
+    ppShareText: "🛂 My chess passport: {{n}}/{{total}} countries, {{gold}} gold stamps — ChessCaravan",
+
+    ppNew: "🛂 New stamp in your passport: {{country}}!",
+
+    ppNewGold: "🥇 Gold stamp in your passport: {{country}}!",
 
     admGamesNoAdmin: "Games without admins (24 h)",
 
@@ -6330,6 +6390,36 @@ const translationsExtra = {
 
     libAllVideos: "Все видео на канале",
 
+    ppTitle: "Шахматный паспорт",
+
+    ppFirst: "Первая партия: {{date}} · {{name}}",
+
+    ppWon: "🥇 Победа: {{date}} · {{name}}",
+
+    ppPlayed: "Партий: {{n}} · побед: {{w}}",
+
+    ppWatch: "Видео об этой стране",
+
+    ppCountriesLabel: "штампов стран",
+
+    ppGoldLabel: "золотых штампов",
+
+    ppShare: "Поделиться паспортом",
+
+    ppLegendPlayed: "Сыграно",
+
+    ppLegendWon: "Выиграно",
+
+    ppHow: "Сыграйте с игроком из другой страны — в паспорте появится штамп этой страны. Победите — штамп станет золотым. Штампы собираются с 6 ноября 2026.",
+
+    ppEmpty: "Паспорт пока пуст — первый штамп появится после первой партии!",
+
+    ppShareText: "🛂 Мой шахматный паспорт: стран {{n}}/{{total}}, золотых штампов {{gold}} — ChessCaravan",
+
+    ppNew: "🛂 Новый штамп в паспорте: {{country}}!",
+
+    ppNewGold: "🥇 Золотой штамп в паспорте: {{country}}!",
+
     admGamesNoAdmin: "Игры без админов (24 ч)",
 
     admGamesNoAdminHint: "Игры, в которых не участвовал ни один админ (ваш аккаунт)",
@@ -7983,6 +8073,36 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+
+    ppTitle: "Pasaporte de ajedrez",
+
+    ppFirst: "Primera partida: {{date}} · {{name}}",
+
+    ppWon: "🥇 Victoria: {{date}} · {{name}}",
+
+    ppPlayed: "Partidas: {{n}} · victorias: {{w}}",
+
+    ppWatch: "Vídeo sobre este país",
+
+    ppCountriesLabel: "sellos de países",
+
+    ppGoldLabel: "sellos de oro",
+
+    ppShare: "Compartir pasaporte",
+
+    ppLegendPlayed: "Jugado",
+
+    ppLegendWon: "Ganado",
+
+    ppHow: "Juega contra alguien de otro país y su país quedará sellado en tu pasaporte. Gana y el sello será de oro. Los sellos se reúnen desde el 6 de noviembre de 2026.",
+
+    ppEmpty: "El pasaporte aún está vacío: el primer sello llega tras la primera partida.",
+
+    ppShareText: "🛂 Mi pasaporte de ajedrez: {{n}}/{{total}} países, {{gold}} sellos de oro — ChessCaravan",
+
+    ppNew: "🛂 Nuevo sello en tu pasaporte: {{country}}!",
+
+    ppNewGold: "🥇 Sello de oro en tu pasaporte: {{country}}!",
 
     admGamesNoAdmin: "Partidas sin administradores (24 h)",
 
@@ -9638,6 +9758,36 @@ const translationsExtra = {
 
     libAllVideos: "Alle Videos auf dem Kanal",
 
+    ppTitle: "Schachpass",
+
+    ppFirst: "Erste Partie: {{date}} · {{name}}",
+
+    ppWon: "🥇 Sieg: {{date}} · {{name}}",
+
+    ppPlayed: "Partien: {{n}} · Siege: {{w}}",
+
+    ppWatch: "Video über dieses Land",
+
+    ppCountriesLabel: "Länderstempel",
+
+    ppGoldLabel: "Goldstempel",
+
+    ppShare: "Pass teilen",
+
+    ppLegendPlayed: "Gespielt",
+
+    ppLegendWon: "Gewonnen",
+
+    ppHow: "Spiele gegen jemanden aus einem anderen Land – dessen Land wird in deinem Pass gestempelt. Gewinnst du, wird der Stempel golden. Stempel werden seit dem 6. November 2026 gesammelt.",
+
+    ppEmpty: "Der Pass ist noch leer – der erste Stempel kommt nach der ersten Partie!",
+
+    ppShareText: "🛂 Mein Schachpass: {{n}}/{{total}} Länder, {{gold}} Goldstempel — ChessCaravan",
+
+    ppNew: "🛂 Neuer Stempel im Pass: {{country}}!",
+
+    ppNewGold: "🥇 Goldstempel im Pass: {{country}}!",
+
     admGamesNoAdmin: "Partien ohne Admins (24 Std.)",
 
     admGamesNoAdminHint: "Partien, an denen kein Admin (dein Konto) teilgenommen hat",
@@ -11291,6 +11441,36 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+    ppTitle: "Passeport d'échecs",
+
+    ppFirst: "Première partie : {{date}} · {{name}}",
+
+    ppWon: "🥇 Victoire : {{date}} · {{name}}",
+
+    ppPlayed: "Parties : {{n}} · victoires : {{w}}",
+
+    ppWatch: "Vidéo sur ce pays",
+
+    ppCountriesLabel: "tampons de pays",
+
+    ppGoldLabel: "tampons d'or",
+
+    ppShare: "Partager le passeport",
+
+    ppLegendPlayed: "Joué",
+
+    ppLegendWon: "Gagné",
+
+    ppHow: "Jouez contre quelqu'un d'un autre pays : son pays est tamponné dans votre passeport. Gagnez et le tampon devient doré. Les tampons sont collectés depuis le 6 novembre 2026.",
+
+    ppEmpty: "Le passeport est encore vide : le premier tampon arrive après la première partie !",
+
+    ppShareText: "🛂 Mon passeport d'échecs : {{n}}/{{total}} pays, {{gold}} tampons d'or — ChessCaravan",
+
+    ppNew: "🛂 Nouveau tampon dans votre passeport : {{country}} !",
+
+    ppNewGold: "🥇 Tampon d'or dans votre passeport : {{country}} !",
 
     admGamesNoAdmin: "Parties sans admin (24 h)",
 

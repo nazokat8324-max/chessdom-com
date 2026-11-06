@@ -1313,6 +1313,10 @@
           <div class="profile-panel" id="profBadgePanel" hidden>
             <div class="nb-grid" id="profBadges"></div>
           </div>
+          <!-- profile-passport.js — 🛂 Shaxmat pasporti -->
+          <div class="profile-panel" id="profPassPanel" hidden>
+            <div class="pp-root" id="profPassport"></div>
+          </div>
           <!-- myopenings.js — o'yinchining debyutlari -->
           <div class="profile-panel" id="profOpenPanel" hidden>
             <div class="op-root" id="profOpenings"></div>
@@ -2606,6 +2610,7 @@
     <script src="gamestory.js"></script>
     <script src="piece-guide.js"></script>
     <script src="profile-badges.js"></script>
+    <script src="profile-passport.js"></script>
     <script src="profile-sections.js"></script>
     <script src="holidays-ui.js"></script>
     <script src="teamchess-page.js"></script>
@@ -3114,6 +3119,10 @@
               <!-- profile-badges.js — barcha nishonlar bir joyda -->
               <button type="button" class="profile-games-btn profile-toggle" id="profBadgeBtn" onclick="window.toggleProfilePanel('badge')">
                 🎖️ <span data-i18n="nbTitle">Nishonlar</span> <small class="ach-count" id="profBadgeCount"></small><i class="pt-arrow">›</i>
+              </button>
+              <!-- profile-passport.js — davlat muhrlari -->
+              <button type="button" class="profile-games-btn profile-toggle" id="profPassBtn" onclick="window.toggleProfilePanel('pass')">
+                🛂 <span data-i18n="ppTitle">Shaxmat pasporti</span> <small class="ach-count" id="profPassCount"></small><i class="pt-arrow">›</i>
               </button>
               <!-- wrapped.js — oy yakuni hikoyasi -->
               <button

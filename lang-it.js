@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_IT = {
 
   libAllVideos: "Tutti i video sul canale",
 
+  ppTitle: "Passaporto degli scacchi",
+
+  ppFirst: "Prima partita: {{date}} · {{name}}",
+
+  ppWon: "🥇 Vittoria: {{date}} · {{name}}",
+
+  ppPlayed: "Partite: {{n}} · vittorie: {{w}}",
+
+  ppWatch: "Video su questo paese",
+
+  ppCountriesLabel: "timbri di paesi",
+
+  ppGoldLabel: "timbri d'oro",
+
+  ppShare: "Condividi il passaporto",
+
+  ppLegendPlayed: "Giocato",
+
+  ppLegendWon: "Vinto",
+
+  ppHow: "Gioca con qualcuno di un altro paese e il suo paese verrà timbrato nel tuo passaporto. Vinci e il timbro diventa d'oro. I timbri si raccolgono dal 6 novembre 2026.",
+
+  ppEmpty: "Il passaporto è ancora vuoto: il primo timbro arriva dopo la prima partita!",
+
+  ppShareText: "🛂 Il mio passaporto degli scacchi: {{n}}/{{total}} paesi, {{gold}} timbri d'oro — ChessCaravan",
+
+  ppNew: "🛂 Nuovo timbro nel passaporto: {{country}}!",
+
+  ppNewGold: "🥇 Timbro d'oro nel passaporto: {{country}}!",
+
   admGamesNoAdmin: "Partite senza admin (24 h)",
 
   admGamesNoAdminHint: "Partite a cui non ha partecipato nessun admin (il tuo account)",

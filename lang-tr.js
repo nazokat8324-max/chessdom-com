@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_TR = {
 
   libAllVideos: "Tüm videolar kanalda",
 
+  ppTitle: "Satranç pasaportu",
+
+  ppFirst: "İlk oyun: {{date}} · {{name}}",
+
+  ppWon: "🥇 Galibiyet: {{date}} · {{name}}",
+
+  ppPlayed: "Oyunlar: {{n}} · galibiyetler: {{w}}",
+
+  ppWatch: "Bu ülke hakkında video",
+
+  ppCountriesLabel: "ülke damgası",
+
+  ppGoldLabel: "altın damga",
+
+  ppShare: "Pasaportu paylaş",
+
+  ppLegendPlayed: "Oynandı",
+
+  ppLegendWon: "Kazanıldı",
+
+  ppHow: "Başka bir ülkeden biriyle oyna — pasaportuna o ülkenin damgası basılır. Kazanırsan damga altın olur. Damgalar 6 Kasım 2026’dan beri toplanıyor.",
+
+  ppEmpty: "Pasaport henüz boş — ilk damga ilk oyundan sonra basılır!",
+
+  ppShareText: "🛂 Satranç pasaportum: {{n}}/{{total}} ülke, {{gold}} altın damga — ChessCaravan",
+
+  ppNew: "🛂 Pasaportuna yeni damga: {{country}}!",
+
+  ppNewGold: "🥇 Pasaportuna altın damga: {{country}}!",
+
   admGamesNoAdmin: "Yöneticisiz oyunlar (24 saat)",
 
   admGamesNoAdminHint: "Hiçbir yöneticinin (senin hesabın) katılmadığı oyunlar",

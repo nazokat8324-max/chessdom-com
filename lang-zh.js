@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_ZH = {
 
   libAllVideos: "频道里的全部视频",
 
+  ppTitle: "国际象棋护照",
+
+  ppFirst: "首局：{{date}} · {{name}}",
+
+  ppWon: "🥇 获胜：{{date}} · {{name}}",
+
+  ppPlayed: "对局：{{n}} · 胜局：{{w}}",
+
+  ppWatch: "关于这个国家的视频",
+
+  ppCountriesLabel: "个国家印章",
+
+  ppGoldLabel: "枚金色印章",
+
+  ppShare: "分享护照",
+
+  ppLegendPlayed: "已对弈",
+
+  ppLegendWon: "已获胜",
+
+  ppHow: "与其他国家的棋手对弈，你的护照上就会盖上该国印章。赢下对局，印章就会变成金色。印章自 2026 年 11 月 6 日起开始收集。",
+
+  ppEmpty: "护照还是空的——第一局下完就会盖上第一枚印章！",
+
+  ppShareText: "🛂 我的国际象棋护照：{{n}}/{{total}} 个国家，{{gold}} 枚金色印章 — ChessCaravan",
+
+  ppNew: "🛂 护照新增印章：{{country}}！",
+
+  ppNewGold: "🥇 护照新增金色印章：{{country}}！",
+
   admGamesNoAdmin: "无管理员参与的对局（24 小时）",
 
   admGamesNoAdminHint: "没有任何管理员（你的账号）参与的对局",

@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_TK = {
 
   libAllVideos: "Ähli wideolar kanalda",
 
+  ppTitle: "Küşt pasporty",
+
+  ppFirst: "Ilkinji oýun: {{date}} · {{name}}",
+
+  ppWon: "🥇 Ýeňiş: {{date}} · {{name}}",
+
+  ppPlayed: "Oýunlar: {{n}} · ýeňişler: {{w}}",
+
+  ppWatch: "Bu ýurt barada wideo",
+
+  ppCountriesLabel: "ýurt möhüri",
+
+  ppGoldLabel: "altyn möhür",
+
+  ppShare: "Pasporty paýlaş",
+
+  ppLegendPlayed: "Oýnaldy",
+
+  ppLegendWon: "Ýeňildi",
+
+  ppHow: "Başga ýurduň oýunçysy bilen oýnaň — pasportyňyza şol ýurduň möhüri basylar. Ýeňseňiz, möhür altyn bolar. Möhürler 2026-njy ýylyň 6-njy noýabryndan bäri ýygnalýar.",
+
+  ppEmpty: "Pasport häzirlikçe boş — ilkinji möhür ilkinji oýundan soň basylar!",
+
+  ppShareText: "🛂 Meniň küşt pasportym: {{n}}/{{total}} ýurt, {{gold}} altyn möhür — ChessCaravan",
+
+  ppNew: "🛂 Pasportyňyza täze möhür: {{country}}!",
+
+  ppNewGold: "🥇 Pasportyňyza altyn möhür: {{country}}!",
+
   admGamesNoAdmin: "Adminsiz oýunlar (24 sagat)",
 
   admGamesNoAdminHint: "Hiç bir adminiň (siziň hasabyňyz) gatnaşmadyk oýunlary",

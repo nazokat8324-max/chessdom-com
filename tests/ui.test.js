@@ -15,8 +15,9 @@ let srv, browser;
 before(async () => {
   if (!CHROME || QUICK) return;
   srv = await startServer({ MUSEUM_VIDEOS_PUBLIC: 'chaturanga', PIECE_VIDEOS_PUBLIC: 'intro,R' });
-  browser = await require('puppeteer-core').launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox'] });
+  browser = await launchBrowser();
 });
+const launchBrowser = () => require('puppeteer-core').launch({ executablePath: CHROME, headless: true, args: ['--no-sandbox'] });
 after(async () => { if (browser) await browser.close(); if (srv) await srv.stop(); });
 // Har test o'z sahifalarini yopadi: avval 36 ta sahifa (har birida socket, taymerlar) oxirigacha ochiq qolib,
 // brauzer og'irlashar va keyingi testlar vaqt limitiga tushardi
@@ -50,7 +51,16 @@ async function clickFresh(p, sel, timeout = 10000) {
 }
 
 async function page(user, viewport) {
-  const ctx = await browser.createBrowserContext();
+  // CI da Chrome ba'zan o'zi to'xtaydi ("Session with given id not found", 2026-11-06 — zh/it testi): yangidan ishga tushirib, bir marta qayta uriniladi
+  let ctx;
+  try {
+    if (!browser.connected) throw new Error('browser disconnected');
+    ctx = await browser.createBrowserContext();
+  } catch (e) {
+    try { await browser.close(); } catch (x) { /* allaqachon yopilgan */ }
+    browser = await launchBrowser();
+    ctx = await browser.createBrowserContext();
+  }
   openContexts.push(ctx);
   const p = await ctx.newPage();
   p.setDefaultNavigationTimeout(60000);

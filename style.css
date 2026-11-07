@@ -15102,3 +15102,14 @@ html.sidebar-collapsed .sb-user-row { flex-direction: column; align-items: cente
 html.sidebar-collapsed .sb-msg-btn { width: 44px; height: 44px; }
 .sb-user-row .mini-info { min-width: 0; overflow: hidden; }
 .sb-user-row .mini-info b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* Xabarlar tugmasi va profil — bitta karta (2026-11-07, foydalanuvchi so'rovi: alohida ikki blok g'alati ko'rinardi) */
+.sb-user-row { gap: 0; background: var(--cd-surface); border: 1px solid var(--cd-border); border-radius: 12px; }
+.sb-user-row:hover { border-color: var(--cd-border-strong); }
+.sb-user-row .sb-msg-btn { width: 52px; border: 0; border-right: 1px solid var(--cd-border); border-radius: 11px 0 0 11px; background: transparent; }
+.sb-user-row .user-mini-profile { border: 0; background: transparent; border-radius: 0 11px 11px 0; }
+.sb-user-row .sb-msg-btn:hover, .sb-user-row .user-mini-profile:hover { background: var(--cd-surface-2); }
+body:has(#messagesView.active-view) .sb-user-row .sb-msg-btn { box-shadow: none; background: rgba(var(--accent-rgb), 0.16); color: var(--accent); }
+.sb-user-row .sb-msg-btn .lg-nav-badge { top: 3px; right: 3px; min-width: 18px; height: 18px; font-size: 11px; padding: 0 5px; }
+html.sidebar-collapsed .sb-user-row .sb-msg-btn { width: 100%; height: 44px; border-right: 0; border-bottom: 1px solid var(--cd-border); border-radius: 11px 11px 0 0; }
+html.sidebar-collapsed .sb-user-row .user-mini-profile { width: 100%; border-radius: 0 0 11px 11px; }
+body:has(#messagesView.active-view) .sb-user-row .sb-msg-btn { border-color: var(--cd-border); }

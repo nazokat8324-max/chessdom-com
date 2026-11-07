@@ -1524,6 +1524,73 @@ test("2 ga 2: stol ro'yxati, o'rinda o'tirish, o'z navbatida sudrab yurish, jamo
   assert.deepEqual(p.errors, []);
 });
 
+test("Shaxmat-futbol: menyu bandi, bir qurilmada 2 kishi (tanlash, zarba nishonlari, navbat), bayroq va mehmon formasi", opts, async () => {
+  const u = await srv.register('FcLocal');
+  const p = await page(u);
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await p.waitForSelector('#navFoot', { timeout: 15000 });
+  await p.evaluate(() => document.getElementById('navFoot').click());
+  await p.waitForSelector('[data-fc-local]', { timeout: 10000 });
+  assert.equal(await p.evaluate(() => location.pathname), '/futbol');
+  assert.ok(await p.evaluate(() => document.getElementById('navFoot').classList.contains('active')));
+  await p.evaluate(() => document.querySelector('[data-fc-local]').click());
+  await p.waitForSelector('#fcPitch .fc-pc', { timeout: 8000 });
+  assert.equal(await p.evaluate(() => location.pathname + location.search), '/futbol?m=local');
+  assert.equal(await p.$$eval('#fcPitch .fc-pc', (l) => l.length), 14);
+  // Oq piyoda (to'p unda) → zarba nishonlari: oldinga (5,3) va raqib piyodasi (6,3) — ushlab qolish
+  await p.evaluate(() => document.querySelector('.fc-cell[data-x="4"][data-y="3"]').click());
+  await p.waitForSelector('.fc-cell[data-x="5"][data-y="3"].t-kick', { timeout: 4000 });
+  assert.ok(await p.$('.fc-cell[data-x="6"][data-y="3"].t-pass'));
+  assert.equal(await p.$eval('#fcKickbar', (e) => e.hidden), false);
+  await p.evaluate(() => document.querySelector('.fc-cell[data-x="5"][data-y="3"]').click());
+  await p.waitForFunction(() => /Qora jamoa/.test(document.getElementById('fcTurn').textContent) && /Yurish 1/.test(document.getElementById('fcMoves').textContent), { timeout: 4000 });
+  assert.match(await p.$eval('#fcTicker', (e) => e.textContent), /tepdi/);
+  // Ikkala jamoa bir davlat — ikkinchisi mehmon formasida; davlatsiz — oddiy forma
+  await p.select('#fcSelW', 'uz');
+  await p.select('#fcSelB', 'uz');
+  await p.waitForFunction(() => document.querySelectorAll('#fcPitch .kit-away').length === 7 && document.querySelectorAll('#fcPitch .kit-flag').length === 7, { timeout: 4000 });
+  assert.match(await p.$eval('#fcPitch .kit-flag img', (e) => e.src), /flagcdn\.com\/w80\/uz\.png/);
+  await p.select('#fcSelB', '');
+  await p.waitForFunction(() => document.querySelectorAll('#fcPitch .kit-plain.kit-b').length === 7, { timeout: 4000 });
+  assert.deepEqual(p.errors, []);
+});
+
+test("Shaxmat-futbol onlayn: ochiq stolga qo'shilish, bosib yurish serverga boradi, raqib taslim — natija oynasi", opts, async () => {
+  const em = (s, ev, data) => new Promise((r) => s.emit(ev, data, r));
+  const host = await srv.register('FcHost');
+  const hs = await srv.connect(host);
+  const c = await em(hs, 'fc-create', {});
+  assert.equal(c.ok, true);
+  let last = null;
+  hs.on('fc-state', (s) => { last = s; });
+  const me = await srv.register('FcMe');
+  const p = await page(me);
+  await p.goto(srv.base + '/futbol', { waitUntil: 'load' });
+  await p.waitForSelector(`#fcWaiting [data-fc-open="${c.code}"]`, { timeout: 15000 });
+  await p.evaluate((code) => document.querySelector(`#fcWaiting [data-fc-open="${code}"]`).click(), c.code);
+  await p.waitForFunction((code) => location.search === '?t=' + code && document.querySelectorAll('#fcPitch .fc-pc').length === 14, { timeout: 10000 }, c.code);
+  for (let i = 0; i < 50 && !(last && last.status === 'active'); i++) await sleep(100);
+  const meWhite = last.players.w.username === me.name;
+  if (!meWhite) {
+    assert.equal((await em(hs, 'fc-move', { code: c.code, t: 'move', id: 'wP3', x: 5, y: 3 })).ok, true);
+    await p.waitForFunction(() => /Yurish 1/.test(document.getElementById('fcMoves').textContent), { timeout: 5000 });
+  }
+  // O'z navbatimda bosib yurish: oq — piyoda zarbasi (5,3), qora — ot (7,1) → (5,2)
+  const [from, to] = meWhite ? [[4, 3], [5, 3]] : [[7, 1], [5, 2]];
+  const seq = last.seq;
+  await p.waitForFunction(() => !/raqib/.test(document.getElementById('fcTurn').textContent), { timeout: 5000 });
+  await p.evaluate(([x, y]) => document.querySelector(`.fc-cell[data-x="${x}"][data-y="${y}"]`).click(), from);
+  await p.waitForSelector(`.fc-cell[data-x="${to[0]}"][data-y="${to[1]}"].t`, { timeout: 4000 });
+  await p.evaluate(([x, y]) => document.querySelector(`.fc-cell[data-x="${x}"][data-y="${y}"]`).click(), to);
+  for (let i = 0; i < 50 && last.seq === seq; i++) await sleep(100);
+  assert.equal(last.st.moves, meWhite ? 1 : 2, 'yurish serverda qabul qilindi');
+  // Raqib taslim → natija oynasi va revansh tugmasi
+  await em(hs, 'fc-resign', { code: c.code });
+  await p.waitForFunction(() => { const o = document.querySelector('#fcWrap .fc-final'); return o && /YUTDI/.test(o.textContent) && o.querySelector('[data-fc-rematch]'); }, { timeout: 5000 });
+  hs.disconnect();
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);
@@ -2353,7 +2420,7 @@ test("Barcha bo'limlar: kirgan foydalanuvchi har bir sahifani ochganda ushlanmag
   await srv.api(u, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
   const login = await srv.api(null, '/api/auth/login', 'POST', { username: u.name, password: u.password });
   const ROUTES = ['/', '/oyin', '/choyxona', '/reyting', '/jonli', '/xabarlar', '/klublar', '/klublar?club=Uzbekistan', '/ligalar', '/chempionlar',
-    '/bayroqlar', '/karvon', '/kutubxona', '/kutubxona?m=muzey', '/sozlamalar', '/tarix?u=' + u.name, '/profil?u=' + u.name + '&b=nishonlar', '/jamoa', '/?profile=' + u.name];
+    '/bayroqlar', '/karvon', '/kutubxona', '/kutubxona?m=muzey', '/sozlamalar', '/tarix?u=' + u.name, '/profil?u=' + u.name + '&b=nishonlar', '/jamoa', '/futbol', '/futbol?m=local', '/?profile=' + u.name];
   for (const vp of [undefined, { width: 390, height: 844, isMobile: true, hasTouch: true }]) {
     const p = await page({ token: login.token, user: login.user }, vp);
     p.consoleErrors = [];

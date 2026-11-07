@@ -272,14 +272,14 @@
     root.classList.toggle('cvr-compact', on);
   }
   // O'yin davom etayotganda karvon dam oladi: taxta va soatlarga ko'proq joy
-  const inGame = () => !!document.querySelector('#gameView.active-view.pg-mode-in, #teamView.active-view.tm-playing');
+  const inGame = () => !!document.querySelector('#gameView.active-view.pg-mode-in, #teamView.active-view.tm-playing, #footView.active-view.fc-playing');
   function gameCompact() { if (enabled() && !document.body.classList.contains('mobile-menu-open')) setCompact(inGame()); }
   function onScroll(e) {
     const box = e.currentTarget;
     const y = box.scrollTop, dy = y - lastY;
     lastY = y;
     if (!enabled() || document.body.classList.contains('mobile-menu-open')) return setCompact(false);
-    if (document.querySelector('#gameView.active-view, #teamView.active-view.tm-playing')) return setCompact(inGame());
+    if (document.querySelector('#gameView.active-view, #teamView.active-view.tm-playing, #footView.active-view.fc-playing')) return setCompact(inGame());
     if (y < 40) setCompact(false);
     else if (dy > 6) setCompact(true);
     else if (dy < -6) setCompact(false);
@@ -304,7 +304,7 @@
       if (!list.some((m) => m.target.classList && m.target.classList.contains('view-section'))) return;
       sync();
       // 2 ga 2: o'yin boshlanishi/tugashi (#teamView.tm-playing) — menyu ixcham bo'ladi/qaytadi
-      if (list.some((m) => m.target.id === 'teamView')) gameCompact();
+      if (list.some((m) => m.target.id === 'teamView' || m.target.id === 'footView')) gameCompact();
     })
       .observe(document.querySelector('.main-wrapper') || document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
     const wrap = document.querySelector('.main-wrapper');

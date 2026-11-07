@@ -83,7 +83,7 @@ app.use((req, res, next) => {
 });
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library', jamoa: '2 vs 2 consultation chess', profil: 'Player profile', admin: 'Admin' };
+const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library', jamoa: '2 vs 2 consultation chess', futbol: 'Chess-football', profil: 'Player profile', admin: 'Admin' };
 const DEFAULT_DESC = 'ChessCaravan — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
 // C4 (2026-11-02): har bo'limga o'z tavsifi (avval hammasida bir xil edi)
 const PAGE_DESC = {
@@ -97,7 +97,8 @@ const PAGE_DESC = {
   choyxona: 'The Teahouse — a chess lobby with tables: sit down at a free chair, pick a time control and play.',
   karvon: 'The Caravan Road: every game moves your camel along the Silk Road — from Xi’an to Samarkand and Istanbul.',
   kutubxona: 'Chess library: guides for beginners, famous games with analysis, classic public-domain chess books and a museum of chess history.',
-  jamoa: 'Consultation chess: two against two on one board, with a private team chat.'
+  jamoa: 'Consultation chess: two against two on one board, with a private team chat.',
+  futbol: 'Chess-football: pieces move like in chess but nobody is captured — pass the ball and score in the opponent goal. Play online or two players on one device.'
 };
 // Kirishni talab qiladigan yoki shaxsiy bo'limlar qidiruvga kiritilmaydi
 const NOINDEX = new Set(['xabarlar', 'sozlamalar', 'admin', 'profil']);
@@ -173,7 +174,7 @@ app.get('/index.html', sendIndex);
 app.get('/favicon.ico', (req, res) => res.type('image/png').set('Cache-Control', 'public, max-age=86400').sendFile(path.join(__dirname, 'assets/icons/favicon-32.png')));
 app.get('/robots.txt', (req, res) => res.type('text/plain').send(`User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE_URL}/sitemap.xml\n`));
 app.get('/sitemap.xml', async (req, res) => {
-  const pages = ['', 'reyting', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'karvon', 'kutubxona', 'maxfiylik', 'shartlar', 'mualliflar'];
+  const pages = ['', 'reyting', 'jonli', 'klublar', 'ligalar', 'chempionlar', 'bayroqlar', 'choyxona', 'karvon', 'kutubxona', 'futbol', 'maxfiylik', 'shartlar', 'mualliflar'];
   let players = [], clubs = [];
   try { players = (await db.getLeaderboard()).slice(0, 100).map(p => p.username); } catch (e) {}
   try { clubs = (await db.getCountryClubSummary()).filter(c => c.members > 0 && isValidClubName(c.name)).map(c => c.name); } catch (e) {}
@@ -211,7 +212,7 @@ app.get(['/maxfiylik', '/shartlar', '/mualliflar', '/privacy', '/terms', '/credi
 app.use(express.static(__dirname, { index: false }));
 // Sayt bo'limlari manzillari (router.js): /reyting, /jonli ... — hammasi bitta sahifa (index.html).
 // Katta harf yoki oxiridagi / bo'lsa — kanonik manzilga yo'naltiriladi
-const PAGE_ROUTES = new Set(['oyin', 'reyting', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon', 'profil', 'jamoa', 'kutubxona']);
+const PAGE_ROUTES = new Set(['oyin', 'reyting', 'jonli', 'xabarlar', 'klublar', 'ligalar', 'chempionlar', 'sozlamalar', 'admin', 'tarix', 'bayroqlar', 'choyxona', 'karvon', 'profil', 'jamoa', 'kutubxona', 'futbol']);
 // Nomi o'zgargan bo'limlar: eski manzil → yangisi (301)
 const ROUTE_ALIASES = { urush: 'bayroqlar', dostlar: 'xabarlar', chat: 'xabarlar' };
 // Olib tashlangan bo'limlar: eski havolalar bosh sahifaga (2026-10-29 — Swiss turnirlari)

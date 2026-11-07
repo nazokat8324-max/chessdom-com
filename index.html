@@ -409,6 +409,10 @@
             <span class="icon">🍵</span>
             <span data-i18n="teaTitle">Choyxona</span>
           </a>
+          <a class="menu-item" id="navFoot" onclick="switchView('foot')">
+            <span class="icon">⚽</span>
+            <span data-i18n="fcTitle">Shaxmat-futbol</span>
+          </a>
           <a
             class="menu-item"
             id="navLeaderboard"
@@ -1622,6 +1626,11 @@
         <div class="set-page lib-page" id="libraryRoot"></div>
       </div>
 
+      <!-- ⚽ Shaxmat-futbol (footchess-page.js): /futbol, /futbol?t=KOD, /futbol?m=local -->
+      <div id="footView" class="view-section set-view">
+        <div class="set-page fc-page" id="footRoot"></div>
+      </div>
+
       <!-- 🤝 2 ga 2 — maslahatli shaxmat (teamchess-page.js): /jamoa, /jamoa?t=KOD -->
       <div id="teamView" class="view-section set-view">
         <div class="set-page tm-page" id="teamRoot"></div>
@@ -2615,6 +2624,8 @@
     <script src="profile-sections.js"></script>
     <script src="holidays-ui.js"></script>
     <script src="teamchess-page.js"></script>
+    <script src="footchess.js"></script>
+    <script src="footchess-page.js"></script>
     <script src="library-data.js"></script>
     <script src="library-articles.js"></script>
     <script src="library-tr.js"></script>

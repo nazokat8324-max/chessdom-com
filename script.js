@@ -701,6 +701,12 @@ window.switchView = function(viewName) {
     const navEl = document.getElementById("navLibrary");
     if (navEl) navEl.classList.add("active");
     if (typeof window.updateLibraryView === "function") window.updateLibraryView();
+  } else if (viewName === "foot") {
+    const fcEl = document.getElementById("footView");
+    if (fcEl) fcEl.classList.add("active-view");
+    const navEl = document.getElementById("navFoot");
+    if (navEl) navEl.classList.add("active");
+    if (typeof window.updateFootView === "function") window.updateFootView();
   } else if (viewName === "team") {
     const tmEl = document.getElementById("teamView");
     if (tmEl) tmEl.classList.add("active-view");

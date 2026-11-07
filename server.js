@@ -19,8 +19,10 @@ const normVariant = (v) => (VARIANTS.includes(v) ? v : 'standard');
 const Caravan = require('./caravan');
 const Holidays = require('./holidays');
 const teamchess = require('./teamchess');
+const footchessServer = require('./footchess-server');
 const FairplayEngine = require('./fairplay-engine');
 let teamChess = null; // 🤝 2 ga 2 (start() da init)
+let footChess = null; // ⚽ Shaxmat-futbol (start() da init)
 // Faqat testlar: HOLIDAY_FORCE=navruz — bayram hozir davom etayotgandek
 const HOLIDAY_FORCE = process.env.NODE_ENV === 'test' ? process.env.HOLIDAY_FORCE || null : null;
 const Quests = require('./quests');
@@ -373,6 +375,7 @@ function createGameRoom(white, black, clock, rated, opts) {
     if (typeof teaStand === 'function') teaStand(p.userId);
     // 2 ga 2 kutayotgan stolidan ham turadi — aks holda stol to'lganda ikki o'yinda bo'lib qolardi
     if (teamChess && teamChess.leaveWaiting) teamChess.leaveWaiting(p.userId);
+    if (footChess) footChess.leaveWaiting(p.userId);
   }
   if (isGuest(white && white.userId) || isGuest(black && black.userId)) rated = false;
   const variant = normVariant(opts && opts.variant);
@@ -690,6 +693,7 @@ function userSocket(userId) {
 function inActiveGame(userId) {
   for (const room of rooms.values()) if (room.status === 'active' && room.players.some(p => p.userId === userId)) return true;
   // 🤝 2 ga 2 o'yinidagi o'yinchi ham band
+  if (footChess && footChess.inFootGame(userId)) return true; // ⚽ Shaxmat-futbol ham
   return !!(teamChess && teamChess.inTeamGame(userId));
 }
 
@@ -3321,8 +3325,13 @@ async function start() {
   });
 
   teamChess = teamchess.init({ io, cleanChat, mutedUntil, isGuest, inActiveGame });
+  footChess = footchessServer.init({ io, inActiveGame, blockedPair,
+    countryOf: async (userId) => { const u = await db.getUserById(userId); return u && u.country; },
+    // Futbol o'yini boshlanganda boshqa kutish joylaridan turadi
+    onStart: (userId) => { teaStand(userId); if (teamChess) teamChess.leaveWaiting(userId); } });
   io.on('connection', (socket) => {
     teamChess.attach(socket);
+    footChess.attach(socket);
     // Ochiq sahifalar yangi deployni sezishi uchun
     socket.emit('app-version', APP_VERSION);
     console.log('Yangi o\'yinchi ulandi:', socket.id);
@@ -3681,6 +3690,7 @@ async function start() {
       }
       league.socketGone(socket.id);
       teamChess.socketGone(socket);
+      footChess.socketGone(socket);
       teaStand(null, socket.id);
       pruneMatchmakingQueue();
       for (const [roomId, room] of rooms.entries()) {

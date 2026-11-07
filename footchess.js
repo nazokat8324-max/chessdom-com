@@ -115,7 +115,7 @@
   // Mijoz yuborgan harakatni (faqat t, id, x, y) shu holatdagi qonuniy harakatlardan topish — goal/to/from server o'zi hisoblaydi
   function findAction(st, a) {
     if (!a || typeof a !== 'object') return null;
-    const t = String(a.t || ''), id = String(a.id || ''), x = Number(a.x), y = Number(a.y);
+    const t = String(a.t || ''), id = String(a.id || ''), x = a.x, y = a.y;
     if (!['move', 'kick', 'tackle'].includes(t) || !Number.isInteger(x) || !Number.isInteger(y)) return null;
     return actions(st, st.turn).find((c) => c.t === t && c.id === id && c.x === x && c.y === y) || null;
   }

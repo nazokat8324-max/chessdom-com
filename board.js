@@ -1168,7 +1168,9 @@ window.fitBoard = function() {
   if (window.innerWidth > 768 || document.documentElement.classList.contains('landscape-phone')) {
     const bars = [...section.querySelectorAll('.player-bar')].reduce((sum, b) => sum + b.offsetHeight, 0);
     const rowGap = (parseFloat(getComputedStyle(section).rowGap) || 0) * 2;
-    const top = layout.getBoundingClientRect().top + window.scrollY + parseFloat(ls.paddingTop);
+    // Sahifani .main-wrapper aylantiradi (window emas): aylantirilgan holatda o'lchansa taxta ekrandan katta chiqardi (2026-11-07)
+    const scroller = view.closest('.main-wrapper');
+    const top = layout.getBoundingClientRect().top + (scroller ? scroller.scrollTop : 0) + window.scrollY + parseFloat(ls.paddingTop);
     const availH = window.innerHeight - top - bars - rowGap - parseFloat(ls.paddingBottom) - 4;
     const minSize = document.documentElement.classList.contains('landscape-phone') ? 200 : (stacked ? 360 : 300);
     size = Math.min(availW, Math.max(availH, minSize));
@@ -1193,7 +1195,12 @@ const switchViewBeforeFit = window.switchView;
 if (typeof switchViewBeforeFit === 'function') {
   window.switchView = function(viewName) {
     const result = switchViewBeforeFit.apply(this, arguments);
-    if (viewName === 'game') requestAnimationFrame(() => window.fitBoard());
+    if (viewName === 'game') {
+      // Oldingi sahifaning aylantirish holati o'yin sahifasiga o'tmasin — taxta va o'yinchi panellari tepadan ko'rinsin
+      const scroller = document.querySelector('.main-wrapper');
+      if (scroller) scroller.scrollTop = 0;
+      requestAnimationFrame(() => window.fitBoard());
+    }
     return result;
   };
 }

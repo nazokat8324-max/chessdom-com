@@ -1698,6 +1698,28 @@ test("Xabarlar tugmasi: kompyuterda yon menyu pastida profil kartasi yonida (bel
   assert.deepEqual([...p.errors, ...q.errors], []);
 });
 
+test("O'yin taxtasi: pastga aylantirilgan sahifadan o'tilganda ham ekran balandligiga sig'adi (kattalashib ketmaydi)", opts, async () => {
+  const u = await srv.register('FitBd');
+  const p = await page(u, { width: 1366, height: 640 });
+  const size = () => p.evaluate(() => { const r = document.getElementById('chessBoard').getBoundingClientRect(); return { width: r.width, top: r.top, bottom: r.bottom }; });
+  await p.goto(srv.base + '/oyin', { waitUntil: 'load' });
+  await p.waitForFunction(() => document.getElementById('chessBoard').offsetWidth > 100, { timeout: 15000 });
+  await sleep(500);
+  const direct = await size();
+  await p.goto(srv.base + '/futbol', { waitUntil: 'load' });
+  await p.waitForSelector('[data-fc-local]', { timeout: 15000 });
+  await p.evaluate(() => { const m = document.querySelector('.main-wrapper'); m.scrollTop = m.scrollHeight; });
+  await sleep(300);
+  await p.evaluate(() => document.getElementById('navPlay').click());
+  // fitBoard requestAnimationFrame da ishlaydi — o'lcham barqarorlashguncha kutiladi
+  await p.waitForFunction((w) => { const b = document.getElementById('chessBoard'); return document.getElementById('gameView').classList.contains('active-view') && Math.abs(b.getBoundingClientRect().width - w) < 1; }, { timeout: 8000 }, direct.width).catch(() => {});
+  const after = await size();
+  assert.equal(Math.round(after.width), Math.round(direct.width), "taxta o'lchami bir xil");
+  assert.ok(after.top >= 0 && after.bottom <= 640, 'taxta ekranda: ' + JSON.stringify(after));
+  assert.equal(await p.evaluate(() => document.querySelector('.main-wrapper').scrollTop), 0);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

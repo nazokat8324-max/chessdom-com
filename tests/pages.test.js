@@ -118,11 +118,11 @@ test("Olib tashlangan eski API'lar yo'q, ishlatiladiganlari joyida", async () =>
 });
 
 test('Server fayllari va baza tashqariga berilmaydi', async () => {
-  for (const p of ['/server.js', '/database.js', '/push-texts.js', '/daygif.js', '/league.js', '/package.json', '/CLAUDE.md', '/database.sqlite', '/node_modules/express/package.json', '/tests/helpers.js', '/tests/fixtures/push-key.pem', '/.github/workflows/test.yml']) {
+  for (const p of ['/server.js', '/database.js', '/push-texts.js', '/daygif.js', '/shaxmat_futbol.html', '/footchess-server.js', '/league.js', '/package.json', '/CLAUDE.md', '/database.sqlite', '/node_modules/express/package.json', '/tests/helpers.js', '/tests/fixtures/push-key.pem', '/.github/workflows/test.yml']) {
     assert.equal((await get(p)).status, 404, p);
   }
   // Klient fayllari esa ochiq
-  for (const p of ['/script.js', '/board.js', '/pwa.js', '/legal-content.js']) assert.equal((await get(p)).status, 200, p);
+  for (const p of ['/script.js', '/board.js', '/pwa.js', '/legal-content.js', '/footchess.js']) assert.equal((await get(p)).status, 200, p);
 });
 
 test('Huquqiy sahifalar, sitemap va robots', async () => {
@@ -293,7 +293,7 @@ test("Xochli ♔/♚ matn belgilari sayt kodida yo'q (o'rniga kingIcon rasm)", (
   const fs = require('fs');
   const path = require('path');
   const root = path.join(__dirname, '..');
-  for (const f of fs.readdirSync(root).filter((n) => /\.(js|html|css)$/.test(n))) {
+  for (const f of fs.readdirSync(root).filter((n) => /\.(js|html|css)$/.test(n) && n !== 'shaxmat_futbol.html')) { // prototip — gitignore'da, saytda yo'q
     fs.readFileSync(path.join(root, f), 'utf8').split(/\r?\n/).forEach((line, i) => {
       // Izoh qatorlari mumkin, ko'rinadigan kodda — yo'q
       if (/[♔♚]/.test(line) && !/^\s*(\/\/|\*|\/\*)/.test(line)) assert.fail(f + ':' + (i + 1) + ' — ' + line.trim().slice(0, 80));

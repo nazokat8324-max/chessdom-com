@@ -3022,6 +3022,36 @@ const translationsExtra = {
 
     libAllVideos: "Barcha videolar kanalda",
 
+    obTitle: "ChessCaravan'ga xush kelibsiz!",
+
+    obSub: "3 qadamda boshlang — har biri bir daqiqa ham olmaydi.",
+
+    obStep1: "Davlatingizni tanlang",
+
+    obStep1Hint: "Bayrog'ingiz o'yinlarda raqibga ko'rinadi, pasportingizga muhrlar shu bo'yicha bosiladi.",
+
+    obSave: "Saqlash",
+
+    obStep2: "Davlatingiz klubiga qo'shiling",
+
+    obStep2Hint: "Har g'alabangiz klubingizga ochko beradi va bayrog'ingizni Bayroqlar bellashuvi xaritasida yoyadi.",
+
+    obJoin: "Klubga qo'shilish",
+
+    obStep3: "Birinchi o'yiningiz",
+
+    obStep3Hint: "Sizga mos raqib bir necha soniyada topiladi. Har o'yin karvoningizni Ipak yo'li bo'ylab oldinga yuradi.",
+
+    obPlay: "⚡ Onlayn o'ynash",
+
+    obLater: "Keyinroq",
+
+    obFinish: "Tayyor",
+
+    obPickCountry: "Ro'yxatdan davlatingizni tanlang",
+
+    obJoined: "Klubga qo'shildingiz! 🛡️",
+
     ppSilkTitle: "Ipak yo'li to'plami",
 
     ppSilkHint: "Ipak yo'lining 12 davlati: yarmidan muhr yig'sangiz — bronza, hammasidan — kumush, hammasini yutsangiz (oltin muhrlar) — oltin karvon nishoni.",
@@ -4735,6 +4765,36 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+
+    obTitle: "Welcome to ChessCaravan!",
+
+    obSub: "Get started in 3 steps — each takes less than a minute.",
+
+    obStep1: "Choose your country",
+
+    obStep1Hint: "Your flag is shown to opponents, and passport stamps are based on it.",
+
+    obSave: "Save",
+
+    obStep2: "Join your country's club",
+
+    obStep2Hint: "Every win earns points for your club and spreads your flag on the Battle of Flags map.",
+
+    obJoin: "Join the club",
+
+    obStep3: "Your first game",
+
+    obStep3Hint: "A suitable opponent is found in a few seconds. Every game moves your caravan along the Silk Road.",
+
+    obPlay: "⚡ Play online",
+
+    obLater: "Later",
+
+    obFinish: "Done",
+
+    obPickCountry: "Choose your country from the list",
+
+    obJoined: "You joined the club! 🛡️",
 
     ppSilkTitle: "Silk Road collection",
 
@@ -6450,6 +6510,36 @@ const translationsExtra = {
 
     libAllVideos: "Все видео на канале",
 
+    obTitle: "Добро пожаловать в ChessCaravan!",
+
+    obSub: "Начните за 3 шага — каждый меньше минуты.",
+
+    obStep1: "Выберите свою страну",
+
+    obStep1Hint: "Ваш флаг видят соперники, по нему ставятся штампы в паспорт.",
+
+    obSave: "Сохранить",
+
+    obStep2: "Вступите в клуб своей страны",
+
+    obStep2Hint: "Каждая победа приносит очки вашему клубу и распространяет ваш флаг на карте Битвы флагов.",
+
+    obJoin: "Вступить в клуб",
+
+    obStep3: "Ваша первая партия",
+
+    obStep3Hint: "Подходящий соперник найдётся за несколько секунд. Каждая партия продвигает ваш караван по Шёлковому пути.",
+
+    obPlay: "⚡ Играть онлайн",
+
+    obLater: "Позже",
+
+    obFinish: "Готово",
+
+    obPickCountry: "Выберите страну из списка",
+
+    obJoined: "Вы вступили в клуб! 🛡️",
+
     ppSilkTitle: "Коллекция Шёлкового пути",
 
     ppSilkHint: "12 стран Шёлкового пути: штампы половины — бронза, всех — серебро, победы над всеми (золотые штампы) — золотой караван.",
@@ -8163,6 +8253,36 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+
+    obTitle: "¡Bienvenido a ChessCaravan!",
+
+    obSub: "Empieza en 3 pasos: cada uno lleva menos de un minuto.",
+
+    obStep1: "Elige tu país",
+
+    obStep1Hint: "Tu bandera la ven los rivales y los sellos del pasaporte se basan en ella.",
+
+    obSave: "Guardar",
+
+    obStep2: "Únete al club de tu país",
+
+    obStep2Hint: "Cada victoria da puntos a tu club y extiende tu bandera en el mapa de la Batalla de Banderas.",
+
+    obJoin: "Unirse al club",
+
+    obStep3: "Tu primera partida",
+
+    obStep3Hint: "En pocos segundos se encuentra un rival adecuado. Cada partida hace avanzar tu caravana por la Ruta de la Seda.",
+
+    obPlay: "⚡ Jugar en línea",
+
+    obLater: "Más tarde",
+
+    obFinish: "Listo",
+
+    obPickCountry: "Elige tu país de la lista",
+
+    obJoined: "¡Te uniste al club! 🛡️",
 
     ppSilkTitle: "Colección de la Ruta de la Seda",
 
@@ -9878,6 +9998,36 @@ const translationsExtra = {
 
     libAllVideos: "Alle Videos auf dem Kanal",
 
+    obTitle: "Willkommen bei ChessCaravan!",
+
+    obSub: "Leg in 3 Schritten los – jeder dauert keine Minute.",
+
+    obStep1: "Wähle dein Land",
+
+    obStep1Hint: "Deine Flagge sehen die Gegner, und die Passstempel richten sich danach.",
+
+    obSave: "Speichern",
+
+    obStep2: "Tritt dem Club deines Landes bei",
+
+    obStep2Hint: "Jeder Sieg bringt deinem Club Punkte und verbreitet deine Flagge auf der Karte des Flaggen-Duells.",
+
+    obJoin: "Club beitreten",
+
+    obStep3: "Deine erste Partie",
+
+    obStep3Hint: "In wenigen Sekunden wird ein passender Gegner gefunden. Jede Partie bringt deine Karawane auf der Seidenstraße voran.",
+
+    obPlay: "⚡ Online spielen",
+
+    obLater: "Später",
+
+    obFinish: "Fertig",
+
+    obPickCountry: "Wähle dein Land aus der Liste",
+
+    obJoined: "Du bist dem Club beigetreten! 🛡️",
+
     ppSilkTitle: "Seidenstraßen-Sammlung",
 
     ppSilkHint: "Die 12 Länder der Seidenstraße: Stempel der Hälfte bringen Bronze, aller Länder Silber, Siege gegen alle (Goldstempel) die goldene Karawane.",
@@ -11591,6 +11741,36 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+
+    obTitle: "Bienvenue sur ChessCaravan !",
+
+    obSub: "Commencez en 3 étapes — chacune prend moins d’une minute.",
+
+    obStep1: "Choisissez votre pays",
+
+    obStep1Hint: "Votre drapeau est visible par vos adversaires et les tampons du passeport en dépendent.",
+
+    obSave: "Enregistrer",
+
+    obStep2: "Rejoignez le club de votre pays",
+
+    obStep2Hint: "Chaque victoire rapporte des points à votre club et étend votre drapeau sur la carte de la Bataille des drapeaux.",
+
+    obJoin: "Rejoindre le club",
+
+    obStep3: "Votre première partie",
+
+    obStep3Hint: "Un adversaire adapté est trouvé en quelques secondes. Chaque partie fait avancer votre caravane sur la Route de la soie.",
+
+    obPlay: "⚡ Jouer en ligne",
+
+    obLater: "Plus tard",
+
+    obFinish: "Terminé",
+
+    obPickCountry: "Choisissez votre pays dans la liste",
+
+    obJoined: "Vous avez rejoint le club ! 🛡️",
 
     ppSilkTitle: "Collection de la Route de la soie",
 

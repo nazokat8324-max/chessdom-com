@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_TK = {
 
   libAllVideos: "Ähli wideolar kanalda",
 
+  obTitle: "ChessCaravan-a hoş geldiňiz!",
+
+  obSub: "3 ädimde başlaň — her biri bir minutdan az wagt alýar.",
+
+  obStep1: "Ýurduňyzy saýlaň",
+
+  obStep1Hint: "Baýdagyňyzy garşydaşlar görýär, pasport möhürleri şoňa görä basylýar.",
+
+  obSave: "Ýatda sakla",
+
+  obStep2: "Ýurduňyzyň klubyna goşulyň",
+
+  obStep2Hint: "Her ýeňşiňiz klubuňyza utuk berýär we baýdagyňyzy Baýdaklar bäsleşiginiň kartasynda ýaýradýar.",
+
+  obJoin: "Kluba goşulmak",
+
+  obStep3: "Ilkinji oýnuňyz",
+
+  obStep3Hint: "Laýyk garşydaş birnäçe sekuntda tapylýar. Her oýun kerweniňizi Beýik Ýüpek ýolunda öňe süýşürýär.",
+
+  obPlay: "⚡ Onlaýn oýna",
+
+  obLater: "Soňrak",
+
+  obFinish: "Taýýar",
+
+  obPickCountry: "Sanawdan ýurduňyzy saýlaň",
+
+  obJoined: "Kluba goşuldyňyz! 🛡️",
+
   ppSilkTitle: "Beýik Ýüpek ýoly ýygyndysy",
 
   ppSilkHint: "Beýik Ýüpek ýolunyň 12 ýurdy: ýarysynyň möhüri — bürünç, hemmesiniň möhüri — kümüş, hemmesini ýeňseňiz (altyn möhürler) — altyn kerwen nyşany.",

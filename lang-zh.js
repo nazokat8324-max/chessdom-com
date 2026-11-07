@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_ZH = {
 
   libAllVideos: "频道里的全部视频",
 
+  obTitle: "欢迎来到 ChessCaravan！",
+
+  obSub: "3 步即可开始——每步不到一分钟。",
+
+  obStep1: "选择你的国家",
+
+  obStep1Hint: "对手会看到你的国旗，护照印章也按国家盖章。",
+
+  obSave: "保存",
+
+  obStep2: "加入你国家的俱乐部",
+
+  obStep2Hint: "你的每场胜利都会为俱乐部加分，并在旗帜之争地图上扩展你的旗帜。",
+
+  obJoin: "加入俱乐部",
+
+  obStep3: "你的第一局",
+
+  obStep3Hint: "几秒钟内即可找到合适的对手。每一局都会让你的驼队沿丝绸之路前进。",
+
+  obPlay: "⚡ 在线对局",
+
+  obLater: "以后再说",
+
+  obFinish: "完成",
+
+  obPickCountry: "请从列表中选择你的国家",
+
+  obJoined: "你已加入俱乐部！🛡️",
+
   ppSilkTitle: "丝绸之路收藏",
 
   ppSilkHint: "丝绸之路 12 国：集齐一半印章得铜牌，全部集齐得银牌，全部获胜（金色印章）得金色驼队徽章。",

@@ -1381,11 +1381,23 @@ async function weeklySummary(fromIso, toIso, week) {
     .filter(g => g.gain > 0)
     .sort((a, b) => b.gain - a.gain || a.username.localeCompare(b.username))
     .slice(0, 3);
+  // 🛂 Pasport: hafta ichida eng ko'p yangi davlat muhri yig'ganlar (oltin — shu haftada birinchi yutilgan davlatlar)
+  const stampRows = await dbAll(`SELECT u.username, p.first_at as "firstAt", p.won_at as "wonAt" FROM passport_stamps p JOIN users u ON u.id = p.user_id
+    WHERE COALESCE(u.is_guest, 0) = 0 AND ((p.first_at >= ? AND p.first_at < ?) OR (p.won_at >= ? AND p.won_at < ?))`, [fromIso, toIso, fromIso, toIso]);
+  const by = new Map();
+  for (const r of stampRows) {
+    const x = by.get(r.username) || { username: r.username, stamps: 0, gold: 0 };
+    if (r.firstAt >= fromIso && r.firstAt < toIso) x.stamps++;
+    if (r.wonAt && r.wonAt >= fromIso && r.wonAt < toIso) x.gold++;
+    by.set(r.username, x);
+  }
+  const travellers = [...by.values()].filter(x => x.stamps > 0)
+    .sort((a, b) => b.stamps - a.stamps || b.gold - a.gold || a.username.localeCompare(b.username)).slice(0, 3);
   const one = async (sql, params) => Number(((await dbGet(sql, params)) || {}).n) || 0;
   // Har o'yin ikkala o'yinchida yozilgan (mehmonniki ham) — qatorlar soni / 2
   const rows = await one('SELECT COUNT(*) as "n" FROM user_games WHERE played_at >= ? AND played_at < ?', [fromIso, toIso]);
   return {
-    winners, gainers,
+    winners, gainers, travellers,
     games: Math.round(rows / 2),
     players: await one('SELECT COUNT(DISTINCT g.user_id) as "n" FROM user_games g JOIN users u ON u.id = g.user_id WHERE g.played_at >= ? AND g.played_at < ? AND COALESCE(u.is_guest, 0) = 0', [fromIso, toIso]),
     newPlayers: await one('SELECT COUNT(*) as "n" FROM users WHERE created_at >= ? AND created_at < ? AND COALESCE(is_guest, 0) = 0', [fromIso, toIso]),

@@ -73,6 +73,7 @@ async function page(user, viewport) {
   p.on('dialog', (d) => { p.dialogs.push(d.message()); d.accept(); });
   await p.evaluateOnNewDocument((u) => {
     localStorage.setItem('justChessLang', 'uz');
+    if (!localStorage.getItem('justChessOnboarded')) localStorage.setItem('justChessOnboarded', 'all'); // 👋 tanishuv oynasi — faqat o'z testida
     if (u) { localStorage.setItem('justChessAuthToken', u.token); localStorage.setItem('justChessCurrentUser', JSON.stringify(u.user)); }
   }, user || null);
   return p;
@@ -1317,6 +1318,46 @@ test("Nishonlar: profilda tugma, 6 tur, olinganlari ajralib turadi", opts, async
   assert.deepEqual(st, { earned: 5, count: String(2 + 5 + 1 + 2 + 1), stamps: 5 });
   if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/badges.png' });
   assert.deepEqual(p.errors, []);
+});
+
+test("Yangi o'yinchi uchun tanishuv: bir martalik oyna — davlat saqlanadi, klubga qo'shiladi, «Onlayn o'ynash»; qayta chiqmaydi; mehmonga yo'q", opts, async () => {
+  const u = await srv.register('Welc');
+  for (const vp of [{ width: 390, height: 844, isMobile: true, hasTouch: true }]) {
+    const p = await page(u, vp);
+    await p.evaluateOnNewDocument(() => { if (!sessionStorage.getItem('obTest')) { sessionStorage.setItem('obTest', '1'); localStorage.removeItem('justChessOnboarded'); } });
+    await p.goto(srv.base + '/', { waitUntil: 'load' });
+    await p.waitForSelector('#obModal .ob-card', { timeout: 15000 });
+    assert.equal(await p.evaluate(() => document.querySelectorAll('#obModal .ob-step.done').length), 0);
+    assert.equal(await p.evaluate(() => document.querySelector('#obModal [data-ob-club]').disabled), true, 'davlat tanlanmaguncha klub qadami yopiq');
+    assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth && document.querySelector('.ob-card').getBoundingClientRect().bottom <= innerHeight + 1), true, 'telefonda ekranga sig\'adi');
+    // 1-qadam: davlat
+    await p.select('#obCountry', 'uz');
+    await p.evaluate(() => document.querySelector('[data-ob-country]').click());
+    await p.waitForFunction(() => document.querySelectorAll('#obModal .ob-step.done').length === 1, { timeout: 5000 });
+    for (let i = 0; i < 30 && (await srv.api(null, '/api/users/' + u.name + '/profile')).profile.country !== 'uz'; i++) await sleep(150);
+    assert.equal((await srv.api(null, '/api/users/' + u.name + '/profile')).profile.country, 'uz', 'davlat serverga yozildi');
+    // 2-qadam: klub
+    await p.evaluate(() => document.querySelector('[data-ob-club]').click());
+    await p.waitForFunction(() => document.querySelectorAll('#obModal .ob-step.done').length === 2, { timeout: 8000 });
+    const members = (await srv.api(null, '/api/country-clubs/Uzbekistan/members')).members.map((m) => m.username);
+    assert.ok(members.includes(u.name), "klub a'zosi bo'ldi");
+    assert.match(await p.$eval('#obModal .ob-later', (b) => b.textContent), /Tayyor/);
+    assert.ok(await p.$('#obModal [data-ob-play]'), "3-qadam: «Onlayn o'ynash» tugmasi");
+    await p.evaluate(() => document.querySelector('#obModal .ob-later').click());
+    assert.equal(await p.$('#obModal'), null, 'yopildi');
+    // Qayta kirganda — chiqmaydi
+    await p.reload({ waitUntil: 'load' });
+    await sleep(3500);
+    assert.equal(await p.$('#obModal'), null, 'bir martalik');
+    assert.deepEqual(p.errors, []);
+  }
+  // Mehmon — tanishuv yo'q
+  const g = await srv.api(null, '/api/auth/guest', 'POST', { lang: 'uz' });
+  const q = await page({ token: g.token, user: g.user });
+  await q.evaluateOnNewDocument(() => { if (!sessionStorage.getItem('obTest')) { sessionStorage.setItem('obTest', '1'); localStorage.removeItem('justChessOnboarded'); } });
+  await q.goto(srv.base + '/', { waitUntil: 'load' });
+  await sleep(4000);
+  assert.equal(await q.$('#obModal'), null, "mehmonga ko'rsatilmaydi");
 });
 
 test("Shaxmat pasporti: profilda tugma (N/190), alohida sahifada xarita, qit'alar, oltin muhr va ulashish kartasi (kompyuter va telefon)", opts, async () => {

@@ -149,6 +149,8 @@ test("Kun o'yini kanalda: admin hozir yubora oladi (jurnalga yoziladi), oddiy o'
 test("Haftalik yakun: top o'yinchilar, reyting o'sishi, Bayroqlar bellashuvi va raqamlar — haftada bir marta; o'yinsiz haftada post yo'q", async () => {
   const a = await srv.register('Wka'), b = await srv.register('Wkb');
   await srv.api(a, '/api/country-clubs/join', 'POST', { country: 'Uzbekistan', code: 'uz' });
+  await srv.api(a, '/api/users/me/country', 'POST', { country: 'uz' });
+  await srv.api(b, '/api/users/me/country', 'POST', { country: 'kz' }); // pasport: a — Qozog'iston (oltin), b — O'zbekiston
   for (let i = 0; i < 2; i++) {
     const game = await startGame(srv, a, b, { rated: true });
     await play(game, RUY);
@@ -168,6 +170,7 @@ test("Haftalik yakun: top o'yinchilar, reyting o'sishi, Bayroqlar bellashuvi va 
   assert.ok(!m.text.includes(b.name + ' +'), "reytingi tushgan o'sganlar orasida yo'q");
   assert.match(m.text, /🚩 <b>Bayroqlar bellashuvi<\/b> · (Yanvar|Fevral|Mart|Aprel|May|Iyun|Iyul|Avgust|Sentabr|Oktabr|Noyabr|Dekabr)/);
   assert.match(m.text, /🇺🇿 O'zbekiston — \d+ hudud, \d+ ochko/, "o'zbekcha davlat nomi va bayroq");
+  assert.ok(m.text.includes("🛂 <b>Shaxmat pasporti: eng ko'p yangi davlat</b>\n1. " + a.name + ' — 1 ta yangi muhr (1 ta oltin)\n2. ' + b.name + ' — 1 ta yangi muhr\n'), m.text);
   assert.match(m.text, /♟ \d+ o'yin · 👥 \d+ faol o'yinchi · 🆕 \d+ yangi o'yinchi/);
   assert.equal(m.reply_markup.inline_keyboard[0][0].url, 'https://chesscaravan.com/reyting');
   // Shu haftada qayta — yo'q; 3 hafta keyin (o'yinsiz hafta) — post yo'q

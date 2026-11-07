@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_AZ = {
 
   libAllVideos: "Bütün videolar kanalda",
 
+  obTitle: "ChessCaravan-a xoş gəldin!",
+
+  obSub: "3 addımda başla — hər biri bir dəqiqədən az çəkir.",
+
+  obStep1: "Ölkəni seç",
+
+  obStep1Hint: "Bayrağını rəqiblər görür, pasport möhürləri ona görə vurulur.",
+
+  obSave: "Yadda saxla",
+
+  obStep2: "Ölkənin klubuna qoşul",
+
+  obStep2Hint: "Hər qələbən klubuna xal qazandırır və bayrağını Bayraqlar yarışı xəritəsində yayır.",
+
+  obJoin: "Kluba qoşul",
+
+  obStep3: "İlk oyunun",
+
+  obStep3Hint: "Uyğun rəqib bir neçə saniyəyə tapılır. Hər oyun karvanını İpək Yolu boyunca irəli aparır.",
+
+  obPlay: "⚡ Onlayn oyna",
+
+  obLater: "Sonra",
+
+  obFinish: "Hazırdır",
+
+  obPickCountry: "Siyahıdan ölkəni seç",
+
+  obJoined: "Kluba qoşuldun! 🛡️",
+
   ppSilkTitle: "İpək Yolu kolleksiyası",
 
   ppSilkHint: "İpək Yolunun 12 ölkəsi: yarısının möhürü — bürünc, hamısının möhürü — gümüş, hamısını məğlub etsən (qızıl möhürlər) — qızıl karvan nişanı.",

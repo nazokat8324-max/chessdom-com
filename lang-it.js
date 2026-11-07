@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_IT = {
 
   libAllVideos: "Tutti i video sul canale",
 
+  obTitle: "Benvenuto su ChessCaravan!",
+
+  obSub: "Inizia in 3 passi: ognuno richiede meno di un minuto.",
+
+  obStep1: "Scegli il tuo paese",
+
+  obStep1Hint: "La tua bandiera è visibile agli avversari e i timbri del passaporto si basano su di essa.",
+
+  obSave: "Salva",
+
+  obStep2: "Unisciti al club del tuo paese",
+
+  obStep2Hint: "Ogni vittoria dà punti al tuo club e diffonde la tua bandiera sulla mappa della Sfida delle Bandiere.",
+
+  obJoin: "Unisciti al club",
+
+  obStep3: "La tua prima partita",
+
+  obStep3Hint: "Un avversario adatto si trova in pochi secondi. Ogni partita fa avanzare la tua carovana lungo la Via della Seta.",
+
+  obPlay: "⚡ Gioca online",
+
+  obLater: "Più tardi",
+
+  obFinish: "Fatto",
+
+  obPickCountry: "Scegli il tuo paese dalla lista",
+
+  obJoined: "Ti sei unito al club! 🛡️",
+
   ppSilkTitle: "Collezione della Via della Seta",
 
   ppSilkHint: "I 12 paesi della Via della Seta: i timbri di metà danno il bronzo, di tutti l'argento, e battere tutti (timbri d'oro) la carovana d'oro.",

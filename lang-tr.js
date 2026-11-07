@@ -1806,6 +1806,36 @@ window.TRANSLATIONS_TR = {
 
   libAllVideos: "Tüm videolar kanalda",
 
+  obTitle: "ChessCaravan'a hoş geldin!",
+
+  obSub: "3 adımda başla — her biri bir dakikadan kısa sürer.",
+
+  obStep1: "Ülkeni seç",
+
+  obStep1Hint: "Bayrağın rakiplerine görünür, pasaport damgaları buna göre basılır.",
+
+  obSave: "Kaydet",
+
+  obStep2: "Ülkenin kulübüne katıl",
+
+  obStep2Hint: "Her galibiyetin kulübüne puan kazandırır ve bayrağını Bayraklar yarışması haritasında yayar.",
+
+  obJoin: "Kulübe katıl",
+
+  obStep3: "İlk oyunun",
+
+  obStep3Hint: "Birkaç saniyede uygun bir rakip bulunur. Her oyun kervanını İpek Yolu’nda ilerletir.",
+
+  obPlay: "⚡ Çevrimiçi oyna",
+
+  obLater: "Sonra",
+
+  obFinish: "Tamam",
+
+  obPickCountry: "Listeden ülkeni seç",
+
+  obJoined: "Kulübe katıldın! 🛡️",
+
   ppSilkTitle: "İpek Yolu koleksiyonu",
 
   ppSilkHint: "İpek Yolu’nun 12 ülkesi: yarısının damgası bronz, hepsinin damgası gümüş, hepsini yenmek (altın damgalar) altın kervan rozeti verir.",

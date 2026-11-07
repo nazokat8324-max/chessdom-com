@@ -1195,6 +1195,10 @@ function weeklyCaption(w) {
     lines.push('', "📈 <b>Reytingi eng ko'p o'sganlar</b>");
     w.s.gainers.forEach((u, i) => lines.push((i + 1) + '. ' + htmlEsc(u.username) + ' +' + u.gain));
   }
+  if (w.s.travellers && w.s.travellers.length) {
+    lines.push('', "🛂 <b>Shaxmat pasporti: eng ko'p yangi davlat</b>");
+    w.s.travellers.forEach((u, i) => lines.push((i + 1) + '. ' + htmlEsc(u.username) + ' — ' + u.stamps + ' ta yangi muhr' + (u.gold ? ' (' + u.gold + ' ta oltin)' : '')));
+  }
   const top = (w.war.clubs || []).filter((c) => c.points > 0).slice(0, 3);
   if (top.length) {
     lines.push('', '🚩 <b>Bayroqlar bellashuvi</b> · ' + UZ_MONTHS[Number(w.war.season.slice(5, 7)) - 1]);

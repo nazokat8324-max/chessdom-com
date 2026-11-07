@@ -267,6 +267,8 @@ test("Onlayn o'ynash: skriptlar yuklanguncha tugma bosilsa ham xato yo'q — yuk
   let release;
   const released = new Promise((r) => { release = r; });
   p.on('request', (req) => { if (req.url().endsWith('/online.js')) req.enqueueInterceptAction(() => released); });
+  // Yiqilsa sababini ko'rish uchun: socket uzilish sababi (2026-11-07 CI da qidiruv boshlanib, socket uzilgan va manzil / ga qaytgan)
+  await p.evaluateOnNewDocument(() => { const t = setInterval(() => { if (window.socket && window.socket.on) { clearInterval(t); window.socket.on('disconnect', (r) => { window.__qpDisconnect = r; }); } }, 50); });
   const nav = p.goto(srv.base + '/', { waitUntil: 'load' });
   await p.waitForFunction(() => !!document.getElementById('playOnlineBtn'), { timeout: 30000 });
   await p.evaluate(() => document.getElementById('playOnlineBtn').click());
@@ -274,7 +276,7 @@ test("Onlayn o'ynash: skriptlar yuklanguncha tugma bosilsa ham xato yo'q — yuk
   await nav;
   // Sekin CI da 15 s yetmay qolgan (2026-11-04); yiqilsa — sayt chiqargan oyna (masalan "Serverga ulanib bo'lmadi") xabarda ko'rinadi
   await p.waitForFunction(() => location.pathname === '/oyin' && window.isSearchingOpponent === true, { timeout: 30000 })
-    .catch(async (e) => { throw new Error(e.message + ' | dialogs: ' + JSON.stringify(p.dialogs) + ' | path: ' + await p.evaluate(() => location.pathname + ' searching=' + window.isSearchingOpponent + ' socket=' + !!(window.socket && window.socket.connected))); });
+    .catch(async (e) => { throw new Error(e.message + ' | dialogs: ' + JSON.stringify(p.dialogs) + ' | path: ' + await p.evaluate(() => location.pathname + ' searching=' + window.isSearchingOpponent + ' socket=' + !!(window.socket && window.socket.connected) + ' view=' + ((document.querySelector('.view-section.active-view') || {}).id) + ' authGate=' + document.body.classList.contains('auth-locked') + ' disconnect=' + window.__qpDisconnect)); });
   assert.deepEqual(p.dialogs, []);
   assert.deepEqual(p.errors, []);
   await p.evaluate(() => window.cancelSearch && window.cancelSearch());

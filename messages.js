@@ -28,16 +28,20 @@
   }
 
   // --- Yon menyudagi belgi: o'qilmagan xabarlar + kutilayotgan do'stlik so'rovlari ---
+  // Menyu bandi (telefon) va profil kartasi yonidagi tugma (kompyuter) — ikkalasida bir xil belgi
   function updateBadge() {
-    const nav = document.getElementById('navMessages');
-    if (!nav) return;
-    let badge = nav.querySelector('.lg-nav-badge');
     const total = state.unread + state.requests.length;
-    if (!total) { if (badge) badge.remove(); return; }
-    if (!badge) { badge = document.createElement('span'); badge.className = 'lg-nav-badge'; nav.appendChild(badge); }
-    badge.textContent = total > 99 ? '99+' : total;
+    for (const id of ['navMessages', 'sideMsgBtn']) {
+      const nav = document.getElementById(id);
+      if (!nav) continue;
+      let badge = nav.querySelector('.lg-nav-badge');
+      if (!total) { if (badge) badge.remove(); continue; }
+      if (!badge) { badge = document.createElement('span'); badge.className = 'lg-nav-badge'; nav.appendChild(badge); }
+      badge.textContent = total > 99 ? '99+' : total;
+    }
   }
 
+  window.renderMessagesBadge = updateBadge; // so'rovsiz qayta chizish (yon menyu qayta chizilganda)
   window.refreshMessagesBadge = async function () {
     if (!window.authToken) { state.unread = 0; state.requests = []; updateBadge(); return; }
     try {

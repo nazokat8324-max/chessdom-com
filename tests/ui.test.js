@@ -1591,6 +1591,26 @@ test("Shaxmat-futbol onlayn: ochiq stolga qo'shilish, bosib yurish serverga bora
   assert.deepEqual(p.errors, []);
 });
 
+test("Xabarlar tugmasi: kompyuterda yon menyu pastida profil kartasi yonida (belgi bilan), menyudagi band yashirin; telefonda — avvalgidek", opts, async () => {
+  const a = await srv.register('SbMsg'), b = await srv.register('SbFriend');
+  await srv.api(b, '/api/chat/messages', 'POST', { roomId: 'user_' + a.id, message: 'Salom!' });
+  const p = await page(a);
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await p.waitForFunction(() => { const x = document.querySelector('.sb-user-row #sideMsgBtn .lg-nav-badge'); return x && x.textContent === '1'; }, { timeout: 15000 });
+  assert.equal(await p.evaluate(() => getComputedStyle(document.getElementById('navMessages')).display), 'none');
+  // Tugma profil kartasi bilan bir qatorda, undan oldin
+  assert.ok(await p.evaluate(() => { const btn = document.getElementById('sideMsgBtn').getBoundingClientRect(), card = document.querySelector('.sb-user-row .user-mini-profile').getBoundingClientRect();
+    return btn.right <= card.left && Math.abs(btn.top - card.top) < 4; }));
+  await p.evaluate(() => document.getElementById('sideMsgBtn').click());
+  await p.waitForFunction(() => location.pathname === '/xabarlar' && document.getElementById('messagesView').classList.contains('active-view'), { timeout: 8000 });
+  const q = await page(a, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  await q.goto(srv.base + '/', { waitUntil: 'load' });
+  await q.waitForSelector('#sideMsgBtn', { timeout: 15000 });
+  assert.equal(await q.evaluate(() => getComputedStyle(document.getElementById('sideMsgBtn')).display), 'none');
+  assert.notEqual(await q.evaluate(() => getComputedStyle(document.getElementById('navMessages')).display), 'none');
+  assert.deepEqual([...p.errors, ...q.errors], []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

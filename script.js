@@ -767,13 +767,19 @@ window.updateAuthHeaderUI = function() {
   if (!container) return;
 
   if (window.currentUser) {
+    // 💬 Xabarlar — kompyuterda profil kartasi yonida (2026-11-07, foydalanuvchi so'rovi); menyudagi #navMessages kompyuterda yashirin
+    const msgLabel = topPlayersEsc(typeof tx === 'function' ? tx('mMessages', 'Xabarlar') : 'Xabarlar');
     container.innerHTML = `
+      <div class="sb-user-row">
+      <button type="button" class="sb-msg-btn" id="sideMsgBtn" onclick="switchView('messages')" title="${msgLabel}" aria-label="${msgLabel}">💬</button>
       <div class="user-mini-profile" onclick="window.openProfileModal()">
         <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}${window.avatarOverlay(window.currentUser.username, window.currentUser.avatarVersion || null)}</div>
         <div class="mini-info">
           <b>${topPlayersEsc(window.currentUser.username)}</b>
         </div>
+      </div>
       </div>`;
+    if (typeof window.renderMessagesBadge === 'function') window.renderMessagesBadge();
   } else {
     container.innerHTML = `
       <div class="user-mini-profile" onclick="switchView('login')">

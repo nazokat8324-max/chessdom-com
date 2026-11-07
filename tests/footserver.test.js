@@ -6,7 +6,7 @@ const { startServer, ack, sleep } = require('./helpers');
 const F = require('../footchess');
 
 let srv;
-before(async () => { srv = await startServer({ FOOT_MOVE_MS: '1500', FOOT_AWAY_MS: '1200' }); });
+before(async () => { srv = await startServer({ FOOT_MOVE_MS: '1500', FOOT_AWAY_MS: '1200', FOOT_PEN_MS: '1500' }); });
 after(async () => { await srv.stop(); });
 
 const waitState = (sock, pred, ms = 8000) => new Promise((resolve, reject) => {
@@ -178,4 +178,52 @@ test("Band o'yinchi: futbol o'yinida — yana stol ocholmaydi, 2 ga 2 va onlayn 
   assert.equal(j.state.status, 'active');
   await ack(G.socket, 'fc-resign', { code: t.code });
   for (const u of [A, B, C, G]) u.socket.disconnect();
+});
+
+test("Durrang (100 yurish, hisob teng) → penaltilar: tanlovlar sir, yurish rad etiladi, vaqt tugasa — o'tkazildi, seriya g'olibi", async () => {
+  const [A, B] = await two('Fp', 'Fq');
+  const V = await srv.register('Fr'); V.socket = await srv.connect(V);
+  const g = await startTable(A, B);
+  await ack(V.socket, 'fc-watch', { code: g.code });
+  // Ikkala tomon otini u yoq-bu yoqqa yuradi — gol yo'q
+  const hop = { w: [{ x: 1, y: 0 }, { x: 3, y: 1 }], b: [{ x: 9, y: 0 }, { x: 7, y: 1 }] };
+  let pens = null;
+  const gotPens = waitState(V.socket, (x) => !!x.pen, 20000).then((x) => { pens = x; });
+  for (let i = 0; i < 100; i++) {
+    const side = i % 2 ? 'b' : 'w', to = hop[side][Math.floor(i / 2) % 2];
+    const r = await ack(g[side].socket, 'fc-move', { code: g.code, t: 'move', id: side + 'O1', x: to.x, y: to.y });
+    assert.equal(r.ok, true, 'yurish ' + i);
+  }
+  await gotPens;
+  assert.deepEqual([pens.status, pens.st.moves, pens.st.score.w, pens.st.score.b, pens.pen.kicks.length, pens.result], ['active', 100, 0, 0, 0, null]);
+  assert.equal((await ack(g.w.socket, 'fc-move', { code: g.code, t: 'move', id: 'wO1', x: 1, y: 0 })).reason, 'penalties');
+  const first = pens.pen.kicker, second = first === 'w' ? 'b' : 'w';
+  // 1-zarba: hech kim tanlamaydi — vaqt tugaydi (FOOT_PEN_MS) → o'tkazildi
+  let s = await waitState(V.socket, (x) => x.pen && x.pen.kicks.length === 1, 6000);
+  assert.deepEqual([s.pen.kicks[0].side, s.pen.kicks[0].aim, s.pen.kicks[0].goal, s.ev.timeout], [first, null, false, true]);
+  // Tanlov sir: tepuvchi tanlagach tomoshabin faqat belgini ko'radi
+  const shown = waitState(V.socket, (x) => x.pen && x.pen.chosen.aim);
+  assert.deepEqual(await ack(g[second].socket, 'fc-pen', { code: g.code, y: 4 }), { ok: true, role: 'aim' });
+  s = await shown;
+  assert.equal(JSON.stringify(s).includes('"aim":4'), false, 'tanlov oshkor emas');
+  assert.equal((await ack(g[second].socket, 'fc-pen', { code: g.code, y: 2 })).reason, 'already');
+  assert.equal((await ack(V.socket, 'fc-pen', { code: g.code, y: 2 })).reason, 'not_your_turn');
+  assert.equal((await ack(g[first].socket, 'fc-pen', { code: g.code, y: 7 })).reason, 'invalid_move');
+  const kick2 = waitState(V.socket, (x) => x.pen && x.pen.kicks.length === 2);
+  assert.equal((await ack(g[first].socket, 'fc-pen', { code: g.code, y: 4 })).role, 'dive');
+  s = await kick2;
+  assert.deepEqual(s.pen.kicks[1], { side: second, aim: 4, dive: 4, goal: false }, 'qaytarildi');
+  // Keyin: birinchi tepuvchi har doim uradi, ikkinchisi har doim qaytariladi → birinchi yutadi
+  const over = waitState(V.socket, (x) => x.status === 'over', 15000);
+  for (let k = 2; k < 12 && s.status === 'active'; k++) {
+    const kicker = k % 2 === 0 ? first : second, keeper = kicker === first ? second : first;
+    const next = waitState(V.socket, (x) => x.status === 'over' || (x.pen && x.pen.kicks.length === k + 1));
+    await ack(g[kicker].socket, 'fc-pen', { code: g.code, y: 1 });
+    await ack(g[keeper].socket, 'fc-pen', { code: g.code, y: kicker === first ? 5 : 1 });
+    s = await next;
+  }
+  const o = await over;
+  assert.deepEqual([o.result.winner, o.result.reason], [first, 'penalties']);
+  assert.ok(o.result.pens[first] > o.result.pens[second]);
+  for (const u of [A, B, V]) u.socket.disconnect();
 });

@@ -168,7 +168,11 @@
       return;
     }
     setTimeout(window.refreshPageTitle, 1200);
+    const startPath = window.location.pathname;
     setTimeout(() => {
+      // Shu orada foydalanuvchi o'zi boshqa bo'limga o'tib ulgurgan bo'lsa (masalan skriptlar yuklanguncha bosilgan «Onlayn o'ynash» → /oyin),
+      // boshlang'ich bo'lim qayta ochilmaydi — aks holda u bosh sahifaga qaytarilib, qidiruv fonda qolardi (2026-11-07, CI dagi tasodifiy yiqilish)
+      if (window.location.pathname !== startPath) return;
       const sub = new URLSearchParams(window.location.search);
       if (view === 'clubs' && sub.get('club')) {
         const keep = window.location.pathname + window.location.search;

@@ -191,3 +191,33 @@ test("Mijoz harakati: faqat t/id/x/y qabul qilinadi; boshqa jamoa donasi, noqonu
   const ok = F.findAction(st, { t: 'kick', id: 'wP3', x: 6, y: 3, goal: 'w', to: 'wSH' });
   assert.deepEqual([ok.x, ok.goal, ok.to], [6, undefined, 'bP3'], "goal/to mijozdan olinmaydi — server o'zi hisoblaydi");
 });
+
+test("Penaltilar: tepuvchilar navbatma-navbat; bir xil katak — qaytarildi; tanlanmagan zarba — o'tkazildi, tanlanmagan sakrash — gol", () => {
+  let p = F.penStart('b');
+  assert.equal(F.penKicker(p), 'b');
+  p = F.penKick(p, 3, 3);
+  assert.deepEqual(p.kicks[0], { side: 'b', aim: 3, dive: 3, goal: false });
+  assert.equal(F.penKicker(p), 'w');
+  p = F.penKick(p, 1, 5);
+  assert.equal(p.kicks[1].goal, true);
+  p = F.penKick(p, null, 2);
+  assert.deepEqual([p.kicks[2].aim, p.kicks[2].goal], [null, false]);
+  p = F.penKick(p, 4, null);
+  assert.equal(p.kicks[3].goal, true);
+  assert.equal(F.penKick(p, 9, 1).kicks[4].aim, null, "1..5 dan tashqari — o'tkazildi");
+});
+
+test("Penaltilar g'olibi: 5 tadan — raqib yeta olmasa darhol; teng — bittadan, har juftlikdan keyin", () => {
+  const run = (first, goals) => goals.reduce((p, g) => F.penKick(p, 1, g ? 2 : 1), F.penStart(first));
+  // w: ✓✓✓, b: ✗✗✗ — 3 tadan keyin b ga 2 ta qoldi (eng ko'pi 2 < 3) → w
+  assert.equal(F.penWinner(run('w', [1, 0, 1, 0, 1])), null, "b ning 3-zarbasi hali bor");
+  assert.equal(F.penWinner(run('w', [1, 0, 1, 0, 1, 0])), 'w');
+  // 5:5 — davom; 6-juftlikda w ✓, b ✗ → w; juftlik tugamaguncha — yo'q
+  const tied = Array(10).fill(1);
+  assert.equal(F.penWinner(run('w', tied)), null);
+  assert.equal(F.penWinner(run('w', tied.concat([1]))), null);
+  assert.equal(F.penWinner(run('w', tied.concat([1, 0]))), 'w');
+  assert.equal(F.penWinner(run('w', tied.concat([0, 1]))), 'b');
+  // Cheksiz seriyaga qarshi chegara
+  assert.equal(F.penWinner(run('w', Array(F.PEN_MAX).fill(0))), 'draw');
+});

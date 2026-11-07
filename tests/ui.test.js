@@ -268,7 +268,15 @@ test("Onlayn o'ynash: skriptlar yuklanguncha tugma bosilsa ham xato yo'q — yuk
   const released = new Promise((r) => { release = r; });
   p.on('request', (req) => { if (req.url().endsWith('/online.js')) req.enqueueInterceptAction(() => released); });
   // Yiqilsa sababini ko'rish uchun: socket uzilish sababi (2026-11-07 CI da qidiruv boshlanib, socket uzilgan va manzil / ga qaytgan)
-  await p.evaluateOnNewDocument(() => { const t = setInterval(() => { if (window.socket && window.socket.on) { clearInterval(t); window.socket.on('disconnect', (r) => { window.__qpDisconnect = r; }); } }, 50); });
+  await p.evaluateOnNewDocument(() => {
+    const t = setInterval(() => { if (typeof socket !== 'undefined' && socket.on) { clearInterval(t); socket.on('disconnect', (r) => { window.__qpDisconnect = r; }); } }, 50);
+    // switchView chaqiruvlari izi (kim bosh sahifani qayta ochganini ko'rish uchun)
+    window.__sv = [];
+    let cur;
+    Object.defineProperty(window, 'switchView', { configurable: true, get() { return cur; }, set(f) {
+      cur = function (v) { window.__sv.push(v + '@' + Math.round(performance.now()) + ' ' + new Error().stack.split('\n').slice(2, 4).map((l) => l.trim().replace(/https?:\/\/[^/]+\//, '')).join(' < ')); return f.apply(this, arguments); };
+    } });
+  });
   const nav = p.goto(srv.base + '/', { waitUntil: 'load' });
   await p.waitForFunction(() => !!document.getElementById('playOnlineBtn'), { timeout: 30000 });
   await p.evaluate(() => document.getElementById('playOnlineBtn').click());
@@ -276,7 +284,7 @@ test("Onlayn o'ynash: skriptlar yuklanguncha tugma bosilsa ham xato yo'q — yuk
   await nav;
   // Sekin CI da 15 s yetmay qolgan (2026-11-04); yiqilsa — sayt chiqargan oyna (masalan "Serverga ulanib bo'lmadi") xabarda ko'rinadi
   await p.waitForFunction(() => location.pathname === '/oyin' && window.isSearchingOpponent === true, { timeout: 30000 })
-    .catch(async (e) => { throw new Error(e.message + ' | dialogs: ' + JSON.stringify(p.dialogs) + ' | path: ' + await p.evaluate(() => location.pathname + ' searching=' + window.isSearchingOpponent + ' socket=' + !!(window.socket && window.socket.connected) + ' view=' + ((document.querySelector('.view-section.active-view') || {}).id) + ' authGate=' + document.body.classList.contains('auth-locked') + ' disconnect=' + window.__qpDisconnect)); });
+    .catch(async (e) => { throw new Error(e.message + ' | dialogs: ' + JSON.stringify(p.dialogs) + ' | path: ' + await p.evaluate(() => location.pathname + ' searching=' + window.isSearchingOpponent + ' socket=' + (typeof socket !== 'undefined' && socket.connected) + ' view=' + ((document.querySelector('.view-section.active-view') || {}).id) + ' authGate=' + document.body.classList.contains('auth-locked') + ' disconnect=' + window.__qpDisconnect + ' switchView: ' + JSON.stringify(window.__sv))); });
   assert.deepEqual(p.dialogs, []);
   assert.deepEqual(p.errors, []);
   await p.evaluate(() => window.cancelSearch && window.cancelSearch());
@@ -1554,6 +1562,83 @@ test("Shaxmat-futbol: menyu bandi, bir qurilmada 2 kishi (tanlash, zarba nishonl
   assert.match(await p.$eval('#fcPitch .kit-flag img', (e) => e.src), /flagcdn\.com\/w80\/uz\.png/);
   await p.select('#fcSelB', '');
   await p.waitForFunction(() => document.querySelectorAll('#fcPitch .kit-plain.kit-b').length === 7, { timeout: 4000 });
+  assert.deepEqual(p.errors, []);
+});
+
+test("Shaxmat-futbol penaltilar: bir qurilmada 100 yurish durrang → penaltilar paneli, tanlov yashirin (Tayyor), qaytarish va gol, seriya g'olibi", opts, async () => {
+  const u = await srv.register('FcPens');
+  const p = await page(u);
+  await p.goto(srv.base + '/futbol?m=local', { waitUntil: 'load' });
+  await p.waitForSelector('#fcPitch .fc-pc', { timeout: 15000 });
+  // Ikkala tomon otini u yoq-bu yoqqa yuradi: 100 yurish, gol yo'q
+  await p.evaluate(() => {
+    const click = (x, y) => document.querySelector(`.fc-cell[data-x="${x}"][data-y="${y}"]`).click();
+    const hop = { w: [[3, 1], [1, 0]], b: [[7, 1], [9, 0]] };
+    for (let i = 0; i < 100; i++) {
+      const side = i % 2 ? 'b' : 'w', k = Math.floor(i / 2) % 2;
+      click(...hop[side][k]); click(...hop[side][1 - k]);
+    }
+  });
+  await p.waitForSelector('#fcPens.pick-aim', { timeout: 5000 });
+  assert.match(await p.$eval('#fcMoves', (e) => e.textContent), /100/);
+  const status = () => p.$eval('#fcPens .fc-pstatus', (e) => e.textContent);
+  const pick = (y) => p.evaluate((n) => document.querySelector(`#fcPens [data-pen="${n}"]`).click(), y);
+  // Zarba: tepuvchi tanlaydi → «Tayyor» (tanlov ko'rinmaydi) → darvozabon → natija
+  async function kick(aim, dive) {
+    await p.waitForSelector('#fcPens.pick-aim', { timeout: 5000 });
+    await pick(aim);
+    await p.waitForSelector('#fcPens [data-pen-ready]', { timeout: 3000 });
+    assert.equal(await p.$('#fcPens .fc-pball:not(.idle)'), null, "tepuvchining tanlovi ko'rinmaydi");
+    await p.evaluate(() => document.querySelector('#fcPens [data-pen-ready]').click());
+    await p.waitForSelector('#fcPens.pick-dive', { timeout: 3000 });
+    await pick(dive);
+    await p.waitForSelector('#fcPens.reveal', { timeout: 3000 });
+    return status();
+  }
+  assert.match(await kick(2, 2), /Qaytarildi/);
+  assert.equal(await p.$$eval('#fcPens .fc-pdot.no', (l) => l.length), 1);
+  assert.match(await kick(4, 1), /GOL/);
+  // Keyin: birinchi tepuvchi har doim qaytariladi, ikkinchisi har doim uradi → 3 tadan keyin 0 : 3, birinchiga 2 ta qoldi — ikkinchi jamoa yutadi
+  for (let i = 0; i < 4; i++) await kick(1, i % 2 ? 5 : 1);
+  await p.waitForFunction(() => { const o = document.querySelector('#fcWrap .fc-final'); return o && /YUTDI/.test(o.textContent) && /Penaltilar seriyasi: \d : \d/.test(o.textContent); }, { timeout: 6000 });
+  assert.deepEqual(p.errors, []);
+});
+
+test("Shaxmat-futbol onlayn penaltilar: durrangdan keyin panel, o'z rolim (tepuvchi/darvozabon), tanlov serverga boradi, natija ikkalasida ko'rinadi", opts, async () => {
+  const em = (s, ev, data) => new Promise((r) => s.emit(ev, data, r));
+  const host = await srv.register('FpHost');
+  const hs = await srv.connect(host);
+  let last = null;
+  hs.on('fc-state', (s) => { last = s; });
+  const c = await em(hs, 'fc-create', {});
+  const me = await srv.register('FpMe');
+  const p = await page(me);
+  await p.goto(srv.base + '/futbol', { waitUntil: 'load' });
+  await p.waitForSelector(`#fcWaiting [data-fc-open="${c.code}"]`, { timeout: 15000 });
+  await p.evaluate((code) => document.querySelector(`#fcWaiting [data-fc-open="${code}"]`).click(), c.code);
+  await p.waitForFunction(() => document.querySelectorAll('#fcPitch .fc-pc').length === 14, { timeout: 10000 });
+  for (let i = 0; i < 50 && !(last && last.status === 'active'); i++) await sleep(100);
+  const meColor = last.players.w.username === me.name ? 'w' : 'b';
+  const hop = { w: [{ x: 1, y: 0 }, { x: 3, y: 1 }], b: [{ x: 9, y: 0 }, { x: 7, y: 1 }] };
+  // 100 yurish: mening yurishlarimni sahifaning o'z socketi yuboradi (bosishlar boshqa testlarda tekshirilgan)
+  for (let i = 0; i < 100; i++) {
+    const side = i % 2 ? 'b' : 'w', to = hop[side][Math.floor(i / 2) % 2];
+    const msg = { code: c.code, t: 'move', id: side + 'O1', x: to.x, y: to.y };
+    const r = side === meColor ? await p.evaluate((m) => new Promise((res) => socket.emit('fc-move', m, res)), msg) : await em(hs, 'fc-move', msg);
+    assert.equal(r.ok, true, 'yurish ' + i);
+  }
+  for (let i = 0; i < 50 && !(last && last.pen); i++) await sleep(100);
+  const iKick = last.pen.kicker === meColor;
+  await p.waitForSelector('#fcPens.' + (iKick ? 'pick-aim' : 'pick-dive'), { timeout: 8000 });
+  assert.match(await p.$eval('#fcTurn', (e) => e.textContent), /Penaltilar/);
+  // Men 3-katakni, raqib 3-katakni tanlaydi → qaytarildi (ikkalasida)
+  await p.evaluate(() => document.querySelector('#fcPens [data-pen="3"]').click());
+  await p.waitForSelector('#fcPens:not(.pick-aim):not(.pick-dive)', { timeout: 4000 });
+  assert.match(await p.$eval('#fcPens .fc-pstatus', (e) => e.textContent), /raqib kutilmoqda/);
+  assert.equal((await em(hs, 'fc-pen', { code: c.code, y: 3 })).ok, true);
+  await p.waitForSelector('#fcPens.reveal.saved', { timeout: 4000 });
+  assert.equal(last.pen.kicks.length, 1);
+  hs.disconnect();
   assert.deepEqual(p.errors, []);
 });
 

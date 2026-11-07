@@ -6,6 +6,8 @@
 const F = require('./footchess');
 
 const MOVE_MS = Number(process.env.FOOT_MOVE_MS) || 60 * 1000;
+// Penalti: har zarbada tepuvchi va darvozabon tanlashi uchun vaqt; tanlamagan tomon ketma-ket 3 marta — mag'lubiyat
+const PEN_MS = Number(process.env.FOOT_PEN_MS) || 20 * 1000;
 const AWAY_MS = Number(process.env.FOOT_AWAY_MS) || 60 * 1000;
 const WAIT_TTL_MS = Number(process.env.FOOT_WAIT_TTL_MS) || 30 * 60 * 1000;
 const OVER_TTL_MS = 10 * 60 * 1000;
@@ -31,7 +33,9 @@ function publicState(t) {
   return {
     code: t.code, status: t.status, seq: t.seq, players: { w: pub(t.players.w), b: pub(t.players.b) }, away: sameCountry(t),
     st: t.st, ev: t.ev, kickoff: t.kickoff || null, timeouts: { ...t.timeouts }, result: t.result,
-    moveLeft: t.status === 'active' ? Math.max(0, MOVE_MS - (Date.now() - t.turnAt)) : null, moveMs: MOVE_MS,
+    moveLeft: t.status === 'active' ? Math.max(0, (t.turnMs || MOVE_MS) - (Date.now() - t.turnAt)) : null, moveMs: t.turnMs || MOVE_MS,
+    // Penaltilar: tanlovlar sir — faqat «tanlandimi» belgisi; natija zarba hal bo'lgach kicks da
+    pen: t.pen ? { first: t.pen.first, kicks: t.pen.kicks, kicker: F.penKicker(t.pen), chosen: { aim: t.penPick.aim !== null, dive: t.penPick.dive !== null } } : null,
     rematch: t.status === 'over' ? [...t.rematch].map((uid) => colorOf(t, uid)).filter(Boolean) : []
   };
 }
@@ -42,6 +46,7 @@ function end(t, winner, reason) {
   t.status = 'over';
   clearTimeout(t.timer);
   t.result = { winner, reason };
+  if (t.pen) t.result.pens = F.penTally(t.pen).g;
   t.rematch = new Set();
   broadcast(t);
   const ref = t.gameNo;
@@ -51,7 +56,34 @@ function schedule(t) {
   clearTimeout(t.timer);
   if (t.status !== 'active') return;
   t.turnAt = Date.now();
-  t.timer = setTimeout(() => onTimeout(t), MOVE_MS + 50);
+  t.turnMs = t.pen ? PEN_MS : MOVE_MS;
+  t.timer = setTimeout(() => (t.pen ? resolvePen(t, true) : onTimeout(t)), t.turnMs + 50);
+}
+// Durrang (100 yurish, hisob teng) — penaltilar; birinchi tepuvchi tasodifiy
+function startPens(t) {
+  t.pen = F.penStart(Math.random() < 0.5 ? 'w' : 'b');
+  t.penPick = { aim: null, dive: null };
+  t.penTimeouts = { w: 0, b: 0 };
+  t.ev = { pens: true };
+  t.kickoff = null;
+  schedule(t);
+  broadcast(t);
+}
+function resolvePen(t, timedOut) {
+  if (t.status !== 'active' || !t.pen) return;
+  const kicker = F.penKicker(t.pen), keeper = F.other(kicker);
+  if (timedOut) {
+    for (const [side, v] of [[kicker, t.penPick.aim], [keeper, t.penPick.dive]]) {
+      if (v === null) { if (++t.penTimeouts[side] >= MAX_TIMEOUTS) return end(t, F.other(side), 'timeout'); } else t.penTimeouts[side] = 0;
+    }
+  } else t.penTimeouts = { w: 0, b: 0 };
+  t.pen = F.penKick(t.pen, t.penPick.aim, t.penPick.dive);
+  t.penPick = { aim: null, dive: null };
+  t.ev = { pen: t.pen.kicks[t.pen.kicks.length - 1], timeout: timedOut || undefined };
+  const w = F.penWinner(t.pen);
+  if (w) return end(t, w === 'draw' ? null : w, 'penalties');
+  schedule(t);
+  broadcast(t);
 }
 // Navbatdagi jamoaning qonuniy harakati bo'lmasa — navbat o'z-o'zidan o'tadi (prototipdagi kabi)
 function autoPass(t) {
@@ -79,6 +111,8 @@ function start(t) {
   t.kickoff = 'w';
   t.timeouts = { w: 0, b: 0 };
   t.result = null;
+  t.pen = null;
+  t.penPick = { aim: null, dive: null };
   t.rematch = new Set();
   for (const c of ['w', 'b']) if (deps.onStart) deps.onStart(t.players[c].userId);
   schedule(t);
@@ -171,6 +205,7 @@ function attach(socket) {
     const t = tables.get(codeOf(data));
     if (!t || t.status !== 'active') return reply(ack, { ok: false, reason: 'not_active' });
     const color = uid() ? colorOf(t, uid()) : null;
+    if (t.pen) return reply(ack, { ok: false, reason: 'penalties' });
     if (!color || color !== t.st.turn) return reply(ack, { ok: false, reason: 'not_your_turn' });
     if (Date.now() - t.turnAt >= MOVE_MS) { reply(ack, { ok: false, reason: 'not_your_turn' }); return onTimeout(t); }
     const a = F.findAction(t.st, data);
@@ -181,9 +216,26 @@ function attach(socket) {
     t.kickoff = r.kickoff || null;
     t.timeouts[color] = 0;
     reply(ack, { ok: true });
+    if (r.over && !r.winner) return startPens(t); // durrang — penaltilar
     if (r.over) return end(t, r.winner, r.ev.goal && r.st.score[r.ev.goal] >= F.GOALS ? 'goals' : 'moves');
     autoPass(t);
     schedule(t);
+    broadcast(t);
+  });
+
+  // Penalti tanlovi: tepuvchi — qaysi katakka uradi, darvozabon — qaysi katakka sakraydi (1..5); bir marta, o'zgartirib bo'lmaydi
+  socket.on('fc-pen', (data, ack) => {
+    const t = tables.get(codeOf(data));
+    const color = t && uid() ? colorOf(t, uid()) : null;
+    if (!t || t.status !== 'active' || !t.pen) return reply(ack, { ok: false, reason: 'not_active' });
+    if (!color) return reply(ack, { ok: false, reason: 'not_your_turn' });
+    const y = data && data.y;
+    if (!Number.isInteger(y) || y < 1 || y > 5) return reply(ack, { ok: false, reason: 'invalid_move' });
+    const role = color === F.penKicker(t.pen) ? 'aim' : 'dive';
+    if (t.penPick[role] !== null) return reply(ack, { ok: false, reason: 'already' });
+    t.penPick[role] = y;
+    reply(ack, { ok: true, role });
+    if (t.penPick.aim !== null && t.penPick.dive !== null) return resolvePen(t, false);
     broadcast(t);
   });
 

@@ -46,6 +46,7 @@
   const myTurn = () => {
     const s = S();
     if (!s || st.busy) return false;
+    if (st.lpen || (st.state && st.state.pen)) return false; // penaltilar — maydonda yurish yo'q
     if (st.mode === 'local') return true;
     return !!(st.state && st.state.status === 'active' && st.myColor === s.turn && !st.pending);
   };
@@ -144,6 +145,7 @@
         ${li('fcRule4', "Zarba berilgan to'p o'z donalaringiz ustidan o'tib ketadi; pas berish uchun to'pni sherigingiz katagiga yo'naltiring. Yo'lda turgan birinchi raqib donasi to'pni ushlab qoladi.")}
         ${li('fcRule5', "Raqibning to'pli donasini shaxmatdagi kabi «ura olsangiz», to'pni tortib olasiz. Donalar joyida qoladi. To'pni yo'qotgan dona keyingi navbatda uni darhol qaytarib ololmaydi.")}
         ${li('fcRule6', "Darvoza — maydon chetidagi 5 ta katak. Har jamoada 7 ta dona. 3 ta gol yoki 100 ta yurishdan keyin o'yin tugaydi.")}
+        ${li('fcRule8', "Durrang bo'lsa — penaltilar: tepuvchi va darvozabon darvozaning 5 katagidan birini yashirincha tanlaydi; bir xil katak — qaytarildi. 5 tadan, teng bo'lsa — bittadan.")}
         ${li('fcRule7', "Onlayn o'yinda har navbatga 60 soniya: vaqt tugasa navbat raqibga o'tadi, ketma-ket 3 marta tugasa — mag'lubiyat. Natija reytingga yozilmaydi.")}
       </ol></section>
       <section class="fc-box"><h2>${esc(T('fcKicksH', "Kim to'pni qanday tepadi"))}</h2><ul class="fc-kicks">
@@ -263,13 +265,15 @@
     document.getElementById('fcMoves').textContent = T('fcMoves', 'Yurish {{n}} / {{max}}', { n: s.moves, max: F.MAXM });
     const turnEl = document.getElementById('fcTurn');
     const over = st.mode === 'online' ? st.state.status === 'over' : st.localOver;
-    turnEl.innerHTML = over ? '' : esc(T('fcTurn', 'Navbat:')) + ' <b>' + esc(tm[s.turn].name) + '</b>' + (st.mode === 'online' && st.myColor && st.myColor !== s.turn && st.state.status === 'active' ? ' · ' + esc(T('fcOppTurn', 'raqib o\'ylayapti…')) : '');
+    const pens = !over && (st.lpen || (st.mode === 'online' && st.state.pen));
+    turnEl.innerHTML = over ? '' : pens ? '<b>⚽ ' + esc(T('fcPens', 'Penaltilar')) + '</b>' :esc(T('fcTurn', 'Navbat:')) + ' <b>' + esc(tm[s.turn].name) + '</b>' + (st.mode === 'online' && st.myColor && st.myColor !== s.turn && st.state.status === 'active' ? ' · ' + esc(T('fcOppTurn', 'raqib o\'ylayapti…')) : '');
     tickClock();
     const holder = st.sel && s.ball.h === st.sel && myTurn();
     const kb = document.getElementById('fcKickbar');
     kb.hidden = !holder;
     kb.querySelectorAll('[data-km]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.km === st.kmode)));
     renderHeadActions();
+    renderPens();
   }
   function tickClock() {
     const el = document.getElementById('fcClock');
@@ -330,7 +334,8 @@
     const title = winner ? T('fcWin', '{{team}} YUTDI!', { team: tm[winner].name }) : T('fcDraw', 'DURRANG');
     const loser = winner ? tm[F.other(winner)].name : '';
     const why = { resign: T('fcRsResign', "{{team}} taslim bo'ldi.", { team: loser }), timeout: T('fcRsTimeout', '{{team}}: navbat vaqti ketma-ket 3 marta tugadi.', { team: loser }),
-      abandon: T('fcRsAbandon', "{{team}} o'yindan chiqib ketdi.", { team: loser }), moves: T('fcRsMoves', '100 ta yurish tugadi.') }[result.reason] || '';
+      abandon: T('fcRsAbandon', "{{team}} o'yindan chiqib ketdi.", { team: loser }), moves: T('fcRsMoves', '100 ta yurish tugadi.'),
+      penalties: result.pens ? T('fcRsPens', 'Penaltilar seriyasi: {{w}} : {{b}}', { w: result.pens.w, b: result.pens.b }) : '' }[result.reason] || '';
     const online = st.mode === 'online';
     const rem = online && st.state ? st.state.rematch || [] : [];
     const iAsked = st.myColor && rem.includes(st.myColor), oppAsked = st.myColor && rem.some((c) => c !== st.myColor);
@@ -384,7 +389,7 @@
     const pitch = document.getElementById('fcWrap');
     if (pitch) pitch.querySelectorAll('.fc-overlay').forEach((o) => o.remove());
     st.local = F.formation('w');
-    st.localOver = false; st.busy = false; st.sel = null;
+    st.localOver = false; st.busy = false; st.sel = null; st.lpen = null; st.reveal = null;
     render();
     say(T('fcKickoff', '{{team}} markazdan boshlaydi.', { team: teams().w.name }) + ' ' + T('fcSelectHint', "Piyodangiz to'pni ushlab turibdi — uni tanlang."));
   }
@@ -409,10 +414,109 @@
       return;
     }
     st.local = r.st;
+    if (r.over && !r.winner) return startLocalPens(tm); // durrang — penaltilar
     if (r.over) { st.localOver = true; render(); return finishOverlay({ winner: r.winner, reason: 'moves' }, r.st, tm); }
     while (!F.actions(st.local, st.local.turn).length) st.local = F.step(st.local, null).st;
     render();
   }
+  // ---------- ⚽ Penaltilar ----------
+  // Yashirin tanlov: tepuvchi darvozaning 1..5-katagini, darvozabon sakraydigan katakni tanlaydi. Onlayn — server (fc-pen) saqlaydi va
+  // ikkalasi tanlagach ochadi; bir qurilmada — tepuvchi tanlagach qurilma darvozabonga beriladi (tanlov ko'rinmaydi).
+  function startLocalPens(tm) {
+    st.lpen = { pen: F.penStart(Math.random() < 0.5 ? 'w' : 'b'), phase: 'aim', aim: null };
+    render();
+    pensFlash(tm);
+  }
+  function pensFlash(tm) {
+    overlay(`<div class="fc-big small pop">${esc(T('fcPens', 'Penaltilar'))}</div><p>${esc(T('fcPensStart', 'Durrang! Penaltilar seriyasi — 5 tadan zarba.'))}</p>`, 1900);
+    say(T('fcPensStart', 'Durrang! Penaltilar seriyasi — 5 tadan zarba.'));
+    if (typeof playSound === 'function') playSound('check');
+  }
+  function penView() {
+    if (st.mode === 'online') {
+      const s = st.state;
+      if (!s || !s.pen || s.status !== 'active') return null;
+      const role = !st.myColor ? null : st.myColor === s.pen.kicker ? 'aim' : 'dive';
+      const done = !!(role && s.pen.chosen[role]);
+      return { pen: s.pen, kicker: s.pen.kicker, role: done ? null : role, waitingMine: done, chosen: s.pen.chosen };
+    }
+    if (st.mode === 'local' && st.lpen && !st.localOver) {
+      const L = st.lpen;
+      return { pen: L.pen, kicker: F.penKicker(L.pen), role: L.phase === 'aim' || L.phase === 'dive' ? L.phase : null, pass: L.phase === 'pass', local: true, chosen: { aim: L.aim !== null, dive: false } };
+    }
+    return null;
+  }
+  function showReveal(kick, pen, tm, then) {
+    st.reveal = { kick, pen, until: Date.now() + 1800 };
+    say(kick.goal ? T('fcPenGoal', 'GOL! {{team}} penaltini amalga oshirdi.', { team: tm[kick.side].name })
+      : kick.aim === null ? T('fcPenMissed', "O'tkazib yuborildi!") : T('fcPenSaved', 'Qaytarildi!'));
+    if (typeof playSound === 'function') playSound(kick.goal ? 'check' : 'capture');
+    renderPens();
+    setTimeout(() => { st.reveal = null; renderPens(); if (then) then(); }, 1850);
+  }
+  function renderPens() {
+    const wrap = document.getElementById('fcWrap');
+    if (!wrap) return;
+    let el = document.getElementById('fcPens');
+    const v = penView(), rv = st.reveal;
+    if (!v && !rv) { if (el) el.remove(); return; }
+    const tm = teams(), pen = rv ? rv.pen : v.pen, kicker = rv ? rv.kick.side : v.kicker, keeper = F.other(kicker);
+    if (!el) { el = document.createElement('div'); el.id = 'fcPens'; el.className = 'fc-pens'; wrap.appendChild(el); el.addEventListener('click', onPensClick); }
+    const tally = F.penTally(pen).g;
+    const row = (side) => {
+      const ks = pen.kicks.filter((k) => k.side === side);
+      const dots = Array.from({ length: Math.max(F.PENS, ks.length) }, (_, i) => `<i class="fc-pdot ${ks[i] ? (ks[i].goal ? 'ok' : 'no') : ''}"></i>`).join('');
+      return `<div class="fc-prow${side === kicker && !rv ? ' now' : ''}">${teamFlag(tm[side], side)}<span class="fc-nm">${esc(tm[side].name)}</span><span class="fc-pdots">${dots}</span><b>${tally[side]}</b></div>`;
+    };
+    const canPick = v && v.role && !rv;
+    const pos = (y) => `left:${(y - 0.5) * 20}%`;
+    const keeperAt = rv ? (rv.kick.dive || 3) : 3, ballAt = rv ? rv.kick.aim : null;
+    let status;
+    if (rv) status = rv.kick.goal ? T('fcGoal', 'GOL!') : rv.kick.aim === null ? T('fcPenMissed', "O'tkazib yuborildi!") : T('fcPenSaved', 'Qaytarildi!');
+    else if (v.pass) status = T('fcPenPass', "Tanlandi! Qurilmani darvozabonga bering — u tanlovni ko'rmasin.");
+    else if (v.role === 'aim') status = v.local ? T('fcPenAimTeam', '{{team}} tepadi: qaysi katakka?', { team: tm[kicker].name }) : T('fcPenAim', 'Siz tepasiz: qaysi katakka urasiz?');
+    else if (v.role === 'dive') status = v.local ? T('fcPenDiveTeam', '{{team}} darvozaboni: qayerga sakraydi?', { team: tm[keeper].name }) : T('fcPenDive', 'Siz darvozabonsiz: qayerga sakraysiz?');
+    else if (v.waitingMine) status = T('fcPenWaitOpp', 'Tanlandi — raqib kutilmoqda…');
+    else status = T('fcPenKicker', '{{team}} tepadi', { team: tm[kicker].name }) + (v.chosen.aim ? ' · ' + T('fcPenChosenAim', 'tepuvchi tanladi') : '') + (v.chosen.dive ? ' · ' + T('fcPenChosenDive', 'darvozabon tanladi') : '');
+    const cells = [1, 2, 3, 4, 5].map((y) => `<button type="button" class="fc-pcell" data-pen="${y}" ${canPick ? '' : 'disabled'} aria-label="${esc(T('fcPenCell', '{{n}}-katak', { n: y }))}"></button>`).join('');
+    el.className = 'fc-pens' + (rv ? ' reveal ' + (rv.kick.goal ? 'goal' : 'saved') : '') + (canPick ? ' pick-' + v.role : '');
+    el.innerHTML = `<div class="fc-pens-head"><b>⚽ ${esc(T('fcPens', 'Penaltilar'))}</b></div>
+      <div class="fc-ptable">${row(pen.first)}${row(F.other(pen.first))}</div>
+      <div class="fc-pgoal">${cells}
+        <span class="fc-pkeeper" style="${pos(keeperAt)}">${kitHtml(tm[keeper], keeper)}<img class="fc-pimg" src="${esc(pieceSrc(keeper, 'k'))}" alt="" draggable="false"></span>
+        ${ballAt ? `<span class="fc-pball" style="${pos(ballAt)}"></span>` : ''}
+      </div>
+      <div class="fc-pkick">${v && !rv ? `<span class="fc-pc-static">${kitHtml(tm[kicker], kicker)}<img class="fc-pimg" src="${esc(pieceSrc(kicker, 'p'))}" alt="" draggable="false"></span><span class="fc-pball idle"></span>` : ''}</div>
+      <p class="fc-pstatus" aria-live="polite">${esc(status)}</p>
+      ${v && v.pass ? `<button type="button" class="fc-btn" data-pen-ready>${esc(T('fcPenReady', 'Tayyor'))}</button>` : ''}`;
+  }
+  async function onPensClick(e) {
+    if (e.target.closest('[data-pen-ready]')) { if (st.lpen && st.lpen.phase === 'pass') { st.lpen.phase = 'dive'; renderPens(); } return; }
+    const c = e.target.closest('[data-pen]');
+    if (!c || c.disabled) return;
+    const y = Number(c.dataset.pen);
+    if (st.mode === 'online') {
+      c.disabled = true;
+      const r = await emit('fc-pen', { code: st.code, y });
+      if (!r || !r.ok) { toast(T('fcRejected', "Bu harakatni qilib bo'lmaydi."), 'warning'); renderPens(); }
+      return;
+    }
+    const L = st.lpen;
+    if (!L) return;
+    if (L.phase === 'aim') { L.aim = y; L.phase = 'pass'; return renderPens(); }
+    if (L.phase !== 'dive') return;
+    const tm = teams();
+    L.pen = F.penKick(L.pen, L.aim, y);
+    L.aim = null; L.phase = 'reveal';
+    const w = F.penWinner(L.pen);
+    showReveal(L.pen.kicks[L.pen.kicks.length - 1], L.pen, tm, () => {
+      if (!st.lpen || st.lpen !== L) return;
+      if (w) { st.localOver = true; renderPens(); return finishOverlay({ winner: w === 'draw' ? null : w, reason: 'penalties', pens: F.penTally(L.pen).g }, st.local, tm); }
+      L.phase = 'aim';
+      renderPens();
+    });
+  }
+
   function playMoveSound(ev) {
     if (typeof playSound !== 'function' || !ev || !ev.a) return;
     playSound(ev.a.t === 'kick' || ev.tackle ? 'capture' : 'move');
@@ -436,7 +540,11 @@
     if (freshGame && st.myColor) toast('⚽ ' + (s.st.turn === st.myColor ? T('fcStartYou', "O'yin boshlandi! Siz boshlaysiz.") : T('fcStartOpp', "O'yin boshlandi! Raqib boshlaydi.")), 'success');
     if (!st.sel || !s.st || s.st.turn !== st.myColor) st.sel = null;
     render();
-    if (prev && s.seq !== prev.seq && s.ev) {
+    // Penaltilar: boshlanishi va har hal bo'lgan zarba (tanlovlar shu paytda ochiladi)
+    const prevKicks = prev && prev.pen ? prev.pen.kicks.length : 0;
+    if (s.pen && prev && !prev.pen && s.status === 'active') pensFlash(tm);
+    if (s.pen && prev && s.pen.kicks.length > prevKicks) showReveal(s.pen.kicks[s.pen.kicks.length - 1], s.pen, tm);
+    else if (prev && s.seq !== prev.seq && s.ev && !s.pen) {
       if (s.ev.timeout) say(T('fcEvTimeout', "{{team}}: vaqt tugadi — navbat o'tdi.", { team: tm[s.ev.timeout].name }));
       else if (s.ev.a) { say(describe(s.ev, tm)); playMoveSound(s.ev); if (s.ev.a && st.myColor && s.ev.p.side !== st.myColor && typeof window.haptic === 'function') window.haptic(15); }
       if (s.ev.goal) goalFlash(s.ev.goal, s.st.score, tm);
@@ -448,7 +556,7 @@
         st.overlayShown = key;
         const pitch = document.getElementById('fcWrap');
         if (pitch) pitch.querySelectorAll('.fc-final').forEach((o) => o.remove());
-        setTimeout(() => { if (st.state === s) finishOverlay(s.result, s.st, tm); }, s.ev && s.ev.goal && prev && prev.status === 'active' ? 1700 : 0);
+        setTimeout(() => { if (st.state === s) finishOverlay(s.result, s.st, tm); }, prev && prev.status === 'active' && ((s.ev && s.ev.goal) || s.result.reason === 'penalties') ? 1850 : 0);
         if (prev && prev.status === 'active' && typeof playSound === 'function') playSound('gameEnd');
       }
     }

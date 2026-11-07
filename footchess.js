@@ -135,5 +135,35 @@
   }
   const winnerOf = (st) => (st.score.w > st.score.b ? 'w' : st.score.b > st.score.w ? 'b' : null);
 
-  return { W, H, GOALS, MAXM, KS, KIND, other, inB, goalAt, at, byId, formation, clone, moves, kicks, attacks, tackle, actions, apply, findAction, step, winnerOf };
+  // ⚽ Penaltilar (2026-11-07, foydalanuvchi tanlovi): durrangdan keyin. Yashirin tanlov — tepuvchi darvozaning 1..5-katagini (y), darvozabon
+  // sakraydigan katakni tanlaydi; bir xil — qaytarildi, boshqa — gol. 5 tadan, teng bo'lsa — bittadan (har juftlikdan keyin). pen = { first, kicks: [{side, aim, dive, goal}] }
+  const PENS = 5, PEN_MAX = 40;
+  const penStart = (first) => ({ first: first === 'b' ? 'b' : 'w', kicks: [] });
+  const penKicker = (p) => (p.kicks.length % 2 === 0 ? p.first : other(p.first));
+  const penCell = (v) => (Number.isInteger(v) && v >= 1 && v <= 5 ? v : null);
+  function penTally(p) {
+    const t = { w: 0, b: 0 }, g = { w: 0, b: 0 };
+    for (const k of p.kicks) { t[k.side]++; if (k.goal) g[k.side]++; }
+    return { t, g };
+  }
+  // Tanlanmagan zarba (vaqt tugadi) — o'tkazib yuborilgan; tanlanmagan sakrash — darvozabon joyida qoldi (qaytara olmaydi)
+  function penKick(p, aim, dive) {
+    const side = penKicker(p), a = penCell(aim), d = penCell(dive);
+    return { first: p.first, kicks: p.kicks.concat([{ side, aim: a, dive: d, goal: a !== null && a !== d }]) };
+  }
+  // G'olib: asosiy 5 tada — raqib qolgan zarbalari bilan ham yeta olmasa darhol; keyin — har teng juftlikdan keyin. 'draw' — cheksiz seriyaga qarshi chegara
+  function penWinner(p) {
+    const { t, g } = penTally(p);
+    if (t.w <= PENS && t.b <= PENS) {
+      if (g.w + (PENS - t.w) < g.b) return 'b';
+      if (g.b + (PENS - t.b) < g.w) return 'w';
+      return null;
+    }
+    if (t.w === t.b && g.w !== g.b) return g.w > g.b ? 'w' : 'b';
+    if (p.kicks.length >= PEN_MAX && t.w === t.b) return 'draw';
+    return null;
+  }
+
+  return { W, H, GOALS, MAXM, KS, KIND, other, inB, goalAt, at, byId, formation, clone, moves, kicks, attacks, tackle, actions, apply, findAction, step, winnerOf,
+    PENS, PEN_MAX, penStart, penKicker, penTally, penKick, penWinner };
 });

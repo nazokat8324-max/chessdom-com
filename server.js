@@ -3343,6 +3343,8 @@ async function start() {
         if (deletedUsers.has(decoded.userId)) { socket.emit('auth-error', { deleted: true }); return; }
         const ban = activeBan(decoded.userId);
         if (ban) { socket.emit('auth-error', { banned: true, message: banMessage(ban) }); return; }
+        // Shu socketda boshqa akkaunt bor edi (bir brauzerda akkaunt almashdi) — avval undan ajratiladi
+        if (socket.data.userId && socket.data.userId !== decoded.userId) releaseSocket(true);
         socket.data.userId = decoded.userId;
         socket.data.username = decoded.username;
         socket.join(`user_${decoded.userId}`);
@@ -3677,7 +3679,10 @@ async function start() {
     // Liga: o'yinchi o'z doska o'yiniga tayyor (ikkalasi tayyor bo'lganda o'yin boshlanadi)
     socket.on('league-ready', (data) => { league.ready(socket, data && data.gameId).catch(err => console.error('Liga ready xatoligi:', err)); });
     socket.on('league-cancel', (data) => { league.cancel(socket, data && data.gameId); });
-    socket.on('disconnect', () => {
+    // Socketni foydalanuvchidan ajratish: uzilganda, shuningdek bir brauzerda boshqa akkauntga o'tilganda yoki chiqilganda (switching).
+    // 2026-11-10 gacha akkaunt almashganda eski akkaunt shu socketda qolib ketardi: onlayn ko'rinardi (bitta kompyuterda 4 akkaunt — «4 onlayn»),
+    // uning user_<id> xonasidagi bildirishnoma/xabarlar yangi akkauntga ham kelardi va o'yinda uning nomidan yurish mumkin edi.
+    function releaseSocket(switching) {
       // Onlayn holat: oxirgi socket uzilsa — oflayn, oxirgi faollik vaqti yoziladi
       const uid = socket.data.userId;
       const set = uid && onlineUsers.get(uid);
@@ -3688,6 +3693,10 @@ async function start() {
           io.emit('presence', { userId: uid, online: false, lastSeen: new Date().toISOString() });
           db.touchUserLastActive(uid).catch(() => {});
         }
+      }
+      if (switching && uid) {
+        socket.leave('user_' + uid);
+        for (let i = matchmakingQueue.length - 1; i >= 0; i--) if (matchmakingQueue[i].socketId === socket.id) matchmakingQueue.splice(i, 1);
       }
       league.socketGone(socket.id);
       teamChess.socketGone(socket);
@@ -3707,13 +3716,20 @@ async function start() {
             endGame(roomId, room, winner, winner ? 'abandon' : 'aborted');
           }, RECONNECT_GRACE_MS);
           io.to(roomId).emit('opponent-away', { roomId, seconds: Math.round(RECONNECT_GRACE_MS / 1000) });
+          // Akkaunt almashgan: socket endi bu o'yinchiniki emas (qaytsa resumeGames yangi socketni bog'laydi)
+          if (switching) { player.socketId = null; socket.leave(roomId); }
           continue;
         }
         const wasActive = room.status === 'active';
         handlePlayerLeave(socket, roomId, room);
         if (!wasActive) io.to(roomId).emit('opponent-disconnected');
+        if (switching) socket.leave(roomId);
       }
-    });
+      if (switching) { socket.data.userId = null; socket.data.username = null; }
+    }
+    socket.on('disconnect', () => releaseSocket(false));
+    // Chiqish (klient handleLogout) — socket ulanib qoladi, lekin akkauntdan ajraydi
+    socket.on('logout', () => releaseSocket(true));
   });
 
   setInterval(() => {

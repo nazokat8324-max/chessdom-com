@@ -1720,6 +1720,36 @@ test("O'yin taxtasi: pastga aylantirilgan sahifadan o'tilganda ham ekran balandl
   assert.deepEqual(p.errors, []);
 });
 
+test("Bir qurilmada bir nechta akkaunt: har birining sozlamalari alohida (rang, donalar), boshqa akkauntga o'tganda eskisi onlayn qolmaydi", opts, async () => {
+  const A = await srv.register('AccA'), B = await srv.register('AccB');
+  const p = await page(A);
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await p.waitForFunction(() => window.currentUser && typeof window.applyAuthSession === 'function', { timeout: 15000 });
+  // A: Yoqut rangi va Klassik donalar saqlangan
+  await p.evaluate(() => {
+    const s = JSON.parse(localStorage.getItem('justChessSettings') || '{}');
+    localStorage.setItem('justChessSettings', JSON.stringify({ ...s, siteTheme: 'ruby', pieceSet: 'classic' }));
+  });
+  await p.reload({ waitUntil: 'load' });
+  await p.waitForFunction(() => document.documentElement.dataset.theme === 'ruby', { timeout: 15000 });
+  // Shu brauzerda B kiradi — standart sozlamalar (A niki emas)
+  await p.evaluate((u) => window.applyAuthSession(u.user, u.token), B);
+  await p.waitForFunction(() => document.documentElement.dataset.theme !== 'ruby', { timeout: 5000 });
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings') || '{}').pieceSet || null), null, "B ga A ning donalari o'tmasin");
+  // Socket B ga o'tdi — A oflayn
+  await sleep(500);
+  const on = (await srv.api(null, '/api/users/presence?ids=' + A.id + ',' + B.id)).online;
+  assert.deepEqual(on, { [A.id]: false, [B.id]: true });
+  // B o'z rangini tanlaydi, A qaytadi — A ning Yoqut rangi tiklanadi, B niki saqlanib qoladi
+  await p.evaluate(() => localStorage.setItem('justChessSettings', JSON.stringify({ siteTheme: 'lapis' })));
+  await p.evaluate((u) => window.applyAuthSession(u.user, u.token), A);
+  await p.waitForFunction(() => document.documentElement.dataset.theme === 'ruby', { timeout: 5000 });
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings')).pieceSet), 'classic');
+  await p.evaluate((u) => window.applyAuthSession(u.user, u.token), B);
+  await p.waitForFunction(() => document.documentElement.dataset.theme === 'lapis', { timeout: 5000 });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

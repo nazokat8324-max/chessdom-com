@@ -8,7 +8,7 @@ const EVENTS = ['accept-draw', 'authenticate', 'challenge-accept', 'challenge-ca
   'game-blur', 'game-chat', 'game-over', 'invite-accept', 'join-club-room', 'league-cancel', 'league-ready', 'leave-room', 'make-move',
   'offer-draw', 'page-visibility', 'predict-move', 'predict-result', 'rate-opponent', 'rematch-accept', 'rematch-decline', 'rematch-offer',
   'rtt-probe', 'tea-enter', 'tea-exit', 'tea-join', 'tea-sit', 'tea-stand', 'team-chat', 'team-create', 'team-list', 'team-move',
-  'fc-create', 'fc-join', 'fc-leave', 'fc-list', 'fc-move', 'fc-pen', 'fc-rematch', 'fc-resign', 'fc-unwatch', 'fc-watch', 'team-resign', 'team-sit', 'team-stand', 'team-suggest', 'team-unwatch', 'team-watch', 'unwatch-game', 'watch-chat', 'watch-game'];
+  'fc-create', 'fc-join', 'fc-leave', 'fc-list', 'fc-move', 'fc-pen', 'logout', 'fc-rematch', 'fc-resign', 'fc-unwatch', 'fc-watch', 'team-resign', 'team-sit', 'team-stand', 'team-suggest', 'team-unwatch', 'team-watch', 'unwatch-game', 'watch-chat', 'watch-game'];
 
 let srv;
 test.before(async () => { srv = await startServer(); });

@@ -230,7 +230,9 @@ if ((localStorage.getItem("justChessAuthToken") || "").startsWith("local_")) {
 }
 localStorage.removeItem("justChessRegisteredUsers");
 window.currentUser = JSON.parse(localStorage.getItem("justChessCurrentUser")) || null;
-window.stats = (window.currentUser ? window.currentUser.stats : localStorage.getItem("justChessGuestStats") ? JSON.parse(localStorage.getItem("justChessGuestStats")) : null) || { wins: 0, losses: 0, draws: 0 };
+// Saqlangan sessiya: sozlamalar egasi — shu akkaunt (birinchi marta — mavjud sozlamalar unga biriktiriladi)
+if (window.currentUser && window.currentUser.id) switchSettingsOwner(window.currentUser.id);
+window.stats =(window.currentUser ? window.currentUser.stats : localStorage.getItem("justChessGuestStats") ? JSON.parse(localStorage.getItem("justChessGuestStats")) : null) || { wins: 0, losses: 0, draws: 0 };
 window.statsByMode = (window.currentUser && window.currentUser.statsByMode) || JSON.parse(localStorage.getItem("justChessStatsByMode")) || {
   rapid: { wins: 0, losses: 0, draws: 0 },
   blitz: { wins: 0, losses: 0, draws: 0 },
@@ -793,7 +795,40 @@ window.updateAuthHeaderUI = function() {
 };
 
 // Server login/register javobidan sessiyani o'rnatish
+// Sozlamalar har akkauntga alohida (2026-11-10): bir qurilmada bir nechta akkaunt bo'lsa, avval hammasida bir xil sozlama qolardi.
+// Faol sozlamalar doim justChessSettings da (barcha fayllar shuni o'qiydi); akkaunt almashganda eskisi justChessSettingsByUser ga
+// olib qo'yiladi, yangisiniki qaytariladi (yangi akkaunt — standart sozlamalar). Bu funksiya birinchi marta ishlaganda (egasi hali
+// yozilmagan) mavjud sozlamalar shu kirgan akkauntniki bo'ladi. Til (justChessLang) qurilmaniki — kirish sahifasida tanlanadi.
+function switchSettingsOwner(userId) {
+  if (!userId) return false;
+  const id = String(userId);
+  let owner = null, all = {}, cur = null;
+  try {
+    owner = localStorage.getItem("justChessSettingsOwner");
+    all = JSON.parse(localStorage.getItem("justChessSettingsByUser") || "{}") || {};
+    cur = localStorage.getItem("justChessSettings");
+  } catch (e) { return false; }
+  if (owner === id) return false;
+  if (cur && (owner || !all[id])) { try { all[owner || id] = JSON.parse(cur); } catch (e) {} }
+  const mine = owner ? all[id] : (all[id] || (cur && JSON.parse(cur)));
+  // Ko'pi bilan 20 ta akkaunt (eng eskisi tushib qoladi)
+  const keys = Object.keys(all);
+  if (keys.length > 20) keys.slice(0, keys.length - 20).forEach((k) => { if (k !== id) delete all[k]; });
+  try {
+    if (mine) localStorage.setItem("justChessSettings", JSON.stringify(mine));
+    else localStorage.removeItem("justChessSettings");
+    localStorage.setItem("justChessSettingsByUser", JSON.stringify(all));
+    localStorage.setItem("justChessSettingsOwner", id);
+  } catch (e) { return false; }
+  return !!owner;
+}
+window.switchSettingsOwner = switchSettingsOwner;
+
 window.applyAuthSession = function(user, token) {
+  // Boshqa akkaunt — uning o'z sozlamalari (rang, taxta, donalar, ovoz, davlat…) qo'llanadi
+  if (user && switchSettingsOwner(user.id) && typeof window.applyStoredSettings === "function") {
+    try { window.applyStoredSettings(); } catch (e) {}
+  }
   const settings = JSON.parse(localStorage.getItem("justChessSettings") || "{}");
   // Davlat tanlanmagan bo'lsa — xalqaro (BMT) bayrog'i (avval hammaga O'zbekiston qo'yilardi)
   const country = user.country || settings.country || "un";
@@ -899,6 +934,8 @@ window.handleLogout = async function() {
   if (typeof socket !== 'undefined' && window.currentRoomId) {
     socket.emit('leave-room', window.currentRoomId);
   }
+  // Socket ulanib qoladi — server uni akkauntdan ajratadi (aks holda chiqqan akkaunt onlayn ko'rinib, xabarlari shu brauzerga kelaverardi)
+  if (typeof socket !== 'undefined') socket.emit('logout');
   try {
     await fetch('/api/auth/logout', {
       method: 'POST',

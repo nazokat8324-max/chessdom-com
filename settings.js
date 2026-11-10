@@ -498,6 +498,16 @@
     discard(true);
   };
   window.saveSettings = save;
+  // Saqlangan sozlamalarni qayta qo'llash — bir qurilmada boshqa akkauntga o'tilganda (script.js switchSettingsOwner)
+  window.applyStoredSettings = function () {
+    const s = readSaved();
+    st.saved = s;
+    st.draft = { ...s };
+    window.settingsDirty = false;
+    applyAll(s);
+    applyQuickPlay(s);
+    window.refreshSettingsView();
+  };
   window.refreshSettingsView = function () {
     const v = document.getElementById('settingsView');
     if (v && v.classList.contains('active-view')) render();

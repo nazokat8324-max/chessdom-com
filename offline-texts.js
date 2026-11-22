@@ -7,6 +7,7 @@
   return {
     uz: {
       online: "Internet qaytdi!", goSite: "Saytga o'tish",
+      ccTitle: "Shaxmat soati", ccShort: "Soat", ccDesc: "Haqiqiy taxtada o'ynash uchun: telefonni o'rtaga qo'ying, har kim o'z tomonini bosadi.", ccTapHint: "Yurishni qilib, o'z tomoningizni bosing — raqibning soati yuradi.", ccPick: "Vaqtni tanlang", ccMin: "Daqiqa", ccInc: "Qo'shimcha (soniya)", ccStart: "Boshlash", ccTap: "Boshlash uchun bosing", ccPaused: "Pauza", ccFlag: "Vaqt tugadi!", ccMoves: "Yurishlar", ccResetQ: "Soatni qaytadan boshlaysizmi?", ccPause: "Pauza", ccResume: "Davom ettirish", ccReset: "Qaytadan", ccSettings: "Vaqtni o'zgartirish", ccClose: "Yopish",
       title: "Internet aloqasi yo'q", text: "ChessCaravan ishlashi uchun internet kerak. Aloqani tekshirib, qayta urinib ko'ring.", retry: "Qayta urinish",
       playHere: "Internet qaytguncha shu yerda o'ynashingiz mumkin:",
       local: "Ikki kishi bir qurilmada", localD: "Do'stingiz bilan bitta telefon yoki kompyuterda — soat bilan.",
@@ -27,6 +28,7 @@
     },
     en: {
       online: "The internet is back!", goSite: "Go to the site",
+      ccTitle: "Chess clock", ccShort: "Clock", ccDesc: "For a real board: put the phone between you, each player taps their own side.", ccTapHint: "Make your move, then tap your side — your opponent's clock starts.", ccPick: "Choose the time", ccMin: "Minutes", ccInc: "Increment (seconds)", ccStart: "Start", ccTap: "Tap to start", ccPaused: "Paused", ccFlag: "Time is up!", ccMoves: "Moves", ccResetQ: "Restart the clock?", ccPause: "Pause", ccResume: "Resume", ccReset: "Restart", ccSettings: "Change the time", ccClose: "Close",
       title: "No internet connection", text: "ChessCaravan needs the internet. Check your connection and try again.", retry: "Try again",
       playHere: "Until the internet is back, you can play here:",
       local: "Two players, one device", localD: "Play a friend on one phone or computer — with a clock.",
@@ -47,6 +49,7 @@
     },
     ru: {
       online: "Интернет вернулся!", goSite: "Перейти на сайт",
+      ccTitle: "Шахматные часы", ccShort: "Часы", ccDesc: "Для настоящей доски: положите телефон между игроками, каждый нажимает свою половину.", ccTapHint: "Сделайте ход и нажмите свою половину — пойдут часы соперника.", ccPick: "Выберите время", ccMin: "Минуты", ccInc: "Добавка (секунды)", ccStart: "Начать", ccTap: "Нажмите, чтобы начать", ccPaused: "Пауза", ccFlag: "Время вышло!", ccMoves: "Ходы", ccResetQ: "Начать часы заново?", ccPause: "Пауза", ccResume: "Продолжить", ccReset: "Заново", ccSettings: "Изменить время", ccClose: "Закрыть",
       title: "Нет подключения к интернету", text: "Для ChessCaravan нужен интернет. Проверьте подключение и попробуйте снова.", retry: "Повторить",
       playHere: "Пока интернета нет, можно поиграть здесь:",
       local: "Вдвоём на одном устройстве", localD: "Играйте с другом на одном телефоне или компьютере — с часами.",
@@ -67,6 +70,7 @@
     },
     es: {
       online: "¡Ha vuelto internet!", goSite: "Ir al sitio",
+      ccTitle: "Reloj de ajedrez", ccShort: "Reloj", ccDesc: "Para un tablero real: pon el teléfono entre los dos y cada uno toca su lado.", ccTapHint: "Haz tu jugada y toca tu lado: empieza a correr el reloj del rival.", ccPick: "Elige el tiempo", ccMin: "Minutos", ccInc: "Incremento (segundos)", ccStart: "Empezar", ccTap: "Toca para empezar", ccPaused: "En pausa", ccFlag: "¡Se acabó el tiempo!", ccMoves: "Jugadas", ccResetQ: "¿Reiniciar el reloj?", ccPause: "Pausa", ccResume: "Reanudar", ccReset: "Reiniciar", ccSettings: "Cambiar el tiempo", ccClose: "Cerrar",
       title: "Sin conexión a internet", text: "ChessCaravan necesita internet. Revisa tu conexión e inténtalo de nuevo.", retry: "Reintentar",
       playHere: "Mientras vuelve internet, puedes jugar aquí:",
       local: "Dos jugadores, un dispositivo", localD: "Juega con un amigo en un mismo teléfono u ordenador, con reloj.",
@@ -87,6 +91,7 @@
     },
     de: {
       online: "Das Internet ist zurück!", goSite: "Zur Website",
+      ccTitle: "Schachuhr", ccShort: "Uhr", ccDesc: "Für ein echtes Brett: Handy zwischen euch legen, jeder tippt auf seine Seite.", ccTapHint: "Zug machen, dann auf die eigene Seite tippen — die Uhr des Gegners läuft.", ccPick: "Zeit wählen", ccMin: "Minuten", ccInc: "Inkrement (Sekunden)", ccStart: "Start", ccTap: "Zum Starten tippen", ccPaused: "Pausiert", ccFlag: "Zeit abgelaufen!", ccMoves: "Züge", ccResetQ: "Uhr neu starten?", ccPause: "Pause", ccResume: "Fortsetzen", ccReset: "Neu starten", ccSettings: "Zeit ändern", ccClose: "Schließen",
       title: "Keine Internetverbindung", text: "ChessCaravan braucht Internet. Prüfe deine Verbindung und versuche es erneut.", retry: "Erneut versuchen",
       playHere: "Bis das Internet zurück ist, kannst du hier spielen:",
       local: "Zwei Spieler, ein Gerät", localD: "Spiele mit einem Freund an einem Handy oder Computer – mit Uhr.",
@@ -107,6 +112,7 @@
     },
     fr: {
       online: "Internet est de retour !", goSite: "Aller sur le site",
+      ccTitle: "Pendule d'échecs", ccShort: "Pendule", ccDesc: "Pour un vrai échiquier : posez le téléphone entre vous, chacun touche son côté.", ccTapHint: "Jouez votre coup puis touchez votre côté : la pendule de l'adversaire démarre.", ccPick: "Choisissez la cadence", ccMin: "Minutes", ccInc: "Incrément (secondes)", ccStart: "Commencer", ccTap: "Touchez pour commencer", ccPaused: "En pause", ccFlag: "Temps écoulé !", ccMoves: "Coups", ccResetQ: "Redémarrer la pendule ?", ccPause: "Pause", ccResume: "Reprendre", ccReset: "Recommencer", ccSettings: "Changer la cadence", ccClose: "Fermer",
       title: "Pas de connexion internet", text: "ChessCaravan a besoin d’internet. Vérifiez votre connexion et réessayez.", retry: "Réessayer",
       playHere: "En attendant le retour d’internet, vous pouvez jouer ici :",
       local: "Deux joueurs, un appareil", localD: "Jouez avec un ami sur le même téléphone ou ordinateur, avec pendule.",
@@ -127,6 +133,7 @@
     },
     tr: {
       online: "İnternet geri geldi!", goSite: "Siteye git",
+      ccTitle: "Satranç saati", ccShort: "Saat", ccDesc: "Gerçek tahta için: telefonu aranıza koyun, herkes kendi tarafına dokunur.", ccTapHint: "Hamleni yap, sonra kendi tarafına dokun — rakibin saati işlemeye başlar.", ccPick: "Süreyi seçin", ccMin: "Dakika", ccInc: "Artış (saniye)", ccStart: "Başlat", ccTap: "Başlamak için dokunun", ccPaused: "Duraklatıldı", ccFlag: "Süre doldu!", ccMoves: "Hamleler", ccResetQ: "Saat yeniden başlatılsın mı?", ccPause: "Duraklat", ccResume: "Devam et", ccReset: "Yeniden", ccSettings: "Süreyi değiştir", ccClose: "Kapat",
       title: "İnternet bağlantısı yok", text: "ChessCaravan için internet gerekir. Bağlantını kontrol edip tekrar dene.", retry: "Tekrar dene",
       playHere: "İnternet gelene kadar burada oynayabilirsin:",
       local: "İki kişi, tek cihaz", localD: "Arkadaşınla aynı telefonda veya bilgisayarda — saatli.",
@@ -147,6 +154,7 @@
     },
     kk: {
       online: "Интернет қайтты!", goSite: "Сайтқа өту",
+      ccTitle: "Шахмат сағаты", ccShort: "Сағат", ccDesc: "Нағыз тақта үшін: телефонды ортаға қойыңыз, әркім өз жағын басады.", ccTapHint: "Жүрісті жасап, өз жағыңызды басыңыз — қарсыластың сағаты жүреді.", ccPick: "Уақытты таңдаңыз", ccMin: "Минут", ccInc: "Қосымша (секунд)", ccStart: "Бастау", ccTap: "Бастау үшін басыңыз", ccPaused: "Үзіліс", ccFlag: "Уақыт бітті!", ccMoves: "Жүрістер", ccResetQ: "Сағатты қайта бастайсыз ба?", ccPause: "Үзіліс", ccResume: "Жалғастыру", ccReset: "Қайтадан", ccSettings: "Уақытты өзгерту", ccClose: "Жабу",
       title: "Интернет байланысы жоқ", text: "ChessCaravan жұмыс істеуі үшін интернет керек. Байланысты тексеріп, қайта көріңіз.", retry: "Қайталау",
       playHere: "Интернет қайтқанша осында ойнай аласыз:",
       local: "Бір құрылғыда екі адам", localD: "Досыңызбен бір телефонда немесе компьютерде — сағатпен.",
@@ -167,6 +175,7 @@
     },
     tg: {
       online: "Интернет баргашт!", goSite: "Ба сайт гузаштан",
+      ccTitle: "Соати шоҳмот", ccShort: "Соат", ccDesc: "Барои тахтаи воқеӣ: телефонро дар мобайн гузоред, ҳар кас тарафи худро пахш мекунад.", ccTapHint: "Ҳаракат кунед ва тарафи худро пахш кунед — соати рақиб равон мешавад.", ccPick: "Вақтро интихоб кунед", ccMin: "Дақиқа", ccInc: "Иловагӣ (сония)", ccStart: "Оғоз", ccTap: "Барои оғоз пахш кунед", ccPaused: "Таваққуф", ccFlag: "Вақт тамом шуд!", ccMoves: "Ҳаракатҳо", ccResetQ: "Соатро аз нав оғоз мекунед?", ccPause: "Таваққуф", ccResume: "Идома додан", ccReset: "Аз нав", ccSettings: "Тағйири вақт", ccClose: "Пӯшидан",
       title: "Пайвасти интернет нест", text: "Барои кори ChessCaravan интернет лозим аст. Пайвастро санҷида, аз нав кӯшиш кунед.", retry: "Аз нав кӯшиш",
       playHere: "То баргаштани интернет дар ин ҷо бозӣ карда метавонед:",
       local: "Ду кас дар як дастгоҳ", localD: "Бо дӯстатон дар як телефон ё компютер — бо соат.",
@@ -187,6 +196,7 @@
     },
     ky: {
       online: "Интернет кайтты!", goSite: "Сайтка өтүү",
+      ccTitle: "Шахмат сааты", ccShort: "Саат", ccDesc: "Чыныгы такта үчүн: телефонду ортого коюңуз, ар ким өз тарабын басат.", ccTapHint: "Жүрүшүңүздү жасап, өз тарабыңызды басыңыз — атаандаштын сааты жүрөт.", ccPick: "Убакытты тандаңыз", ccMin: "Мүнөт", ccInc: "Кошумча (секунд)", ccStart: "Баштоо", ccTap: "Баштоо үчүн басыңыз", ccPaused: "Тыныгуу", ccFlag: "Убакыт бүттү!", ccMoves: "Жүрүштөр", ccResetQ: "Саатты кайра баштайсызбы?", ccPause: "Тыныгуу", ccResume: "Улантуу", ccReset: "Кайрадан", ccSettings: "Убакытты өзгөртүү", ccClose: "Жабуу",
       title: "Интернет байланышы жок", text: "ChessCaravan иштеши үчүн интернет керек. Байланышты текшерип, кайра аракет кылыңыз.", retry: "Кайра аракет",
       playHere: "Интернет кайтканча бул жерде ойной аласыз:",
       local: "Бир түзмөктө эки киши", localD: "Досуңуз менен бир телефондо же компьютерде — саат менен.",
@@ -207,6 +217,7 @@
     },
     tk: {
       online: "Internet gaýdyp geldi!", goSite: "Saýta geç",
+      ccTitle: "Küşt sagady", ccShort: "Sagat", ccDesc: "Hakyky tagta üçin: telefony ortada goýuň, her kim öz tarapyna basýar.", ccTapHint: "Ýörişiňizi edip, öz tarapyňyza basyň — garşydaşyň sagady ýöreýär.", ccPick: "Wagty saýlaň", ccMin: "Minut", ccInc: "Goşmaça (sekunt)", ccStart: "Başla", ccTap: "Başlamak üçin basyň", ccPaused: "Arakesme", ccFlag: "Wagt gutardy!", ccMoves: "Ýörişler", ccResetQ: "Sagady täzeden başlatmalymy?", ccPause: "Arakesme", ccResume: "Dowam etdir", ccReset: "Täzeden", ccSettings: "Wagty üýtgetmek", ccClose: "Ýapmak",
       title: "Internet baglanyşygy ýok", text: "ChessCaravan işlemegi üçin internet gerek. Baglanyşygy barlap, täzeden synanyşyň.", retry: "Täzeden synanyş",
       playHere: "Internet gelýänçä şu ýerde oýnap bilersiňiz:",
       local: "Bir enjamda iki adam", localD: "Dostuňyz bilen bir telefonda ýa-da kompýuterde — sagat bilen.",
@@ -227,6 +238,7 @@
     },
     az: {
       online: "İnternet qayıtdı!", goSite: "Sayta keç",
+      ccTitle: "Şahmat saatı", ccShort: "Saat", ccDesc: "Əsl taxta üçün: telefonu ortaya qoy, hər kəs öz tərəfinə toxunur.", ccTapHint: "Gedişini et, sonra öz tərəfinə toxun — rəqibin saatı işləməyə başlayır.", ccPick: "Vaxtı seç", ccMin: "Dəqiqə", ccInc: "Əlavə (saniyə)", ccStart: "Başla", ccTap: "Başlamaq üçün toxun", ccPaused: "Fasilə", ccFlag: "Vaxt bitdi!", ccMoves: "Gedişlər", ccResetQ: "Saat yenidən başladılsın?", ccPause: "Fasilə", ccResume: "Davam et", ccReset: "Yenidən", ccSettings: "Vaxtı dəyiş", ccClose: "Bağla",
       title: "İnternet bağlantısı yoxdur", text: "ChessCaravan üçün internet lazımdır. Bağlantını yoxla və yenidən cəhd et.", retry: "Yenidən cəhd et",
       playHere: "İnternet qayıdana qədər burada oynaya bilərsən:",
       local: "İki nəfər, bir cihaz", localD: "Dostunla bir telefonda və ya kompüterdə — saatla.",
@@ -247,6 +259,7 @@
     },
     zh: {
       online: "网络已恢复！", goSite: "前往网站",
+      ccTitle: "棋钟", ccShort: "棋钟", ccDesc: "用于实体棋盘：把手机放在两人中间，各自点击自己的一侧。", ccTapHint: "走完一步后点击自己的一侧——对手的时钟开始计时。", ccPick: "选择时间", ccMin: "分钟", ccInc: "加秒（秒）", ccStart: "开始", ccTap: "点击开始", ccPaused: "已暂停", ccFlag: "时间到！", ccMoves: "步数", ccResetQ: "要重新开始计时吗？", ccPause: "暂停", ccResume: "继续", ccReset: "重新开始", ccSettings: "更改时间", ccClose: "关闭",
       title: "没有网络连接", text: "ChessCaravan 需要网络。请检查网络连接后重试。", retry: "重试",
       playHere: "网络恢复之前，你可以在这里玩：",
       local: "一台设备，两人对弈", localD: "和朋友在同一部手机或电脑上下棋——带棋钟。",
@@ -267,6 +280,7 @@
     },
     it: {
       online: "Internet è tornato!", goSite: "Vai al sito",
+      ccTitle: "Orologio da scacchi", ccShort: "Orologio", ccDesc: "Per una scacchiera vera: metti il telefono tra voi, ognuno tocca il proprio lato.", ccTapHint: "Fai la tua mossa, poi tocca il tuo lato: parte l'orologio dell'avversario.", ccPick: "Scegli il tempo", ccMin: "Minuti", ccInc: "Incremento (secondi)", ccStart: "Inizia", ccTap: "Tocca per iniziare", ccPaused: "In pausa", ccFlag: "Tempo scaduto!", ccMoves: "Mosse", ccResetQ: "Riavviare l'orologio?", ccPause: "Pausa", ccResume: "Riprendi", ccReset: "Ricomincia", ccSettings: "Cambia il tempo", ccClose: "Chiudi",
       title: "Nessuna connessione a internet", text: "ChessCaravan ha bisogno di internet. Controlla la connessione e riprova.", retry: "Riprova",
       playHere: "Finché internet non torna, puoi giocare qui:",
       local: "Due giocatori, un dispositivo", localD: "Gioca con un amico sullo stesso telefono o computer, con l’orologio.",

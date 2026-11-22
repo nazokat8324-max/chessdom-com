@@ -15214,7 +15214,6 @@ button .ic-emoji, a[class*="btn"] .ic-emoji, [class*="-btn"] .ic-emoji, .set-min
 .ic-emoji.ic-fire { color: #ff8a3d; } .ic-emoji.ic-ok { color: #51cf66; } .ic-emoji.ic-bad { color: #ff6b6b; }
 
 /* ===== 🌌 Harakatli fon (bgfx.js): .main-wrapper ustida, kontent ostida ===== */
-html.bg-motion .main-wrapper { isolation: isolate; }
 /* Harakatlanuvchi narsalar (tuyalar, laganlar, to'r, bulutlar, turnalar, sayyoralar) qatlamda — fon ularsiz asosga almashadi */
 html.bg-motion[data-bg="karvon"] { --bg-img: url(img/backgrounds/karvon-base.svg); }
 html.bg-motion[data-bg="rishton"] { --bg-img: url(img/backgrounds/rishton-base.svg); }
@@ -15223,9 +15222,17 @@ html.bg-motion[data-bg="cute"] { --bg-img: url(img/backgrounds/cute-base.svg); }
 html.bg-motion[data-bg="pixel"] { --bg-img: url(img/backgrounds/pixel-base.svg); }
 html.bg-motion[data-bg="origami"] { --bg-img: url(img/backgrounds/origami-base.svg); }
 html.bg-motion[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos-base.svg); }
-#bgFx { position: fixed; z-index: -1; pointer-events: none; overflow: hidden; opacity: 0.62; }
+#bgFx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; opacity: 0.62; }
 #bgFx svg { width: 100%; height: 100%; display: block; }
 /* O'yin paytida harakat to'xtaydi — protsessor taxtaga kerak */
 body:has(#gameView.active-view.pg-mode-in) #bgFx *, body:has(#teamView.active-view.tm-playing) #bgFx *, body:has(#footView.active-view.fc-playing) #bgFx * { animation-play-state: paused !important; }
 @media (prefers-reduced-motion: reduce) { #bgFx { display: none; } }
 .set-bundle-motion { margin-top: 12px; }
+
+/* ===== 🎞 Fon sahnasi #fxStage (2026-11-23, bgfx.js window.fxStage): .main-wrapper foni + harakatli qatlam (#bgFx) bitta fixed qatlamda
+   (body ichida, z-index −1, .main-wrapper o'lchamida). Avval qatlam .main-wrapper ichida edi va unga isolation berilardi — telefonda
+   sarlavhadagi ⚙️/🔔 (.nf-wrap, fixed z 900) wrapper ichida qamalib, sarlavha ostida qolib bosilmasdi. .main-wrapper ga isolation ISHLATMANG. */
+html.fx-stage .main-wrapper { background: transparent !important; }
+#fxStage { position: fixed; z-index: -1; pointer-events: none; overflow: hidden;
+  background: radial-gradient(circle at 12% 0%, rgba(var(--accent-rgb), 0.07), transparent 38%), radial-gradient(circle at 100% 100%, rgba(226, 165, 42, 0.04), transparent 35%), var(--cd-bg); }
+html[data-bg] #fxStage { background: linear-gradient(var(--bg-veil), var(--bg-veil)), var(--bg-img) center / cover no-repeat, var(--cd-bg); }

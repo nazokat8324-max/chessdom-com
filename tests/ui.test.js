@@ -1764,7 +1764,7 @@ test("To'plamlar: Sozlamalarda tanlash donalar, taxta, rang va fonni birga qo'ya
   await p.waitForFunction(() => { const h = document.documentElement.dataset; return h.bg === 'kosmos' && h.theme === 'lapis' && h.board === 'night' && document.querySelector('[data-bundle="kosmos"].active'); }, { timeout: 5000 });
   // Fon rasmi haqiqatan yuklanadi va asosiy maydonga qo'yiladi
   // Fon harakati standart yoqiq — asos rasm (kosmos-base.svg) + harakatli qatlam; o'chiq bo'lsa kosmos.svg
-  assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage), /backgrounds\/kosmos(-base)?\.svg/);
+  assert.match(await p.evaluate(() => getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage), /backgrounds\/kosmos(-base)?\.svg/);
   assert.equal((await srv.api(null, '/img/backgrounds/kosmos.svg')).raw.slice(0, 4), '<svg');
   await p.evaluate(() => document.querySelector('[data-save]').click());
   // Qayta yuklash — fon sahifa chizilishidan oldin qo'llanadi, donalar to'plami ham saqlangan
@@ -1832,7 +1832,7 @@ test("Kosmos harakatli foni: qatlam joyida va fon bilan ustma-ust; Sozlamalarda 
   const st = await p.evaluate(() => {
     const fx = document.getElementById('bgFx').getBoundingClientRect(), w = document.querySelector('.main-wrapper').getBoundingClientRect();
     return { motion: document.documentElement.classList.contains('bg-motion'), off: [fx.left - w.left, fx.top - w.top, fx.width - w.width, fx.height - w.height].map(Math.round),
-      bg: getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage, anim: getComputedStyle(document.querySelector('#bgFx .o')).animationName };
+      bg: getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage, anim: getComputedStyle(document.querySelector('#bgFx .o')).animationName };
   });
   assert.equal(st.motion, true);
   assert.deepEqual(st.off, [0, 0, 0, 0], 'qatlam fon bilan aynan ustma-ust');
@@ -1844,7 +1844,7 @@ test("Kosmos harakatli foni: qatlam joyida va fon bilan ustma-ust; Sozlamalarda 
   await p.evaluate(() => document.querySelector('[data-section="bundles"]').click());
   await p.waitForSelector('[data-bool="bgMotion"]', { timeout: 5000 });
   await p.evaluate(() => document.querySelector('[data-bool="bgMotion"]').click());
-  await p.waitForFunction(() => !document.documentElement.classList.contains('bg-motion') && /kosmos\.svg/.test(getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage) && document.getElementById('bgFx').hidden, { timeout: 5000 });
+  await p.waitForFunction(() => !document.documentElement.classList.contains('bg-motion') && /kosmos\.svg/.test(getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage) && document.getElementById('bgFx').hidden, { timeout: 5000 });
   await p.evaluate(() => document.querySelector('[data-save]').click());
   assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings')).bgMotion), false);
   // Qurilmada «harakatni kamaytirish» — qatlam yo'q
@@ -1858,6 +1858,55 @@ test("Kosmos harakatli foni: qatlam joyida va fon bilan ustma-ust; Sozlamalarda 
   assert.deepEqual([...p.errors, ...q.errors], []);
 });
 
+test("Shaxmat soati: O'yin sahifasidagi «Soat» — klaviatura, pauza, qaytadan, yopish", opts, async () => {
+  const u = await srv.register('Crown');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => { if (!localStorage.getItem('ccSet')) { localStorage.setItem('ccSet', '1'); localStorage.setItem('justChessSettings', JSON.stringify({ siteTheme: 'ruby' })); } });
+  await p.goto(srv.base + '/oyin', { waitUntil: 'load' });
+  // ⏱ Soat
+  await p.waitForSelector('#btnChessClock', { visible: true, timeout: 10000 });
+  await p.evaluate(() => document.getElementById('btnChessClock').click());
+  await p.waitForSelector('#ccOverlay .cc-pre', { timeout: 5000 });
+  assert.match(await p.$eval('#ccOverlay h2', (e) => e.textContent), /Shaxmat soati/);
+  await p.evaluate(() => document.querySelector('.cc-pre[data-m="3"][data-i="2"]').click());
+  await p.evaluate(() => document.querySelector('[data-cc="go"]').click());
+  await p.waitForSelector('.cc-side.wait', { timeout: 3000 });
+  const sides = () => p.evaluate(() => [...document.querySelectorAll('.cc-side')].map((b) => (b.classList.contains('on') ? 'on' : '') + '|' + b.querySelector('.cc-time').textContent + '|' + b.querySelector('.cc-sub').textContent));
+  assert.deepEqual(await sides(), ['|3:00|Boshlash uchun bosing', '|3:00|Boshlash uchun bosing']);
+  await p.keyboard.press('Space'); // boshlash: yuqori tomon bosgandek — pastkining soati yuradi
+  assert.match((await sides())[1], /^on\|/);
+  await sleep(300);
+  await p.keyboard.press('Space'); // pastki yurdi: +2 s, yuqorining soati
+  const s2 = await sides();
+  assert.match(s2[0], /^on\|/);
+  assert.match(s2[1], /^\|3:0[12]\|Yurishlar: 1$/, "qo'shimcha soniya qo'shildi");
+  await p.evaluate(() => document.querySelector('[data-cc="pause"]').click());
+  assert.match((await sides())[0], /Pauza$/);
+  await p.evaluate(() => document.querySelector('[data-cc="reset"]').click()); // confirm — qabul
+  assert.deepEqual(await sides(), ['|3:00|Boshlash uchun bosing', '|3:00|Boshlash uchun bosing']);
+  assert.equal(JSON.parse(await p.evaluate(() => localStorage.getItem('justChessClock'))).inc, 2, 'tanlangan vaqt eslab qolinadi');
+  await p.keyboard.press('Escape');
+  assert.equal(await p.$('#ccOverlay'), null, 'Escape — yopiladi');
+  assert.deepEqual(p.errors, []);
+});
+
+test("Telefon: harakatli fon yoqiq bo'lsa ham sarlavhadagi ⚙️ va 🔔 bosiladi (fon sahnasi #fxStage — .main-wrapper ga isolation yo'q)", opts, async () => {
+  const u = await srv.register('FxPhone');
+  const m = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  await m.evaluateOnNewDocument(() => { if (!localStorage.getItem('fxPh')) { localStorage.setItem('fxPh', '1'); localStorage.setItem('justChessSettings', JSON.stringify({ background: 'kosmos', bgMotion: true })); } });
+  await m.goto(srv.base + '/', { waitUntil: 'load' });
+  await m.waitForFunction(() => document.documentElement.classList.contains('fx-stage') && !!document.querySelector('#fxStage #bgFx .o'), { timeout: 15000 });
+  const st = await m.evaluate(() => {
+    const hit = (id) => { const b = document.getElementById(id), r = b.getBoundingClientRect(); return b.contains(document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2)); };
+    const w = document.querySelector('.main-wrapper');
+    return { gear: hit('topSettingsBtn'), bell: hit('notifBell'), iso: getComputedStyle(w).isolation, wrapBg: getComputedStyle(w).backgroundImage, stageBg: /kosmos-base.svg/.test(getComputedStyle(document.getElementById('fxStage')).backgroundImage) };
+  });
+  assert.deepEqual(st, { gear: true, bell: true, iso: 'auto', wrapBg: 'none', stageBg: true });
+  await m.tap('#topSettingsBtn');
+  await m.waitForFunction(() => location.pathname === '/sozlamalar', { timeout: 5000 });
+  assert.deepEqual(m.errors, []);
+});
+
 test("Boshqa to'plamlar ham jonli: Karvon — tuyalar qatlamda yuradi, fon tuyasiz asos; to'plam almashsa qatlam ham almashadi; sahifa klasslariga tegmaydi", opts, async () => {
   const u = await srv.register('BgFx2');
   const p = await page(u);
@@ -1865,7 +1914,7 @@ test("Boshqa to'plamlar ham jonli: Karvon — tuyalar qatlamda yuradi, fon tuyas
   await p.goto(srv.base + '/reyting', { waitUntil: 'load' });
   await p.waitForFunction(() => !!document.querySelector('#bgFx .cv'), { timeout: 15000 });
   const st = await p.evaluate(() => ({
-    bg: getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage,
+    bg: getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage,
     anim: getComputedStyle(document.querySelector('#bgFx .cv')).animationName,
     camels: document.querySelectorAll('#bgFx .cv .bob').length,
     // Qatlam uslubi faqat #bgFx ichida: sahifadagi shu nomli klassga ta'sir qilmaydi
@@ -1877,10 +1926,10 @@ test("Boshqa to'plamlar ham jonli: Karvon — tuyalar qatlamda yuradi, fon tuyas
   assert.equal(st.leak, 'none');
   // Boshqa to'plam (Origami) — turnalar qatlami, asos turnasiz
   await p.evaluate(() => window.applyBackground('origami'));
-  await p.waitForFunction(() => !!document.querySelector('#bgFx .fly') && !document.querySelector('#bgFx .cv') && /origami-base\.svg/.test(getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
+  await p.waitForFunction(() => !!document.querySelector('#bgFx .fly') && !document.querySelector('#bgFx .cv') && /origami-base\.svg/.test(getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
   // Asos kerak bo'lmagan to'plam (Samarqand) — fon o'sha rasm, ustida jilo qatlami
   await p.evaluate(() => window.applyBackground('samarqand'));
-  await p.waitForFunction(() => !!document.querySelector('#bgFx .moon') && /samarqand\.svg/.test(getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
+  await p.waitForFunction(() => !!document.querySelector('#bgFx .moon') && /samarqand\.svg/.test(getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
   assert.deepEqual(p.errors, []);
 });
 
@@ -2640,7 +2689,7 @@ test("Videodarslar: Kutubxonada kanal videolari — muqova server orqali, bosilg
   } finally { await own.stop(); await yt.stop(); }
 });
 
-test("Internetsiz: server o'chganda offline sahifa ochiladi va 5 ta o'yinning hammasi oxirigacha o'ynaladi", opts, async () => {
+test("Internetsiz: server o'chganda offline sahifa ochiladi, 5 ta o'yinning hammasi oxirigacha o'ynaladi va shaxmat soati ishlaydi", opts, async () => {
   // Alohida server — uni o'chirib, haqiqiy "tarmoq yo'q" holatini yaratamiz (puppeteer offline rejimi service worker'ga ta'sir qilmaydi)
   const own = await startServer();
   const p = await page(null, { width: 390, height: 844, isMobile: true, hasTouch: true });
@@ -2651,7 +2700,7 @@ test("Internetsiz: server o'chganda offline sahifa ochiladi va 5 ta o'yinning ha
   await own.stop();
   await p.goto(own.base + '/oyin', { waitUntil: 'load' });
   assert.equal(await p.$eval('h1', (e) => e.textContent), "Internet aloqasi yo'q");
-  assert.equal(await p.$$eval('.og-card', (x) => x.length), 5);
+  assert.equal(await p.$$eval('.og-card', (x) => x.length), 6);
   const msg = () => p.$eval('#ogMsg', (e) => e.textContent);
   const tap = (sq) => p.click('[data-sq="' + sq + '"]');
   const open = async (g) => { await p.click('[data-game="' + g + '"]'); await sleep(150); };
@@ -2713,6 +2762,18 @@ test("Internetsiz: server o'chganda offline sahifa ochiladi va 5 ta o'yinning ha
   await back();
   // Rekordlar bosh menyuda ko'rinadi
   assert.match(await p.$eval('[data-best="tour"]', (e) => e.textContent), /64/);
+  // ⏱ Shaxmat soati (internetsiz ham — chessclock.js keshda)
+  await p.click('#ogClockCard');
+  await p.waitForSelector('#ccOverlay .cc-pre', { timeout: 5000 });
+  await p.evaluate(() => document.querySelector('.cc-pre[data-m="1"][data-i="0"]').click());
+  await p.evaluate(() => document.querySelector('[data-cc="go"]').click());
+  await p.tap('.cc-side.top');
+  await sleep(300);
+  await p.tap('.cc-side.bottom');
+  const cs = await p.evaluate(() => [...document.querySelectorAll('.cc-side')].map((b) => [b.className.includes(' on'), b.querySelector('.cc-sub').textContent]));
+  assert.deepEqual(cs, [[true, 'Yurishlar: 0'], [false, 'Yurishlar: 1']], 'pastki bosdi — yuqorining soati yuradi');
+  await p.evaluate(() => document.querySelector('#ccOverlay [data-cc="close"]').click());
+  assert.equal(await p.$('#ccOverlay'), null);
   assert.deepEqual(p.errors, []);
 });
 

@@ -18,45 +18,96 @@ function stars(r, n, color = '#fff', maxR = 1.8, yMax = H) {
   return s;
 }
 
-// 🚀 Kosmos — Quyosh tizimi: Quyosh va 8 ta sayyora orbitalarda
-function kosmos() {
+// 🚀 Kosmos — Quyosh tizimi (2026-11-22, «jonliroq»): Somon yo'li, rangli tumanliklar, Quyosh toji, 8 sayyora tafsilotlari bilan.
+// Uch fayl: kosmos.svg — to'liq harakatsiz rasm (harakat o'chiq bo'lsa); kosmos-base.svg — sayyorasiz asos (harakat yoqilganda fon);
+// kosmos-fx.svg — harakatli qatlam (bgfx.js sahifaga joylaydi): sayyoralar orbitada sekin tebranadi, yulduzlar miltillaydi, uchar yulduzlar.
+const KS = { sx: 40, sy: 1020 }; // Quyosh markazi (pastki chap burchak); orbitalar shu nuqta atrofida
+const PLANETS = [
+  // [nom, orbita radiusi, burchak (gradus), radius, [yorug', to'q]]
+  ['mercury', 300, -38, 13, ['#d6cfc7', '#7d756d']],
+  ['venus', 440, -34, 22, ['#fbe3b0', '#c79a52']],
+  ['earth', 590, -36, 25, ['#7cc0ff', '#1f5fc0']],
+  ['mars', 730, -33, 18, ['#ffa071', '#a83a18']],
+  ['jupiter', 930, -35, 62, ['#f3d9b5', '#a8734a']],
+  ['saturn', 1150, -36, 48, ['#f8e6b4', '#bf9550']],
+  ['uranus', 1350, -37, 32, ['#c2f7f8', '#45b2bb']],
+  ['neptune', 1540, -38, 31, ['#8ea4ff', '#2b40c4']]
+];
+const planetPos = (p) => { const a = p[2] * Math.PI / 180; return [KS.sx + p[1] * Math.cos(a), KS.sy + p[1] * Math.sin(a)]; };
+function kosmosDefs() {
+  let d = lin('ksky', [[0, '#050716'], [0.5, '#0a0f2c'], [1, '#120a26']], 1, 1)
+    + rad('ksun', [[0, '#fffbe6'], [0.3, '#ffe27a'], [0.65, '#ffa630'], [1, '#ff7a1a', 0]])
+    + rad('kglow', [[0, '#ffb547', 0.55], [0.5, '#ff8a2a', 0.18], [1, '#ff8a2a', 0]])
+    + rad('kneb1', [[0, '#a33bd6', 0.42], [0.6, '#5b2aa8', 0.16], [1, '#5b2aa8', 0]])
+    + rad('kneb2', [[0, '#1fb6c9', 0.34], [1, '#1f7a9e', 0]])
+    + rad('kneb3', [[0, '#ff4f8b', 0.28], [1, '#ff4f8b', 0]])
+    + rad('kmilk', [[0, '#e9e4ff', 0.26], [0.45, '#9fa8ff', 0.1], [1, '#9fa8ff', 0]])
+    // Sayyora soyasi: yorug'lik pastki chapdagi Quyoshdan — yuqori o'ng tomon qorong'i
+    + '<linearGradient id="kshade" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="0.55" stop-color="#000" stop-opacity="0.05"/><stop offset="1" stop-color="#000" stop-opacity="0.62"/></linearGradient>';
+  PLANETS.forEach((p, i) => { d += rad('p' + i, [[0, p[4][0]], [1, p[4][1]]], 0.32, 0.68, 0.8); const [x, y] = planetPos(p); d += `<clipPath id="pc${i}"><circle cx="${f(x)}" cy="${f(y)}" r="${p[3]}"/></clipPath>`; });
+  return d;
+}
+function kosmosSky() {
   const r = rng(15);
-  // Quyosh pastki chap burchakda; sayyoralar butun ekran bo'ylab diagonal yoyda (sayt kartalari orasida ham ko'rinsin)
-  const planets = [
-    // [nom, orbita radiusi, burchak (gradus, yuqoriga manfiy), radius, rang(lar)]
-    ['mercury', 300, -38, 13, ['#c9c2ba', '#7d756d']],
-    ['venus', 440, -34, 22, ['#f6dba5', '#c79a52']],
-    ['earth', 590, -36, 25, ['#6db6ff', '#2a6fd1']],
-    ['mars', 730, -33, 18, ['#ff9468', '#b8431f']],
-    ['jupiter', 930, -35, 62, ['#efd3ad', '#b07b4f']],
-    ['saturn', 1150, -36, 48, ['#f6e1ab', '#c39a55']],
-    ['uranus', 1350, -37, 32, ['#b4f4f6', '#4cbcc4']],
-    ['neptune', 1540, -38, 31, ['#8099ff', '#3047c9']]
-  ];
-  const sx = 40, sy = 1020;
-  let defs = rad('sun', [[0, '#fff7d1'], [0.35, '#ffd15c'], [0.7, '#ff9a2e'], [1, '#ff7a1a', 0]], 0.5, 0.5, 0.5)
-    + rad('glow', [[0, '#ffb547', 0.45], [1, '#ffb547', 0]])
-    + rad('neb', [[0, '#5b3fa8', 0.35], [1, '#5b3fa8', 0]])
-    + rad('neb2', [[0, '#1f7a9e', 0.28], [1, '#1f7a9e', 0]])
-    + lin('sky', [[0, '#070a1c'], [1, '#0b1030']], 1, 1);
-  let body = `<rect width="${W}" height="${H}" fill="url(#sky)"/>`
-    + `<ellipse cx="1250" cy="230" rx="420" ry="260" fill="url(#neb)"/><ellipse cx="900" cy="860" rx="380" ry="200" fill="url(#neb2)"/>`
-    + stars(r, 420, '#ffffff', 1.4) + stars(r, 40, '#cfe3ff', 2.4);
-  // Orbitalar
-  for (const p of planets) body += `<ellipse cx="${sx}" cy="${sy}" rx="${p[1]}" ry="${p[1]}" fill="none" stroke="#9fb4ff" stroke-opacity="0.16" stroke-width="1.6"/>`;
-  // Quyosh
-  body += `<circle cx="${sx}" cy="${sy}" r="520" fill="url(#glow)"/><circle cx="${sx}" cy="${sy}" r="200" fill="url(#sun)"/>`;
-  planets.forEach((p, i) => {
-    const a = p[2] * Math.PI / 180;
-    const x = sx + p[1] * Math.cos(a), y = sy + p[1] * Math.sin(a);
-    defs += rad('p' + i, [[0, p[4][0]], [1, p[4][1]]], 0.35, 0.35, 0.75);
-    if (p[0] === 'saturn') body += `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(p[3] * 2.1)}" ry="${f(p[3] * 0.55)}" fill="none" stroke="#e7cf93" stroke-opacity="0.8" stroke-width="7" transform="rotate(-14 ${f(x)} ${f(y)})"/>`;
-    body += `<circle cx="${f(x)}" cy="${f(y)}" r="${p[3]}" fill="url(#p${i})"/>`;
-    if (p[0] === 'jupiter') for (let b = -2; b <= 2; b++) body += `<path d="M${f(x - p[3] * 0.95)} ${f(y + b * p[3] * 0.32)} q${f(p[3] * 0.95)} ${f(p[3] * 0.08)} ${f(p[3] * 1.9)} 0" stroke="#8a5a33" stroke-opacity="0.45" stroke-width="${f(p[3] * 0.12)}" fill="none"/>`;
-    if (p[0] === 'earth') body += `<path d="M${f(x - 7)} ${f(y - 6)} q6 -6 11 1 q-3 6 -11 -1z M${f(x + 2)} ${f(y + 5)} q5 0 7 4 q-6 2 -7 -4z" fill="#4caf50" opacity="0.85"/>`;
-    if (p[0] === 'saturn') body += `<path d="M${f(x - p[3] * 2.1)} ${f(y)} a${f(p[3] * 2.1)} ${f(p[3] * 0.55)} 0 0 0 ${f(p[3] * 4.2)} 0" fill="none" stroke="#e7cf93" stroke-opacity="0.9" stroke-width="7" transform="rotate(-14 ${f(x)} ${f(y)})"/>`;
-  });
-  return svg(defs, body);
+  let b = `<rect width="${W}" height="${H}" fill="url(#ksky)"/>`;
+  // Somon yo'li — diagonal yorug' tasma va uning ichida zich mayda yulduzlar
+  b += `<g transform="rotate(-24 800 500)"><ellipse cx="820" cy="430" rx="1100" ry="150" fill="url(#kmilk)"/><ellipse cx="900" cy="440" rx="700" ry="80" fill="url(#kmilk)"/>`;
+  for (let i = 0; i < 400; i++) { const x = -300 + r() * 2200, g = (r() + r() + r() - 1.5) * 120; b += `<circle cx="${f(x)}" cy="${f(430 + g)}" r="${f(0.3 + r() * 0.9)}" fill="#fff" opacity="${f(0.15 + r() * 0.55)}"/>`; }
+  b += '</g>';
+  // Tumanliklar
+  b += `<ellipse cx="1260" cy="210" rx="430" ry="250" fill="url(#kneb1)"/><ellipse cx="1430" cy="330" rx="260" ry="180" fill="url(#kneb3)"/><ellipse cx="880" cy="860" rx="420" ry="210" fill="url(#kneb2)"/><ellipse cx="300" cy="140" rx="300" ry="160" fill="url(#kneb2)" opacity="0.6"/>`;
+  b += stars(r, 260, '#ffffff', 1.3) + stars(r, 26, '#ffe9c4', 2.2) + stars(r, 20, '#c9dcff', 2.4);
+  return b;
+}
+function kosmosSun() {
+  const { sx, sy } = KS;
+  let b = `<circle cx="${sx}" cy="${sy}" r="560" fill="url(#kglow)"/>`;
+  for (let i = 0; i < 18; i++) { const a = (-90 + i * 5) * Math.PI / 180; b += `<path d="M${f(sx + Math.cos(a) * 215)} ${f(sy + Math.sin(a) * 215)} L${f(sx + Math.cos(a) * (300 + (i % 3) * 40))} ${f(sy + Math.sin(a) * (300 + (i % 3) * 40))}" stroke="#ffd27a" stroke-opacity="0.16" stroke-width="${4 + (i % 2) * 3}" stroke-linecap="round"/>`; }
+  return b + `<circle cx="${sx}" cy="${sy}" r="210" fill="url(#ksun)"/>`;
+}
+function kosmosOrbits() { return PLANETS.map((p) => `<circle cx="${KS.sx}" cy="${KS.sy}" r="${p[1]}" fill="none" stroke="#a9bbff" stroke-opacity="0.15" stroke-width="1.6" stroke-dasharray="2 7"/>`).join(''); }
+// Bitta sayyora (tafsilotlari bilan); Saturn halqasining orqa qismi sayyoradan oldin, oldingi qismi keyin chiziladi
+function planetSvg(p, i) {
+  const [x0, y0] = planetPos(p), x = f(x0), y = f(y0), R = p[3], name = p[0];
+  let b = '';
+  const ring = (half) => `<path d="M${f(x0 - R * 2.15)} ${y} a${f(R * 2.15)} ${f(R * 0.55)} 0 0 ${half} ${f(R * 4.3)} 0" fill="none" stroke="#ecd59a" stroke-opacity="0.85" stroke-width="7" transform="rotate(-16 ${x} ${y})"/><path d="M${f(x0 - R * 1.75)} ${y} a${f(R * 1.75)} ${f(R * 0.43)} 0 0 ${half} ${f(R * 3.5)} 0" fill="none" stroke="#c8a96a" stroke-opacity="0.75" stroke-width="5" transform="rotate(-16 ${x} ${y})"/>`;
+  if (name === 'saturn') b += ring(1);
+  if (name === 'uranus') b += `<ellipse cx="${x}" cy="${y}" rx="${f(R * 0.45)}" ry="${f(R * 1.7)}" fill="none" stroke="#bff3f5" stroke-opacity="0.35" stroke-width="2" transform="rotate(20 ${x} ${y})"/>`;
+  b += `<circle cx="${x}" cy="${y}" r="${R}" fill="url(#p${i})"/>`;
+  let det = '';
+  if (name === 'jupiter') {
+    const bands = [['#c7915f', -0.55, 0.12], ['#e9c79a', -0.32, 0.1], ['#b5784a', -0.1, 0.14], ['#f1d8b2', 0.12, 0.09], ['#c08654', 0.32, 0.12], ['#e2bd8f', 0.55, 0.1]];
+    for (const [c, o, w] of bands) det += `<rect x="${f(x0 - R)}" y="${f(y0 + o * R - w * R / 2)}" width="${R * 2}" height="${f(w * R)}" fill="${c}" opacity="0.7"/>`;
+    det += `<ellipse cx="${f(x0 + R * 0.3)}" cy="${f(y0 + R * 0.28)}" rx="${f(R * 0.22)}" ry="${f(R * 0.12)}" fill="#c4553a" opacity="0.85"/>`;
+  }
+  if (name === 'saturn') for (const [c, o] of [['#d9b977', -0.3], ['#e8cf96', 0], ['#cfa865', 0.32]]) det += `<rect x="${f(x0 - R)}" y="${f(y0 + o * R - R * 0.08)}" width="${R * 2}" height="${f(R * 0.16)}" fill="${c}" opacity="0.6"/>`;
+  if (name === 'earth') det += `<path d="M${f(x0 - R * 0.6)} ${f(y0 - R * 0.2)} q${f(R * 0.3)} ${f(-R * 0.5)} ${f(R * 0.7)} ${f(-R * 0.2)} q${f(R * 0.1)} ${f(R * 0.4)} ${f(-R * 0.2)} ${f(R * 0.5)} q${f(-R * 0.3)} ${f(R * 0.1)} ${f(-R * 0.5)} ${f(-R * 0.3)}z M${f(x0 + R * 0.1)} ${f(y0 + R * 0.25)} q${f(R * 0.4)} ${f(-R * 0.1)} ${f(R * 0.55)} ${f(R * 0.3)} q${f(-R * 0.2)} ${f(R * 0.35)} ${f(-R * 0.5)} ${f(R * 0.15)}z" fill="#3fae5a" opacity="0.9"/><path d="M${f(x0 - R * 0.9)} ${f(y0 + R * 0.05)} q${f(R * 0.6)} ${f(-R * 0.25)} ${f(R * 1.2)} 0 M${f(x0 - R * 0.3)} ${f(y0 - R * 0.6)} q${f(R * 0.5)} ${f(-R * 0.15)} ${f(R * 0.9)} ${f(R * 0.1)}" stroke="#fff" stroke-opacity="0.75" stroke-width="${f(R * 0.12)}" fill="none" stroke-linecap="round"/>`;
+  if (name === 'mars') det += `<ellipse cx="${x}" cy="${f(y0 - R * 0.8)}" rx="${f(R * 0.45)}" ry="${f(R * 0.2)}" fill="#fff" opacity="0.8"/><circle cx="${f(x0 - R * 0.3)}" cy="${f(y0 + R * 0.2)}" r="${f(R * 0.2)}" fill="#7a2a10" opacity="0.4"/>`;
+  if (name === 'neptune') det += `<ellipse cx="${f(x0 - R * 0.2)}" cy="${f(y0 + R * 0.15)}" rx="${f(R * 0.25)}" ry="${f(R * 0.14)}" fill="#1b2a8a" opacity="0.7"/><path d="M${f(x0 - R)} ${f(y0 - R * 0.3)} h${R * 2}" stroke="#bcd0ff" stroke-opacity="0.35" stroke-width="2"/>`;
+  if (name === 'venus') det += `<path d="M${f(x0 - R)} ${f(y0 - R * 0.2)} q${R} ${f(-R * 0.3)} ${R * 2} 0 M${f(x0 - R)} ${f(y0 + R * 0.3)} q${R} ${f(-R * 0.25)} ${R * 2} 0" stroke="#fff6dc" stroke-opacity="0.45" stroke-width="${f(R * 0.18)}" fill="none"/>`;
+  b += `<g clip-path="url(#pc${i})">${det}<circle cx="${x}" cy="${y}" r="${R}" fill="url(#kshade)"/></g>`;
+  if (name === 'saturn') b += ring(0);
+  return b;
+}
+function kosmos() { return svg(kosmosDefs(), kosmosSky() + kosmosOrbits() + kosmosSun() + PLANETS.map(planetSvg).join('')); }
+function kosmosBase() { return svg(kosmosDefs(), kosmosSky() + kosmosOrbits() + kosmosSun()); }
+// Harakatli qatlam: shaffof fon; animatsiyalar faqat transform/opacity (yengil); qurilmada «harakatni kamaytirish» — to'xtaydi
+function kosmosFx() {
+  const r = rng(77);
+  const css = `.o{transform-origin:${KS.sx}px ${KS.sy}px;animation:ksw var(--d) ease-in-out infinite alternate}`
+    + '@keyframes ksw{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}'
+    + '.tw{animation:ktw var(--d) ease-in-out infinite alternate}@keyframes ktw{from{opacity:.15}to{opacity:1}}'
+    + '.met{opacity:0;animation:kmet var(--d) linear infinite}@keyframes kmet{0%{opacity:0;transform:translate(0,0)}3%{opacity:1}12%{opacity:0;transform:translate(-620px,380px)}100%{opacity:0;transform:translate(-620px,380px)}}'
+    + `.corona{transform-origin:${KS.sx}px ${KS.sy}px;animation:kco 7s ease-in-out infinite alternate}@keyframes kco{from{opacity:.55;transform:scale(.97)}to{opacity:1;transform:scale(1.04)}}`
+    + '@media (prefers-reduced-motion:reduce){*{animation:none!important}}';
+  let b = `<style>${css}</style><circle class="corona" cx="${KS.sx}" cy="${KS.sy}" r="300" fill="url(#kglow)"/>`;
+  PLANETS.forEach((p, i) => { b += `<g class="o" style="--d:${30 + i * 9}s;animation-delay:-${i * 7}s">${planetSvg(p, i)}</g>`; });
+  for (let i = 0; i < 70; i++) b += `<circle class="tw" style="--d:${f(2.5 + r() * 4)}s;animation-delay:-${f(r() * 6)}s" cx="${f(r() * W)}" cy="${f(r() * H * 0.85)}" r="${f(0.9 + r() * 1.6)}" fill="${r() < 0.8 ? '#fff' : '#ffe2a8'}"/>`;
+  const met = (x, y, d, delay) => `<g class="met" style="--d:${d}s;animation-delay:${delay}s"><path d="M${x} ${y} l140 -86" stroke="url(#kmeteor)" stroke-width="2.6" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="2.6" fill="#fff"/></g>`;
+  b += met(1380, 120, 13, 2) + met(1100, 60, 19, 9) + met(1500, 300, 23, 15);
+  const defs = kosmosDefs() + '<linearGradient id="kmeteor" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fb4ff" stop-opacity="0"/></linearGradient>';
+  // Qatlam sahifaga joylanadi — id lar sahifadagi elementlar bilan to'qnashmasin (avval sayyoralar qora chiqardi)
+  return svg(defs, b).replace(/id="([^"]+)"/g, 'id="kfx-$1"').replace(/url\(#([^)]+)\)/g, 'url(#kfx-$1)');
 }
 
 // 🐪 Karvon — shom paytidagi cho'l: barxanlar va qator tuyalar
@@ -279,13 +330,15 @@ function origami() {
 }
 
 const BACKGROUNDS = { karvon, classic, clear, atlas, rishton, wood, royal, neon, geo, cute, pixel, tanga, samarqand, origami, kosmos };
-module.exports = { BACKGROUNDS };
+// Harakatli fon fayllari (bgfx.js): asos va harakatli qatlam
+const EXTRAS = { 'kosmos-base': kosmosBase, 'kosmos-fx': kosmosFx };
+module.exports = { BACKGROUNDS, EXTRAS };
 
 if (require.main === module) {
   fs.mkdirSync(OUT, { recursive: true });
   const only = process.argv[2];
-  for (const [id, fn] of Object.entries(BACKGROUNDS)) {
-    if (only && only !== id) continue;
+  for (const [id, fn] of Object.entries({ ...BACKGROUNDS, ...EXTRAS })) {
+    if (only && !id.startsWith(only)) continue;
     const s = fn();
     fs.writeFileSync(path.join(OUT, id + '.svg'), s);
     console.log(id + '.svg', Math.round(s.length / 1024) + ' KB');

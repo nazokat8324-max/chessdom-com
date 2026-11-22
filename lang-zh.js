@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_ZH = {
   libViews: "{{n}} 次观看",
 
   libAllVideos: "频道里的全部视频",
+  setBgMotion: "背景动效",
+  setBgMotionHint: "Kosmos 套装中星星闪烁、行星缓缓移动。可关闭以省电；对局进行时会自动暂停。",
   setNavBundles: "主题套装",
   setBundlesHint: "棋子、棋盘、网站颜色和背景图片——一键设置。之后仍可单独更改其中任何一项。",
   setBundleMixed: "混搭：背景——{{name}}",

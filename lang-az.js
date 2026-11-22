@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_AZ = {
   libViews: "Baxış: {{n}}",
 
   libAllVideos: "Bütün videolar kanalda",
+  setBgMotion: "Fon hərəkəti",
+  setBgMotionHint: "Kosmos dəstində ulduzlar sayrışır, planetlər yavaş hərəkət edir. Enerjiyə qənaət üçün söndürə bilərsən; oyun zamanı özü dayanır.",
   setNavBundles: "Dəstlər",
   setBundlesHint: "Fiqurlar, taxta, sayt rəngi və fon şəkli — bir kliklə. Sonra istədiyini ayrıca dəyişə bilərsən.",
   setBundleMixed: "Qarışıq: fon — {{name}}",

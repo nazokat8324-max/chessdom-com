@@ -382,6 +382,23 @@ test("O'z ikonkalarimiz: har bir menyu bandiga ikonka bor, ishlatilgan nomlar ma
   assert.ok(html.indexOf('src="icons.js"') > 0 && html.indexOf('src="icons.js"') < html.indexOf('src="script.js"'), 'icons.js script.js dan oldin');
 });
 
+test("Kosmos harakatli foni: asos va harakatli qatlam fayllari, sayyoralar tebranadi, id lar prefiksli, harakatni kamaytirishda to'xtaydi", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const bg = (f) => fs.readFileSync(path.join(__dirname, '..', 'img', 'backgrounds', f), 'utf8');
+  const { EXTRAS } = require('../tools/make-backgrounds');
+  assert.deepEqual(Object.keys(EXTRAS), ['kosmos-base', 'kosmos-fx']);
+  const base = bg('kosmos-base.svg'), fx = bg('kosmos-fx.svg');
+  assert.ok(!/fill="url\(#p\d\)"/.test(base), "asosda sayyora yo'q (ular harakatli qatlamda)");
+  assert.equal((fx.match(/<g class="o"/g) || []).length, 8, '8 sayyora harakatli qatlamda');
+  assert.match(fx, /@keyframes ksw/);
+  assert.match(fx, /prefers-reduced-motion:reduce/);
+  assert.ok(!/ id="(?!kfx-)/.test(fx) && !/url\(#(?!kfx-)/.test(fx), "id lar kfx- prefiksli (sahifadagi elementlar bilan to'qnashmasin)");
+  assert.ok(base.length < 60000 && fx.length < 30000, 'hajmi kichik');
+  const css = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+  assert.ok(css.includes('html.bg-motion[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos-base.svg); }'));
+});
+
 test("Node versiyasi bir xil: package.json engines (Render shu bo'yicha tanlaydi), Dockerfile va GitHub Actions", () => {
   const fs = require('fs');
   const path = require('path');

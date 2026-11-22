@@ -6,7 +6,7 @@
     country: 'un', language: 'en', soundEnabled: true, volume: 0.8, soundPack: 'wood',
     siteTheme: 'turquoise', boardStyle: 'auto', showCoords: true, pieceSet: 'karvon',
     showHints: true, showLastMove: true, autoQueen: false, confirmResign: true,
-    quickClock: [300, 0], quickRated: true, vibration: true, background: ''
+    quickClock: [300, 0], quickRated: true, vibration: true, background: '', bgMotion: true
   };
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['uzc', 'uz', 'Ўзбекча'], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français'], ['tr', 'tr', 'Türkçe'], ['kk', 'kz', 'Қазақша'], ['tg', 'tj', 'Тоҷикӣ'], ['ky', 'kg', 'Кыргызча'], ['tk', 'tm', 'Türkmençe'], ['az', 'az', 'Azərbaycanca'], ['zh', 'cn', '中文'], ['it', 'it', 'Italiano']];
@@ -50,6 +50,7 @@
   function applyAll(s) {
     if (typeof window.applySiteTheme === 'function') window.applySiteTheme(s.siteTheme);
     if (typeof window.applyBoardStyle === 'function') window.applyBoardStyle(s.boardStyle);
+    if (typeof window.applyBgMotion === 'function') window.applyBgMotion(s.bgMotion !== false);
     if (typeof window.applyBackground === 'function') window.applyBackground(s.background);
     if (typeof window.applyCoords === 'function') window.applyCoords(s.showCoords !== false);
     if (typeof window.applySoundToggle === 'function') window.applySoundToggle(s.soundEnabled !== false);
@@ -210,6 +211,7 @@
               </button>
             </div>
             ${mixed}
+            <div class="set-bundle-motion">${toggle('bgMotion', tx('setBgMotion', 'Fon harakati'), tx('setBgMotionHint', "Kosmos to'plamida yulduzlar miltillaydi, sayyoralar sekin harakatlanadi. Quvvatni tejash uchun o'chirish mumkin; o'yin paytida o'zi to'xtaydi."))}</div>
           </div>
           <div class="set-preview-wrap">
             <span class="set-preview-label">${esc(tx('setPreview', "Ko'rinishi"))}</span>

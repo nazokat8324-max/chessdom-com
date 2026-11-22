@@ -1763,7 +1763,8 @@ test("To'plamlar: Sozlamalarda tanlash donalar, taxta, rang va fonni birga qo'ya
   await p.evaluate(() => document.querySelector('[data-bundle="kosmos"]').click());
   await p.waitForFunction(() => { const h = document.documentElement.dataset; return h.bg === 'kosmos' && h.theme === 'lapis' && h.board === 'night' && document.querySelector('[data-bundle="kosmos"].active'); }, { timeout: 5000 });
   // Fon rasmi haqiqatan yuklanadi va asosiy maydonga qo'yiladi
-  assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage), /backgrounds\/kosmos\.svg/);
+  // Fon harakati standart yoqiq — asos rasm (kosmos-base.svg) + harakatli qatlam; o'chiq bo'lsa kosmos.svg
+  assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage), /backgrounds\/kosmos(-base)?\.svg/);
   assert.equal((await srv.api(null, '/img/backgrounds/kosmos.svg')).raw.slice(0, 4), '<svg');
   await p.evaluate(() => document.querySelector('[data-save]').click());
   // Qayta yuklash — fon sahifa chizilishidan oldin qo'llanadi, donalar to'plami ham saqlangan
@@ -1819,6 +1820,41 @@ test("O'z ikonkalarimiz: menyu, yuqori tugmalar, Xabarlar, Sozlamalar va bosh sa
   await q.waitForFunction(() => document.querySelectorAll('#cvRoute .cvr-stop .cvr-ico .ui-ic').length === 5, { timeout: 15000 });
   await q.evaluate(() => window.toggleMobileMenu());
   await q.waitForFunction(() => document.querySelectorAll('#cvRouteMap .cvr-map-ico .ui-ic').length >= 8 && (document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-ico .ui-ic') || {dataset: {}}).dataset.ic === 'map', { timeout: 5000 });
+  assert.deepEqual([...p.errors, ...q.errors], []);
+});
+
+test("Kosmos harakatli foni: qatlam joyida va fon bilan ustma-ust; Sozlamalarda o'chiriladi; «harakatni kamaytirish»da yo'q", opts, async () => {
+  const u = await srv.register('BgFx');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => { if (!localStorage.getItem('fxSet')) { localStorage.setItem('fxSet', '1'); localStorage.setItem('justChessSettings', JSON.stringify({ pieceSet: 'kosmos', boardStyle: 'night', siteTheme: 'lapis', background: 'kosmos' })); } });
+  await p.goto(srv.base + '/reyting', { waitUntil: 'load' });
+  await p.waitForFunction(() => document.querySelectorAll('#bgFx .o').length === 8, { timeout: 15000 });
+  const st = await p.evaluate(() => {
+    const fx = document.getElementById('bgFx').getBoundingClientRect(), w = document.querySelector('.main-wrapper').getBoundingClientRect();
+    return { motion: document.documentElement.classList.contains('bg-motion'), off: [fx.left - w.left, fx.top - w.top, fx.width - w.width, fx.height - w.height].map(Math.round),
+      bg: getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage, anim: getComputedStyle(document.querySelector('#bgFx .o')).animationName };
+  });
+  assert.equal(st.motion, true);
+  assert.deepEqual(st.off, [0, 0, 0, 0], 'qatlam fon bilan aynan ustma-ust');
+  assert.match(st.bg, /kosmos-base\.svg/);
+  assert.equal(st.anim, 'ksw');
+  // Sozlamalar → To'plamlar → «Fon harakati» o'chiriladi — harakatsiz to'liq rasm
+  await p.evaluate(() => window.switchView('settings'));
+  await p.waitForSelector('[data-section="bundles"]', { timeout: 8000 });
+  await p.evaluate(() => document.querySelector('[data-section="bundles"]').click());
+  await p.waitForSelector('[data-bool="bgMotion"]', { timeout: 5000 });
+  await p.evaluate(() => document.querySelector('[data-bool="bgMotion"]').click());
+  await p.waitForFunction(() => !document.documentElement.classList.contains('bg-motion') && /kosmos\.svg/.test(getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage) && document.getElementById('bgFx').hidden, { timeout: 5000 });
+  await p.evaluate(() => document.querySelector('[data-save]').click());
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings')).bgMotion), false);
+  // Qurilmada «harakatni kamaytirish» — qatlam yo'q
+  const q = await page(u);
+  await q.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }]);
+  await q.evaluateOnNewDocument(() => localStorage.setItem('justChessSettings', JSON.stringify({ background: 'kosmos', bgMotion: true })));
+  await q.goto(srv.base + '/reyting', { waitUntil: 'load' });
+  await q.waitForFunction(() => document.documentElement.dataset.bg === 'kosmos', { timeout: 15000 });
+  await new Promise((r) => setTimeout(r, 800));
+  assert.equal(await q.evaluate(() => document.documentElement.classList.contains('bg-motion') || !!document.querySelector('#bgFx .o')), false);
   assert.deepEqual([...p.errors, ...q.errors], []);
 });
 

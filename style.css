@@ -15229,3 +15229,12 @@ html.bg-motion[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos-base.svg
 body:has(#gameView.active-view.pg-mode-in) #bgFx *, body:has(#teamView.active-view.tm-playing) #bgFx *, body:has(#footView.active-view.fc-playing) #bgFx * { animation-play-state: paused !important; }
 @media (prefers-reduced-motion: reduce) { #bgFx { display: none; } }
 .set-bundle-motion { margin-top: 12px; }
+
+/* ===== 👑 Logo toji — to'plam / sayt rangida (2026-11-22, foydalanuvchi tanlovi: toj + brauzer ikonkasi) ===== */
+.logo-area .cd-crown svg { filter: drop-shadow(0 0 8px rgba(var(--accent-rgb), 0.35)); }
+.logo-area .cd-crown path { stroke: var(--accent-light); }
+.logo-area .cd-crown circle[r="1.5"] { fill: var(--accent-light); }
+.logo-area .cd-crown circle[r="1"] { fill: var(--accent-deep); }
+.logo-area .cd-crown stop:nth-child(1) { stop-color: var(--accent-light); }
+.logo-area .cd-crown stop:nth-child(2) { stop-color: var(--accent); }
+.logo-area .cd-crown stop:nth-child(3) { stop-color: var(--accent-deep); }

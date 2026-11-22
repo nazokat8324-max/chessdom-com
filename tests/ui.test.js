@@ -1858,6 +1858,50 @@ test("Kosmos harakatli foni: qatlam joyida va fon bilan ustma-ust; Sozlamalarda 
   assert.deepEqual([...p.errors, ...q.errors], []);
 });
 
+test("Logo toji va brauzer ikonkasi sayt rangida; O'yin sahifasidagi «Soat» — shaxmat soati (klaviatura, pauza, qaytadan, yopish)", opts, async () => {
+  const u = await srv.register('Crown');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => { if (!localStorage.getItem('ccSet')) { localStorage.setItem('ccSet', '1'); localStorage.setItem('justChessSettings', JSON.stringify({ siteTheme: 'ruby' })); } });
+  await p.goto(srv.base + '/oyin', { waitUntil: 'load' });
+  // Toj — mavzu rangida (Yoqut), oltin emas
+  const crown = await p.evaluate(() => {
+    const probe = document.createElement('i'); probe.style.color = 'var(--accent)'; document.body.appendChild(probe);
+    const acc = getComputedStyle(probe).color; probe.remove();
+    return { stop: getComputedStyle(document.querySelector('.logo-area .cd-crown stop:nth-child(2)')).stopColor, acc };
+  });
+  assert.equal(crown.stop, crown.acc, 'toj gradienti --accent rangida');
+  assert.notEqual(crown.stop, 'rgb(205, 127, 50)');
+  // Brauzer ikonkasi qayta bo'yaladi; firuza mavzuda — asl fayl
+  await p.waitForFunction(() => [...document.querySelectorAll('link[rel="icon"]')].every((l) => l.getAttribute('href').startsWith('data:image/png')), { timeout: 10000 });
+  await p.evaluate(() => window.applySiteTheme('turquoise'));
+  await p.waitForFunction(() => document.querySelector('link[rel="icon"]').getAttribute('href') === '/assets/icons/favicon-32.png', { timeout: 5000 });
+  // ⏱ Soat
+  await p.waitForSelector('#btnChessClock', { visible: true, timeout: 10000 });
+  await p.evaluate(() => document.getElementById('btnChessClock').click());
+  await p.waitForSelector('#ccOverlay .cc-pre', { timeout: 5000 });
+  assert.match(await p.$eval('#ccOverlay h2', (e) => e.textContent), /Shaxmat soati/);
+  await p.evaluate(() => document.querySelector('.cc-pre[data-m="3"][data-i="2"]').click());
+  await p.evaluate(() => document.querySelector('[data-cc="go"]').click());
+  await p.waitForSelector('.cc-side.wait', { timeout: 3000 });
+  const sides = () => p.evaluate(() => [...document.querySelectorAll('.cc-side')].map((b) => (b.classList.contains('on') ? 'on' : '') + '|' + b.querySelector('.cc-time').textContent + '|' + b.querySelector('.cc-sub').textContent));
+  assert.deepEqual(await sides(), ['|3:00|Boshlash uchun bosing', '|3:00|Boshlash uchun bosing']);
+  await p.keyboard.press('Space'); // boshlash: yuqori tomon bosgandek — pastkining soati yuradi
+  assert.match((await sides())[1], /^on\|/);
+  await sleep(300);
+  await p.keyboard.press('Space'); // pastki yurdi: +2 s, yuqorining soati
+  const s2 = await sides();
+  assert.match(s2[0], /^on\|/);
+  assert.match(s2[1], /^\|3:0[12]\|Yurishlar: 1$/, "qo'shimcha soniya qo'shildi");
+  await p.evaluate(() => document.querySelector('[data-cc="pause"]').click());
+  assert.match((await sides())[0], /Pauza$/);
+  await p.evaluate(() => document.querySelector('[data-cc="reset"]').click()); // confirm — qabul
+  assert.deepEqual(await sides(), ['|3:00|Boshlash uchun bosing', '|3:00|Boshlash uchun bosing']);
+  assert.equal(JSON.parse(await p.evaluate(() => localStorage.getItem('justChessClock'))).inc, 2, 'tanlangan vaqt eslab qolinadi');
+  await p.keyboard.press('Escape');
+  assert.equal(await p.$('#ccOverlay'), null, 'Escape — yopiladi');
+  assert.deepEqual(p.errors, []);
+});
+
 test("Boshqa to'plamlar ham jonli: Karvon — tuyalar qatlamda yuradi, fon tuyasiz asos; to'plam almashsa qatlam ham almashadi; sahifa klasslariga tegmaydi", opts, async () => {
   const u = await srv.register('BgFx2');
   const p = await page(u);
@@ -2640,7 +2684,7 @@ test("Videodarslar: Kutubxonada kanal videolari — muqova server orqali, bosilg
   } finally { await own.stop(); await yt.stop(); }
 });
 
-test("Internetsiz: server o'chganda offline sahifa ochiladi va 5 ta o'yinning hammasi oxirigacha o'ynaladi", opts, async () => {
+test("Internetsiz: server o'chganda offline sahifa ochiladi, 5 ta o'yinning hammasi oxirigacha o'ynaladi va shaxmat soati ishlaydi", opts, async () => {
   // Alohida server — uni o'chirib, haqiqiy "tarmoq yo'q" holatini yaratamiz (puppeteer offline rejimi service worker'ga ta'sir qilmaydi)
   const own = await startServer();
   const p = await page(null, { width: 390, height: 844, isMobile: true, hasTouch: true });
@@ -2651,7 +2695,7 @@ test("Internetsiz: server o'chganda offline sahifa ochiladi va 5 ta o'yinning ha
   await own.stop();
   await p.goto(own.base + '/oyin', { waitUntil: 'load' });
   assert.equal(await p.$eval('h1', (e) => e.textContent), "Internet aloqasi yo'q");
-  assert.equal(await p.$$eval('.og-card', (x) => x.length), 5);
+  assert.equal(await p.$$eval('.og-card', (x) => x.length), 6);
   const msg = () => p.$eval('#ogMsg', (e) => e.textContent);
   const tap = (sq) => p.click('[data-sq="' + sq + '"]');
   const open = async (g) => { await p.click('[data-game="' + g + '"]'); await sleep(150); };
@@ -2713,6 +2757,18 @@ test("Internetsiz: server o'chganda offline sahifa ochiladi va 5 ta o'yinning ha
   await back();
   // Rekordlar bosh menyuda ko'rinadi
   assert.match(await p.$eval('[data-best="tour"]', (e) => e.textContent), /64/);
+  // ⏱ Shaxmat soati (internetsiz ham — chessclock.js keshda)
+  await p.click('#ogClockCard');
+  await p.waitForSelector('#ccOverlay .cc-pre', { timeout: 5000 });
+  await p.evaluate(() => document.querySelector('.cc-pre[data-m="1"][data-i="0"]').click());
+  await p.evaluate(() => document.querySelector('[data-cc="go"]').click());
+  await p.tap('.cc-side.top');
+  await sleep(300);
+  await p.tap('.cc-side.bottom');
+  const cs = await p.evaluate(() => [...document.querySelectorAll('.cc-side')].map((b) => [b.className.includes(' on'), b.querySelector('.cc-sub').textContent]));
+  assert.deepEqual(cs, [[true, 'Yurishlar: 0'], [false, 'Yurishlar: 1']], 'pastki bosdi — yuqorining soati yuradi');
+  await p.evaluate(() => document.querySelector('#ccOverlay [data-cc="close"]').click());
+  assert.equal(await p.$('#ccOverlay'), null);
   assert.deepEqual(p.errors, []);
 });
 

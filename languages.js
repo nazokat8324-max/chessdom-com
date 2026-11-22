@@ -12676,7 +12676,11 @@ function updateUI() {
   const chatDesc = document.getElementById("chatDesc"); if (chatDesc) chatDesc.textContent = t('chatDesc');
   const btnSendChatMessage = document.getElementById("btnSendChatMessage"); if (btnSendChatMessage) btnSendChatMessage.textContent = t('btnSendChatMessage');
 
-  const playOnlineBtn = document.getElementById("playOnlineBtn"); if (playOnlineBtn) playOnlineBtn.textContent = '\u26A1 ' + t('playOnlineBtn');
+  const playOnlineBtn = document.getElementById("playOnlineBtn"); if (playOnlineBtn) {
+    // \u26A1 \u2014 o'z ikonkamiz (icons.js); matn alohida span'da (escape \u2014 textContent)
+    if (window.iconSvg) { playOnlineBtn.innerHTML = window.iconSvg('bolt') + '<span></span>'; playOnlineBtn.lastChild.textContent = t('playOnlineBtn'); }
+    else playOnlineBtn.textContent = '\u26A1 ' + t('playOnlineBtn');
+  }
   const tabPlayers = document.getElementById("playersTabLabel"); if (tabPlayers) tabPlayers.textContent = t('tabPlayers');
   const tabClubs = document.getElementById("clubsTabLabel"); if (tabClubs) tabClubs.textContent = t('tabClubs');
   const searchCountry = document.getElementById("clubSearchInput"); if (searchCountry) { searchCountry.placeholder = t('searchCountry'); searchCountry.setAttribute('aria-label', searchCountry.placeholder); }

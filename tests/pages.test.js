@@ -356,6 +356,29 @@ test("To'plamlar: 15 ta — har dona to'plamiga bittadan, taxta/rang mavjud, fon
   assert.match(read('settings.js'), /background: ''/, 'standart — fonsiz');
 });
 
+test("O'z ikonkalarimiz: har bir menyu bandiga ikonka bor, ishlatilgan nomlar mavjud, icons.js boshqa skriptlardan oldin", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const read = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  const vm = require('vm');
+  const ctx = { window: {}, document: { querySelector: () => null, querySelectorAll: () => [], getElementById: () => null, addEventListener() {} } };
+  vm.runInNewContext(read('icons.js'), ctx);
+  const names = ctx.window.UI_ICONS, NAV = ctx.window.NAV_ICONS;
+  const html = read('index.html');
+  const menuIds = [...html.matchAll(/class="menu-item[^"]*"\s+id="(nav\w+)"|id="(nav\w+)"[^>]*class="menu-item/g)].map((m) => m[1] || m[2]);
+  assert.ok(menuIds.length >= 14, 'menyu bandlari topildi: ' + menuIds.length);
+  for (const id of menuIds) assert.ok(NAV[id] && names.includes(NAV[id]), id + " — icons.js NAV_ICONS da ikonka yo'q");
+  // Boshqa fayllarda chaqirilgan ikonka nomlari ham mavjud
+  for (const f of ['settings.js', 'mobile-route.js', 'home.js', 'script.js', 'languages.js']) {
+    for (const m of read(f).matchAll(/(?:iconSvg|\bic|secIcon)\('(\w+)'/g)) assert.ok(names.includes(m[1]) || f === 'settings.js', f + ': ' + m[1]);
+  }
+  for (const n of Object.values(read('settings.js').match(/SECTION_ICONS = \{([^}]*)\}/)[1].matchAll(/'(\w+)'/g)).map((m) => m[1])) assert.ok(names.includes(n), 'Sozlamalar: ' + n);
+  const svg = ctx.window.iconSvg('home');
+  assert.match(svg, /stroke="currentColor"/, 'rang currentColor orqali (to\'plam/sayt rangi)');
+  assert.ok(!/href=|<image/.test(read('icons.js')), 'begona rasm yo\'q');
+  assert.ok(html.indexOf('src="icons.js"') > 0 && html.indexOf('src="icons.js"') < html.indexOf('src="script.js"'), 'icons.js script.js dan oldin');
+});
+
 test("Node versiyasi bir xil: package.json engines (Render shu bo'yicha tanlaydi), Dockerfile va GitHub Actions", () => {
   const fs = require('fs');
   const path = require('path');

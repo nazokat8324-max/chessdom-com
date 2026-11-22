@@ -73,6 +73,9 @@
   }
 
   // --- Bo'limlar ---
+  // Bo'lim belgilari — o'z ikonkalarimiz (icons.js); emoji — zaxira
+  const SECTION_ICONS = { general: 'globe', bundles: 'gift', board: 'pawn', game: 'gamepad', sound: 'bell', privacy: 'lock', account: 'user' };
+  const secIcon = (id, emoji) => (window.iconSvg && window.iconSvg(SECTION_ICONS[id])) || esc(emoji);
   const sections = [
     ['general', '🌐', 'setNavGeneral', 'Umumiy'],
     ['bundles', '🎁', 'setNavBundles', "To'plamlar"],
@@ -376,9 +379,9 @@
         <button class="set-reset" data-reset="1">↺ ${esc(tx('setResetAll', 'Standartga qaytarish'))}</button>
       </header>
       <div class="set-layout">
-        <nav class="set-nav">${navs.map(([id, icon, key, fb]) => `<button class="${st.section === id ? 'active' : ''}" data-section="${id}"><span>${icon}</span>${esc(tx(key, fb))}</button>`).join('')}</nav>
+        <nav class="set-nav">${navs.map(([id, icon, key, fb]) => `<button class="${st.section === id ? 'active' : ''}" data-section="${id}"><span>${secIcon(id, icon)}</span>${esc(tx(key, fb))}</button>`).join('')}</nav>
         <section class="set-main">
-          <h2 class="set-title">${(navs.find(s => s[0] === st.section) || navs[0])[1]} ${esc(tx((navs.find(s => s[0] === st.section) || navs[0])[2], ''))}</h2>
+          <h2 class="set-title">${secIcon((navs.find(s => s[0] === st.section) || navs[0])[0], (navs.find(s => s[0] === st.section) || navs[0])[1])}${esc(tx((navs.find(s => s[0] === st.section) || navs[0])[2], ''))}</h2>
           ${bodies[st.section] ? bodies[st.section]() : ''}
         </section>
       </div>

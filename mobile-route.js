@@ -25,7 +25,9 @@
     const s = item && [...item.querySelectorAll('span')].find((x) => !x.classList.contains('icon') && !x.classList.contains('lg-nav-badge'));
     return s ? s.textContent.trim() : '';
   };
-  const iconOf = (item) => { const s = item && item.querySelector('.icon'); return s ? s.textContent.trim() : ''; };
+  // Belgi HTML sifatida: o'z SVG ikonkasi (icons.js) bo'lsa — o'sha, aks holda emoji matni
+  const iconOf = (item) => { const s = item && item.querySelector('.icon'); if (!s) return ''; return s.querySelector('.ui-ic') ? s.innerHTML : esc(s.textContent.trim()); };
+  const ic = (name, emoji) => (window.iconSvg && window.iconSvg(name)) || esc(emoji);
   // '99+' ham son sifatida (parseInt) — avval Number('99+') = NaN bo'lib, nishon umuman ko'rinmasdi
   const badgeOf = (item) => { const b = item && item.querySelector('.lg-nav-badge'); if (!b || b.style.display === 'none') return 0; const n = parseInt(b.textContent, 10) || 0; return b.textContent.includes('+') ? Math.max(n, 100) : n; };
 
@@ -184,13 +186,13 @@
 
   // Menyuda bandi yo'q sahifalar: 5-bekat shu sahifa nomi va belgisi bilan
   const EXTRA_VIEWS = {
-    settingsView: ['⚙️', 'settingsTitle', 'Sozlamalar'], historyView: ['📜', 'ghTitle', "O'yinlar tarixi"],
-    teamView: ['🤝', 'tmShort', '2 ga 2'], profsecView: ['👤', 'profileText', 'Profil']
+    settingsView: ['⚙️', 'settingsTitle', 'Sozlamalar', 'gear'], historyView: ['📜', 'ghTitle', "O'yinlar tarixi", 'scroll'],
+    teamView: ['🤝', 'tmShort', '2 ga 2', 'team'], profsecView: ['👤', 'profileText', 'Profil', 'user']
   };
   function extraView() {
     const v = document.querySelector('.main-wrapper .view-section.active-view');
     const e = v && EXTRA_VIEWS[v.id];
-    return e ? { icon: e[0], label: tx(e[1], e[2]) } : null;
+    return e ? { icon: ic(e[3], e[0]), label: tx(e[1], e[2]) } : null;
   }
 
   // Yon menyudagi holatni yo'lga ko'chirish: nomlar, belgilar, nishonlar, faol bekat
@@ -207,8 +209,10 @@
       // Asosiy bo'lim bo'lmagan sahifada 5-bekat o'sha bo'lim nomi va belgisi bilan
       if (i === 4 && active && !MAIN.includes(active.id)) { label = labelOf(active); icon = iconOf(active); }
       else if (i === 4 && !active && extraView()) ({ label, icon } = extraView());
-      if (i === 4 && document.body.classList.contains('mobile-menu-open')) icon = '🗺️';
-      b.querySelector('.cvr-ico').textContent = icon;
+      if (i === 4 && document.body.classList.contains('mobile-menu-open')) icon = ic('map', '🗺️');
+      const icoEl = b.querySelector('.cvr-ico');
+      // Brauzer SVG ni qayta yozadi — innerHTML bilan solishtirib bo'lmaydi; manba matni alohida saqlanadi
+      if (icoEl.dataset.src !== icon) { icoEl.innerHTML = icon; icoEl.dataset.src = icon; }
       b.querySelector('.cvr-label').textContent = label;
       b.setAttribute('aria-label', label);
       const n = i === 4 ? restBadges : badgeOf(item);
@@ -258,7 +262,7 @@
     st.map.innerHTML = `<div class="cvr-map-head"><b>🗺️ ${esc(tx('rtAllStops', "Barcha bo'limlar"))}</b>
         <button type="button" class="cvr-map-x" data-cvr-close aria-label="✕">✕</button></div>
       <ol class="cvr-map-list">${items.map((m, i) => `<li class="${i % 2 ? 'r' : 'l'}${m === active ? ' on' : ''}">
-        <button type="button" data-cvr-go="${esc(m.id)}"><span class="cvr-map-ico">${esc(iconOf(m))}</span><span class="cvr-map-name">${esc(labelOf(m))}</span>${badgeOf(m) ? `<span class="cvr-badge">${badgeOf(m)}</span>` : ''}${m === active ? `<span class="cvr-map-camel">${CAMEL}</span>` : ''}</button></li>`).join('')}</ol>`;
+        <button type="button" data-cvr-go="${esc(m.id)}"><span class="cvr-map-ico">${iconOf(m)}</span><span class="cvr-map-name">${esc(labelOf(m))}</span>${badgeOf(m) ? `<span class="cvr-badge">${badgeOf(m)}</span>` : ''}${m === active ? `<span class="cvr-map-camel">${CAMEL}</span>` : ''}</button></li>`).join('')}</ol>`;
   }
 
   // Pastga aylantirilganda sarlavha yashirinadi va yo'l ixchamlashadi (kontentga joy), tepaga — qaytadi.

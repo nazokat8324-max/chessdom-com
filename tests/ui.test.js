@@ -1781,6 +1781,45 @@ test("To'plamlar: Sozlamalarda tanlash donalar, taxta, rang va fonni birga qo'ya
   assert.deepEqual(p.errors, []);
 });
 
+test("O'z ikonkalarimiz: menyu, yuqori tugmalar, Xabarlar, Sozlamalar va bosh sahifada SVG; rangi to'plam/sayt rangiga mos almashadi; telefonda Karvon yo'lida ham", opts, async () => {
+  const u = await srv.register('Icons');
+  const p = await page(u);
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await p.waitForFunction(() => document.querySelector('#sideMsgBtn .ui-ic') && document.querySelector('#playOnlineBtn .ui-ic'), { timeout: 15000 });
+  const info = await p.evaluate(() => {
+    const items = [...document.querySelectorAll('.menu-list .menu-item')];
+    return {
+      menu: items.length, svg: items.filter((m) => m.querySelector('.icon .ui-ic')).length,
+      emoji: items.filter((m) => /\p{Extended_Pictographic}/u.test((m.querySelector('.icon') || {}).textContent || '')).length,
+      top: ['#topSettingsBtn', '#notifBell', '#sideMsgBtn', '#playOnlineBtn', '.tea-home-btn', '.inv-home-btn'].filter((s) => document.querySelector(s + ' .ui-ic')).length,
+      bellCount: !!document.querySelector('#notifBell #notifCount'),
+      playText: document.getElementById('playOnlineBtn').textContent.trim()
+    };
+  });
+  assert.equal(info.svg, info.menu, 'har bir menyu bandida SVG');
+  assert.equal(info.emoji, 0, 'menyuda emoji qolmadi');
+  assert.equal(info.top, 6);
+  assert.ok(info.bellCount, "qo'ng'iroqcha soni joyida");
+  assert.match(info.playText, /Onlayn o'ynash/);
+  // Rang — sayt/to'plam rangi: Kosmos (Lojuvard) va Samarqand (Firuza) da boshqacha
+  const iconColor = () => p.evaluate(() => getComputedStyle(document.querySelector('#navTea .icon')).color);
+  const setTheme = (t) => p.evaluate((x) => window.applySiteTheme(x), t);
+  await setTheme('lapis'); const lapis = await iconColor();
+  await setTheme('turquoise'); const turq = await iconColor();
+  assert.notEqual(lapis, turq, 'ikonka rangi mavzu bilan almashadi');
+  assert.equal(turq, await p.evaluate(() => { const d = document.createElement('i'); d.style.color = 'var(--accent)'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; }));
+  // Sozlamalar bo'limlari
+  await p.evaluate(() => window.switchView('settings'));
+  await p.waitForFunction(() => document.querySelectorAll('.set-nav button .ui-ic').length >= 6 && document.querySelector('.set-title .ui-ic'), { timeout: 8000 });
+  // Telefon: Karvon yo'li bekatlari va «Barcha bo'limlar» xaritasi
+  const q = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
+  await q.goto(srv.base + '/', { waitUntil: 'load' });
+  await q.waitForFunction(() => document.querySelectorAll('#cvRoute .cvr-stop .cvr-ico .ui-ic').length === 5, { timeout: 15000 });
+  await q.evaluate(() => window.toggleMobileMenu());
+  await q.waitForFunction(() => document.querySelectorAll('#cvRouteMap .cvr-map-ico .ui-ic').length >= 8 && (document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-ico .ui-ic') || {dataset: {}}).dataset.ic === 'map', { timeout: 5000 });
+  assert.deepEqual([...p.errors, ...q.errors], []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);
@@ -1903,7 +1942,8 @@ test("Telefon: Karvon yo'li menyusi — bekatlar, tuya yuradi, 'Barcha bo'limlar
   await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
   await p.waitForSelector('#settingsRoot .set-nav', { timeout: 15000 });
   await sleep(400);
-  assert.deepEqual(await p.evaluate(() => [document.querySelector('#cvRoute .cvr-stop.on').dataset.i, document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-ico').textContent]), ['4', '⚙️']);
+  // 5-bekatda Sozlamalar belgisi — o'z ikonkamiz (icons.js 'gear'; 2026-11-22 gacha ⚙️ emoji edi)
+  assert.deepEqual(await p.evaluate(() => [document.querySelector('#cvRoute .cvr-stop.on').dataset.i, document.querySelector('#cvRoute .cvr-stop[data-i="4"] .cvr-ico .ui-ic').dataset.ic === 'gear']), ['4', true]);
   // O'yin paytida — ixcham (sarlavha yashirin), o'yin tugagach qaytadi
   await p.goto(srv.base + '/oyin', { waitUntil: 'load' });
   await p.waitForSelector('#btnLocalGame', { timeout: 15000 });

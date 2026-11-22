@@ -8,6 +8,8 @@
     div.textContent = (v === null || v === undefined) ? '' : String(v);
     return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   };
+  // O'z ikonkamiz (icons.js), bo'lmasa emoji
+  const ic = (name, emoji) => (window.iconSvg && window.iconSvg(name)) || emoji;
   const isHome = () => { const v = document.getElementById('homeView'); return !!(v && v.classList.contains('active-view')); };
   const authHeaders = () => window.authToken ? { Authorization: 'Bearer ' + window.authToken } : {};
   const getJson = (url, auth) => fetch(url, { headers: auth ? authHeaders() : {} }).then(r => r.json()).catch(() => null);
@@ -29,7 +31,7 @@
     const pending = st.league.length;
     const ready = st.league.filter(g => g.opponentReady && !g.iAmReady).length;
     return `<button class="hw-card hw-mini" data-go="leagues">
-      <span class="hw-icon">🏆</span>
+      <span class="hw-icon">${ic('trophy', '🏆')}</span>
       <span class="hw-text"><b>${esc(tx('hwLeagueGames', "Liga o'yinlarim"))}</b><small>${esc(pending
         ? (ready ? tx('hwLeagueReady', "{{n}} ta raqib sizni kutyapti!", { n: ready }) : tx('hwLeaguePending', "{{n}} ta o'yin kutmoqda", { n: pending }))
         : tx('hwLeagueNone', "Hozircha o'yin yo'q"))}</small></span>
@@ -39,7 +41,7 @@
 
   function messagesCard() {
     return `<button class="hw-card hw-mini" data-go="messages">
-      <span class="hw-icon">💬</span>
+      <span class="hw-icon">${ic('chat', '💬')}</span>
       <span class="hw-text"><b>${esc(tx('mMessages', 'Xabarlar'))}</b><small>${esc(st.unread ? tx('hwUnread', '{{n}} ta yangi xabar', { n: st.unread }) : tx('hwNoUnread', "Yangi xabar yo'q"))}</small></span>
       ${st.unread ? `<span class="hw-count hot">${st.unread}</span>` : ''}
     </button>`;
@@ -47,7 +49,7 @@
 
   function liveCard() {
     return `<button class="hw-card hw-mini" data-go="live">
-      <span class="hw-icon">📺</span>
+      <span class="hw-icon">${ic('tv', '📺')}</span>
       <span class="hw-text"><b>${esc(tx('mLive', "Jonli o'yinlar"))}</b><small>${esc(st.live ? tx('hwLiveN', "Hozir {{n}} ta o'yin davom etmoqda", { n: st.live }) : tx('hwLiveNone', "Hozir o'yin yo'q"))}</small></span>
       ${st.live ? `<span class="hw-count">${st.live}</span>` : ''}
     </button>`;

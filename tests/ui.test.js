@@ -1784,7 +1784,7 @@ test("To'plamlar: Sozlamalarda tanlash donalar, taxta, rang va fonni birga qo'ya
   assert.deepEqual(p.errors, []);
 });
 
-test("O'z ikonkalarimiz: menyu, yuqori tugmalar, Xabarlar, Sozlamalar va bosh sahifada SVG; rangi to'plam/sayt rangiga mos almashadi; telefonda Karvon yo'lida ham", opts, async () => {
+test("O'z ikonkalarimiz: menyu, yuqori tugmalar, Xabarlar, Sozlamalar va bosh sahifada SVG; rangi doim yashil (mavzuga qaramaydi), bosh sahifaning chap kartasi ham; telefonda Karvon yo'lida ham", opts, async () => {
   const u = await srv.register('Icons');
   const p = await page(u);
   await p.goto(srv.base + '/', { waitUntil: 'load' });
@@ -1804,13 +1804,14 @@ test("O'z ikonkalarimiz: menyu, yuqori tugmalar, Xabarlar, Sozlamalar va bosh sa
   assert.equal(info.top, 6);
   assert.ok(info.bellCount, "qo'ng'iroqcha soni joyida");
   assert.match(info.playText, /Onlayn o'ynash/);
-  // Rang — sayt/to'plam rangi: Kosmos (Lojuvard) va Samarqand (Firuza) da boshqacha
-  const iconColor = () => p.evaluate(() => getComputedStyle(document.querySelector('#navTea .icon')).color);
+  // Rang — DOIM yashil (Zumrad, 2026-11-23 foydalanuvchi qarori): mavzu almashsa ham o'zgarmaydi; bosh sahifaning chap kartasi ham
+  const colors = () => p.evaluate(() => ({ ic: getComputedStyle(document.querySelector('#navTea .icon')).color, play: getComputedStyle(document.getElementById('playOnlineBtn')).backgroundImage + getComputedStyle(document.getElementById('playOnlineBtn')).backgroundColor, hw: getComputedStyle(document.querySelector('.hw-icon')).color }));
   const setTheme = (t) => p.evaluate((x) => window.applySiteTheme(x), t);
-  await setTheme('lapis'); const lapis = await iconColor();
-  await setTheme('turquoise'); const turq = await iconColor();
-  assert.notEqual(lapis, turq, 'ikonka rangi mavzu bilan almashadi');
-  assert.equal(turq, await p.evaluate(() => { const d = document.createElement('i'); d.style.color = 'var(--accent)'; document.body.appendChild(d); const c = getComputedStyle(d).color; d.remove(); return c; }));
+  await setTheme('lapis'); const lapis = await colors();
+  await setTheme('ruby'); const ruby = await colors();
+  assert.deepEqual(lapis, ruby, 'ikonka va chap karta rangi mavzu bilan almashmaydi');
+  assert.equal(lapis.ic, 'rgb(47, 207, 127)');
+  assert.equal(lapis.hw, 'rgb(47, 207, 127)');
   // Sozlamalar bo'limlari
   await p.evaluate(() => window.switchView('settings'));
   await p.waitForFunction(() => document.querySelectorAll('.set-nav button .ui-ic').length >= 6 && document.querySelector('.set-title .ui-ic'), { timeout: 8000 });
@@ -1858,19 +1859,13 @@ test("Kosmos harakatli foni: qatlam joyida va fon bilan ustma-ust; Sozlamalarda 
   assert.deepEqual([...p.errors, ...q.errors], []);
 });
 
-test("Logo toji va brauzer ikonkasi sayt rangida; O'yin sahifasidagi «Soat» — shaxmat soati (klaviatura, pauza, qaytadan, yopish)", opts, async () => {
+test("Logoda toj yo'q, brauzer ikonkasi sayt rangida; O'yin sahifasidagi «Soat» — shaxmat soati (klaviatura, pauza, qaytadan, yopish)", opts, async () => {
   const u = await srv.register('Crown');
   const p = await page(u);
   await p.evaluateOnNewDocument(() => { if (!localStorage.getItem('ccSet')) { localStorage.setItem('ccSet', '1'); localStorage.setItem('justChessSettings', JSON.stringify({ siteTheme: 'ruby' })); } });
   await p.goto(srv.base + '/oyin', { waitUntil: 'load' });
-  // Toj — mavzu rangida (Yoqut), oltin emas
-  const crown = await p.evaluate(() => {
-    const probe = document.createElement('i'); probe.style.color = 'var(--accent)'; document.body.appendChild(probe);
-    const acc = getComputedStyle(probe).color; probe.remove();
-    return { stop: getComputedStyle(document.querySelector('.logo-area .cd-crown stop:nth-child(2)')).stopColor, acc };
-  });
-  assert.equal(crown.stop, crown.acc, 'toj gradienti --accent rangida');
-  assert.notEqual(crown.stop, 'rgb(205, 127, 50)');
+  // Logoda toj yo'q (2026-11-23 olib tashlangan) — faqat «ChessCaravan» yozuvi
+  assert.equal(await p.evaluate(() => !!document.querySelector('.logo-area .cd-crown') || !document.querySelector('.logo-area .chessdom-text')), false);
   // Brauzer ikonkasi qayta bo'yaladi; firuza mavzuda — asl fayl
   await p.waitForFunction(() => [...document.querySelectorAll('link[rel="icon"]')].every((l) => l.getAttribute('href').startsWith('data:image/png')), { timeout: 10000 });
   await p.evaluate(() => window.applySiteTheme('turquoise'));
@@ -1925,6 +1920,11 @@ test("To'rt fasl: zarralar, logoda bezak, kartalar chetida naqsh; Sozlamalarda o
     assert.deepEqual(st.off, [0, 0]);
     assert.ok(st.edge, s + ': karta chetida naqsh');
     assert.equal(st.rise, s === 'summer', 'yozda nur zarralari ko\'tariladi');
+    if (s === 'autumn') {
+      // Kuzgi barglar — Kanada bayrog'idagi zarang bargi; logodagi bezak «ChessCaravan» yozuvida
+      assert.ok(await p.evaluate(() => [...document.querySelectorAll('#seasonFx i path')].every((x) => x.getAttribute('d').startsWith('M12 1.88L13.63'))));
+      assert.ok(await p.evaluate(() => !!document.querySelector('.logo-area .chessdom-text .cd-season path[d^="M12 1.88"]')));
+    }
   }
   // Jonli o'yinlar — ikki o'yinchi va VS
   assert.equal(await p.evaluate(() => document.querySelector('#navLive .ui-ic').dataset.ic), 'versus');

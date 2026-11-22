@@ -15188,27 +15188,28 @@ html[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos.svg); }
 .set-bundle-mixed { margin-top: 10px; }
 @media (max-width: 600px) { .set-bundles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
-/* ===== 🎨 O'z ikonkalarimiz (icons.js) — emojilar o'rniga, to'plam/sayt rangiga bo'yaladi ===== */
+/* ===== 🎨 O'z ikonkalarimiz (icons.js) — emojilar o'rniga. Rangi DOIM yashil (Zumrad), to'plam/sayt rangiga qaramaydi (2026-11-23, foydalanuvchi qarori) ===== */
+:root { --ic-green: #2fcf7f; --ic-green-light: #52d993; }
 .ui-ic { width: 1.15em; height: 1.15em; display: inline-block; vertical-align: -0.2em; flex: none; }
-.menu-item span.icon { color: var(--accent); }
+.menu-item span.icon { color: var(--ic-green); }
 .menu-item span.icon .ui-ic { width: 20px; height: 20px; vertical-align: middle; }
-.menu-item.active span.icon { color: var(--accent-light, var(--accent)); }
-.nf-bell .ui-ic { width: 20px; height: 20px; color: var(--accent); }
-.sb-msg-btn .ui-ic { width: 22px; height: 22px; color: var(--accent); }
-.hw-icon { color: var(--accent); }
+.menu-item.active span.icon { color: var(--ic-green-light); }
+.nf-bell .ui-ic { width: 20px; height: 20px; color: var(--ic-green); }
+.sb-msg-btn .ui-ic { width: 22px; height: 22px; color: var(--ic-green); }
+.hw-icon { color: var(--ic-green); }
 .hw-icon .ui-ic { width: 20px; height: 20px; }
-.set-nav button span .ui-ic { width: 18px; height: 18px; color: var(--accent); vertical-align: middle; }
-.set-title .ui-ic { color: var(--accent); vertical-align: -0.12em; }
+.set-nav button span .ui-ic { width: 18px; height: 18px; color: var(--ic-green); vertical-align: middle; }
+.set-title .ui-ic { color: var(--ic-green); vertical-align: -0.12em; }
 .play-big-btn .ui-ic, .tea-home-btn .ui-ic { width: 1.2em; height: 1.2em; margin-right: 6px; vertical-align: -0.24em; }
-.tea-home-btn .ui-ic { color: var(--accent); }
-.cvr-ico .ui-ic { width: 22px; height: 22px; display: block; color: var(--accent); }
+.tea-home-btn .ui-ic { color: var(--ic-green); }
+.cvr-ico .ui-ic { width: 22px; height: 22px; display: block; color: var(--ic-green); }
 .cvr-stop.on .cvr-ico .ui-ic { color: var(--on-accent); }
-.cvr-map-ico .ui-ic { width: 22px; height: 22px; display: block; color: var(--accent); }
+.cvr-map-ico .ui-ic { width: 22px; height: 22px; display: block; color: var(--ic-green); }
 .play-big-btn .ui-ic { margin-right: 0; }
 #playOnlineBtn { gap: 8px; }
 
 /* 2-bosqich: sahifalardagi emojilar o'rnidagi ikonkalar (icons.js iconizeEmojis) */
-.ic-emoji { width: 1.15em; height: 1.15em; vertical-align: -0.2em; color: var(--accent); }
+.ic-emoji { width: 1.15em; height: 1.15em; vertical-align: -0.2em; color: var(--ic-green); }
 button .ic-emoji, a[class*="btn"] .ic-emoji, [class*="-btn"] .ic-emoji, .set-mini .ic-emoji, .toast .ic-emoji { color: currentColor; }
 .ic-emoji.ic-gold { color: #f5c542; } .ic-emoji.ic-silver { color: #c3ccd4; } .ic-emoji.ic-bronze { color: #d08a4c; }
 .ic-emoji.ic-fire { color: #ff8a3d; } .ic-emoji.ic-ok { color: #51cf66; } .ic-emoji.ic-bad { color: #ff6b6b; }
@@ -15230,14 +15231,7 @@ body:has(#gameView.active-view.pg-mode-in) #bgFx *, body:has(#teamView.active-vi
 @media (prefers-reduced-motion: reduce) { #bgFx { display: none; } }
 .set-bundle-motion { margin-top: 12px; }
 
-/* ===== 👑 Logo toji — to'plam / sayt rangida (2026-11-22, foydalanuvchi tanlovi: toj + brauzer ikonkasi) ===== */
-.logo-area .cd-crown svg { filter: drop-shadow(0 0 8px rgba(var(--accent-rgb), 0.35)); }
-.logo-area .cd-crown path { stroke: var(--accent-light); }
-.logo-area .cd-crown circle[r="1.5"] { fill: var(--accent-light); }
-.logo-area .cd-crown circle[r="1"] { fill: var(--accent-deep); }
-.logo-area .cd-crown stop:nth-child(1) { stop-color: var(--accent-light); }
-.logo-area .cd-crown stop:nth-child(2) { stop-color: var(--accent); }
-.logo-area .cd-crown stop:nth-child(3) { stop-color: var(--accent-deep); }
+/* 👑 Logo toji 2026-11-23 da olib tashlangan (foydalanuvchi so'rovi); brauzer ikonkasi sayt rangida qoladi (script.js updateThemeFavicon) */
 
 /* ===== 🍂 To'rt fasl (2026-11-22, seasons.js): zarralar, logoda bezak, kartalar chetida naqsh — kam, sekin, xira ===== */
 html[data-season] .main-wrapper { isolation: isolate; }
@@ -15253,17 +15247,23 @@ html[data-season] .main-wrapper { isolation: isolate; }
 body:has(#gameView.active-view.pg-mode-in) #seasonFx *, body:has(#teamView.active-view.tm-playing) #seasonFx *, body:has(#footView.active-view.fc-playing) #seasonFx * { animation-play-state: paused !important; }
 @media (prefers-reduced-motion: reduce) { #seasonFx { display: none; } }
 /* Logodagi bezak (toj ustida) */
-.logo-area .cd-crown { isolation: isolate; }
+.logo-area .chessdom-text { position: relative; }
 .logo-area .cd-season { position: absolute; pointer-events: none; line-height: 0; }
 .logo-area .cd-season svg { display: block; }
-.logo-area .cd-season[data-s="winter"] { left: -2px; top: -5px; }
-.logo-area .cd-season[data-s="spring"] { right: -6px; top: -5px; }
-.logo-area .cd-season[data-s="summer"] { left: 50%; top: 50%; transform: translate(-50%, -58%); z-index: -1; }
-.logo-area .cd-season[data-s="autumn"] { right: -5px; top: 1px; transform: rotate(22deg); }
+.logo-area .cd-season[data-s="winter"] { left: -2px; top: -4px; }
+.logo-area .cd-season[data-s="spring"] { right: -9px; top: -7px; }
+.logo-area .cd-season[data-s="summer"] { right: -11px; top: -8px; }
+.logo-area .cd-season[data-s="autumn"] { right: -10px; top: -7px; transform: rotate(18deg); }
 /* Kartalar tepa chetida nozik naqsh (o'zimiz chizgan, 64×14 plitka) */
 html[data-season] :is(.dash-card:not(.streak-banner), .lv-side, .lv-stage) { position: relative; }
 html[data-season] :is(.dash-card:not(.streak-banner), .lv-side, .lv-stage)::after { content: ''; position: absolute; left: 18px; right: 18px; top: 1px; height: 14px; background: var(--season-edge) repeat-x left top / 64px 14px; opacity: 0.55; pointer-events: none; z-index: 1; }
 html[data-season="winter"] { --season-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='14'%3E%3Cpath d='M0 1h64' stroke='%23eaf4ff' stroke-opacity='.45'/%3E%3Cpath d='M5 1l1.5 7 1.5-7zM19 1l1 4 1-4zM33 1l1.8 9 1.8-9zM48 1l1 5 1-5z' fill='%23eaf4ff' fill-opacity='.6'/%3E%3Cg stroke='%23eaf4ff' stroke-opacity='.65' stroke-width='.9' stroke-linecap='round'%3E%3Cpath d='M26 5.5v5M23.8 6.8l4.4 2.5M23.8 9.3l4.4-2.5M58 4v4M56.3 5l3.4 2M56.3 7l3.4-2'/%3E%3C/g%3E%3C/svg%3E"); }
 html[data-season="spring"] { --season-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='14'%3E%3Cpath d='M0 3c10 3 22 3 32 0s22-3 32 0' stroke='%23a07a5a' stroke-opacity='.6' fill='none'/%3E%3Cg fill='%23ffd1dc'%3E%3Ccircle cx='12' cy='6' r='1.6'/%3E%3Ccircle cx='14.6' cy='6.6' r='1.6'/%3E%3Ccircle cx='13.8' cy='9' r='1.6'/%3E%3Ccircle cx='11' cy='9' r='1.6'/%3E%3Ccircle cx='10.3' cy='6.6' r='1.6'/%3E%3Ccircle cx='46' cy='5' r='1.3'/%3E%3Ccircle cx='48.2' cy='5.5' r='1.3'/%3E%3Ccircle cx='47.5' cy='7.6' r='1.3'/%3E%3Ccircle cx='45.2' cy='7.6' r='1.3'/%3E%3Ccircle cx='44.6' cy='5.5' r='1.3'/%3E%3C/g%3E%3Ccircle cx='12.5' cy='7.5' r='.9' fill='%23f2b84b'/%3E%3Ccircle cx='46.3' cy='6.3' r='.7' fill='%23f2b84b'/%3E%3Cpath d='M28 3.4c1.5 2 3.5 2.5 5 1.6-1.4-1.8-3.4-2.4-5-1.6z' fill='%238fbf6a'/%3E%3C/svg%3E"); }
 html[data-season="summer"] { --season-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='14'%3E%3Cpath d='M0 2h64' stroke='%23ffd36b' stroke-opacity='.4' stroke-dasharray='1 4'/%3E%3Cg stroke='%23ffd36b' stroke-opacity='.75' stroke-width='.9' stroke-linecap='round'%3E%3Ccircle cx='16' cy='7' r='2' fill='%23ffd36b' fill-opacity='.7' stroke='none'/%3E%3Cpath d='M16 2.6v1.3M16 10.1v1.3M11.6 7h1.3M19.1 7h1.3M12.9 3.9l.9.9M18.2 9.2l.9.9M12.9 10.1l.9-.9M18.2 4.8l.9-.9'/%3E%3C/g%3E%3Ccircle cx='44' cy='6' r='1.2' fill='%23ffe08a' fill-opacity='.7'/%3E%3C/svg%3E"); }
-html[data-season="autumn"] { --season-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='14'%3E%3Cpath d='M0 2c10 2 22 2 32 0s22-2 32 0' stroke='%23a8562a' stroke-opacity='.55' fill='none'/%3E%3Cpath d='M12 3c3 2 3.6 5 0 8.5-3.6-3.5-3-6.5 0-8.5z' fill='%23e8892e' fill-opacity='.85'/%3E%3Cpath d='M42 2.6c2.4 1.6 2.9 4 0 6.8-2.9-2.8-2.4-5.2 0-6.8z' fill='%23c4472b' fill-opacity='.85' transform='rotate(-25 42 6)'/%3E%3Cpath d='M28 2.4c1.8 1.2 2.2 3 0 5.1-2.2-2.1-1.8-3.9 0-5.1z' fill='%23e3b23c' fill-opacity='.8' transform='rotate(30 28 5)'/%3E%3C/svg%3E"); }
+html[data-season="autumn"] { --season-edge: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='14'%3E%3Cpath d='M0 2c10 2 22 2 32 0s22-2 32 0' stroke='%23a8562a' stroke-opacity='.55' fill='none'/%3E%3Cpath transform='translate(12 7.5) rotate(-8) scale(0.42) translate(-12 -12)' d='M12 1.88L13.63 5.25L15.75 4.13L15.13 9.38L18.25 6.13L19 8.13L22.25 7.25L20.88 10.88L22.5 12L18.25 15.25L19.13 17.13L13.13 16.25L12.75 22.13L11.25 22.13L10.88 16.25L4.88 17.13L5.75 15.25L1.5 12L3.13 10.88L1.75 7.25L5 8.13L5.75 6.13L8.88 9.38L8.25 4.13L10.38 5.25z' fill='%23e8892e' fill-opacity='.85'/%3E%3Cpath transform='translate(30 6) rotate(20) scale(0.3) translate(-12 -12)' d='M12 1.88L13.63 5.25L15.75 4.13L15.13 9.38L18.25 6.13L19 8.13L22.25 7.25L20.88 10.88L22.5 12L18.25 15.25L19.13 17.13L13.13 16.25L12.75 22.13L11.25 22.13L10.88 16.25L4.88 17.13L5.75 15.25L1.5 12L3.13 10.88L1.75 7.25L5 8.13L5.75 6.13L8.88 9.38L8.25 4.13L10.38 5.25z' fill='%23e3b23c' fill-opacity='.85'/%3E%3Cpath transform='translate(47 7) rotate(-22) scale(0.38) translate(-12 -12)' d='M12 1.88L13.63 5.25L15.75 4.13L15.13 9.38L18.25 6.13L19 8.13L22.25 7.25L20.88 10.88L22.5 12L18.25 15.25L19.13 17.13L13.13 16.25L12.75 22.13L11.25 22.13L10.88 16.25L4.88 17.13L5.75 15.25L1.5 12L3.13 10.88L1.75 7.25L5 8.13L5.75 6.13L8.88 9.38L8.25 4.13L10.38 5.25z' fill='%23c4472b' fill-opacity='.85'/%3E%3C/svg%3E"); }
+
+/* ===== 🟩 Bosh sahifaning chap kartasi (Onlayn o'ynash, Choyxona, Taklif, Liga, Xabarlar, Jonli) — DOIM yashil (Zumrad), to'plam/sayt rangiga qaramaydi (2026-11-23, foydalanuvchi qarori) ===== */
+#homeView .dash-card:not(.home-about):not(.tw-card):not(.streak-banner) {
+  --accent: #2fcf7f; --accent-rgb: 47, 207, 127; --accent-light: #52d993; --accent-dark: #22b56b; --accent-hover: #6ee2a6; --accent-deep: #178a50;
+  --cd-accent: #2fcf7f; --cd-accent-hover: #6ee2a6; --cd-accent-soft: rgba(47, 207, 127, 0.14);
+}

@@ -9,6 +9,8 @@
   else root.Seasons = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   const SEASONS = ['winter', 'spring', 'summer', 'autumn'];
+  // Zarang bargi — Kanada bayrog'idagi kabi (2026-11-23, foydalanuvchi so'rovi), 24×24
+  const MAPLE = 'M12 1.88L13.63 5.25L15.75 4.13L15.13 9.38L18.25 6.13L19 8.13L22.25 7.25L20.88 10.88L22.5 12L18.25 15.25L19.13 17.13L13.13 16.25L12.75 22.13L11.25 22.13L10.88 16.25L4.88 17.13L5.75 15.25L1.5 12L3.13 10.88L1.75 7.25L5 8.13L5.75 6.13L8.88 9.38L8.25 4.13L10.38 5.25z';
   const TASHKENT = 5 * 3600 * 1000;
   function seasonOf(date) {
     const m = new Date((date ? +date : Date.now()) + TASHKENT).getUTCMonth(); // 0 = yanvar
@@ -17,19 +19,19 @@
   const api = { SEASONS, seasonOf };
   if (typeof document === 'undefined') return api;
 
-  // ---- Logodagi bezak (toj 20×16 ga nisbatan; chiziqlar emas, kichik shakllar)
+  // ---- Logodagi bezak — «ChessCaravan» yozuvi chetida (toj 2026-11-23 da olib tashlangan)
   const LOGO = {
-    // toj tishlari ustida qor
+    // birinchi harflar ustida qor
     winter: '<svg viewBox="0 0 24 10" width="24" height="10"><path d="M1.2 7.5c0-1.6 1.3-2.2 2.3-1.6.4-1.3 2-1.5 2.6-.3.7-1 2.1-.7 2.2.5H1.2zM8.6 3.6c.2-1.7 2.2-2.3 3.2-1 .9-1.5 3-1 3.2.6.9-.2 1.6.4 1.6 1.2H8.6c-.6 0-.2-.8 0-.8zM16.2 7.5c0-1.2 1.2-1.9 2.2-1.3.5-1.1 2.1-1.2 2.6 0 .9-.4 1.9.3 1.8 1.3h-6.6z" fill="#f4f8ff"/></svg>',
-    // o'ng tishda o'rik guli
+    // yozuv oxirida o'rik guli
     spring: '<svg viewBox="0 0 12 12" width="11" height="11"><g fill="#ffd6e0">' + [0, 72, 144, 216, 288].map((a) => `<ellipse cx="6" cy="3.2" rx="1.9" ry="2.6" transform="rotate(${a} 6 6)"/>`).join('') + '</g><circle cx="6" cy="6" r="1.4" fill="#f2b84b"/></svg>',
-    // toj ortida yumshoq quyosh nuri
-    summer: '<svg viewBox="0 0 28 28" width="28" height="28"><g stroke="#ffd36b" stroke-width="1.4" stroke-linecap="round" opacity=".75">' + [0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<path d="M14 2.5v3.2" transform="rotate(${a} 14 14)"/>`).join('') + '</g></svg>',
-    // o'ng tishga ilingan barg
-    autumn: '<svg viewBox="0 0 12 14" width="10" height="12"><path d="M6 1C9.5 3.5 10.5 7.5 6 12.5 1.5 7.5 2.5 3.5 6 1z" fill="#e8892e"/><path d="M6 2.5v10.5M6 6l-1.8-1.3M6 8.4l2-1.4" stroke="#8a3f12" stroke-width=".8" stroke-linecap="round" fill="none"/></svg>',
+    // yozuv oxirida kichik quyosh
+    summer: '<svg viewBox="0 0 24 24" width="13" height="13"><circle cx="12" cy="12" r="4.6" fill="#ffd36b"/><g stroke="#ffd36b" stroke-width="2" stroke-linecap="round">' + [0, 45, 90, 135, 180, 225, 270, 315].map((a) => '<path d="M12 2.2v3" transform="rotate(' + a + ' 12 12)"/>').join('') + '</g></svg>',
+    // yozuv chetida zarang bargi
+    autumn: '<svg viewBox="0 0 24 24" width="12" height="12"><path d="' + MAPLE + '" fill="#d9482b"/></svg>',
   };
   // ---- Zarralar (kichik, xira; har faslda o'z shakli va harakati)
-  const leaf = (c) => `<svg viewBox="0 0 12 14"><path d="M6 1C9.5 3.5 10.5 7.5 6 12.5 1.5 7.5 2.5 3.5 6 1z" fill="${c}"/><path d="M6 2.5v10.5" stroke="rgba(0,0,0,.25)" stroke-width=".8"/></svg>`;
+  const leaf = (c) => '<svg viewBox="0 0 24 24"><path d="' + MAPLE + '" fill="' + c + '"/></svg>';
   const FX = {
     winter: { n: [18, 10], size: [5, 12], dur: [14, 26], shapes: [
       '<svg viewBox="0 0 10 10"><circle cx="5" cy="5" r="4" fill="#fff"/></svg>',
@@ -74,7 +76,7 @@
     host.innerHTML = html;
   }
   function logo(season) {
-    document.querySelectorAll('.logo-area .cd-crown').forEach((c) => {
+    document.querySelectorAll('.logo-area .chessdom-text').forEach((c) => {
       let el = c.querySelector('.cd-season');
       if (!season) { if (el) el.remove(); return; }
       if (!el) { el = document.createElement('span'); el.className = 'cd-season'; el.setAttribute('aria-hidden', 'true'); c.appendChild(el); }

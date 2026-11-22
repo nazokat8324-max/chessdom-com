@@ -1805,8 +1805,6 @@ window.TRANSLATIONS_ZH = {
   libViews: "{{n}} 次观看",
 
   libAllVideos: "频道里的全部视频",
-  setSeason: "季节装饰",
-  setSeasonHint: "随季节变化：冬季飘雪，春季杏花，夏季阳光，秋季落叶——出现在标志、卡片边缘和背景中。对局进行时会暂停。",
   ccTitle: "棋钟",
   ccShort: "棋钟",
   ccDesc: "用于实体棋盘：把手机放在两人中间，各自点击自己的一侧。",

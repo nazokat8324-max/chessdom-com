@@ -1902,44 +1902,6 @@ test("Logo toji va brauzer ikonkasi sayt rangida; O'yin sahifasidagi «Soat» �
   assert.deepEqual(p.errors, []);
 });
 
-test("To'rt fasl: zarralar, logoda bezak, kartalar chetida naqsh; Sozlamalarda o'chiriladi; Jonli o'yinlar — «VS» ikonkasi", opts, async () => {
-  const u = await srv.register('Fasl');
-  const p = await page(u);
-  await p.goto(srv.base + '/', { waitUntil: 'load' });
-  await p.waitForFunction(() => !!document.documentElement.dataset.season && document.querySelectorAll('#seasonFx i').length > 0, { timeout: 15000 });
-  assert.equal(await p.evaluate(() => document.documentElement.dataset.season), await p.evaluate(() => window.Seasons.seasonOf()));
-  for (const s of ['winter', 'spring', 'summer', 'autumn']) {
-    await p.evaluate((x) => window.Seasons.force(x), s);
-    const st = await p.evaluate(() => {
-      const fx = document.getElementById('seasonFx'), w = document.querySelector('.main-wrapper').getBoundingClientRect(), r = fx.getBoundingClientRect();
-      const card = document.querySelector('.dash-card.home-about');
-      return { season: document.documentElement.dataset.season, logo: (document.querySelector('.logo-area .cd-season') || {}).dataset?.s, n: fx.querySelectorAll('i').length,
-        z: getComputedStyle(fx).zIndex, inWrap: fx.parentElement.classList.contains('main-wrapper'), off: [r.left - w.left, r.width - w.width].map(Math.round),
-        edge: getComputedStyle(card, '::after').backgroundImage.startsWith('url("data:image/svg+xml'), rise: fx.classList.contains('rise') };
-    });
-    assert.equal(st.season, s);
-    assert.equal(st.logo, s, s + ': logoda bezak');
-    assert.ok(st.n >= 7 && st.n <= 18, s + ': zarralar kam (' + st.n + ')');
-    assert.equal(st.z, '-1', 'zarralar kontent ostida');
-    assert.ok(st.inWrap);
-    assert.deepEqual(st.off, [0, 0]);
-    assert.ok(st.edge, s + ': karta chetida naqsh');
-    assert.equal(st.rise, s === 'summer', 'yozda nur zarralari ko\'tariladi');
-  }
-  // Jonli o'yinlar — ikki o'yinchi va VS
-  assert.equal(await p.evaluate(() => document.querySelector('#navLive .ui-ic').dataset.ic), 'versus');
-  // Sozlamalar → To'plamlar → «Fasl bezaklari» o'chiriladi
-  await p.evaluate(() => window.switchView('settings'));
-  await p.waitForSelector('[data-section="bundles"]', { timeout: 8000 });
-  await p.evaluate(() => document.querySelector('[data-section="bundles"]').click());
-  await p.waitForSelector('[data-bool="seasonDecor"]', { timeout: 5000 });
-  await p.evaluate(() => document.querySelector('[data-bool="seasonDecor"]').click());
-  await p.waitForFunction(() => !document.documentElement.dataset.season && !document.querySelector('.cd-season') && document.getElementById('seasonFx').hidden, { timeout: 5000 });
-  await p.evaluate(() => document.querySelector('[data-save]').click());
-  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings')).seasonDecor), false);
-  assert.deepEqual(p.errors, []);
-});
-
 test("Boshqa to'plamlar ham jonli: Karvon — tuyalar qatlamda yuradi, fon tuyasiz asos; to'plam almashsa qatlam ham almashadi; sahifa klasslariga tegmaydi", opts, async () => {
   const u = await srv.register('BgFx2');
   const p = await page(u);

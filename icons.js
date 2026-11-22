@@ -10,8 +10,6 @@
     ball: '<circle cx="12" cy="12" r="8.5"/><path d="m12 8 3.4 2.4-1.3 4h-4.2l-1.3-4z"/><path d="M12 3.5V8M15.4 10.4l4.3-1.3M14.1 14.4l2.6 3.6M9.9 14.4l-2.6 3.6M8.6 10.4 4.3 9.1"/>',
     medal: '<path d="M8 3h8l-2.6 6.2h-2.8z"/><circle cx="12" cy="15" r="5.5"/><path d="m12 12.3.9 1.8 2 .3-1.45 1.4.35 2L12 16.85l-1.8.95.35-2-1.45-1.4 2-.3z"/>',
     tv: '<rect x="3" y="6.5" width="18" height="13" rx="2.5"/><path d="M8.5 3 12 6.5 15.5 3"/><path d="M10.5 10.3v5.4l4.3-2.7z"/>',
-    // Jonli o'yinlar: ikki o'yinchi va o'rtada VS (2026-11-22, foydalanuvchi so'rovi)
-    versus: '<circle cx="3.6" cy="8" r="2.3"/><path d="M.6 19a3 3 0 0 1 6 0"/><circle cx="20.4" cy="8" r="2.3"/><path d="M17.4 19a3 3 0 0 1 6 0"/><path d="M8.3 8.8l1.5 6.2 1.5-6.2"/><path d="M15.7 9.7c-.35-.55-.95-.9-1.6-.9-.8 0-1.4.5-1.4 1.2 0 1.6 3.1 1.15 3.1 2.95 0 .75-.65 1.3-1.5 1.3-.7 0-1.35-.3-1.75-.85"/>',
     chat: '<path d="M4 5.5h16v10.5H9.5L4 20z"/><path d="M8.5 10.8h.01M12 10.8h.01M15.5 10.8h.01" stroke-width="2.6"/>',
     shield: '<path d="M12 3 19.5 6v5.5c0 4.6-3.2 8-7.5 9.5-4.3-1.5-7.5-4.9-7.5-9.5V6z"/><path d="M12 6.5v11M7.5 11h9" opacity=".55"/>',
     trophy: '<path d="M7.5 4h9v5.2a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 6h-3v1.4a3.2 3.2 0 0 0 3.2 3.2M16.5 6h3v1.4a3.2 3.2 0 0 1-3.2 3.2"/><path d="M12 13.8v3M9 20.5h6M10 16.8h4v3.7h-4z"/>',
@@ -116,7 +114,7 @@
 
   // Yon menyu bandlari → ikonka (mobile-route.js ham shu ikonkalarni yo'l bekatlarida ko'rsatadi)
   const NAV_ICONS = {
-    navHome: 'home', navPlay: 'board', navTea: 'tea', navFoot: 'ball', navLeaderboard: 'medal', navLive: 'versus',
+    navHome: 'home', navPlay: 'board', navTea: 'tea', navFoot: 'ball', navLeaderboard: 'medal', navLive: 'tv',
     navMessages: 'chat', navClubs: 'shield', navLeagues: 'trophy', navWar: 'flag', navCaravan: 'camel',
     navLibrary: 'books', navAdmin: 'admin', navMore: 'menu'
   };

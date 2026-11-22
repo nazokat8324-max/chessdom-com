@@ -3021,8 +3021,6 @@ const translationsExtra = {
     libViews: "{{n}} marta ko'rilgan",
 
     libAllVideos: "Barcha videolar kanalda",
-    setSeason: "Fasl bezaklari",
-    setSeasonHint: "Joriy faslga qarab: qishda qor, bahorda o'rik gullari, yozda quyosh nuri, kuzda barglar — logoda, kartalar chetida va fonda. O'yin paytida to'xtaydi.",
     ccTitle: "Shaxmat soati",
     ccShort: "Soat",
     ccDesc: "Haqiqiy taxtada o'ynash uchun: telefonni o'rtaga qo'ying, har kim o'z tomonini bosadi.",
@@ -4894,8 +4892,6 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
-    setSeason: "Seasonal decorations",
-    setSeasonHint: "Follows the season: snow in winter, apricot blossom in spring, sunlight in summer, leaves in autumn — on the logo, card edges and background. Pauses during a game.",
     ccTitle: "Chess clock",
     ccShort: "Clock",
     ccDesc: "For a real board: put the phone between you, each player taps their own side.",
@@ -6767,8 +6763,6 @@ const translationsExtra = {
     libViews: "Просмотров: {{n}}",
 
     libAllVideos: "Все видео на канале",
-    setSeason: "Сезонные украшения",
-    setSeasonHint: "По времени года: зимой снег, весной цветы абрикоса, летом солнечный свет, осенью листья — на логотипе, краях карточек и фоне. Во время партии останавливается.",
     ccTitle: "Шахматные часы",
     ccShort: "Часы",
     ccDesc: "Для настоящей доски: положите телефон между игроками, каждый нажимает свою половину.",
@@ -8640,8 +8634,6 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
-    setSeason: "Decoración de temporada",
-    setSeasonHint: "Según la estación: nieve en invierno, flor de albaricoque en primavera, luz de sol en verano, hojas en otoño — en el logo, los bordes de las tarjetas y el fondo. Se detiene durante la partida.",
     ccTitle: "Reloj de ajedrez",
     ccShort: "Reloj",
     ccDesc: "Para un tablero real: pon el teléfono entre los dos y cada uno toca su lado.",
@@ -10513,8 +10505,6 @@ const translationsExtra = {
     libViews: "Aufrufe: {{n}}",
 
     libAllVideos: "Alle Videos auf dem Kanal",
-    setSeason: "Jahreszeiten-Schmuck",
-    setSeasonHint: "Passend zur Jahreszeit: Schnee im Winter, Aprikosenblüten im Frühling, Sonnenlicht im Sommer, Blätter im Herbst — am Logo, an Kartenrändern und im Hintergrund. Hält während einer Partie an.",
     ccTitle: "Schachuhr",
     ccShort: "Uhr",
     ccDesc: "Für ein echtes Brett: Handy zwischen euch legen, jeder tippt auf seine Seite.",
@@ -12386,8 +12376,6 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
-    setSeason: "Décor de saison",
-    setSeasonHint: "Selon la saison : neige en hiver, fleurs d'abricotier au printemps, soleil en été, feuilles en automne — sur le logo, le bord des cartes et le fond. S'arrête pendant une partie.",
     ccTitle: "Pendule d'échecs",
     ccShort: "Pendule",
     ccDesc: "Pour un vrai échiquier : posez le téléphone entre vous, chacun touche son côté.",

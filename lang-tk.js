@@ -1805,8 +1805,6 @@ window.TRANSLATIONS_TK = {
   libViews: "Görülen: {{n}}",
 
   libAllVideos: "Ähli wideolar kanalda",
-  setSeason: "Pasyl bezegleri",
-  setSeasonHint: "Pasyla görä: gyşda gar, ýazda erik güli, tomusda gün şöhlesi, güýzde ýapraklar — logotipde, kartlaryň gyrasynda we fonda. Oýun wagtynda togtaýar.",
   ccTitle: "Küşt sagady",
   ccShort: "Sagat",
   ccDesc: "Hakyky tagta üçin: telefony ortada goýuň, her kim öz tarapyna basýar.",

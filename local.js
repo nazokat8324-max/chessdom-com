@@ -96,12 +96,3 @@
     return r;
   };
 })();
-
-// ⏱ Shaxmat soati (2026-11-22) — haqiqiy taxtada o'ynash uchun; komponent chessclock.js (internetsiz sahifa bilan umumiy)
-window.openChessClock = function () {
-  if (!window.ChessClock) return;
-  window.ChessClock.open({
-    t: (k, fb) => (typeof tx === 'function' ? tx(k, fb) : fb),
-    play: (n) => { if (typeof playSound === 'function') playSound(n === 'game-end' ? 'gameEnd' : n); },
-  });
-};

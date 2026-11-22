@@ -227,9 +227,6 @@
     }
     document.querySelectorAll('[data-game]').forEach((b) => b.addEventListener('click', () => openGame(b.getAttribute('data-game'))));
     $('ogBack').addEventListener('click', closeGame);
-    // ⏱ Shaxmat soati — butun ekranli oyna (chessclock.js, sayt bilan umumiy)
-    const clockCard = $('ogClockCard');
-    if (clockCard) clockCard.addEventListener('click', () => { if (window.ChessClock) window.ChessClock.open({ t: (k) => t(k), play }); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !stage.hidden && $('ogPromo').hidden) closeGame(); });
     const button = (label, fn, cls) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'og-btn' + (cls ? ' ' + cls : ''); b.textContent = label; b.addEventListener('click', fn); ctl.appendChild(b); return b; };
     const say = (text, kind) => { msg.textContent = text; msg.className = 'og-msg' + (kind ? ' ' + kind : ''); };

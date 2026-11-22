@@ -6,7 +6,7 @@ const OFFLINE = '/offline.html';
 // Internetsiz o'yinlar (offline.html): qoidalar, matnlar, donalar (Karvon to'plami) va yog'och ovozlari
 const PIECES = ['K', 'Q', 'R', 'B', 'N', 'P'].flatMap((p) => ['w', 'b'].map((c) => '/img/chesspieces/karvon/' + c + p + '.svg'));
 const PRECACHE = [OFFLINE, '/assets/icons/icon-192.png', '/assets/icons/badge-96.png',
-  '/vendor/chess-0.10.3.min.js', '/chess960.js', '/shatranj.js', '/uzcyrl.js', '/offline-texts.js', '/offline-games.js', '/chessclock.js',
+  '/vendor/chess-0.10.3.min.js', '/chess960.js', '/shatranj.js', '/uzcyrl.js', '/offline-texts.js', '/offline-games.js',
   '/assets/sounds/wood/move.wav', '/assets/sounds/wood/capture.wav', '/assets/sounds/wood/game-end.wav'].concat(PIECES);
 let offlineRefreshed = false;
 

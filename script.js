@@ -1967,61 +1967,8 @@ window.applySiteTheme = function(theme) {
   document.querySelectorAll('[data-theme-option]').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.themeOption === name);
   });
-  if (typeof window.updateThemeFavicon === 'function') window.updateThemeFavicon(name);
   return name;
 };
-
-// 👑 Brauzer tabidagi ikonka sayt (to'plam) rangida (2026-11-22, foydalanuvchi tanlovi). Asl ikonka (firuza fon + oq ot) canvasda
-// qayta bo'yaladi: oq qismlar oq qoladi, firuza — joriy --accent (yorug'ligi saqlanadi). Firuza mavzuda — asl fayl.
-// O'rnatilgan ilovaning bosh ekrandagi ikonkasi (manifest) o'zgarmaydi — brauzerlar bunga ruxsat bermaydi.
-(function () {
-  let img = null, ready = null, want = null;
-  const links = () => Array.from(document.querySelectorAll('link[rel="icon"]'));
-  function rgbOf(color) {
-    const c = document.createElement('canvas').getContext('2d');
-    c.fillStyle = '#000'; c.fillStyle = color;
-    const m = /^#([0-9a-f]{6})$/i.exec(c.fillStyle);
-    if (m) return [0, 2, 4].map((i) => parseInt(m[1].substr(i, 2), 16));
-    const n = (c.fillStyle.match(/\d+/g) || []).map(Number);
-    return n.length >= 3 ? n.slice(0, 3) : null;
-  }
-  function paint(theme) {
-    if (want !== theme) return;
-    const list = links();
-    if (!list.length) return;
-    list.forEach((l) => { if (!l.dataset.orig) l.dataset.orig = l.getAttribute('href'); });
-    if (theme === 'turquoise') { list.forEach((l) => l.setAttribute('href', l.dataset.orig)); return; }
-    const acc = rgbOf(getComputedStyle(document.documentElement).getPropertyValue('--accent').trim());
-    if (!acc || !img || !img.naturalWidth) return;
-    try {
-      const S = 64, cv = document.createElement('canvas');
-      cv.width = cv.height = S;
-      const ctx = cv.getContext('2d');
-      ctx.drawImage(img, 0, 0, S, S);
-      const d = ctx.getImageData(0, 0, S, S), p = d.data;
-      for (let i = 0; i < p.length; i += 4) {
-        const r = p[i], g = p[i + 1], b = p[i + 2];
-        const white = Math.min(1, Math.max(0, (r - 40) / 200)); // firuzada qizil kanal past, oqda yuqori
-        const lum = (g + b) / 2 / 205; // firuza fonning yorug'ligi (gradient)
-        for (let k = 0; k < 3; k++) {
-          const base = Math.min(255, acc[k] * lum);
-          p[i + k] = Math.round(base + (255 - base) * white);
-        }
-      }
-      ctx.putImageData(d, 0, 0);
-      const url = cv.toDataURL('image/png');
-      list.forEach((l) => l.setAttribute('href', url));
-    } catch (e) { /* asl ikonka qoladi */ }
-  }
-  window.updateThemeFavicon = function (theme) {
-    want = theme;
-    if (theme === 'turquoise') { paint(theme); return; }
-    if (!ready) {
-      ready = new Promise((res) => { img = new Image(); img.onload = res; img.onerror = res; img.src = '/assets/icons/favicon-64.png'; });
-    }
-    ready.then(() => requestAnimationFrame(() => paint(theme)));
-  };
-})();
 
 // Taxta ko'rinishi: 'auto' (sayt mavzusiga mos — standart) yoki o'zimizning 10 ta taxtadan biri (<html data-board>)
 window.BOARD_STYLES = ['marble', 'wood', 'tournament', 'rishton', 'teahouse', 'desert', 'night', 'paper', 'ice', 'suzani', 'malachite', 'koshin', 'felt', 'silk'];

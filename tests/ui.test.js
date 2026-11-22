@@ -1142,7 +1142,9 @@ test("Bahs: chaqiruvda tanlanadi, o'yin panelida hisob, keyingi o'yin tugmasi, p
   const sb = await srv.connect(b);
   sb.emit('challenge-send', { username: a.name, initial: 180, increment: 2, rated: false, series: 3 });
   await p.waitForSelector('#challengeModal [data-accept]', { visible: true, timeout: 8000 });
-  assert.deepEqual(await p.evaluate(() => { const e = document.querySelector('#challengeModal .ch-sub'); return [/3/.test(e.textContent), !!e.querySelector('.ui-ic[data-ic="swords"]')]; }), [true, true], '⚔️ (ikonka) 3');
+  // Emoji keyingi kadrda ikonkaga aylanadi (icons.js, requestAnimationFrame) — sekin CI da darhol tekshirilsa hali emoji bo'ladi
+  await p.waitForFunction(() => { const e = document.querySelector('#challengeModal .ch-sub'); return e && /3/.test(e.textContent) && e.querySelector('.ui-ic[data-ic="swords"]'); }, { timeout: 5000 })
+    .catch(() => { throw new Error('⚔️ (ikonka) 3 — chaqiruv oynasida ko\'rinmadi'); });
   const found = new Promise((r) => sb.once('match-found', r));
   await p.click('#challengeModal [data-accept]');
   const m = await found;
@@ -2495,6 +2497,7 @@ test("Klub yutuqlari: rahbariyat va yangiliklar o'rnida kuboklar va musobaqalard
   const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
   await p.goto(srv.base + '/klublar?club=Mongolia', { waitUntil: 'load' });
   await p.waitForSelector('#clHonours .cl-trophies', { timeout: 15000 });
+  await p.waitForSelector('#clHonours h3 .ui-ic', { timeout: 5000 }); // 🏅 keyingi kadrda ikonkaga aylanadi (icons.js)
   const h = await p.evaluate(() => ({
     title: document.querySelector('#clHonours h3').textContent.trim(),
     trophies: [...document.querySelectorAll('#clHonours .cl-trophy')].map((t) => [t.classList.contains('none'), t.querySelector('b').textContent]),

@@ -205,7 +205,7 @@
     renderList();
   }
 
-  const placeholder = () => `<div class="lv-placeholder"><span>📺</span><p>${esc(tx('lvPick', "Tomosha qilish uchun o'yinni tanlang"))}</p></div>`;
+  const placeholder = () => `<div class="lv-placeholder"><span>${window.iconSvg ? window.iconSvg('versus', 'ic-emoji') : '📺'}</span><p>${esc(tx('lvPick', "Tomosha qilish uchun o'yinni tanlang"))}</p></div>`;
 
   window.renderLiveView = function () {
     const root = document.getElementById('liveRoot');
@@ -214,7 +214,7 @@
       root.innerHTML = `
         <div class="lv-layout">
           <aside class="lv-side">
-            <div class="lv-head"><h2>📺 ${esc(tx('mLive', "Jonli o'yinlar"))}</h2><span id="lvCount"></span></div>
+            <div class="lv-head"><h2>${window.iconSvg ? window.iconSvg('versus', 'ic-emoji') : '📺'} ${esc(tx('mLive', "Jonli o'yinlar"))}</h2><span id="lvCount"></span></div>
             <div class="lv-list" id="lvList"></div>
           </aside>
           <section class="lv-stage" id="lvStage">${placeholder()}</section>

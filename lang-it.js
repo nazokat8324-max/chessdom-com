@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_IT = {
   libViews: "Visualizzazioni: {{n}}",
 
   libAllVideos: "Tutti i video sul canale",
+  setSeason: "Decorazioni stagionali",
+  setSeasonHint: "Segue la stagione: neve d'inverno, fiori di albicocco in primavera, luce del sole d'estate, foglie d'autunno — sul logo, sui bordi delle schede e sullo sfondo. Si ferma durante la partita.",
   ccTitle: "Orologio da scacchi",
   ccShort: "Orologio",
   ccDesc: "Per una scacchiera vera: metti il telefono tra voi, ognuno tocca il proprio lato.",

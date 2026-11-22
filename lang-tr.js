@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_TR = {
   libViews: "İzlenme: {{n}}",
 
   libAllVideos: "Tüm videolar kanalda",
+  setSeason: "Mevsim süsleri",
+  setSeasonHint: "Mevsime göre: kışın kar, baharda kayısı çiçekleri, yazın güneş ışığı, sonbaharda yapraklar — logoda, kart kenarlarında ve arka planda. Oyun sırasında durur.",
   ccTitle: "Satranç saati",
   ccShort: "Saat",
   ccDesc: "Gerçek tahta için: telefonu aranıza koyun, herkes kendi tarafına dokunur.",

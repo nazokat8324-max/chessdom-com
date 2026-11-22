@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_AZ = {
   libViews: "Baxış: {{n}}",
 
   libAllVideos: "Bütün videolar kanalda",
+  setSeason: "Mövsüm bəzəkləri",
+  setSeasonHint: "Mövsümə görə: qışda qar, yazda ərik çiçəkləri, yayda günəş işığı, payızda yarpaqlar — loqoda, kartların kənarında və fonda. Oyun zamanı dayanır.",
   ccTitle: "Şahmat saatı",
   ccShort: "Saat",
   ccDesc: "Əsl taxta üçün: telefonu ortaya qoy, hər kəs öz tərəfinə toxunur.",

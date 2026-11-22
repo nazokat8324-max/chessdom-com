@@ -49,7 +49,7 @@
 
   function liveCard() {
     return `<button class="hw-card hw-mini" data-go="live">
-      <span class="hw-icon">${ic('tv', '📺')}</span>
+      <span class="hw-icon">${ic('versus', '📺')}</span>
       <span class="hw-text"><b>${esc(tx('mLive', "Jonli o'yinlar"))}</b><small>${esc(st.live ? tx('hwLiveN', "Hozir {{n}} ta o'yin davom etmoqda", { n: st.live }) : tx('hwLiveNone', "Hozir o'yin yo'q"))}</small></span>
       ${st.live ? `<span class="hw-count">${st.live}</span>` : ''}
     </button>`;

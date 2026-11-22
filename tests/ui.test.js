@@ -2343,12 +2343,18 @@ test("Fair-play admin: dvigatel tahlili ko'rsatkichlari va 'Oxirgi 10 o'yinni te
   await p.goto(srv.base + '/admin', { waitUntil: 'domcontentloaded' });
   await p.waitForSelector('#adminRoot [data-atab]', { timeout: 15000 });
   await p.evaluate(() => window.openAdminTab('fairplay'));
-  await p.waitForSelector(`#adminRoot [data-fp-analyze="${sus.id}"]`, { timeout: 8000 });
+  await p.waitForSelector(`#adminRoot [data-fp-analyze="${sus.id}"]`, { timeout: 15000 });
   const st = await p.evaluate(() => ({ text: document.getElementById('adminRoot').textContent, chips: document.querySelectorAll('#adminRoot .fp-eng.sus').length }));
   assert.match(st.text, /Dvigatel tahlili: 3 o'yin · o'rtacha moslik 82% · ACPL 9 · dvigatelga o'xshash: 3/);
   assert.equal(st.chips, 3);
-  await p.click(`#adminRoot [data-fp-analyze="${sus.id}"]`);
-  await p.waitForFunction(() => [...document.querySelectorAll('.toast')].some((t) => /navbatiga/.test(t.textContent)), { timeout: 8000 });
+  // Admin paneli qayta chiziladi — element topilgan zahoti brauzer ichida bosiladi (p.click oralig'ida "Node is detached" bo'lardi; CI 2026-11-22)
+  // Panel qayta chizilganda bosish yo'qolishi mumkin — xabar chiqquncha har 2 s da qayta bosiladi
+  await p.waitForFunction((sel) => {
+    if ([...document.querySelectorAll('.toast')].some((t) => /navbatiga/.test(t.textContent))) return true;
+    const el = document.querySelector(sel);
+    if (el && (!window.__fpAt || Date.now() - window.__fpAt > 2000)) { window.__fpAt = Date.now(); el.click(); }
+    return false;
+  }, { timeout: 15000, polling: 200 }, `#adminRoot [data-fp-analyze="${sus.id}"]`).catch(async (e) => { throw new Error(e.message + ' | toastlar: ' + JSON.stringify(await p.evaluate(() => [...document.querySelectorAll('.toast')].map((t) => t.textContent)))); });
   if (process.env.UI_SHOTS) await p.screenshot({ path: process.env.UI_SHOTS + '/fairplay-admin.png' });
   assert.deepEqual(p.errors, []);
 });

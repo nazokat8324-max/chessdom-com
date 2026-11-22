@@ -1858,6 +1858,32 @@ test("Kosmos harakatli foni: qatlam joyida va fon bilan ustma-ust; Sozlamalarda 
   assert.deepEqual([...p.errors, ...q.errors], []);
 });
 
+test("Boshqa to'plamlar ham jonli: Karvon — tuyalar qatlamda yuradi, fon tuyasiz asos; to'plam almashsa qatlam ham almashadi; sahifa klasslariga tegmaydi", opts, async () => {
+  const u = await srv.register('BgFx2');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => { if (!localStorage.getItem('fxSet2')) { localStorage.setItem('fxSet2', '1'); localStorage.setItem('justChessSettings', JSON.stringify({ background: 'karvon' })); } });
+  await p.goto(srv.base + '/reyting', { waitUntil: 'load' });
+  await p.waitForFunction(() => !!document.querySelector('#bgFx .cv'), { timeout: 15000 });
+  const st = await p.evaluate(() => ({
+    bg: getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage,
+    anim: getComputedStyle(document.querySelector('#bgFx .cv')).animationName,
+    camels: document.querySelectorAll('#bgFx .cv .bob').length,
+    // Qatlam uslubi faqat #bgFx ichida: sahifadagi shu nomli klassga ta'sir qilmaydi
+    leak: (() => { const d = document.createElement('div'); d.className = 'cv'; document.body.appendChild(d); const a = getComputedStyle(d).animationName; d.remove(); return a; })(),
+  }));
+  assert.match(st.bg, /karvon-base\.svg/);
+  assert.equal(st.anim, 'kvcv');
+  assert.equal(st.camels, 6);
+  assert.equal(st.leak, 'none');
+  // Boshqa to'plam (Origami) — turnalar qatlami, asos turnasiz
+  await p.evaluate(() => window.applyBackground('origami'));
+  await p.waitForFunction(() => !!document.querySelector('#bgFx .fly') && !document.querySelector('#bgFx .cv') && /origami-base\.svg/.test(getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
+  // Asos kerak bo'lmagan to'plam (Samarqand) — fon o'sha rasm, ustida jilo qatlami
+  await p.evaluate(() => window.applyBackground('samarqand'));
+  await p.waitForFunction(() => !!document.querySelector('#bgFx .moon') && /samarqand\.svg/.test(getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

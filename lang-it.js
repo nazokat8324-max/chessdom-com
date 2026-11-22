@@ -1806,7 +1806,7 @@ window.TRANSLATIONS_IT = {
 
   libAllVideos: "Tutti i video sul canale",
   setBgMotion: "Movimento dello sfondo",
-  setBgMotionHint: "Nel set Kosmos le stelle brillano e i pianeti si muovono piano. Puoi disattivarlo per risparmiare energia; durante la partita si ferma da solo.",
+  setBgMotionHint: "Ogni set ha il suo movimento: i cammelli camminano, le gru volano, le stelle brillano, i pianeti fluttuano. Puoi disattivarlo per risparmiare energia; durante la partita si ferma da solo.",
   setNavBundles: "Set",
   setBundlesHint: "Pezzi, scacchiera, colore del sito e immagine di sfondo, con un clic. Poi puoi cambiarli anche uno per uno.",
   setBundleMixed: "Misto: sfondo — {{name}}",

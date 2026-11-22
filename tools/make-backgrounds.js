@@ -94,11 +94,11 @@ function kosmosBase() { return svg(kosmosDefs(), kosmosSky() + kosmosOrbits() + 
 // Harakatli qatlam: shaffof fon; animatsiyalar faqat transform/opacity (yengil); qurilmada «harakatni kamaytirish» — to'xtaydi
 function kosmosFx() {
   const r = rng(77);
-  const css = `.o{transform-origin:${KS.sx}px ${KS.sy}px;animation:ksw var(--d) ease-in-out infinite alternate}`
+  const css = `#bgFx .o{transform-origin:${KS.sx}px ${KS.sy}px;animation:ksw var(--d) ease-in-out infinite alternate}`
     + '@keyframes ksw{from{transform:rotate(-5deg)}to{transform:rotate(5deg)}}'
-    + '.tw{animation:ktw var(--d) ease-in-out infinite alternate}@keyframes ktw{from{opacity:.15}to{opacity:1}}'
-    + '.met{opacity:0;animation:kmet var(--d) linear infinite}@keyframes kmet{0%{opacity:0;transform:translate(0,0)}3%{opacity:1}12%{opacity:0;transform:translate(-620px,380px)}100%{opacity:0;transform:translate(-620px,380px)}}'
-    + `.corona{transform-origin:${KS.sx}px ${KS.sy}px;animation:kco 7s ease-in-out infinite alternate}@keyframes kco{from{opacity:.55;transform:scale(.97)}to{opacity:1;transform:scale(1.04)}}`
+    + '#bgFx .tw{animation:ktw var(--d) ease-in-out infinite alternate}@keyframes ktw{from{opacity:.15}to{opacity:1}}'
+    + '#bgFx .met{opacity:0;animation:kmet var(--d) linear infinite}@keyframes kmet{0%{opacity:0;transform:translate(0,0)}3%{opacity:1}12%{opacity:0;transform:translate(-620px,380px)}100%{opacity:0;transform:translate(-620px,380px)}}'
+    + `#bgFx .corona{transform-origin:${KS.sx}px ${KS.sy}px;animation:kco 7s ease-in-out infinite alternate}@keyframes kco{from{opacity:.55;transform:scale(.97)}to{opacity:1;transform:scale(1.04)}}`
     + '@media (prefers-reduced-motion:reduce){*{animation:none!important}}';
   let b = `<style>${css}</style><circle class="corona" cx="${KS.sx}" cy="${KS.sy}" r="300" fill="url(#kglow)"/>`;
   PLANETS.forEach((p, i) => { b += `<g class="o" style="--d:${30 + i * 9}s;animation-delay:-${i * 7}s">${planetSvg(p, i)}</g>`; });
@@ -110,16 +110,56 @@ function kosmosFx() {
   return svg(defs, b).replace(/id="([^"]+)"/g, 'id="kfx-$1"').replace(/url\(#([^)]+)\)/g, 'url(#kfx-$1)');
 }
 
+// ===== Harakatli qatlamlar (2026-11-22, foydalanuvchi so'rovi: «boshqa to'plamlarning fonlarini ham jonli qil») =====
+// Har to'plamda <id>-fx.svg (bgfx.js sahifaga joylaydi). Harakatlanadigan narsa rasmda ham bo'lsa (tuyalar, laganlar, bulutlar,
+// turnalar, neon to'ri) — <id>-base.svg ularsiz asos (style.css `html.bg-motion[data-bg=…]`), aks holda qatlam asosiy rasm ustiga
+// qo'shimcha jilo/zarra qo'shadi. Uslub sahifaga tushadi: selektorlar `$.` → `#bgFx .` (sahifadagi klasslarga tegmasin),
+// keyframe nomlari `~` → to'plam prefiksi; id lar ham prefiksli. Faqat transform/opacity — yengil.
+const REDUCE = '@media (prefers-reduced-motion:reduce){*{animation:none!important}}';
+function fxSvg(pre, css, body, defs = '') {
+  const style = (css + REDUCE).replace(/\$\./g, '#bgFx .').replace(/~/g, pre);
+  return svg(defs, `<style>${style}</style>` + body).replace(/id="([^"]+)"/g, `id="${pre}-$1"`).replace(/url\(#([^)]+)\)/g, `url(#${pre}-$1)`);
+}
+const anim = (cls, d, delay, extra = '') => `class="${cls}" style="--d:${f(d)}s;animation-delay:-${f(delay)}s${extra}"`;
+const ORIGIN = (x, y) => `;transform-origin:${f(x)}px ${f(y)}px`;
+// Miltillovchi nuqtalar (yulduz, zarra)
+const TWCSS = '$.tw{animation:~tw var(--d) ease-in-out infinite alternate}@keyframes ~tw{from{opacity:.08}to{opacity:1}}';
+function twinkles(r, n, color, y0, y1, r0, r1) {
+  let s = '';
+  for (let i = 0; i < n; i++) s += `<circle ${anim('tw', 2.5 + r() * 4, r() * 6)} cx="${f(r() * W)}" cy="${f(y0 + r() * (y1 - y0))}" r="${f(r0 + r() * (r1 - r0))}" fill="${Array.isArray(color) ? color[i % color.length] : color}"/>`;
+  return s;
+}
+// Ko'ndalang jilo chizig'i (atlas, yog'och, saroy): qiya yorug' tasma chapdan o'ngga o'tadi
+const SHEEN = (op) => `<linearGradient id="sh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#fff" stop-opacity="${op}"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>`;
+const SHEENCSS = '$.sh{animation:~sh var(--d) ease-in-out infinite}@keyframes ~sh{from{transform:translateX(-900px)}to{transform:translateX(2300px)}}';
+const sheenBand = (d, delay, w = 260) => `<g ${anim('sh', d, delay)}><rect x="0" y="-300" width="${w}" height="1600" fill="url(#sh)" transform="rotate(18 ${w / 2} 500)"/></g>`;
+// Yuqoriga ko'tariluvchi zarralar (chang, qum, oltin kukun)
+const RISECSS = (dx, dy) => `$.rs{opacity:0;animation:~rs var(--d) linear infinite}@keyframes ~rs{0%{opacity:0;transform:translate(0,0)}20%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translate(${dx}px,${dy}px)}}`;
+
 // 🐪 Karvon — shom paytidagi cho'l: barxanlar va qator tuyalar
-function karvon() {
+const camelSvg = (x, y, s) => `<g transform="translate(${f(x)} ${f(y)}) scale(${s})" fill="#1a0d06"><path d="M0 0 q6 -22 22 -24 q8 -14 18 -2 q10 -12 20 0 q10 2 14 12 l10 -18 q4 -6 9 -2 l4 6 q-2 4 -6 4 l-12 26 q-2 6 -8 8 l0 30 h-5 l-2 -28 h-30 l-2 28 h-5 l-1 -28 q-4 2 -8 0 l-2 28 h-5 l0 -30 q-6 -4 -6 -12z"/></g>`;
+function karvon(camels = true) {
   const r = rng(1);
   const defs = lin('sky', [[0, '#1d1430'], [0.55, '#6b3a4a'], [1, '#e08a4a']]) + rad('sun', [[0, '#ffe2a1'], [1, '#ffb15c']]) + lin('d1', [[0, '#c27a3e'], [1, '#7a4422']]) + lin('d2', [[0, '#9a5a2e'], [1, '#4e2a16']]) + lin('d3', [[0, '#6b3c1e'], [1, '#2a160b']]);
-  const camel = (x, y, s) => `<g transform="translate(${f(x)} ${f(y)}) scale(${s})" fill="#1a0d06"><path d="M0 0 q6 -22 22 -24 q8 -14 18 -2 q10 -12 20 0 q10 2 14 12 l10 -18 q4 -6 9 -2 l4 6 q-2 4 -6 4 l-12 26 q-2 6 -8 8 l0 30 h-5 l-2 -28 h-30 l-2 28 h-5 l-1 -28 q-4 2 -8 0 l-2 28 h-5 l0 -30 q-6 -4 -6 -12z"/></g>`;
   let body = `<rect width="${W}" height="${H}" fill="url(#sky)"/>` + stars(r, 90, '#fff', 1.2, 380) + `<circle cx="1180" cy="560" r="120" fill="url(#sun)" opacity="0.95"/>`;
   body += `<path d="M0 620 Q300 520 620 600 T1200 590 T1600 560 V1000 H0z" fill="url(#d1)"/>`;
-  let cx = 330; for (let i = 0; i < 6; i++) { body += camel(cx, 548 + Math.sin(i) * 4, 1.05); cx += 112; }
+  if (camels) { let cx = 330; for (let i = 0; i < 6; i++) { body += camelSvg(cx, 548 + Math.sin(i) * 4, 1.05); cx += 112; } }
   body += `<path d="M0 700 Q380 640 760 720 T1600 680 V1000 H0z" fill="url(#d2)"/><path d="M0 820 Q420 760 900 830 T1600 800 V1000 H0z" fill="url(#d3)"/>`;
   return svg(defs, body);
+}
+// Tuyalar qatori cho'l bo'ylab sekin yuradi (har biri biroz chayqaladi), quyosh nafas oladi, qum zarralari shamolda uchadi
+function karvonFx() {
+  const r = rng(101);
+  const css = TWCSS + RISECSS(-260, -40)
+    + '$.cv{animation:~cv 150s linear infinite}@keyframes ~cv{from{transform:translateX(-900px)}to{transform:translateX(1750px)}}'
+    + '$.bob{animation:~bob 1.1s ease-in-out infinite alternate}@keyframes ~bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}'
+    + '$.sun{animation:~sun 8s ease-in-out infinite alternate}@keyframes ~sun{from{opacity:.35;transform:scale(.95)}to{opacity:.85;transform:scale(1.06)}}';
+  let b = `<circle class="sun" style="transform-origin:1180px 560px" cx="1180" cy="560" r="230" fill="url(#glow)"/>` + twinkles(r, 40, '#fff', 0, 380, 0.8, 1.6);
+  b += `<g ${anim('cv', 150, 40)}>`;
+  for (let i = 0; i < 6; i++) b += `<g ${anim('bob', 1.1, i * 0.37)}>${camelSvg(i * 112, 548 + Math.sin(i) * 4, 1.05)}</g>`;
+  b += '</g>';
+  for (let i = 0; i < 46; i++) b += `<circle ${anim('rs', 7 + r() * 8, r() * 15)} cx="${f(200 + r() * 1500)}" cy="${f(600 + r() * 380)}" r="${f(1 + r() * 2)}" fill="#ffd9a0"/>`;
+  return fxSvg('kv', css, b, rad('glow', [[0, '#ffd27a', 0.55], [1, '#ffb15c', 0]]));
 }
 
 // ♞ Klassik — klub zali: istiqbolda katakli pol va yorug'lik
@@ -140,6 +180,18 @@ function classic() {
   body += `<path d="M560 560 h480" stroke="#e9dcc0" stroke-opacity="0.12" stroke-width="2"/>`;
   return svg(defs, body);
 }
+// Zal chirog'i sekin «nafas oladi», yorug'lik ichida chang zarralari suzadi
+function classicFx() {
+  const r = rng(102);
+  const css = RISECSS(30, -160)
+    + '$.spot{animation:~sp 9s ease-in-out infinite alternate}@keyframes ~sp{from{opacity:.25}to{opacity:1}}';
+  let b = `<ellipse class="spot" cx="800" cy="380" rx="520" ry="420" fill="url(#spot)"/>`;
+  for (let i = 0; i < 55; i++) {
+    const a = r() * Math.PI * 2, d = Math.sqrt(r());
+    b += `<circle ${anim('rs', 10 + r() * 12, r() * 22)} cx="${f(800 + Math.cos(a) * 480 * d)}" cy="${f(420 + Math.sin(a) * 360 * d)}" r="${f(0.8 + r() * 1.8)}" fill="#fff2c6"/>`;
+  }
+  return fxSvg('cl', css, b, rad('spot', [[0, '#fff2c6', 0.22], [1, '#fff2c6', 0]]));
+}
 
 // 👁 Aniq — tinch, kontrastli: katta yumshoq kvadratlar (ko'z charchamaydi)
 function clear() {
@@ -147,6 +199,15 @@ function clear() {
   let body = `<rect width="${W}" height="${H}" fill="#151a1f"/>`;
   for (let y = 0; y < 6; y++) for (let x = 0; x < 9; x++) if ((x + y) % 2 === 0) body += `<rect x="${x * 190 - 40}" y="${y * 190 - 60}" width="170" height="170" rx="26" fill="#ffffff" opacity="${f(0.03 + r() * 0.04)}"/>`;
   return svg('', body);
+}
+// Juda sokin: bo'sh kataklarda yumshoq kvadratlar navbat bilan paydo bo'lib so'nadi (ko'zni toliqtirmaydi)
+function clearFx() {
+  const r = rng(103);
+  const css = '$.sq{opacity:0;animation:~sq var(--d) ease-in-out infinite}@keyframes ~sq{0%,100%{opacity:0}50%{opacity:1}}';
+  let b = '';
+  for (let y = 0; y < 6; y++) for (let x = 0; x < 9; x++) if ((x + y) % 2 === 1 && r() < 0.45) b += `<rect ${anim('sq', 14 + r() * 12, r() * 26)} x="${x * 190 - 40}" y="${y * 190 - 60}" width="170" height="170" rx="26" fill="#fff" opacity="0.07"/>`;
+  // opacity atributi animatsiya bilan almashadi — shuning uchun rang o'zi xira
+  return fxSvg('cr', css, b.replace(/fill="#fff" opacity="0.07"/g, 'fill="#ffffff" fill-opacity="0.06"'));
 }
 
 // 🧵 Atlas — Marg'ilon atlasi (abr) naqshi: to'lqinli romblar
@@ -166,26 +227,49 @@ function atlas() {
   }
   return svg('', body);
 }
+// Ipak mato kabi: qiya jilo tasmalari o'tadi, romblar markazidagi oq dog'lar yaltiraydi
+function atlasFx() {
+  const css = SHEENCSS + '$.gl{animation:~gl var(--d) ease-in-out infinite alternate}@keyframes ~gl{from{opacity:0}to{opacity:.4}}';
+  let b = sheenBand(16, 0) + sheenBand(16, 8, 180);
+  const r = rng(104);
+  for (let c = 0; c < 12; c++) for (let y = -100; y < H + 100; y += 160) {
+    if (r() > 0.3) continue;
+    const x = c * 140, off = (c % 2) * 80, w = 62 + (c % 3) * 12;
+    b += `<path ${anim('gl', 3 + r() * 4, r() * 7)} d="M${x + 70} ${y + off + 30} q${f(w * 0.4)} 30 0 50 q-${f(w * 0.4)} -20 0 -50z" fill="#fff"/>`;
+  }
+  return fxSvg('at', css, b, SHEEN(0.16));
+}
 
 // 🏺 Rishton — kulolchilik laganlari: ko'k-yashil rozetkalar
-function rishton() {
+const RISHTON_SPOTS = [[220, 240, 190], [760, 160, 140], [1300, 300, 220], [460, 720, 210], [1050, 760, 170], [1520, 880, 150], [-40, 860, 160]];
+function rishtonPlate(cx, cy, R) {
+  let g = `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#14445e" opacity="0.55"/><circle cx="${cx}" cy="${cy}" r="${f(R * 0.92)}" fill="none" stroke="#e8d9b5" stroke-opacity="0.25" stroke-width="3"/>`;
+  const n = 12;
+  for (let i = 0; i < n; i++) {
+    const a = i / n * Math.PI * 2;
+    const x = cx + Math.cos(a) * R * 0.58, y = cy + Math.sin(a) * R * 0.58;
+    g += `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(R * 0.2)}" ry="${f(R * 0.08)}" transform="rotate(${f(a * 180 / Math.PI)} ${f(x)} ${f(y)})" fill="#1f9ea8" opacity="0.5"/>`;
+  }
+  g += `<circle cx="${cx}" cy="${cy}" r="${f(R * 0.22)}" fill="#e8d9b5" opacity="0.22"/><circle cx="${cx}" cy="${cy}" r="${f(R * 0.1)}" fill="#2a7fbf" opacity="0.5"/>`;
+  return g;
+}
+function rishton(plates = true) {
   const r = rng(5);
   let body = `<rect width="${W}" height="${H}" fill="#0c1b26"/>`;
-  const plate = (cx, cy, R) => {
-    let g = `<circle cx="${cx}" cy="${cy}" r="${R}" fill="#14445e" opacity="0.55"/><circle cx="${cx}" cy="${cy}" r="${f(R * 0.92)}" fill="none" stroke="#e8d9b5" stroke-opacity="0.25" stroke-width="3"/>`;
-    const n = 12;
-    for (let i = 0; i < n; i++) {
-      const a = i / n * Math.PI * 2;
-      const x = cx + Math.cos(a) * R * 0.58, y = cy + Math.sin(a) * R * 0.58;
-      g += `<ellipse cx="${f(x)}" cy="${f(y)}" rx="${f(R * 0.2)}" ry="${f(R * 0.08)}" transform="rotate(${f(a * 180 / Math.PI)} ${f(x)} ${f(y)})" fill="#1f9ea8" opacity="0.5"/>`;
-    }
-    g += `<circle cx="${cx}" cy="${cy}" r="${f(R * 0.22)}" fill="#e8d9b5" opacity="0.22"/><circle cx="${cx}" cy="${cy}" r="${f(R * 0.1)}" fill="#2a7fbf" opacity="0.5"/>`;
-    return g;
-  };
-  const spots = [[220, 240, 190], [760, 160, 140], [1300, 300, 220], [460, 720, 210], [1050, 760, 170], [1520, 880, 150], [-40, 860, 160]];
-  for (const [x, y, R] of spots) body += plate(x, y, R);
+  if (plates) for (const [x, y, R] of RISHTON_SPOTS) body += rishtonPlate(x, y, R);
   for (let i = 0; i < 40; i++) body += `<circle cx="${f(r() * W)}" cy="${f(r() * H)}" r="${f(3 + r() * 5)}" fill="#e8d9b5" opacity="0.12"/>`;
   return svg('', body);
+}
+// Laganlar kulol charxidagidek sekin aylanadi (navbat bilan ikki tomonga), sirlangan yuzasi yaltiraydi
+function rishtonFx() {
+  const css = '$.pl{animation:~pl var(--d) linear infinite}$.pl.ccw{animation-direction:reverse}@keyframes ~pl{from{transform:rotate(0)}to{transform:rotate(360deg)}}'
+    + '$.gz{animation:~gz var(--d) ease-in-out infinite alternate}@keyframes ~gz{from{opacity:0}to{opacity:.22}}';
+  let b = '';
+  RISHTON_SPOTS.forEach(([x, y, R], i) => {
+    b += `<g class="pl${i % 2 ? ' ccw' : ''}" style="--d:${90 + i * 17}s${ORIGIN(x, y)}">${rishtonPlate(x, y, R)}</g>`;
+    b += `<ellipse ${anim('gz', 5 + i, i * 2)} cx="${f(x - R * 0.35)}" cy="${f(y - R * 0.4)}" rx="${f(R * 0.32)}" ry="${f(R * 0.12)}" transform="rotate(-30 ${f(x - R * 0.35)} ${f(y - R * 0.4)})" fill="#fff"/>`;
+  });
+  return fxSvg('ri', css, b);
 }
 
 // 🪵 Yog'och — yo'nilgan taxta tolalari va ko'zlari
@@ -204,8 +288,17 @@ function wood() {
   body += `<rect width="${W}" height="${H}" fill="#000" opacity="0.15"/>`;
   return svg('', body);
 }
+// Laklangan taxta: deraza yorug'i sekin o'tadi, havoda yog'och qipiqlari suzadi
+function woodFx() {
+  const r = rng(106);
+  const css = SHEENCSS + RISECSS(120, -120);
+  let b = sheenBand(24, 0, 340) + sheenBand(24, 12, 200);
+  for (let i = 0; i < 30; i++) b += `<circle ${anim('rs', 12 + r() * 10, r() * 22)} cx="${f(r() * W)}" cy="${f(200 + r() * 800)}" r="${f(1 + r() * 2)}" fill="#ffcf96"/>`;
+  return fxSvg('wd', css, b, SHEEN(0.1).replace(/#fff/g, '#ffd8a8'));
+}
 
 // 👑 Shohona — saroy ravoqlari, oltin chiziqlar va toj
+const CROWN = '<path d="M-90 40 L-70 -30 L-35 10 L0 -50 L35 10 L70 -30 L90 40z"/><rect x="-92" y="44" width="184" height="18" rx="4"/><circle cx="0" cy="-58" r="10"/><circle cx="-70" cy="-38" r="8"/><circle cx="70" cy="-38" r="8"/>';
 function royal() {
   const defs = lin('bg', [[0, '#1d1406'], [1, '#0d0904']]);
   let body = `<rect width="${W}" height="${H}" fill="url(#bg)"/>`;
@@ -215,12 +308,23 @@ function royal() {
     body += `<path d="M${x + 20} 1000 V430 Q${x + 20} 290 ${x + 100} 266 Q${x + 180} 290 ${x + 180} 430 V1000" fill="#d4a017" opacity="0.05"/>`;
     body += `<rect x="${x - 18}" y="400" width="18" height="600" fill="#d4a017" opacity="0.12"/>`;
   }
-  body += `<g transform="translate(800 120)" fill="#e6b422" opacity="0.4"><path d="M-90 40 L-70 -30 L-35 10 L0 -50 L35 10 L70 -30 L90 40z"/><rect x="-92" y="44" width="184" height="18" rx="4"/><circle cx="0" cy="-58" r="10"/><circle cx="-70" cy="-38" r="8"/><circle cx="70" cy="-38" r="8"/></g>`;
+  body += `<g transform="translate(800 120)" fill="#e6b422" opacity="0.4">${CROWN}</g>`;
   return svg(defs, body);
+}
+// Toj porlaydi, ravoqlar ichida oltin uchqunlar yonib-o'chadi, oltin jilo o'tadi
+const sparkle = (x, y, s) => `<path d="M${f(x)} ${f(y - s)} Q${f(x)} ${f(y)} ${f(x + s)} ${f(y)} Q${f(x)} ${f(y)} ${f(x)} ${f(y + s)} Q${f(x)} ${f(y)} ${f(x - s)} ${f(y)} Q${f(x)} ${f(y)} ${f(x)} ${f(y - s)}z"/>`;
+const SPARKCSS = '$.sp{opacity:0;transform-box:fill-box;transform-origin:center;animation:~sp var(--d) ease-in-out infinite}@keyframes ~sp{0%,100%{opacity:0;transform:scale(.2) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}';
+function royalFx() {
+  const r = rng(107);
+  const css = SHEENCSS + SPARKCSS + '$.cr{animation:~cr 6s ease-in-out infinite alternate}@keyframes ~cr{from{opacity:0}to{opacity:.55}}';
+  let b = sheenBand(20, 4, 300) + `<g class="cr" fill="#ffe08a"><g transform="translate(800 120)">${CROWN}</g></g><g fill="#ffe08a">`;
+  for (let i = 0; i < 34; i++) b += sparkle(r() * W, 220 + r() * 760, 5 + r() * 9).replace('<path ', `<path ${anim('sp', 3 + r() * 5, r() * 8)} `);
+  b += sparkle(800, 62, 16).replace('<path ', `<path ${anim('sp', 4, 1)} `) + '</g>';
+  return fxSvg('ro', css, b, SHEEN(0.09).replace(/#fff/g, '#ffd36b'));
 }
 
 // 💡 Neon — synthwave: chiziqli quyosh va istiqbolli to'r
-function neon() {
+function neon(grid = true) {
   const r = rng(8);
   const defs = lin('sky', [[0, '#0d0221'], [0.6, '#2b0b4f'], [1, '#3a0d5c']]) + lin('sun', [[0, '#ffd319'], [0.5, '#ff2975'], [1, '#c912ff']]);
   let body = `<rect width="${W}" height="${H}" fill="url(#sky)"/>` + stars(r, 120, '#fff', 1.2, 500);
@@ -228,69 +332,133 @@ function neon() {
   for (let i = 0; i < 7; i++) body += `<rect x="560" y="${540 + i * 26}" width="480" height="${4 + i * 2}" fill="#2b0b4f"/>`;
   body += `</g><rect y="600" width="${W}" height="400" fill="#12022b"/>`;
   for (let i = -20; i <= 20; i++) body += `<path d="M800 600 L${800 + i * 140} 1000" stroke="#ff2bd6" stroke-opacity="0.55" stroke-width="2"/>`;
-  for (let i = 1; i < 12; i++) { const y = 600 + 400 * Math.pow(i / 11, 2); body += `<path d="M0 ${f(y)} H${W}" stroke="#00e5ff" stroke-opacity="${f(0.2 + i * 0.04)}" stroke-width="2"/>`; }
+  if (grid) for (let i = 1; i < 12; i++) { const y = 600 + 400 * Math.pow(i / 11, 2); body += `<path d="M0 ${f(y)} H${W}" stroke="#00e5ff" stroke-opacity="${f(0.2 + i * 0.04)}" stroke-width="2"/>`; }
   return svg(defs, body);
+}
+// Synthwave yo'li: ko'ndalang to'r chiziqlari ufqdan bizga qarab oqadi, quyosh porlaydi, yulduzlar miltillaydi
+function neonFx() {
+  const r = rng(108);
+  const css = TWCSS
+    + '$.ln{opacity:0;animation:~ln 6s cubic-bezier(.55,0,1,1) infinite}@keyframes ~ln{0%{opacity:0;transform:translateY(0)}15%{opacity:.5}100%{opacity:1;transform:translateY(400px)}}'
+    + '$.gw{transform-origin:800px 520px;animation:~gw 5s ease-in-out infinite alternate}@keyframes ~gw{from{opacity:.3;transform:scale(.96)}to{opacity:.9;transform:scale(1.05)}}';
+  let b = `<circle class="gw" cx="800" cy="520" r="330" fill="url(#gw)"/>` + twinkles(r, 45, ['#fff', '#ff9ef0', '#9ef6ff'], 0, 480, 0.8, 1.6);
+  for (let i = 0; i < 10; i++) b += `<path class="ln" style="animation-delay:-${f(i * 0.6)}s" d="M0 600 H${W}" stroke="#00e5ff" stroke-width="2.2"/>`;
+  return fxSvg('ne', css, b, rad('gw', [[0, '#ff2975', 0.45], [0.6, '#c912ff', 0.12], [1, '#c912ff', 0]]));
 }
 
 // 🔷 Geometrik — past poligonli uchburchaklar
-function geo() {
+function geoTris() {
   const r = rng(9);
-  let body = `<rect width="${W}" height="${H}" fill="#08201d"/>`;
-  const S = 120, pts = [];
+  const S = 120, pts = [], tris = [];
   for (let y = 0; y <= Math.ceil(H / S) + 1; y++) { pts.push([]); for (let x = 0; x <= Math.ceil(W / S) + 1; x++) pts[y].push([x * S + (r() - 0.5) * 60, y * S + (r() - 0.5) * 60]); }
   for (let y = 0; y < pts.length - 1; y++) for (let x = 0; x < pts[y].length - 1; x++) {
     const a = pts[y][x], b = pts[y][x + 1], c = pts[y + 1][x], d = pts[y + 1][x + 1];
-    const shade = (t) => `hsl(${f(165 + t * 25)}, 55%, ${f(10 + t * 14)}%)`;
-    body += `<path d="M${f(a[0])} ${f(a[1])} L${f(b[0])} ${f(b[1])} L${f(c[0])} ${f(c[1])}z" fill="${shade(r())}"/>`;
-    body += `<path d="M${f(b[0])} ${f(b[1])} L${f(d[0])} ${f(d[1])} L${f(c[0])} ${f(c[1])}z" fill="${shade(r())}"/>`;
+    tris.push([a, b, c, r()], [b, d, c, r()]);
   }
+  return tris;
+}
+const triPath = ([a, b, c]) => `M${f(a[0])} ${f(a[1])} L${f(b[0])} ${f(b[1])} L${f(c[0])} ${f(c[1])}z`;
+function geo() {
+  let body = `<rect width="${W}" height="${H}" fill="#08201d"/>`;
+  const shade = (t) => `hsl(${f(165 + t * 25)}, 55%, ${f(10 + t * 14)}%)`;
+  for (const t of geoTris()) body += `<path d="${triPath(t)}" fill="${shade(t[3])}"/>`;
   return svg('', body);
+}
+// Kristall yuzalar: uchburchaklar navbat bilan yorishib so'nadi, qiya yorug' tasma o'tadi
+function geoFx() {
+  const r = rng(109);
+  const css = SHEENCSS + '$.tr{opacity:0;animation:~tr var(--d) ease-in-out infinite}@keyframes ~tr{0%,100%{opacity:0}50%{opacity:.32}}';
+  let b = sheenBand(22, 6, 240);
+  for (const t of geoTris()) if (r() < 0.12) b += `<path ${anim('tr', 7 + r() * 9, r() * 16)} d="${triPath(t)}" fill="hsl(${f(160 + r() * 30)}, 75%, 58%)"/>`;
+  return fxSvg('ge', css, b, SHEEN(0.08).replace(/#fff/g, '#b2fff0'));
 }
 
 // 🎈 Bolajon — pufakchalar, yulduzchalar va bulutchalar
-function cute() {
+const CUTE_COLS = ['#ff8fab', '#ffd166', '#8ce99a', '#74c0fc', '#b197fc'];
+const cuteStar = (x, y, s, c, op = 0.4) => `<path transform="translate(${f(x)} ${f(y)}) scale(${f(s)})" d="M0 -10 L3 -3 L10 -3 L4 2 L6 10 L0 5 L-6 10 L-4 2 L-10 -3 L-3 -3z" fill="${c}" opacity="${op}"/>`;
+const cuteCloud = (x, y, s, op = 0.1) => `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff" opacity="${op}"><circle cx="0" cy="0" r="40"/><circle cx="45" cy="-15" r="50"/><circle cx="95" cy="0" r="38"/><rect x="0" y="0" width="95" height="38"/></g>`;
+function cute(clouds = true) {
   const r = rng(10);
-  const cols = ['#ff8fab', '#ffd166', '#8ce99a', '#74c0fc', '#b197fc'];
   let body = `<rect width="${W}" height="${H}" fill="#241a3a"/>`;
-  for (let i = 0; i < 26; i++) { const c = cols[i % 5]; body += `<circle cx="${f(r() * W)}" cy="${f(r() * H)}" r="${f(18 + r() * 60)}" fill="${c}" opacity="0.16"/>`; }
-  const star = (x, y, s, c) => `<path transform="translate(${f(x)} ${f(y)}) scale(${f(s)})" d="M0 -10 L3 -3 L10 -3 L4 2 L6 10 L0 5 L-6 10 L-4 2 L-10 -3 L-3 -3z" fill="${c}" opacity="0.4"/>`;
-  for (let i = 0; i < 30; i++) body += star(r() * W, r() * H, 0.8 + r() * 2, cols[i % 5]);
-  const cloud = (x, y, s) => `<g transform="translate(${x} ${y}) scale(${s})" fill="#fff" opacity="0.1"><circle cx="0" cy="0" r="40"/><circle cx="45" cy="-15" r="50"/><circle cx="95" cy="0" r="38"/><rect x="0" y="0" width="95" height="38"/></g>`;
-  body += cloud(160, 160, 1.4) + cloud(1180, 220, 1.1) + cloud(640, 820, 1.6);
+  for (let i = 0; i < 26; i++) { const c = CUTE_COLS[i % 5]; body += `<circle cx="${f(r() * W)}" cy="${f(r() * H)}" r="${f(18 + r() * 60)}" fill="${c}" opacity="0.16"/>`; }
+  for (let i = 0; i < 30; i++) body += cuteStar(r() * W, r() * H, 0.8 + r() * 2, CUTE_COLS[i % 5]);
+  if (clouds) body += cuteCloud(160, 160, 1.4) + cuteCloud(1180, 220, 1.1) + cuteCloud(640, 820, 1.6);
   return svg('', body);
+}
+// Bulutchalar suzadi, pufakchalar pastdan ko'tariladi, yulduzchalar aylanib miltillaydi
+function cuteFx() {
+  const r = rng(110);
+  const css = '$.cd{animation:~cd var(--d) linear infinite}@keyframes ~cd{from{transform:translateX(-400px)}to{transform:translateX(2000px)}}'
+    + '$.bb{animation:~bb var(--d) linear infinite}@keyframes ~bb{0%{transform:translate(0,0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translate(40px,-1250px);opacity:0}}'
+    + '$.st{transform-box:fill-box;transform-origin:center;animation:~st var(--d) ease-in-out infinite alternate}@keyframes ~st{from{opacity:.15;transform:scale(.7) rotate(-20deg)}to{opacity:1;transform:scale(1.15) rotate(20deg)}}';
+  let b = '';
+  [[160, 1.4, 90, 10], [220, 1.1, 120, 70], [820, 1.6, 140, 40], [480, 0.9, 110, 95]].forEach(([y, s, d, del]) => { b += `<g ${anim('cd', d, del)}>${cuteCloud(0, y, s, 0.13)}</g>`; });
+  for (let i = 0; i < 14; i++) b += `<circle ${anim('bb', 26 + r() * 22, r() * 48)} cx="${f(r() * W)}" cy="${f(H + 80)}" r="${f(10 + r() * 26)}" fill="${CUTE_COLS[i % 5]}" fill-opacity="0.22" stroke="#fff" stroke-opacity="0.25" stroke-width="2"/>`;
+  for (let i = 0; i < 16; i++) b += `<g ${anim('st', 2.5 + r() * 3, r() * 5)}>${cuteStar(r() * W, r() * H, 0.9 + r() * 1.5, CUTE_COLS[i % 5], 0.7)}</g>`;
+  return fxSvg('cu', css, b);
 }
 
 // 👾 Piksel — piksel manzara: tog'lar, bulutlar, quyosh
-function pixel() {
-  const P = 40;
+const PX = 40;
+const pxRect = (x, y, c, o = 1) => `<rect x="${x * PX}" y="${y * PX}" width="${PX}" height="${PX}" fill="${c}" opacity="${o}"/>`;
+const PX_CLOUD = [[0, 1], [1, 0], [2, 0], [3, 1], [1, 1], [2, 1], [4, 1], [0, 2], [1, 2], [2, 2], [3, 2], [4, 2]];
+function pixel(clouds = true) {
   let body = `<rect width="${W}" height="${H}" fill="#14213d"/>`;
-  const px = (x, y, c, o = 1) => `<rect x="${x * P}" y="${y * P}" width="${P}" height="${P}" fill="${c}" opacity="${o}"/>`;
   // quyosh
-  for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) if (x * x + y * y <= 10) body += px(30 + x, 5 + y, '#ffb703', 0.6);
+  for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) if (x * x + y * y <= 10) body += pxRect(30 + x, 5 + y, '#ffb703', 0.6);
   // bulutlar
-  const cloud = [[0, 1], [1, 0], [2, 0], [3, 1], [1, 1], [2, 1], [4, 1], [0, 2], [1, 2], [2, 2], [3, 2], [4, 2]];
-  for (const [ox, oy] of [[4, 3], [17, 6], [33, 12]]) for (const [x, y] of cloud) body += px(ox + x, oy + y, '#e0e1dd', 0.25);
+  if (clouds) for (const [ox, oy] of [[4, 3], [17, 6], [33, 12]]) for (const [x, y] of PX_CLOUD) body += pxRect(ox + x, oy + y, '#e0e1dd', 0.25);
   // tog'lar
   const heights = [8, 9, 11, 13, 12, 10, 9, 10, 12, 14, 15, 13, 11, 10, 9, 8, 9, 11, 12, 11, 9, 8, 10, 12, 13, 14, 12, 10, 9, 8, 7, 8, 9, 11, 12, 10, 9, 8, 8, 9, 10];
-  heights.forEach((h, x) => { for (let y = 25 - h; y < 25; y++) body += px(x, y, y === 25 - h ? '#8ecae6' : (y < 25 - h + 2 ? '#457b9d' : '#1d3557'), 0.75); });
-  for (let x = 0; x < 41; x++) body += px(x, 24, '#2a9d8f', 0.8);
+  heights.forEach((h, x) => { for (let y = 25 - h; y < 25; y++) body += pxRect(x, y, y === 25 - h ? '#8ecae6' : (y < 25 - h + 2 ? '#457b9d' : '#1d3557'), 0.75); });
+  for (let x = 0; x < 41; x++) body += pxRect(x, 24, '#2a9d8f', 0.8);
   return svg('', body);
+}
+// 8-bit uslubida: bulutlar katakma-katak (steps) suriladi, piksel yulduzlar yonib-o'chadi, quyosh nurlari pirpiraydi
+function pixelFx() {
+  const r = rng(111);
+  const css = `$.pc{animation:~pc var(--d) steps(48) infinite}@keyframes ~pc{from{transform:translateX(0)}to{transform:translateX(${48 * PX}px)}}`
+    + '$.ps{animation:~ps var(--d) steps(1) infinite}@keyframes ~ps{0%,100%{opacity:0}50%{opacity:1}}'
+    + '$.ray{animation:~ray 2.4s steps(1) infinite}@keyframes ~ray{0%,100%{opacity:.25}50%{opacity:.7}}';
+  let b = '';
+  [[3, 70, 10], [6, 95, 60], [12, 80, 35], [9, 110, 85]].forEach(([oy, d, del]) => {
+    b += `<g ${anim('pc', d, del)}>${PX_CLOUD.map(([x, y]) => pxRect(x - 6, oy + y, '#e0e1dd', 0.3)).join('')}</g>`;
+  });
+  for (let i = 0; i < 22; i++) { const x = Math.floor(r() * 40) * PX + 16, y = Math.floor(r() * 9) * PX + 16; b += `<rect ${anim('ps', 1.6 + r() * 3, r() * 4)} x="${x}" y="${y}" width="8" height="8" fill="${r() < 0.7 ? '#fff' : '#ffb703'}"/>`; }
+  b += '<g class="ray" fill="#ffb703">' + [[30, 0.6], [34.6, 5], [30, 9.4], [25.4, 5], [33.2, 1.8], [33.2, 8.2], [26.8, 8.2], [26.8, 1.8]].map(([x, y]) => `<rect x="${f(x * PX + 12)}" y="${f(y * PX - 4)}" width="16" height="16"/>`).join('') + '</g>';
+  return fxSvg('px', css, b);
 }
 
 // 🪙 Tanga — Ipak yo'li tangalari: sochilgan oltin va kumush tangalar
+function tangaCoins() {
+  const r = rng(12), out = [];
+  for (let i = 0; i < 34; i++) {
+    const x = r() * W, y = r() * H, R = 30 + r() * 55, g = r() < 0.7 ? 'gold' : 'silver', op = 0.25 + r() * 0.3;
+    out.push({ i, x, y, R, g, op });
+  }
+  return out;
+}
 function tanga() {
-  const r = rng(12);
   let body = `<rect width="${W}" height="${H}" fill="#1a1208"/>`;
   const defs = rad('gold', [[0, '#ffe08a'], [1, '#b8860b']], 0.35, 0.35, 0.8) + rad('silver', [[0, '#f1f3f5'], [1, '#868e96']], 0.35, 0.35, 0.8);
-  for (let i = 0; i < 34; i++) {
-    const x = r() * W, y = r() * H, R = 30 + r() * 55, g = r() < 0.7 ? 'gold' : 'silver';
-    body += `<g opacity="${f(0.25 + r() * 0.3)}"><circle cx="${f(x)}" cy="${f(y)}" r="${f(R)}" fill="url(#${g})"/><circle cx="${f(x)}" cy="${f(y)}" r="${f(R * 0.8)}" fill="none" stroke="#5c4410" stroke-width="3"/>`;
+  for (const { i, x, y, R, g, op } of tangaCoins()) {
+    body += `<g opacity="${f(op)}"><circle cx="${f(x)}" cy="${f(y)}" r="${f(R)}" fill="url(#${g})"/><circle cx="${f(x)}" cy="${f(y)}" r="${f(R * 0.8)}" fill="none" stroke="#5c4410" stroke-width="3"/>`;
     if (i % 3 === 0) body += `<rect x="${f(x - R * 0.18)}" y="${f(y - R * 0.18)}" width="${f(R * 0.36)}" height="${f(R * 0.36)}" fill="#1a1208" opacity="0.7"/>`;
     else if (i % 3 === 1) body += `<path d="M${f(x)} ${f(y - R * 0.4)} L${f(x + R * 0.12)} ${f(y - R * 0.12)} L${f(x + R * 0.4)} ${f(y)} L${f(x + R * 0.12)} ${f(y + R * 0.12)} L${f(x)} ${f(y + R * 0.4)} L${f(x - R * 0.12)} ${f(y + R * 0.12)} L${f(x - R * 0.4)} ${f(y)} L${f(x - R * 0.12)} ${f(y - R * 0.12)}z" fill="#5c4410" opacity="0.7"/>`;
     else body += `<path d="M${f(x + R * 0.2)} ${f(y - R * 0.35)} a${f(R * 0.4)} ${f(R * 0.4)} 0 1 0 0 ${f(R * 0.7)} a${f(R * 0.3)} ${f(R * 0.3)} 0 1 1 0 ${f(-R * 0.7)}z" fill="#5c4410" opacity="0.7"/>`;
     body += '</g>';
   }
   return svg(defs, body);
+}
+// Tangalar chetida yaltiroq uchqunlar yonadi, ustidan oltin kukun ko'tariladi
+function tangaFx() {
+  const r = rng(112);
+  const css = SPARKCSS + RISECSS(-40, -220);
+  let b = '<g fill="#fff6d1">';
+  for (const c of tangaCoins()) if (r() < 0.55) b += sparkle(c.x - c.R * 0.45, c.y - c.R * 0.45, 7 + c.R * 0.18).replace('<path ', `<path ${anim('sp', 3 + r() * 5, r() * 8)} `);
+  b += '</g>';
+  for (let i = 0; i < 36; i++) b += `<circle ${anim('rs', 9 + r() * 9, r() * 18)} cx="${f(r() * W)}" cy="${f(300 + r() * 700)}" r="${f(1 + r() * 1.8)}" fill="#ffd76a"/>`;
+  return fxSvg('tg', css, b);
 }
 
 // 🕌 Samarqand — Registon: tungi osmon, yarim oy, uch madrasa siluetlari va gumbazlar
@@ -317,22 +485,61 @@ function samarqand() {
   for (let i = -3; i <= 3; i++) body += `<path d="M${600 + i * 18} ${620} q${-i * 4} ${-60} ${-i * 2} ${-78}" stroke="#0a1a26" stroke-opacity="0.35" stroke-width="2" fill="none"/>`;
   return svg(defs, body);
 }
+// Registon tunda: yulduzlar miltillaydi, oy atrofida yog'du, gumbazlar koshinida oy nuri yaltiraydi, peshtoq ravoqlarida
+// chiroq yonib-so'nadi, ba'zan uchar yulduz
+function samarqandFx() {
+  const r = rng(113);
+  const css = TWCSS
+    + '$.moon{transform-origin:1335px 200px;animation:~mo 7s ease-in-out infinite alternate}@keyframes ~mo{from{opacity:.4;transform:scale(.95)}to{opacity:1;transform:scale(1.06)}}'
+    + '$.dm{animation:~dm var(--d) ease-in-out infinite alternate}@keyframes ~dm{from{opacity:0}to{opacity:.55}}'
+    + '$.met{opacity:0;animation:~met var(--d) linear infinite}@keyframes ~met{0%{opacity:0;transform:translate(0,0)}3%{opacity:1}12%{opacity:0;transform:translate(-520px,300px)}100%{opacity:0;transform:translate(-520px,300px)}}';
+  let b = `<circle class="moon" cx="1335" cy="200" r="190" fill="url(#mg)"/>` + twinkles(r, 70, ['#fff', '#fff', '#ffe8a3'], 0, 560, 0.8, 1.7);
+  for (const [x, rr, d] of [[600, 70, 6], [1000, 70, 8]]) b += `<path ${anim('dm', d, d / 2)} d="M${x - rr * 0.55} ${1000 - 380 - 10} a${rr * 0.5} ${rr * 0.95} 0 0 1 ${rr * 0.5} ${-rr * 0.95}" stroke="#d4fbff" stroke-width="7" stroke-linecap="round" fill="none"/>`;
+  for (const [cx, w, h, d] of [[330, 340, 330, 9], [800, 400, 380, 11], [1270, 340, 330, 10]]) b += `<path ${anim('dm', d, d / 3)} d="M${cx - w * 0.16} 1000 V${f(1000 - h * 0.66)} Q${cx} ${f(1000 - h * 0.86)} ${cx + w * 0.16} ${f(1000 - h * 0.66)} V1000z" fill="url(#lamp)"/>`;
+  const met = (x, y, d, delay) => `<g class="met" style="--d:${d}s;animation-delay:${delay}s"><path d="M${x} ${y} l130 -75" stroke="url(#mt)" stroke-width="2.4" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="2.4" fill="#fff"/></g>`;
+  b += met(1150, 90, 17, 4) + met(700, 60, 23, 13);
+  const defs = rad('mg', [[0, '#ffe8a3', 0.35], [1, '#ffe8a3', 0]]) + rad('lamp', [[0, '#ffd27a', 0.35], [1, '#ffd27a', 0]], 0.5, 0.85, 0.7)
+    + '<linearGradient id="mt" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe7ff" stop-opacity="0"/></linearGradient>';
+  return fxSvg('sm', css, b, defs);
+}
 
 // 🕊 Origami — buklangan qog'oz turnalar va uchburchaklar
-function origami() {
-  const r = rng(14);
+const ORI_COLS = ['#e03131', '#f8f0e3', '#f08c00', '#c2255c'];
+const craneSvg = (x, y, s, c, op = 0.38) => `<g transform="translate(${f(x)} ${f(y)}) scale(${f(s)})" opacity="${op}"><path d="M0 0 L60 -40 L40 10z" fill="${c}"/><path d="M0 0 L40 10 L-10 30z" fill="#fff" opacity="0.5"/><path d="M40 10 L110 -10 L70 30z" fill="${c}"/><path d="M-10 30 L-50 -5 L-30 35z" fill="${c}" opacity="0.8"/><path d="M60 -40 L80 -70 L70 -20z" fill="#fff" opacity="0.6"/></g>`;
+function origamiCranes() {
+  const r = rng(14), cranes = [];
+  for (let i = 0; i < 14; i++) cranes.push([r() * W, r() * H, 0.8 + r() * 1.4, ORI_COLS[i % 4]]);
+  return { r, cranes };
+}
+function origami(cranes = true) {
+  const o = origamiCranes(), r = o.r;
   let body = `<rect width="${W}" height="${H}" fill="#1c0f12"/>`;
-  const crane = (x, y, s, c) => `<g transform="translate(${f(x)} ${f(y)}) scale(${f(s)})" opacity="0.38"><path d="M0 0 L60 -40 L40 10z" fill="${c}"/><path d="M0 0 L40 10 L-10 30z" fill="#fff" opacity="0.5"/><path d="M40 10 L110 -10 L70 30z" fill="${c}"/><path d="M-10 30 L-50 -5 L-30 35z" fill="${c}" opacity="0.8"/><path d="M60 -40 L80 -70 L70 -20z" fill="#fff" opacity="0.6"/></g>`;
-  const cols = ['#e03131', '#f8f0e3', '#f08c00', '#c2255c'];
-  for (let i = 0; i < 14; i++) body += crane(r() * W, r() * H, 0.8 + r() * 1.4, cols[i % 4]);
-  for (let i = 0; i < 40; i++) { const x = r() * W, y = r() * H, s = 10 + r() * 30; body += `<path d="M${f(x)} ${f(y)} l${f(s)} ${f(s * 0.6)} l${f(-s * 0.4)} ${f(s)}z" fill="${cols[i % 4]}" opacity="0.14"/>`; }
+  if (cranes) for (const c of o.cranes) body += craneSvg(...c);
+  for (let i = 0; i < 40; i++) { const x = r() * W, y = r() * H, s = 10 + r() * 30; body += `<path d="M${f(x)} ${f(y)} l${f(s)} ${f(s * 0.6)} l${f(-s * 0.4)} ${f(s)}z" fill="${ORI_COLS[i % 4]}" opacity="0.14"/>`; }
   return svg('', body);
+}
+// Qog'oz turnalar chapdan o'ngga uchib o'tadi (to'lqinsimon, biroz qiyshayib), qog'oz parchalari aylanib tushadi
+function origamiFx() {
+  const r = rng(114);
+  const css = '$.fly{animation:~fly var(--d) linear infinite}@keyframes ~fly{from{transform:translateX(-300px)}to{transform:translateX(1950px)}}'
+    + '$.wv{transform-box:fill-box;transform-origin:center;animation:~wv var(--d) ease-in-out infinite alternate}@keyframes ~wv{from{transform:translateY(-16px) rotate(-5deg)}to{transform:translateY(16px) rotate(5deg)}}'
+    + '$.fl{animation:~fl var(--d) linear infinite}@keyframes ~fl{0%{opacity:0;transform:translate(0,0) rotate(0)}10%{opacity:1}90%{opacity:1}100%{opacity:0;transform:translate(-120px,1150px) rotate(540deg)}}';
+  let b = '';
+  origamiCranes().cranes.forEach(([, y, s, c], i) => {
+    const d = 55 + r() * 45;
+    b += `<g ${anim('fly', d, r() * d)}><g ${anim('wv', 3 + r() * 3, r() * 4)}>${craneSvg(0, y, s, c, 0.5)}</g></g>`;
+  });
+  for (let i = 0; i < 16; i++) { const x = r() * W, s = 10 + r() * 22; b += `<g ${anim('fl', 18 + r() * 16, r() * 34)}><path style="transform-box:fill-box;transform-origin:center" d="M${f(x)} -60 l${f(s)} ${f(s * 0.6)} l${f(-s * 0.4)} ${f(s)}z" fill="${ORI_COLS[i % 4]}" opacity="0.3"/></g>`; }
+  return fxSvg('or', css, b);
 }
 
 const BACKGROUNDS = { karvon, classic, clear, atlas, rishton, wood, royal, neon, geo, cute, pixel, tanga, samarqand, origami, kosmos };
-// Harakatli fon fayllari (bgfx.js): asos va harakatli qatlam
-const EXTRAS = { 'kosmos-base': kosmosBase, 'kosmos-fx': kosmosFx };
-module.exports = { BACKGROUNDS, EXTRAS };
+// Harakatli fon fayllari (bgfx.js): <id>-fx — harakatli qatlam (har to'plamda); <id>-base — harakatlanuvchi narsalarsiz asos
+const BASES = { karvon: () => karvon(false), rishton: () => rishton(false), neon: () => neon(false), cute: () => cute(false), pixel: () => pixel(false), origami: () => origami(false), kosmos: kosmosBase };
+const FXS = { karvon: karvonFx, classic: classicFx, clear: clearFx, atlas: atlasFx, rishton: rishtonFx, wood: woodFx, royal: royalFx, neon: neonFx, geo: geoFx, cute: cuteFx, pixel: pixelFx, tanga: tangaFx, samarqand: samarqandFx, origami: origamiFx, kosmos: kosmosFx };
+const EXTRAS = {};
+for (const id of Object.keys(BACKGROUNDS)) { if (BASES[id]) EXTRAS[id + '-base'] = BASES[id]; EXTRAS[id + '-fx'] = FXS[id]; }
+module.exports = { BACKGROUNDS, EXTRAS, BASES };
 
 if (require.main === module) {
   fs.mkdirSync(OUT, { recursive: true });

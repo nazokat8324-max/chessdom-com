@@ -15215,6 +15215,13 @@ button .ic-emoji, a[class*="btn"] .ic-emoji, [class*="-btn"] .ic-emoji, .set-min
 
 /* ===== 🌌 Harakatli fon (bgfx.js): .main-wrapper ustida, kontent ostida ===== */
 html.bg-motion .main-wrapper { isolation: isolate; }
+/* Harakatlanuvchi narsalar (tuyalar, laganlar, to'r, bulutlar, turnalar, sayyoralar) qatlamda — fon ularsiz asosga almashadi */
+html.bg-motion[data-bg="karvon"] { --bg-img: url(img/backgrounds/karvon-base.svg); }
+html.bg-motion[data-bg="rishton"] { --bg-img: url(img/backgrounds/rishton-base.svg); }
+html.bg-motion[data-bg="neon"] { --bg-img: url(img/backgrounds/neon-base.svg); }
+html.bg-motion[data-bg="cute"] { --bg-img: url(img/backgrounds/cute-base.svg); }
+html.bg-motion[data-bg="pixel"] { --bg-img: url(img/backgrounds/pixel-base.svg); }
+html.bg-motion[data-bg="origami"] { --bg-img: url(img/backgrounds/origami-base.svg); }
 html.bg-motion[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos-base.svg); }
 #bgFx { position: fixed; z-index: -1; pointer-events: none; overflow: hidden; opacity: 0.62; }
 #bgFx svg { width: 100%; height: 100%; display: block; }

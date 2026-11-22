@@ -3022,7 +3022,7 @@ const translationsExtra = {
 
     libAllVideos: "Barcha videolar kanalda",
     setBgMotion: "Fon harakati",
-    setBgMotionHint: "Kosmos to'plamida yulduzlar miltillaydi, sayyoralar sekin harakatlanadi. Quvvatni tejash uchun o'chirish mumkin; o'yin paytida o'zi to'xtaydi.",
+    setBgMotionHint: "Har to'plamda o'z harakati: tuyalar yuradi, turnalar uchadi, yulduzlar miltillaydi, sayyoralar suzadi. Quvvatni tejash uchun o'chirish mumkin; o'yin paytida o'zi to'xtaydi.",
     setNavBundles: "To'plamlar",
     setBundlesHint: "Donalar, taxta, sayt rangi va orqa fon rasmi — bir bosishda. Keyin istalganini alohida o'zgartirishingiz mumkin.",
     setBundleMixed: "Aralash: fon — {{name}}",
@@ -4875,7 +4875,7 @@ const translationsExtra = {
 
     libAllVideos: "All videos on the channel",
     setBgMotion: "Background motion",
-    setBgMotionHint: "In the Kosmos bundle the stars twinkle and the planets drift slowly. Turn it off to save power; it pauses by itself during a game.",
+    setBgMotionHint: "Every bundle has its own motion: camels walk, cranes fly, stars twinkle, planets drift. Turn it off to save power; it pauses by itself during a game.",
     setNavBundles: "Bundles",
     setBundlesHint: "Pieces, board, site colour and background picture — in one click. You can still change any of them separately afterwards.",
     setBundleMixed: "Mixed: background — {{name}}",
@@ -6728,7 +6728,7 @@ const translationsExtra = {
 
     libAllVideos: "Все видео на канале",
     setBgMotion: "Движение фона",
-    setBgMotionHint: "В наборе «Космос» звёзды мерцают, а планеты медленно движутся. Можно выключить для экономии энергии; во время партии движение останавливается само.",
+    setBgMotionHint: "У каждого набора своё движение: идут верблюды, летят журавлики, мерцают звёзды, плывут планеты. Можно выключить для экономии энергии; во время партии движение останавливается само.",
     setNavBundles: "Наборы",
     setBundlesHint: "Фигуры, доска, цвет сайта и фоновая картинка — одним нажатием. Потом любой из них можно изменить отдельно.",
     setBundleMixed: "Смешанный: фон — {{name}}",
@@ -8581,7 +8581,7 @@ const translationsExtra = {
 
     libAllVideos: "Todos los vídeos en el canal",
     setBgMotion: "Movimiento del fondo",
-    setBgMotionHint: "En el conjunto Kosmos las estrellas titilan y los planetas se mueven despacio. Puedes desactivarlo para ahorrar batería; durante la partida se detiene solo.",
+    setBgMotionHint: "Cada conjunto tiene su propio movimiento: caminan camellos, vuelan grullas, titilan estrellas, flotan planetas. Puedes desactivarlo para ahorrar batería; durante la partida se detiene solo.",
     setNavBundles: "Conjuntos",
     setBundlesHint: "Piezas, tablero, color del sitio e imagen de fondo, con un solo clic. Después puedes cambiar cualquiera por separado.",
     setBundleMixed: "Mixto: fondo — {{name}}",
@@ -10434,7 +10434,7 @@ const translationsExtra = {
 
     libAllVideos: "Alle Videos auf dem Kanal",
     setBgMotion: "Hintergrundbewegung",
-    setBgMotionHint: "Im Kosmos-Paket funkeln die Sterne und die Planeten ziehen langsam. Zum Stromsparen abschaltbar; während einer Partie hält es von selbst an.",
+    setBgMotionHint: "Jedes Paket hat seine eigene Bewegung: Kamele ziehen, Kraniche fliegen, Sterne funkeln, Planeten treiben. Zum Stromsparen abschaltbar; während einer Partie hält es von selbst an.",
     setNavBundles: "Pakete",
     setBundlesHint: "Figuren, Brett, Seitenfarbe und Hintergrundbild – mit einem Klick. Danach kannst du jedes davon einzeln ändern.",
     setBundleMixed: "Gemischt: Hintergrund — {{name}}",
@@ -12287,7 +12287,7 @@ const translationsExtra = {
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
     setBgMotion: "Mouvement du fond",
-    setBgMotionHint: "Dans l'ensemble Kosmos, les étoiles scintillent et les planètes dérivent lentement. Désactivable pour économiser l'énergie ; il s'arrête tout seul pendant une partie.",
+    setBgMotionHint: "Chaque ensemble a son propre mouvement : les chameaux marchent, les grues volent, les étoiles scintillent, les planètes dérivent. Désactivable pour économiser l'énergie ; il s'arrête tout seul pendant une partie.",
     setNavBundles: "Ensembles",
     setBundlesHint: "Pièces, plateau, couleur du site et image de fond — en un clic. Tu peux ensuite modifier chacun séparément.",
     setBundleMixed: "Mixte : fond — {{name}}",

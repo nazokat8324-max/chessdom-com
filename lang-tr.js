@@ -1806,7 +1806,7 @@ window.TRANSLATIONS_TR = {
 
   libAllVideos: "Tüm videolar kanalda",
   setBgMotion: "Arka plan hareketi",
-  setBgMotionHint: "Kosmos setinde yıldızlar parlar, gezegenler yavaşça hareket eder. Enerji tasarrufu için kapatabilirsin; oyun sırasında kendiliğinden durur.",
+  setBgMotionHint: "Her setin kendi hareketi var: develer yürür, turnalar uçar, yıldızlar parlar, gezegenler süzülür. Enerji tasarrufu için kapatabilirsin; oyun sırasında kendiliğinden durur.",
   setNavBundles: "Setler",
   setBundlesHint: "Taşlar, tahta, site rengi ve arka plan resmi — tek tıkla. Sonra istediğini ayrı ayrı değiştirebilirsin.",
   setBundleMixed: "Karışık: arka plan — {{name}}",

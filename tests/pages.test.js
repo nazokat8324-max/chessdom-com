@@ -387,7 +387,7 @@ test("Kosmos harakatli foni: asos va harakatli qatlam fayllari, sayyoralar tebra
   const path = require('path');
   const bg = (f) => fs.readFileSync(path.join(__dirname, '..', 'img', 'backgrounds', f), 'utf8');
   const { EXTRAS } = require('../tools/make-backgrounds');
-  assert.deepEqual(Object.keys(EXTRAS), ['kosmos-base', 'kosmos-fx']);
+  assert.ok(EXTRAS['kosmos-base'] && EXTRAS['kosmos-fx']);
   const base = bg('kosmos-base.svg'), fx = bg('kosmos-fx.svg');
   assert.ok(!/fill="url\(#p\d\)"/.test(base), "asosda sayyora yo'q (ular harakatli qatlamda)");
   assert.equal((fx.match(/<g class="o"/g) || []).length, 8, '8 sayyora harakatli qatlamda');
@@ -397,6 +397,40 @@ test("Kosmos harakatli foni: asos va harakatli qatlam fayllari, sayyoralar tebra
   assert.ok(base.length < 60000 && fx.length < 30000, 'hajmi kichik');
   const css = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
   assert.ok(css.includes('html.bg-motion[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos-base.svg); }'));
+});
+
+test("Barcha to'plamlarning harakatli foni: har birida qatlam, harakatlanuvchi narsalar asosdan olib tashlangan, uslub #bgFx ichida", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const dir = path.join(__dirname, '..', 'img', 'backgrounds');
+  const { BACKGROUNDS, EXTRAS, BASES } = require('../tools/make-backgrounds');
+  const { BUNDLES } = require('../bundles.js');
+  const bgfx = fs.readFileSync(path.join(__dirname, '..', 'bgfx.js'), 'utf8');
+  const fxList = JSON.parse(bgfx.match(/const FX = (\[[^\]]*\])/)[1].replace(/'/g, '"'));
+  assert.deepEqual(fxList, BUNDLES.map((b) => b.id), "bgfx.js FX — barcha to'plamlar");
+  const css = fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8');
+  for (const id of Object.keys(BACKGROUNDS)) {
+    assert.ok(EXTRAS[id + '-fx'], id + ': harakatli qatlam bor');
+    const fx = fs.readFileSync(path.join(dir, id + '-fx.svg'), 'utf8');
+    assert.equal(fx, EXTRAS[id + '-fx'](), id + '-fx.svg yangilangan (node tools/make-backgrounds.js)');
+    assert.match(fx, /@keyframes /, id + ': animatsiya bor');
+    assert.match(fx, /prefers-reduced-motion:reduce/, id);
+    assert.ok(fx.length < 30000, id + '-fx.svg kichik');
+    // Uslub sahifaga tushadi — har selektor #bgFx ichida (sahifadagi klasslarga tegmasin)
+    const style = fx.match(/<style>([\s\S]*?)<\/style>/)[1].replace(/@media[^{]*\{\*\{[^}]*\}\}/, '').replace(/@keyframes [\w-]+\{(?:[^{}]*\{[^}]*\})*\}/g, '');
+    for (const rule of style.split('}').filter(Boolean)) assert.match(rule.trim(), /^#bgFx /, id + ': selektor #bgFx ichida — ' + rule);
+    // id lar prefiksli
+    const ids = [...fx.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
+    const pre = ids.length ? ids[0].split('-')[0] : '';
+    assert.ok(ids.every((x) => x.startsWith(pre + '-')) && !/url\(#(?!\w+-)/.test(fx), id + ': id lar prefiksli');
+    const rule = 'html.bg-motion[data-bg="' + id + '"] { --bg-img: url(img/backgrounds/' + id + '-base.svg); }';
+    if (BASES[id]) {
+      const base = fs.readFileSync(path.join(dir, id + '-base.svg'), 'utf8');
+      assert.equal(base, BASES[id](), id + '-base.svg yangilangan');
+      assert.ok(base.length < BACKGROUNDS[id]().length, id + ": asosda harakatlanuvchi narsalar yo'q");
+      assert.ok(css.includes(rule), id + ': CSS asosga almashtiradi');
+    } else assert.ok(!css.includes(rule) && !fs.existsSync(path.join(dir, id + '-base.svg')), id + ': asos kerak emas');
+  }
 });
 
 test("Node versiyasi bir xil: package.json engines (Render shu bo'yicha tanlaydi), Dockerfile va GitHub Actions", () => {

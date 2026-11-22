@@ -1,10 +1,11 @@
 // 🌌 Harakatli fon (2026-11-22, foydalanuvchi so'rovi: Kosmos «jonliroq»). To'plam fonida harakatli qatlam bo'lsa (FX) va
 // Sozlamalar → To'plamlar → «Fon harakati» yoqiq bo'lsa (justChessSettings.bgMotion, standart — yoqiq) va qurilmada «harakatni
 // kamaytirish» yoqilmagan bo'lsa: <html class="bg-motion"> — fon sayyorasiz asosga (img/backgrounds/<id>-base.svg) almashadi,
-// ustiga #bgFx — img/backgrounds/<id>-fx.svg sahifaga joylanadi (sayyoralar sekin tebranadi, yulduzlar miltillaydi, uchar yulduzlar).
+// ustiga #bgFx — img/backgrounds/<id>-fx.svg sahifaga joylanadi (har to'plamda o'z harakati: tuyalar, turnalar, yulduzlar, sayyoralar…).
 // Qatlam .main-wrapper bilan aynan ustma-ust (ikkalasi ham markazdan «cover»); o'yin paytida harakat to'xtaydi (CSS).
 (function () {
-  const FX = ['kosmos'];
+  // Har to'plamda harakatli qatlam bor (2026-11-22, «boshqa to'plamlarning fonlarini ham jonli qil») — bundles.js BUNDLES bilan bir xil
+  const FX = ['karvon', 'classic', 'clear', 'atlas', 'rishton', 'wood', 'royal', 'neon', 'geo', 'cute', 'pixel', 'tanga', 'samarqand', 'origami', 'kosmos'];
   const reduce = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : { matches: false, addEventListener() {} };
   const cache = {};
   let host = null, current = null;

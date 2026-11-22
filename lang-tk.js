@@ -1806,7 +1806,7 @@ window.TRANSLATIONS_TK = {
 
   libAllVideos: "Ähli wideolar kanalda",
   setBgMotion: "Fonuň hereketi",
-  setBgMotionHint: "Kosmos toplumynda ýyldyzlar ýalpyldaýar, planetalar haýal hereket edýär. Energiýany tygşytlamak üçin öçürip bolýar; oýun wagtynda özi togtaýar.",
+  setBgMotionHint: "Her toplumyň öz hereketi bar: düýeler ýöreýär, durnalar uçýar, ýyldyzlar ýalpyldaýar, planetalar ýüzýär. Energiýany tygşytlamak üçin öçürip bolýar; oýun wagtynda özi togtaýar.",
   setNavBundles: "Toplumlar",
   setBundlesHint: "Daşlar, tagta, saýtyň reňki we fon suraty — bir basyşda. Soňra islendigini aýratyn üýtgedip bilersiňiz.",
   setBundleMixed: "Garyşyk: fon — {{name}}",

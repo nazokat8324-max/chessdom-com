@@ -1979,6 +1979,14 @@ window.applyBoardStyle = function(style) {
   return name;
 };
 
+// 🎁 To'plam orqa foni (<html data-bg>, bundles.js BACKGROUNDS, rasmlar img/backgrounds/<id>.svg); '' — fonsiz
+window.applyBackground = function(id) {
+  const ok = !!(id && window.Bundles && window.Bundles.BACKGROUNDS.includes(id));
+  if (ok) document.documentElement.setAttribute('data-bg', id);
+  else document.documentElement.removeAttribute('data-bg');
+  return ok ? id : '';
+};
+
 window.applyCoords = function(show) {
   document.documentElement.classList.toggle('hide-coords', show === false);
 };

@@ -1805,6 +1805,11 @@ window.TRANSLATIONS_IT = {
   libViews: "Visualizzazioni: {{n}}",
 
   libAllVideos: "Tutti i video sul canale",
+  setNavBundles: "Set",
+  setBundlesHint: "Pezzi, scacchiera, colore del sito e immagine di sfondo, con un clic. Poi puoi cambiarli anche uno per uno.",
+  setBundleMixed: "Misto: sfondo — {{name}}",
+  setNoBg: "Senza sfondo",
+  setNoBgHint: "Rimuovi l'immagine di sfondo",
   fcPens: "Rigori",
   fcPensStart: "Pareggio! Calci di rigore: 5 tiri a testa.",
   fcPenGoal: "GOL! {{team}} trasforma il rigore.",

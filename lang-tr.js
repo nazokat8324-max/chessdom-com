@@ -1805,6 +1805,11 @@ window.TRANSLATIONS_TR = {
   libViews: "İzlenme: {{n}}",
 
   libAllVideos: "Tüm videolar kanalda",
+  setNavBundles: "Setler",
+  setBundlesHint: "Taşlar, tahta, site rengi ve arka plan resmi — tek tıkla. Sonra istediğini ayrı ayrı değiştirebilirsin.",
+  setBundleMixed: "Karışık: arka plan — {{name}}",
+  setNoBg: "Arka plansız",
+  setNoBgHint: "Arka plan resmini kaldır",
   fcPens: "Penaltılar",
   fcPensStart: "Berabere! Penaltı atışları — her takıma 5 atış.",
   fcPenGoal: "GOL! {{team}} penaltıyı gole çevirdi.",

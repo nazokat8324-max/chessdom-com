@@ -1805,6 +1805,11 @@ window.TRANSLATIONS_TK = {
   libViews: "Görülen: {{n}}",
 
   libAllVideos: "Ähli wideolar kanalda",
+  setNavBundles: "Toplumlar",
+  setBundlesHint: "Daşlar, tagta, saýtyň reňki we fon suraty — bir basyşda. Soňra islendigini aýratyn üýtgedip bilersiňiz.",
+  setBundleMixed: "Garyşyk: fon — {{name}}",
+  setNoBg: "Fonsyz",
+  setNoBgHint: "Fon suratyny aýyrmak",
   fcPens: "Penaltiler",
   fcPensStart: "Deňme-deň! Penalti tapgyry — her topara 5 urgy.",
   fcPenGoal: "GOL! {{team}} penaltini geçirdi.",

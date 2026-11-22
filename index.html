@@ -101,6 +101,9 @@
           );
         if (cdSettings.showCoords === false)
           document.documentElement.classList.add("hide-coords");
+        // 🎁 To'plam orqa foni (bundles.js BACKGROUNDS) — sahifa chizilishidan oldin
+        if (/^[a-z]{2,12}$/.test(cdSettings.background || ""))
+          document.documentElement.setAttribute("data-bg", cdSettings.background);
         if (localStorage.getItem("justChessSidebar") === "collapsed")
           document.documentElement.classList.add("sidebar-collapsed");
       } catch (e) {}
@@ -2560,6 +2563,7 @@
     <!-- socket.io mijozi o'z serverimizdan (versiya server bilan bir xil; avval tashqi CDN dan edi — yuklanmasa butun sayt ishlamasdi) -->
     <script src="/socket.io/socket.io.min.js"></script>
     <script src="vendor/chart-4.6.1.umd.min.js"></script>
+    <script src="bundles.js"></script>
     <script src="script.js"></script>
     <script src="ranks.js"></script>
     <script src="sound.js"></script>

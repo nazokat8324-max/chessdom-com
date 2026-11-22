@@ -1805,6 +1805,11 @@ window.TRANSLATIONS_AZ = {
   libViews: "Baxış: {{n}}",
 
   libAllVideos: "Bütün videolar kanalda",
+  setNavBundles: "Dəstlər",
+  setBundlesHint: "Fiqurlar, taxta, sayt rəngi və fon şəkli — bir kliklə. Sonra istədiyini ayrıca dəyişə bilərsən.",
+  setBundleMixed: "Qarışıq: fon — {{name}}",
+  setNoBg: "Fonsuz",
+  setNoBgHint: "Fon şəklini sil",
   fcPens: "Penaltilər",
   fcPensStart: "Heç-heçə! Penalti seriyası — hərəyə 5 zərbə.",
   fcPenGoal: "QOL! {{team}} penaltini reallaşdırdı.",

@@ -1805,6 +1805,11 @@ window.TRANSLATIONS_KK = {
   libViews: "Қаралым: {{n}}",
 
   libAllVideos: "Барлық бейне арнада",
+  setNavBundles: "Жинақтар",
+  setBundlesHint: "Тастар, тақта, сайт түсі және фон суреті — бір басумен. Кейін кез келгенін бөлек өзгертуге болады.",
+  setBundleMixed: "Аралас: фон — {{name}}",
+  setNoBg: "Фонсыз",
+  setNoBgHint: "Фон суретін алып тастау",
   fcPens: "Пенальти",
   fcPensStart: "Тең ойын! Пенальти сериясы — әрқайсысына 5 соққы.",
   fcPenGoal: "ГОЛ! {{team}} пенальтиді жүзеге асырды.",

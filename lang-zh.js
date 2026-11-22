@@ -1805,6 +1805,11 @@ window.TRANSLATIONS_ZH = {
   libViews: "{{n}} 次观看",
 
   libAllVideos: "频道里的全部视频",
+  setNavBundles: "主题套装",
+  setBundlesHint: "棋子、棋盘、网站颜色和背景图片——一键设置。之后仍可单独更改其中任何一项。",
+  setBundleMixed: "混搭：背景——{{name}}",
+  setNoBg: "无背景",
+  setNoBgHint: "移除背景图片",
   fcPens: "点球大战",
   fcPensStart: "平局！点球大战——每队各罚 5 球。",
   fcPenGoal: "进球！{{team}} 罚进点球。",

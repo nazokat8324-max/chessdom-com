@@ -15146,3 +15146,44 @@ body:has(#messagesView.active-view) .sb-user-row .sb-msg-btn { border-color: var
 .fc-pens.reveal.goal .fc-pstatus { color: #f5c542; font-size: clamp(22px, 5cqw, 40px); }
 .fc-pens.reveal.saved .fc-pstatus { color: #74c0fc; font-size: clamp(20px, 4.4cqw, 34px); }
 @media (prefers-reduced-motion: reduce) { .fc-pens.reveal .fc-pball { animation: none; } .fc-pkeeper { transition: none; } }
+
+/* ===== 🎁 To'plamlar: orqa fon rasmi (bundles.js, img/backgrounds/<id>.svg) =====
+   .main-wrapper — sahifaning aylanadigan qismi: unga berilgan fon joyida turadi, kontent ustidan aylanadi (telefonda ham).
+   Ustida mavzu rangidagi xira parda — matn va kartalar o'qilishi buzilmasin. */
+html[data-bg] { --bg-veil: color-mix(in srgb, var(--cd-bg) 55%, transparent); }
+html[data-bg] .main-wrapper {
+  background: linear-gradient(var(--bg-veil), var(--bg-veil)), var(--bg-img) center / cover no-repeat, var(--cd-bg);
+}
+html[data-bg="karvon"] { --bg-img: url(img/backgrounds/karvon.svg); }
+html[data-bg="classic"] { --bg-img: url(img/backgrounds/classic.svg); }
+html[data-bg="clear"] { --bg-img: url(img/backgrounds/clear.svg); }
+html[data-bg="atlas"] { --bg-img: url(img/backgrounds/atlas.svg); }
+html[data-bg="rishton"] { --bg-img: url(img/backgrounds/rishton.svg); }
+html[data-bg="wood"] { --bg-img: url(img/backgrounds/wood.svg); }
+html[data-bg="royal"] { --bg-img: url(img/backgrounds/royal.svg); }
+html[data-bg="neon"] { --bg-img: url(img/backgrounds/neon.svg); }
+html[data-bg="geo"] { --bg-img: url(img/backgrounds/geo.svg); }
+html[data-bg="cute"] { --bg-img: url(img/backgrounds/cute.svg); }
+html[data-bg="pixel"] { --bg-img: url(img/backgrounds/pixel.svg); }
+html[data-bg="tanga"] { --bg-img: url(img/backgrounds/tanga.svg); }
+html[data-bg="samarqand"] { --bg-img: url(img/backgrounds/samarqand.svg); }
+html[data-bg="origami"] { --bg-img: url(img/backgrounds/origami.svg); }
+html[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos.svg); }
+
+/* Sozlamalar → To'plamlar: kartalar */
+.set-bundles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.set-bundle { display: flex; flex-direction: column; align-items: stretch; gap: 3px; padding: 6px 6px 9px; border-radius: 14px; border: 2px solid var(--cd-border); background: var(--cd-surface); color: var(--cd-text); cursor: pointer; text-align: left; font: inherit; min-width: 0; }
+.set-bundle:hover { border-color: var(--cd-border-strong); }
+.set-bundle.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.25); }
+.set-bundle b { font-size: 14px; padding: 0 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.set-bundle small { font-size: 11px; color: var(--cd-muted, #a9b6b0); padding: 0 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.set-bundle-art { position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: var(--bundle-bg) center / cover no-repeat, #0b0f14; margin-bottom: 4px; }
+.set-bundle-art .bd-sw { width: 44px; height: 44px; flex: none; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); border-radius: 6px; overflow: hidden; }
+.set-bundle-pcs { display: flex; gap: 2px; padding: 2px 6px; border-radius: 10px; background: rgba(255, 255, 255, 0.82); }
+.set-bundle-pcs img { width: 30px; height: 30px; display: block; }
+.set-bundle .set-bundle-dot { position: absolute; top: 6px; right: 6px; padding: 0; margin: 0; border: 0; background: none; min-height: 0; box-shadow: none; }
+.set-bundle .set-bundle-dot i { display: block; width: 16px; height: 16px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.85); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5); }
+.set-bundle-none .set-bundle-art { background: repeating-linear-gradient(45deg, var(--cd-surface-2, #1b2226) 0 10px, var(--cd-surface, #151b1f) 10px 20px); }
+.set-bundle-x { font-size: 26px; color: var(--cd-muted, #a9b6b0); }
+.set-bundle-mixed { margin-top: 10px; }
+@media (max-width: 600px) { .set-bundles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

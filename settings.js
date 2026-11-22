@@ -6,7 +6,7 @@
     country: 'un', language: 'en', soundEnabled: true, volume: 0.8, soundPack: 'wood',
     siteTheme: 'turquoise', boardStyle: 'auto', showCoords: true, pieceSet: 'karvon',
     showHints: true, showLastMove: true, autoQueen: false, confirmResign: true,
-    quickClock: [300, 0], quickRated: true, vibration: true
+    quickClock: [300, 0], quickRated: true, vibration: true, background: ''
   };
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['uzc', 'uz', 'Ўзбекча'], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français'], ['tr', 'tr', 'Türkçe'], ['kk', 'kz', 'Қазақша'], ['tg', 'tj', 'Тоҷикӣ'], ['ky', 'kg', 'Кыргызча'], ['tk', 'tm', 'Türkmençe'], ['az', 'az', 'Azərbaycanca'], ['zh', 'cn', '中文'], ['it', 'it', 'Italiano']];
@@ -38,6 +38,7 @@
     if (!THEMES.some(t => t[0] === merged.siteTheme)) merged.siteTheme = DEFAULTS.siteTheme;
     if (!BOARDS.some(b => b[0] === merged.boardStyle)) merged.boardStyle = DEFAULTS.boardStyle;
     if (!SOUND_PACKS.some(p => p[0] === merged.soundPack)) merged.soundPack = DEFAULTS.soundPack;
+    if (!(window.Bundles && window.Bundles.BACKGROUNDS.includes(merged.background))) merged.background = '';
     return merged;
   };
   const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
@@ -49,6 +50,7 @@
   function applyAll(s) {
     if (typeof window.applySiteTheme === 'function') window.applySiteTheme(s.siteTheme);
     if (typeof window.applyBoardStyle === 'function') window.applyBoardStyle(s.boardStyle);
+    if (typeof window.applyBackground === 'function') window.applyBackground(s.background);
     if (typeof window.applyCoords === 'function') window.applyCoords(s.showCoords !== false);
     if (typeof window.applySoundToggle === 'function') window.applySoundToggle(s.soundEnabled !== false);
     if (typeof window.setSoundVolume === 'function') window.setSoundVolume(typeof s.volume === 'number' ? s.volume : 0.8);
@@ -73,6 +75,7 @@
   // --- Bo'limlar ---
   const sections = [
     ['general', '🌐', 'setNavGeneral', 'Umumiy'],
+    ['bundles', '🎁', 'setNavBundles', "To'plamlar"],
     ['board', '♟️', 'setNavBoard', 'Taxta va dizayn'],
     ['game', '🎮', 'setNavGame', "O'yin"],
     ['sound', '🔔', 'setNavSound', 'Ovoz va bildirishnomalar'],
@@ -169,6 +172,47 @@
         ${toggle('showCoords', tx('setCoords', 'Koordinatalar'), tx('setCoordsHint', "Taxta chetida a–h va 1–8 belgilari"))}
         ${toggle('showHints', tx('setHints', "Yurish nuqtalari"), tx('setHintsHint', "Dona tanlanganda yura oladigan kataklar ko'rinadi"))}
         ${toggle('showLastMove', tx('setLastMove', 'Oxirgi yurishni belgilash'), tx('setLastMoveHint', "Oxirgi yurilgan ikki katak sariq rangda"))}
+      </div>`;
+  }
+
+  // 🎁 To'plamlar: donalar + taxta + sayt rangi + orqa fon (bundles.js). Keyin istalganini alohida almashtirish mumkin — fon qoladi, to'plam «aralash»
+  function bundlesHtml() {
+    const d = st.draft;
+    const B = window.Bundles ? window.Bundles.BUNDLES : [];
+    const active = window.Bundles ? window.Bundles.matching(d) : null;
+    const nameOf = (list, id) => { const it = list.find((x) => x[0] === id); return it ? tx(it[1], it[2]) : id; };
+    const pieceName = (id) => { const p = PIECES.find((x) => x[0] === id); return p ? (p[2] ? tx(p[2], p[1]) : p[1]) : id; };
+    const cards = B.map((b) => `
+              <button type="button" class="set-bundle${active && active.id === b.id ? ' active' : ''}" data-bundle="${b.id}" style="--bundle-bg:url(img/backgrounds/${b.background}.svg)">
+                <span class="set-bundle-art">
+                  <span class="bd-sw bd-${b.board}"><i class="l"></i><i class="d"></i><i class="d"></i><i class="l"></i></span>
+                  <span class="set-bundle-pcs"><img src="${esc(window.pieceUrl ? window.pieceUrl('wN', b.piece) : '')}" alt=""><img src="${esc(window.pieceUrl ? window.pieceUrl('bK', b.piece) : '')}" alt=""></span>
+                  <span class="set-theme t-${b.theme} set-bundle-dot"><i></i></span>
+                </span>
+                <b>${esc(pieceName(b.piece))}</b>
+                <small>${esc(nameOf(BOARDS, b.board))} · ${esc(nameOf(THEMES, b.theme))}</small>
+              </button>`).join('');
+    const mixed = d.background && !active
+      ? `<p class="set-hint set-bundle-mixed">🎨 ${esc(tx('setBundleMixed', 'Aralash: fon — {{name}}', { name: pieceName(d.background) }))}</p>` : '';
+    return `
+      <div class="set-card set-board-card">
+        <p class="set-hint">${esc(tx('setBundlesHint', "Donalar, taxta, sayt rangi va orqa fon rasmi — bir bosishda. Keyin istalganini alohida o'zgartirishingiz mumkin."))}</p>
+        <div class="set-board-grid">
+          <div>
+            <div class="set-bundles">${cards}
+              <button type="button" class="set-bundle set-bundle-none${d.background ? '' : ' active'}" data-bundle-none="1">
+                <span class="set-bundle-art"><span class="set-bundle-x">✕</span></span>
+                <b>${esc(tx('setNoBg', 'Fonsiz'))}</b>
+                <small>${esc(tx('setNoBgHint', 'Orqa fon rasmini olib tashlash'))}</small>
+              </button>
+            </div>
+            ${mixed}
+          </div>
+          <div class="set-preview-wrap">
+            <span class="set-preview-label">${esc(tx('setPreview', "Ko'rinishi"))}</span>
+            ${previewHtml()}
+          </div>
+        </div>
       </div>`;
   }
 
@@ -319,7 +363,7 @@
       </div>`;
   }
 
-  const bodies = { general: generalHtml, board: boardHtml, game: gameHtml, sound: soundHtml, privacy: privacyHtml, account: accountHtml };
+  const bodies = { general: generalHtml, bundles: bundlesHtml, board: boardHtml, game: gameHtml, sound: soundHtml, privacy: privacyHtml, account: accountHtml };
 
   function render() {
     const el = root();
@@ -368,6 +412,11 @@
     el.querySelectorAll('[data-theme-pick]').forEach(b => b.addEventListener('click', () => change({ siteTheme: b.dataset.themePick })));
     el.querySelectorAll('[data-board-pick]').forEach(b => b.addEventListener('click', () => change({ boardStyle: b.dataset.boardPick })));
     el.querySelectorAll('[data-piece-set]').forEach(b => b.addEventListener('click', () => change({ pieceSet: b.dataset.pieceSet })));
+    el.querySelectorAll('[data-bundle]').forEach(b => b.addEventListener('click', () => {
+      const x = window.Bundles && window.Bundles.byId(b.dataset.bundle);
+      if (x) change({ pieceSet: x.piece, boardStyle: x.board, siteTheme: x.theme, background: x.background });
+    }));
+    el.querySelectorAll('[data-bundle-none]').forEach(b => b.addEventListener('click', () => change({ background: '' })));
     el.querySelectorAll('[data-piece-guide]').forEach(b => b.addEventListener('click', () => window.openPieceGuide && window.openPieceGuide()));
     el.querySelectorAll('[data-clock]').forEach(b => b.addEventListener('click', () => change({ quickClock: b.dataset.clock.split(',').map(Number) })));
     el.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => {

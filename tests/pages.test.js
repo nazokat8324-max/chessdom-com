@@ -322,6 +322,40 @@ test("Taxta ko'rinishlari: 14 ta + 'Mavzuga mos', barcha ro'yxatlar, CSS va 6 ti
   assert.ok(css.includes('.bd-auto {'), "'Mavzuga mos' namunasi");
 });
 
+test("To'plamlar: 15 ta — har dona to'plamiga bittadan, taxta/rang mavjud, fon rasmi (o'zimiz chizgan SVG) va CSS qoidasi bor", () => {
+  const fs = require('fs');
+  const path = require('path');
+  const read = (f) => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+  const list = (src, re) => JSON.parse(src.match(re)[1].replace(/'/g, '"'));
+  const B = require('../bundles');
+  const pieces = list(read('board.js'), /window\.PIECE_SETS = (\[[^\]]*\])/);
+  const boards = ['auto', ...list(read('script.js'), /window\.BOARD_STYLES = (\[[^\]]*\])/)];
+  const themes = list(read('script.js'), /window\.SITE_THEMES = (\[[^\]]*\])/);
+  assert.deepEqual(B.BUNDLES.map((b) => b.piece), pieces, "har dona to'plamiga bitta to'plam, o'sha tartibda");
+  assert.deepEqual(new Set(B.BUNDLES.map((b) => b.theme)).size, 15, "ranglar takrorlanmaydi");
+  const css = read('style.css');
+  const art = require('../tools/make-backgrounds').BACKGROUNDS;
+  assert.deepEqual(Object.keys(art), B.BACKGROUNDS, 'tools/make-backgrounds.js ro\'yxati');
+  for (const b of B.BUNDLES) {
+    assert.ok(boards.includes(b.board), b.id + ' taxtasi: ' + b.board);
+    assert.ok(themes.includes(b.theme), b.id + ' rangi: ' + b.theme);
+    const file = path.join(__dirname, '..', 'img', 'backgrounds', b.background + '.svg');
+    assert.ok(fs.existsSync(file), b.background + '.svg yo\'q (node tools/make-backgrounds.js)');
+    const svg = fs.readFileSync(file, 'utf8');
+    assert.match(svg, /^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/, b.background + ' — SVG');
+    assert.ok(!/<image|href="http/.test(svg), b.background + ' — begona rasm/havola yo\'q');
+    assert.ok(svg.length < 60000, b.background + ' — hajmi kichik');
+    assert.ok(css.includes(`html[data-bg="${b.background}"] { --bg-img: url(img/backgrounds/${b.background}.svg); }`), b.background + ' CSS');
+  }
+  // Kosmos — foydalanuvchi so'ragan Quyosh tizimi: Tun taxtasi va 8 sayyora
+  assert.equal(B.byId('kosmos').board, 'night');
+  assert.equal((art.kosmos().match(/<circle cx="[^"]+" cy="[^"]+" r="\d+" fill="url\(#p\d\)"/g) || []).length, 8, '8 ta sayyora');
+  const html = read('index.html');
+  assert.ok(html.indexOf('src="bundles.js"') > 0 && html.indexOf('src="bundles.js"') < html.indexOf('src="script.js"'), 'bundles.js script.js dan oldin');
+  assert.match(html, /setAttribute\("data-bg", cdSettings\.background\)/, "fon sahifa chizilishidan oldin");
+  assert.match(read('settings.js'), /background: ''/, 'standart — fonsiz');
+});
+
 test("Node versiyasi bir xil: package.json engines (Render shu bo'yicha tanlaydi), Dockerfile va GitHub Actions", () => {
   const fs = require('fs');
   const path = require('path');

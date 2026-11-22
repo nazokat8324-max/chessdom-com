@@ -1750,6 +1750,37 @@ test("Bir qurilmada bir nechta akkaunt: har birining sozlamalari alohida (rang, 
   assert.deepEqual(p.errors, []);
 });
 
+test("To'plamlar: Sozlamalarda tanlash donalar, taxta, rang va fonni birga qo'yadi; saqlanadi; alohida o'zgartirsa — «aralash», fon qoladi; «Fonsiz»", opts, async () => {
+  const u = await srv.register('Bundles');
+  const p = await page(u);
+  await p.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
+  await p.waitForSelector('[data-section="bundles"]', { timeout: 15000 });
+  await p.evaluate(() => document.querySelector('[data-section="bundles"]').click());
+  await p.waitForFunction(() => document.querySelectorAll('[data-bundle]').length === 15 && !!document.querySelector('[data-bundle-none].active'), { timeout: 5000 });
+  assert.equal(await p.evaluate(() => document.documentElement.dataset.bg || null), null, 'standart — fonsiz');
+  await p.evaluate(() => document.querySelector('[data-bundle="kosmos"]').click());
+  await p.waitForFunction(() => { const h = document.documentElement.dataset; return h.bg === 'kosmos' && h.theme === 'lapis' && h.board === 'night' && document.querySelector('[data-bundle="kosmos"].active'); }, { timeout: 5000 });
+  // Fon rasmi haqiqatan yuklanadi va asosiy maydonga qo'yiladi
+  assert.match(await p.evaluate(() => getComputedStyle(document.querySelector('.main-wrapper')).backgroundImage), /backgrounds\/kosmos\.svg/);
+  assert.equal((await srv.api(null, '/img/backgrounds/kosmos.svg')).raw.slice(0, 4), '<svg');
+  await p.evaluate(() => document.querySelector('[data-save]').click());
+  // Qayta yuklash — fon sahifa chizilishidan oldin qo'llanadi, donalar to'plami ham saqlangan
+  await p.reload({ waitUntil: 'domcontentloaded' });
+  assert.equal(await p.evaluate(() => document.documentElement.dataset.bg), 'kosmos');
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings')).pieceSet), 'kosmos');
+  // Donani alohida almashtirish — fon qoladi, to'plam «aralash»
+  await p.waitForSelector('[data-section="board"]', { timeout: 15000 });
+  await p.evaluate(() => document.querySelector('[data-section="board"]').click());
+  await p.evaluate(() => document.querySelector('[data-piece-set="classic"]').click());
+  await p.evaluate(() => document.querySelector('[data-section="bundles"]').click());
+  await p.waitForFunction(() => !document.querySelector('.set-bundle.active') && /Kosmos/.test((document.querySelector('.set-bundle-mixed') || {}).textContent || ''), { timeout: 5000 });
+  assert.equal(await p.evaluate(() => document.documentElement.dataset.bg), 'kosmos');
+  // Fonsiz
+  await p.evaluate(() => document.querySelector('[data-bundle-none]').click());
+  await p.waitForFunction(() => !document.documentElement.dataset.bg && document.querySelector('[data-bundle-none].active'), { timeout: 5000 });
+  assert.deepEqual(p.errors, []);
+});
+
 test("Barcha asosiy bo'limlar xatosiz ochiladi", opts, async () => {
   const u = await srv.register('Ui');
   const p = await page(u);

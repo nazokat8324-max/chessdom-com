@@ -123,6 +123,7 @@
         <div class="ab-cta-social">
           ${window.telegramChannelLink(t('tgChannelFollow', 'Yangiliklarni Telegram kanalimizda kuzatib boring'), 'ab-cta-tg')}
           ${window.youtubeChannelLink(t('ytChannelFollow', 'Videolarimizni YouTube kanalimizda tomosha qiling'), 'ab-cta-tg')}
+          ${window.instagramLink(t('igChannelFollow', "Bizni Instagram'da kuzatib boring"), 'ab-cta-tg')}
         </div>
       </section>
       <section class="ab-credits">
@@ -138,7 +139,7 @@
         </ul>
         <p><a href="/mualliflar" target="_blank" rel="noopener">${esc(t('abCreditsAll', "To'liq ro'yxat: Mualliflar va litsenziyalar"))} ↗</a></p>
       </section>
-      <footer class="ab-footer">© 2026 ChessCaravan · <a href="/shartlar" target="_blank" rel="noopener">${esc(t('legalTerms', 'Foydalanish shartlari'))}</a> · <a href="/maxfiylik" target="_blank" rel="noopener">${esc(t('legalPrivacy', 'Maxfiylik siyosati'))}</a> · <a href="/mualliflar" target="_blank" rel="noopener">${esc(t('legalCredits', 'Mualliflar va litsenziyalar'))}</a> · ${window.telegramChannelLink(t('tgChannel', 'Telegram kanal'))} · ${window.youtubeChannelLink(t('ytChannel', 'YouTube kanal'))}</footer>`;
+      <footer class="ab-footer">© 2026 ChessCaravan · <a href="/shartlar" target="_blank" rel="noopener">${esc(t('legalTerms', 'Foydalanish shartlari'))}</a> · <a href="/maxfiylik" target="_blank" rel="noopener">${esc(t('legalPrivacy', 'Maxfiylik siyosati'))}</a> · <a href="/mualliflar" target="_blank" rel="noopener">${esc(t('legalCredits', 'Mualliflar va litsenziyalar'))}</a> · ${window.telegramChannelLink(t('tgChannel', 'Telegram kanal'))} · ${window.youtubeChannelLink(t('ytChannel', 'YouTube kanal'))} · ${window.instagramLink(t('igChannel', 'Instagram sahifa'))}</footer>`;
 
     bindInteractions(root);
   }

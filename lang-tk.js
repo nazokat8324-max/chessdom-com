@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_TK = {
   libViews: "Görülen: {{n}}",
 
   libAllVideos: "Ähli wideolar kanalda",
+  igChannel: "Instagram sahypasy",
+  igChannelFollow: "Bizi Instagram-da yzarlaň",
   ccTitle: "Küşt sagady",
   ccShort: "Sagat",
   ccDesc: "Hakyky tagta üçin: telefony ortada goýuň, her kim öz tarapyna basýar.",

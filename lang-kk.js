@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_KK = {
   libViews: "Қаралым: {{n}}",
 
   libAllVideos: "Барлық бейне арнада",
+  igChannel: "Instagram парақшасы",
+  igChannelFollow: "Бізді Instagram-да бақылаңыз",
   ccTitle: "Шахмат сағаты",
   ccShort: "Сағат",
   ccDesc: "Нағыз тақта үшін: телефонды ортаға қойыңыз, әркім өз жағын басады.",

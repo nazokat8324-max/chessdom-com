@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_IT = {
   libViews: "Visualizzazioni: {{n}}",
 
   libAllVideos: "Tutti i video sul canale",
+  igChannel: "Pagina Instagram",
+  igChannelFollow: "Seguici su Instagram",
   ccTitle: "Orologio da scacchi",
   ccShort: "Orologio",
   ccDesc: "Per una scacchiera vera: metti il telefono tra voi, ognuno tocca il proprio lato.",

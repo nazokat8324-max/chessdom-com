@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_ZH = {
   libViews: "{{n}} 次观看",
 
   libAllVideos: "频道里的全部视频",
+  igChannel: "Instagram 主页",
+  igChannelFollow: "在 Instagram 上关注我们",
   ccTitle: "棋钟",
   ccShort: "棋钟",
   ccDesc: "用于实体棋盘：把手机放在两人中间，各自点击自己的一侧。",

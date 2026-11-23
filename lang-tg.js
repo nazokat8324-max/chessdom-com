@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_TG = {
   libViews: "Тамошо: {{n}}",
 
   libAllVideos: "Ҳамаи видеоҳо дар канал",
+  igChannel: "Саҳифаи Instagram",
+  igChannelFollow: "Моро дар Instagram пайгирӣ кунед",
   ccTitle: "Соати шоҳмот",
   ccShort: "Соат",
   ccDesc: "Барои тахтаи воқеӣ: телефонро дар мобайн гузоред, ҳар кас тарафи худро пахш мекунад.",

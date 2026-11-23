@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_KY = {
   libViews: "Көрүүлөр: {{n}}",
 
   libAllVideos: "Бардык видеолор каналда",
+  igChannel: "Instagram баракчасы",
+  igChannelFollow: "Бизди Instagram'да ээрчиңиз",
   ccTitle: "Шахмат сааты",
   ccShort: "Саат",
   ccDesc: "Чыныгы такта үчүн: телефонду ортого коюңуз, ар ким өз тарабын басат.",

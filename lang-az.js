@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_AZ = {
   libViews: "Baxış: {{n}}",
 
   libAllVideos: "Bütün videolar kanalda",
+  igChannel: "Instagram səhifəsi",
+  igChannelFollow: "Bizi Instagram-da izlə",
   ccTitle: "Şahmat saatı",
   ccShort: "Saat",
   ccDesc: "Əsl taxta üçün: telefonu ortaya qoy, hər kəs öz tərəfinə toxunur.",

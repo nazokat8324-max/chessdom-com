@@ -1805,6 +1805,8 @@ window.TRANSLATIONS_TR = {
   libViews: "İzlenme: {{n}}",
 
   libAllVideos: "Tüm videolar kanalda",
+  igChannel: "Instagram sayfası",
+  igChannelFollow: "Bizi Instagram'da takip edin",
   ccTitle: "Satranç saati",
   ccShort: "Saat",
   ccDesc: "Gerçek tahta için: telefonu aranıza koyun, herkes kendi tarafına dokunur.",

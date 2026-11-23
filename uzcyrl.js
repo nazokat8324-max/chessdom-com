@@ -7,7 +7,7 @@
   else root.UzCyrl = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
   const PROTECTED = ['PGN', 'FEN', 'ECO', 'ACPL', 'PWA', 'TWA', 'GIF', 'PNG', 'JPEG', 'WEBP', 'CDN', 'GPL', 'MIT', 'ISC', 'SIL', 'OFL', 'CC', 'BY', 'FIDE', 'ID', 'UCI', 'URL', 'API', 'JWT', 'VAPID', 'SAN',
-    'Chess960', 'Stockfish', 'Telegram', 'Google', 'Brevo', 'Render', 'Neon', 'Chrome', 'Safari', 'Edge', 'Firefox', 'Android', 'Elo', 'Emoji', 'Gutenberg', 'Project', 'Lichess', 'lichess',
+    'Chess960', 'Stockfish', 'Telegram', 'Instagram', 'Google', 'Brevo', 'Render', 'Neon', 'Chrome', 'Safari', 'Edge', 'Firefox', 'Android', 'Elo', 'Emoji', 'Gutenberg', 'Project', 'Lichess', 'lichess',
     'Cloudflare', 'flagcdn', 'Inter', 'D3', 'TopoJSON', 'gifenc', 'i18next', 'jQuery', 'howler', 'chess', 'js', 'chessboard', 'socket', 'io', 'jsDelivr', 'cdnjs', 'unpkg', 'Windows', 'Apple', 'Mozilla',
     'Natural', 'Earth', 'world', 'atlas', 'com', 'org', 'net', 'uz', 'Bot', 'BotFather', 'Push', 'push', 'WhatsApp', 'App', 'Store', 'Play', 'UTC'];
   const PROTECTED_SET = new Set(PROTECTED);

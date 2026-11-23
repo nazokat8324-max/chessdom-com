@@ -3021,6 +3021,8 @@ const translationsExtra = {
     libViews: "{{n}} marta ko'rilgan",
 
     libAllVideos: "Barcha videolar kanalda",
+    igChannel: "Instagram sahifa",
+    igChannelFollow: "Bizni Instagram'da kuzatib boring",
     ccTitle: "Shaxmat soati",
     ccShort: "Soat",
     ccDesc: "Haqiqiy taxtada o'ynash uchun: telefonni o'rtaga qo'ying, har kim o'z tomonini bosadi.",
@@ -4892,6 +4894,8 @@ const translationsExtra = {
     libViews: "{{n}} views",
 
     libAllVideos: "All videos on the channel",
+    igChannel: "Instagram page",
+    igChannelFollow: "Follow us on Instagram",
     ccTitle: "Chess clock",
     ccShort: "Clock",
     ccDesc: "For a real board: put the phone between you, each player taps their own side.",
@@ -6763,6 +6767,8 @@ const translationsExtra = {
     libViews: "Просмотров: {{n}}",
 
     libAllVideos: "Все видео на канале",
+    igChannel: "Страница в Instagram",
+    igChannelFollow: "Подписывайтесь на нас в Instagram",
     ccTitle: "Шахматные часы",
     ccShort: "Часы",
     ccDesc: "Для настоящей доски: положите телефон между игроками, каждый нажимает свою половину.",
@@ -8634,6 +8640,8 @@ const translationsExtra = {
     libViews: "Visualizaciones: {{n}}",
 
     libAllVideos: "Todos los vídeos en el canal",
+    igChannel: "Página de Instagram",
+    igChannelFollow: "Síguenos en Instagram",
     ccTitle: "Reloj de ajedrez",
     ccShort: "Reloj",
     ccDesc: "Para un tablero real: pon el teléfono entre los dos y cada uno toca su lado.",
@@ -10505,6 +10513,8 @@ const translationsExtra = {
     libViews: "Aufrufe: {{n}}",
 
     libAllVideos: "Alle Videos auf dem Kanal",
+    igChannel: "Instagram-Seite",
+    igChannelFollow: "Folge uns auf Instagram",
     ccTitle: "Schachuhr",
     ccShort: "Uhr",
     ccDesc: "Für ein echtes Brett: Handy zwischen euch legen, jeder tippt auf seine Seite.",
@@ -12376,6 +12386,8 @@ const translationsExtra = {
     libViews: "Vues : {{n}}",
 
     libAllVideos: "Toutes les vidéos sur la chaîne",
+    igChannel: "Page Instagram",
+    igChannelFollow: "Suivez-nous sur Instagram",
     ccTitle: "Pendule d'échecs",
     ccShort: "Pendule",
     ccDesc: "Pour un vrai échiquier : posez le téléphone entre vous, chacun touche son côté.",

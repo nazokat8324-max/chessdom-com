@@ -76,6 +76,15 @@ window.youtubeChannelLink = function(label, cls) {
   const safe = String(label).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   return `<a class="yt-channel${cls ? ' ' + cls : ''}" href="${window.YOUTUBE_CHANNEL_URL}" target="_blank" rel="noopener noreferrer">${window.youtubeIcon()}<span>${safe}</span></a>`;
 };
+// 📷 Rasmiy Instagram sahifa (2026-11-23) — manzil faqat shu yerda (Telegram va YouTube havolalari turgan joylarda yonida)
+window.INSTAGRAM_URL = 'https://www.instagram.com/chesscaravan';
+window.instagramIcon = function() {
+  return '<svg class="ig-ic" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" fill-rule="evenodd" d="M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9a5.5 5.5 0 0 1-5.5 5.5h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2Zm0 2A3.5 3.5 0 0 0 4 7.5v9A3.5 3.5 0 0 0 7.5 20h9a3.5 3.5 0 0 0 3.5-3.5v-9A3.5 3.5 0 0 0 16.5 4h-9ZM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10Zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm5.25-3.5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Z"/></svg>';
+};
+window.instagramLink = function(label, cls) {
+  const safe = String(label).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  return `<a class="ig-channel${cls ? ' ' + cls : ''}" href="${window.INSTAGRAM_URL}" target="_blank" rel="noopener noreferrer">${window.instagramIcon()}<span>${safe}</span></a>`;
+};
 
 // 🎉 Konfetti (canvas-confetti) faqat birinchi kerak bo'lganda yuklanadi (g'alaba, bahs, bashorat). Avval index.html da
 // har sahifa ochilishida yuklanardi va telefonda asosiy oqimni ~0.9 s band qilardi — sahifa shu vaqt chizilmasdi.

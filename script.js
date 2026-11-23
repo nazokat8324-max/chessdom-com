@@ -773,7 +773,7 @@ window.updateAuthHeaderUI = function() {
     const msgLabel = topPlayersEsc(typeof tx === 'function' ? tx('mMessages', 'Xabarlar') : 'Xabarlar');
     container.innerHTML = `
       <div class="sb-user-row">
-      <button type="button" class="sb-msg-btn" id="sideMsgBtn" onclick="switchView('messages')" title="${msgLabel}" aria-label="${msgLabel}">${(window.iconSvg && window.iconSvg('chat')) || '💬'}</button>
+      <button type="button" class="sb-msg-btn" id="sideMsgBtn" onclick="switchView('messages')" title="${msgLabel}" aria-label="${msgLabel}">💬</button>
       <div class="user-mini-profile" onclick="window.openProfileModal()">
         <div class="mini-avatar">${window.currentUser.username.charAt(0).toUpperCase()}${window.avatarOverlay(window.currentUser.username, window.currentUser.avatarVersion || null)}</div>
         <div class="mini-info">

@@ -91,7 +91,7 @@
     try { saved = JSON.parse(localStorage.getItem('justChessClock') || '{}') || {}; } catch (e) {}
     let min = saved.min > 0 ? saved.min : 5, inc = saved.inc >= 0 ? saved.inc : 0;
     const ov = document.createElement('div');
-    ov.className = 'cc-ov no-ui-ic'; ov.id = 'ccOverlay'; // no-ui-ic: icons.js har 100 ms yangilanadigan matnga tegmasin
+    ov.className = 'cc-ov'; ov.id = 'ccOverlay';
     ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true'); ov.setAttribute('aria-label', t('ccTitle', "Shaxmat soati"));
     document.body.appendChild(ov);
     let clock = null, timer = null, lock = null;

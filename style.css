@@ -15207,12 +15207,6 @@ html[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos.svg); }
 .play-big-btn .ui-ic { margin-right: 0; }
 #playOnlineBtn { gap: 8px; }
 
-/* 2-bosqich: sahifalardagi emojilar o'rnidagi ikonkalar (icons.js iconizeEmojis) */
-.ic-emoji { width: 1.15em; height: 1.15em; vertical-align: -0.2em; color: var(--accent); }
-button .ic-emoji, a[class*="btn"] .ic-emoji, [class*="-btn"] .ic-emoji, .set-mini .ic-emoji, .toast .ic-emoji { color: currentColor; }
-.ic-emoji.ic-gold { color: #f5c542; } .ic-emoji.ic-silver { color: #c3ccd4; } .ic-emoji.ic-bronze { color: #d08a4c; }
-.ic-emoji.ic-fire { color: #ff8a3d; } .ic-emoji.ic-ok { color: #51cf66; } .ic-emoji.ic-bad { color: #ff6b6b; }
-
 /* ===== 🌌 Harakatli fon (bgfx.js): .main-wrapper ustida, kontent ostida ===== */
 /* Harakatlanuvchi narsalar (tuyalar, laganlar, to'r, bulutlar, turnalar, sayyoralar) qatlamda — fon ularsiz asosga almashadi */
 html.bg-motion[data-bg="karvon"] { --bg-img: url(img/backgrounds/karvon-base.svg); }

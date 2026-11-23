@@ -1142,9 +1142,7 @@ test("Bahs: chaqiruvda tanlanadi, o'yin panelida hisob, keyingi o'yin tugmasi, p
   const sb = await srv.connect(b);
   sb.emit('challenge-send', { username: a.name, initial: 180, increment: 2, rated: false, series: 3 });
   await p.waitForSelector('#challengeModal [data-accept]', { visible: true, timeout: 8000 });
-  // Emoji keyingi kadrda ikonkaga aylanadi (icons.js, requestAnimationFrame) — sekin CI da darhol tekshirilsa hali emoji bo'ladi
-  await p.waitForFunction(() => { const e = document.querySelector('#challengeModal .ch-sub'); return e && /3/.test(e.textContent) && e.querySelector('.ui-ic[data-ic="swords"]'); }, { timeout: 5000 })
-    .catch(() => { throw new Error('⚔️ (ikonka) 3 — chaqiruv oynasida ko\'rinmadi'); });
+  assert.match(await p.evaluate(() => document.querySelector('#challengeModal .ch-sub').textContent), /⚔️ 3/);
   const found = new Promise((r) => sb.once('match-found', r));
   await p.click('#challengeModal [data-accept]');
   const m = await found;
@@ -1237,7 +1235,7 @@ test("O'yin hikoyasini tinglash: bosqichlar navbat bilan o'qiladi (yurishlar so'
   // Taxtada qaysi pozitsiyalar ochilganini yozib boramiz
   await p.evaluate(() => { window.__plies = []; const orig = window.reviewMove; window.reviewMove = (x) => { window.__plies.push(x); return orig(x); }; });
   await p.click('#storyModal [data-st-listen]');
-  await p.waitForFunction((k) => window.__spoken.length >= k + 1 && !document.querySelector('#storyModal [data-st-listen] .ui-ic[data-ic="stop"]'), { timeout: 8000 }, n);
+  await p.waitForFunction((k) => window.__spoken.length >= k + 1 && !/⏹/.test(document.querySelector('#storyModal [data-st-listen]').textContent), { timeout: 8000 }, n);
   const sp = await p.evaluate(() => window.__spoken);
   assert.equal(sp.length, n + 1, 'sarlavha + har bosqich');
   assert.ok(sp.every((s) => s.lang === 'uz-UZ'));
@@ -2359,7 +2357,7 @@ test("C5 admin paneli: 8 ta tab, shikoyat → ban → blokdan chiqarish, jim qil
   await p.waitForFunction(() => !document.querySelector('[data-unword="c5yomon"]'), { timeout: 8000 });
   await p.waitForFunction(() => /C5 klub xabari/.test(document.querySelector('.adm-body').textContent), { timeout: 8000 });
   await clickEl(`[data-mute="${bad.id}"]`);
-  await p.waitForFunction(() => !!document.querySelector('.adm-tag.red .ui-ic[data-ic="mute"]'), { timeout: 8000 });
+  await p.waitForFunction(() => /🔇/.test(document.querySelector('.adm-tag.red') ? document.querySelector('.adm-tag.red').textContent : ''), { timeout: 8000 });
   assert.equal((await srv.api(bad, '/api/chat/messages', 'POST', { roomId: 'club_Kenya', message: 'jim' })).status, 403, 'jim qilingan yoza olmaydi');
   // 🐞 Xatolar: brauzer xatosi ko'rinadi, hal qilinadi
   await tab('errors', '.adm-err-bar');
@@ -2614,7 +2612,6 @@ test("Klub yutuqlari: rahbariyat va yangiliklar o'rnida kuboklar va musobaqalard
   const p = await page(u, { width: 390, height: 844, isMobile: true, hasTouch: true });
   await p.goto(srv.base + '/klublar?club=Mongolia', { waitUntil: 'load' });
   await p.waitForSelector('#clHonours .cl-trophies', { timeout: 15000 });
-  await p.waitForSelector('#clHonours h3 .ui-ic', { timeout: 5000 }); // 🏅 keyingi kadrda ikonkaga aylanadi (icons.js)
   const h = await p.evaluate(() => ({
     title: document.querySelector('#clHonours h3').textContent.trim(),
     trophies: [...document.querySelectorAll('#clHonours .cl-trophy')].map((t) => [t.classList.contains('none'), t.querySelector('b').textContent]),
@@ -2622,7 +2619,7 @@ test("Klub yutuqlari: rahbariyat va yangiliklar o'rnida kuboklar va musobaqalard
     staff: !!document.querySelector('#clubStaffNews, .cs-root'),
     wide: document.documentElement.scrollWidth > innerWidth
   }));
-  assert.equal(h.title, 'Klub yutuqlari', '🏅 — ikonka (icons.js)');
+  assert.equal(h.title, '🏅 Klub yutuqlari');
   assert.deepEqual(h.trophies, [[true, '—'], [true, '—'], [false, '×1']], 'liga, Chempionlar ligasi, Bayroqlar');
   assert.equal(h.rows.length, 1);
   assert.match(h.rows[0], /Bayroqlar bellashuvi · Fevral 2026.*5 ochko.*1-o'rin \/ \d+.*Chempion/);

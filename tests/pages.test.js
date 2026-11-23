@@ -373,9 +373,6 @@ test("O'z ikonkalarimiz: har bir menyu bandiga ikonka bor, ishlatilgan nomlar ma
     for (const m of read(f).matchAll(/(?:iconSvg|\bic|secIcon)\('(\w+)'/g)) assert.ok(names.includes(m[1]) || f === 'settings.js', f + ': ' + m[1]);
   }
   for (const n of Object.values(read('settings.js').match(/SECTION_ICONS = \{([^}]*)\}/)[1].matchAll(/'(\w+)'/g)).map((m) => m[1])) assert.ok(names.includes(n), 'Sozlamalar: ' + n);
-  // Emoji xaritasidagi har bir ikonka mavjud; chat yuzchalari (😀) xaritada yo'q — foydalanuvchi emojisi o'zgarmaydi
-  for (const [e, v] of Object.entries(ctx.window.EMOJI_ICONS)) assert.ok(names.includes(Array.isArray(v) ? v[0] : v), 'EMOJI_ICONS ' + e);
-  assert.ok(!ctx.window.EMOJI_ICONS['😀'] && !ctx.window.EMOJI_ICONS['❤'], 'chat yuzchalari tegilmaydi');
   const svg = ctx.window.iconSvg('home');
   assert.match(svg, /stroke="currentColor"/, 'rang currentColor orqali (to\'plam/sayt rangi)');
   assert.ok(!/href=|<image/.test(read('icons.js')), 'begona rasm yo\'q');

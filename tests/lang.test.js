@@ -117,7 +117,7 @@ test("Qo'shimcha tillar: kutubxona (maqolalar, partiyalar, kitoblar) va huquqiy 
 
 test("Qo'shimcha tillar: ovozli yurish so'zlari", () => {
   const V = require('../voice');
-  assert.deepEqual(V.parseSpoken('at f3'), { castle: null, piece: 'n', squares: ['f3'], promo: null });
+  assert.deepEqual(V.parseSpoken('at f3'), { castle: null, piece: 'n', squares: ['f3'], promo: null, files: [], ranks: [] });
   assert.equal(V.parseSpoken('vezir h5').piece, 'q');
   assert.deepEqual(V.parseSpoken('e dört').squares, ['e4']);
   assert.equal(V.parseSpoken('kısa rok').castle, 'short');
@@ -144,13 +144,13 @@ test("Qo'shimcha tillar: ovozli yurish so'zlari", () => {
   assert.equal(V.parseSpoken('qalaba e4').castle, null);
   assert.equal(V.moveToWords({ piece: 'b', from: 'f1', to: 'c4', san: 'Bc4+' }, 'tg'), 'фил c 4, кишт');
   // 中文 (bo'sh joysiz: har ieroglif alohida so'z), Italiano
-  assert.deepEqual(V.parseSpoken('马f3'), { castle: null, piece: 'n', squares: ['f3'], promo: null });
+  assert.deepEqual(V.parseSpoken('马f3'), { castle: null, piece: 'n', squares: ['f3'], promo: null, files: [], ranks: [] });
   assert.deepEqual(V.parseSpoken('e四').squares, ['e4']);
   assert.equal(V.parseSpoken('皇后h5').piece, 'q');
   assert.equal(V.parseSpoken('短易位').castle, 'short');
   assert.equal(V.parseSpoken('长王车易位').castle, 'long');
   assert.equal(V.parseSpoken('cavallo f3').piece, 'n');
-  assert.deepEqual(V.parseSpoken('torre a sette'), { castle: null, piece: 'r', squares: ['a7'], promo: null });
+  assert.deepEqual(V.parseSpoken('torre a sette'), { castle: null, piece: 'r', squares: ['a7'], promo: null, files: [], ranks: [] });
   assert.equal(V.parseSpoken('arrocco lungo').castle, 'long');
   assert.equal(V.parseSpoken('re e2').piece, 'k');
   assert.equal(V.moveToWords({ piece: 'n', from: 'g1', to: 'f3', san: 'Nf3+' }, 'it'), 'cavallo f 3, scacco');

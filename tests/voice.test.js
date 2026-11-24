@@ -63,3 +63,54 @@ test("Raqib yurishi so'z bilan o'qiladi", () => {
   assert.equal(moveToWords(n, 'uz'), 'ot f 6');
   assert.equal(moveToWords({ san: 'O-O+', from: 'e1', to: 'g1', piece: 'k' }, 'ru'), 'короткая рокировка, шах');
 });
+
+// 2026-11-24: yaxshilangan ovozli yurish — buyruqlar, «qaysi biri?», ko'proq so'z variantlari
+const KN = [{ from: 'b1', to: 'd2', piece: 'n', san: 'Nbd2' }, { from: 'f3', to: 'd2', piece: 'n', san: 'Nfd2' }, { from: 'e2', to: 'e4', piece: 'p', san: 'e4' }];
+
+test("Ovozli buyruqlar: 14 tilda taslim, durrang, qaytar, aylantir, vaqt, takrorla, yordam; yurish gapi buyruq emas", () => {
+  const V = require('../voice.js');
+  const cases = { taslim: 'resign', "men taslim bo'laman": 'resign', сдаюсь: 'resign', 'i resign': 'resign', 'me rindo': 'resign', teslim: 'resign', 认输: 'resign',
+    durrang: 'draw', дурранг: 'draw', 'offer a draw': 'draw', ничья: 'draw', remis: 'draw', patta: 'draw',
+    qaytar: 'undo', undo: 'undo', отмена: 'undo', 'geri al': 'undo', 悔棋: 'undo',
+    aylantir: 'flip', 'flip the board': 'flip', переверни: 'flip', çevir: 'flip',
+    vaqt: 'time', 'qancha vaqt qoldi': 'time', 'how much time': 'time', время: 'time', zeit: 'time',
+    takrorla: 'repeat', repeat: 'repeat', повтори: 'repeat', yordam: 'help', help: 'help', помощь: 'help' };
+  for (const [text, cmd] of Object.entries(cases)) assert.equal(V.parseCommand(text), cmd, text);
+  for (const text of ['e4', 'ot f3', 'rokirovka', 'конь f3', 'salom', '']) assert.equal(V.parseCommand(text), null, text);
+});
+
+test("Ovozli yurish: bir xil yurish ikkita bo'lsa — «qaysi biri?»; javob katak, harf yoki raqam bilan; aytilgan harf darhol aniqlaydi", () => {
+  const V = require('../voice.js');
+  const amb = V.matchMove(V.parseSpoken('ot d2'), KN);
+  assert.deepEqual(amb.ambiguous.map((m) => m.san), ['Nbd2', 'Nfd2']);
+  const pick = (text) => (V.pickAmbiguous(text, amb.ambiguous) || {}).san;
+  assert.equal(pick('b1'), 'Nbd2');
+  assert.equal(pick('f3 dan'), 'Nfd2');
+  assert.equal(pick('be'), 'Nbd2');
+  assert.equal(pick('ef'), 'Nfd2');
+  assert.equal(pick('эф'), 'Nfd2');
+  assert.equal(pick('salom'), undefined);
+  assert.equal(V.matchMove(V.parseSpoken('ot be d2'), KN).move.san, 'Nbd2');
+  assert.equal(V.matchMove(V.parseSpoken('knight f d2'), KN).move.san, 'Nfd2');
+  // «to» — raqam emas: inglizcha «knight to d2» hali ham «qaysi biri?»
+  assert.equal(V.matchMove(V.parseSpoken('knight to d2'), KN).ambiguous.length, 2);
+});
+
+test("Ovozli yurish: tez-tez noto'g'ri eshitiladigan so'zlar va qo'shilib eshitilgan katak nomlari tushuniladi", () => {
+  const V = require('../voice.js');
+  const sq = (t) => V.parseSpoken(t).squares[0];
+  assert.equal(sq('ef3'), 'f3');
+  assert.equal(sq('se5'), 'c5'); // «be5» esa SAN — fil e5 (Be5)
+  assert.equal(V.parseSpoken('be5').piece, 'b');
+  assert.equal(sq('аш7'), 'h7');
+  assert.equal(sq('e fore'), 'e4');
+  assert.equal(sq('see tree'), 'c3');
+  assert.equal(sq('de sakiz'), 'd8');
+  assert.equal(V.parseSpoken('ruh a1').piece, 'r');
+  assert.equal(V.parseSpoken('rock a1').piece, 'r');
+  assert.equal(V.parseSpoken("o't f3").piece, 'n');
+  assert.equal(V.parseSpoken('от f3').piece, 'n');
+  assert.equal(V.parseSpoken('nite f3').piece, 'n');
+  assert.equal(V.parseSpoken('farzim d1').piece, 'q');
+  assert.equal(V.parseSpoken('shox e2').piece, 'k');
+});

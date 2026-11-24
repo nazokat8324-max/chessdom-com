@@ -2227,3 +2227,65 @@ document.addEventListener("click", (event) => {
   if (mq.addEventListener) mq.addEventListener('change', apply); else if (mq.addListener) mq.addListener(apply);
   apply();
 })();
+
+// ☁️ Sozlamalar akkauntda (2026-11-24, foydalanuvchi so'rovi: bir qurilmada sozlab, boshqa qurilmadan kirganda qayta sozlamasin;
+// tanlov: hammasi, til ham). justChessSettings va til (justChessLang) — GET/POST /api/users/me/settings. Kirganda (applyAuthSession)
+// va saqlangan sessiya bilan sahifa ochilganda serverdagisi olinib qo'llanadi (server ustun); serverda hali yo'q bo'lsa — shu
+// qurilmadagilar yuboriladi. Sozlamalar saqlanganda / til almashganda pushSettingsToServer (0.5 s kechiktirib, bitta so'rov).
+// Mehmon sozlamalari faqat qurilmada.
+(function () {
+  let timer = null, applying = false;
+  const authed = () => !!(window.authToken && window.currentUser && !window.currentUser.guest && !(typeof window.isGuestUser === 'function' && window.isGuestUser()));
+  const read = () => { try { return JSON.parse(localStorage.getItem('justChessSettings') || '{}') || {}; } catch (e) { return {}; } };
+  const uid = () => String((window.currentUser && (window.currentUser.id || window.currentUser.userId || window.currentUser.username)) || '');
+  // Yuborilmagan o'zgarish belgisi (justChessSettingsPending = akkaunt): saqlangach sahifa darhol yopilsa/yangilansa ham
+  // keyingi ochilishda serverdagi eski nusxa yangisining ustidan yozilmaydi — aksincha, qurilmadagisi yuboriladi.
+  const pendingFor = () => { try { return localStorage.getItem('justChessSettingsPending') || ''; } catch (e) { return ''; } };
+  const setPending = (v) => { try { if (v) localStorage.setItem('justChessSettingsPending', v); else localStorage.removeItem('justChessSettingsPending'); } catch (e) {} };
+  function send(keepalive) {
+    if (!authed()) return;
+    clearTimeout(timer); timer = null;
+    const owner = uid();
+    let lang = null;
+    try { lang = localStorage.getItem('justChessLang'); } catch (e) {}
+    fetch('/api/users/me/settings', { method: 'POST', keepalive: !!keepalive, headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + window.authToken }, body: JSON.stringify({ settings: read(), lang }) })
+      .then((r) => r.json()).then((d) => { if (d && d.success && pendingFor() === owner && !timer) setPending(''); }).catch(() => {});
+  }
+  window.pushSettingsToServer = function () {
+    if (applying || !authed()) return;
+    setPending(uid());
+    clearTimeout(timer);
+    timer = setTimeout(() => send(false), 500);
+  };
+  // Sahifa yopilayotganda kutayotgan yuborish darhol (keepalive)
+  window.addEventListener('pagehide', () => { if (timer) send(true); });
+  window.pullSettingsFromServer = async function () {
+    if (!authed()) return;
+    const token = window.authToken;
+    if (pendingFor() === uid()) { send(false); return; } // qurilmada yuborilmagan yangiroq o'zgarish bor
+    let d = null;
+    try { d = await fetch('/api/users/me/settings', { headers: { Authorization: 'Bearer ' + token } }).then((r) => r.json()); } catch (e) { return; }
+    if (!d || !d.success || token !== window.authToken || timer || pendingFor() === uid()) return;
+    if (!d.settings) { window.pushSettingsToServer(); return; } // birinchi marta — shu qurilmadagi sozlamalar akkauntga
+    applying = true;
+    try {
+      // Sozlamalar sahifasida saqlanmagan qoralama bo'lsa — ustidan yozilmaydi
+      if (!window.settingsDirty && JSON.stringify(d.settings) !== JSON.stringify(read())) {
+        localStorage.setItem('justChessSettings', JSON.stringify(d.settings));
+        if (typeof window.applyStoredSettings === 'function') window.applyStoredSettings();
+      }
+      let cur = null;
+      try { cur = localStorage.getItem('justChessLang'); } catch (e) {}
+      if (d.lang && d.lang !== cur && typeof window.setLanguage === 'function') window.setLanguage(d.lang);
+    } catch (e) { /* qurilmadagi sozlamalar qoladi */ } finally { applying = false; }
+  };
+  const orig = window.applyAuthSession;
+  if (typeof orig === 'function') {
+    window.applyAuthSession = function () {
+      const r = orig.apply(this, arguments);
+      setTimeout(() => window.pullSettingsFromServer(), 0);
+      return r;
+    };
+  }
+  document.addEventListener('DOMContentLoaded', () => { if (window.authToken) setTimeout(() => window.pullSettingsFromServer(), 300); });
+})();

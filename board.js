@@ -1220,6 +1220,7 @@ window.toggleGameSound = function() {
   const s = readSettings();
   s.soundEnabled = s.soundEnabled === false;
   try { localStorage.setItem('justChessSettings', JSON.stringify(s)); } catch (e) {}
+  if (typeof window.pushSettingsToServer === 'function') window.pushSettingsToServer();
   if (typeof window.applySoundToggle === 'function') window.applySoundToggle(s.soundEnabled);
   window.refreshSoundButton();
   showToast(s.soundEnabled ? tx('gpSoundOn', 'Ovoz yoqildi') : tx('gpSoundOff', "Ovoz o'chirildi"), 'info', 1500);

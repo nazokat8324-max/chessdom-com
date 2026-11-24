@@ -6,7 +6,7 @@
     country: 'un', language: 'en', soundEnabled: true, volume: 0.8, soundPack: 'wood',
     siteTheme: 'turquoise', boardStyle: 'auto', showCoords: true, pieceSet: 'karvon',
     showHints: true, showLastMove: true, autoQueen: false, confirmResign: true,
-    quickClock: [300, 0], quickRated: true, vibration: true, background: '', bgMotion: true
+    quickClock: [300, 0], quickRated: true, vibration: true, background: '', bgMotion: true, voiceMode: 'auto'
   };
   const CLOCKS = [[60, 0], [60, 1], [120, 1], [180, 0], [180, 2], [300, 0], [600, 0], [900, 10], [1800, 0]];
   const LANGS = [['uz', 'uz', "O'zbekcha"], ['uzc', 'uz', 'Ўзбекча'], ['en', 'gb', 'English'], ['ru', 'ru', 'Русский'], ['es', 'es', 'Español'], ['de', 'de', 'Deutsch'], ['fr', 'fr', 'Français'], ['tr', 'tr', 'Türkçe'], ['kk', 'kz', 'Қазақша'], ['tg', 'tj', 'Тоҷикӣ'], ['ky', 'kg', 'Кыргызча'], ['tk', 'tm', 'Türkmençe'], ['az', 'az', 'Azərbaycanca'], ['zh', 'cn', '中文'], ['it', 'it', 'Italiano']];
@@ -429,6 +429,7 @@
       st.draft = { ...st.draft, language: lang };
       const stored = readSaved();
       localStorage.setItem('justChessSettings', JSON.stringify({ ...stored, language: lang }));
+      if (typeof window.pushSettingsToServer === 'function') window.pushSettingsToServer();
       setTimeout(render, 50);
     }));
     const country = el.querySelector('#setCountry');
@@ -479,6 +480,7 @@
     const countryChanged = st.draft.country !== st.saved.country;
     localStorage.setItem('justChessSettings', JSON.stringify(st.draft));
     st.saved = { ...st.draft };
+    if (typeof window.pushSettingsToServer === 'function') window.pushSettingsToServer(); // ☁️ akkauntga
     if (countryChanged || (window.currentUser && window.currentUser.country !== st.draft.country)) {
       if (typeof window.syncMyCountry === 'function') window.syncMyCountry(st.draft.country);
     }

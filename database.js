@@ -253,6 +253,10 @@ async function initDatabase() {
   try {
     await dbExec(`ALTER TABLE users ADD COLUMN privacy TEXT DEFAULT NULL`);
   } catch (e) {}
+  // ☁️ Sayt sozlamalari akkauntda (2026-11-24): boshqa qurilmadan kirganda ham bir xil (JSON: {settings, lang, at})
+  try {
+    await dbExec(`ALTER TABLE users ADD COLUMN ui_settings TEXT DEFAULT NULL`);
+  } catch (e) {}
 
   // Profil rasmlari: alohida jadvalda (users so'rovlari og'irlashmasligi uchun); users.avatar_version — keshni yangilash uchun
   await dbExec(`
@@ -1267,6 +1271,16 @@ async function updatePrivacy(userId, privacy) {
   if (['all', 'friends', 'none'].includes(privacy.challenges)) next.challenges = privacy.challenges;
   await dbRun('UPDATE users SET privacy = ? WHERE id = ?', [JSON.stringify(next), userId]);
   return next;
+}
+
+// ☁️ Sayt sozlamalari (justChessSettings + til) — akkauntga saqlanadi, boshqa qurilmada kirganda qaytariladi
+async function getUiSettings(userId) {
+  const row = await dbGet('SELECT ui_settings FROM users WHERE id = ?', [userId]);
+  const v = parseJson(row && row.ui_settings);
+  return v && typeof v === 'object' && !Array.isArray(v) ? v : null;
+}
+async function setUiSettings(userId, data) {
+  await dbRun('UPDATE users SET ui_settings = ? WHERE id = ?', [JSON.stringify(data), userId]);
 }
 
 async function areFriends(userId, otherId) {
@@ -2506,6 +2520,8 @@ module.exports = {
   loadActiveGames,
   userPrivacy,
   updatePrivacy,
+  getUiSettings,
+  setUiSettings,
   areFriends,
   getFriendshipStatus,
   removeFriend,

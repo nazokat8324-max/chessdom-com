@@ -438,7 +438,7 @@ test("4-sinov o'tishi: Karvon yo'li — surishdan keyin darhol bosilgan bekat yo
 test("Telegram kanal: Sayt haqida (taklif + pastki qator) va Sozlamalar → Hisob; yangi tabda, tarjima qilingan, telefonda sig'adi", opts, async () => {
   const u = await srv.register('Tgc');
   for (const [vp, lang] of [[{ width: 1366, height: 860 }, 'uz'], [{ width: 360, height: 740, isMobile: true, hasTouch: true }, 'kk']]) {
-    const p = await page(u, vp);
+    const p = await page(lang === 'uz' ? u : await srv.register(u.user.username.slice(0, 6) + lang), vp); // akkaunt tili sinxronlanadi — har tilga o'z akkaunti
     await p.evaluateOnNewDocument((l) => localStorage.setItem('justChessLang', l), lang);
     await p.goto(srv.base + '/', { waitUntil: 'load' });
     await sleep(800);
@@ -606,7 +606,7 @@ test("Shaxmat tarixi muzeyi: Kutubxonadan kirish, manzil, oldin/keyin chizmalari
   await p.evaluate(() => document.querySelector('[data-mu-back]').click());
   await p.waitForFunction(() => location.pathname === '/kutubxona' && !location.search && document.querySelector('[data-museum]'), { timeout: 5000 });
   // To'g'ridan-to'g'ri havola, italyancha
-  const q = await page(u, { width: 1366, height: 860 });
+  const q = await page(await srv.register('MuseoIt'), { width: 1366, height: 860 }); // akkaunt tili sinxronlanadi — italyancha uchun o'z akkaunti
   await q.evaluateOnNewDocument(() => localStorage.setItem('justChessLang', 'it'));
   await q.goto(srv.base + '/kutubxona?m=muzey', { waitUntil: 'load' });
   await q.waitForSelector('.mu-stop', { timeout: 15000 });
@@ -618,7 +618,7 @@ test("Shaxmat tarixi muzeyi: Kutubxonadan kirish, manzil, oldin/keyin chizmalari
 test("YouTube kanal: Sayt haqida (Telegram yonida + pastki qator) va Sozlamalar → Hisob; yangi tabda, tarjima qilingan, telefonda sig'adi", opts, async () => {
   const u = await srv.register('Ytc');
   for (const [vp, lang] of [[{ width: 1366, height: 860 }, 'uz'], [{ width: 360, height: 740, isMobile: true, hasTouch: true }, 'zh']]) {
-    const p = await page(u, vp);
+    const p = await page(lang === 'uz' ? u : await srv.register(u.user.username.slice(0, 6) + lang), vp); // akkaunt tili sinxronlanadi — har tilga o'z akkaunti
     await p.evaluateOnNewDocument((l) => localStorage.setItem('justChessLang', l), lang);
     await p.goto(srv.base + '/', { waitUntil: 'load' });
     await sleep(800);
@@ -652,7 +652,7 @@ test("YouTube kanal: Sayt haqida (Telegram yonida + pastki qator) va Sozlamalar 
 test("Instagram sahifa: Sayt haqida (Telegram va YouTube yonida + pastki qator) va Sozlamalar → Hisob; yangi tabda, tarjima qilingan, kirill o'zbekchada brend nomi buzilmaydi, telefonda sig'adi", opts, async () => {
   const u = await srv.register('Igc');
   for (const [vp, lang] of [[{ width: 1366, height: 860 }, 'uz'], [{ width: 360, height: 740, isMobile: true, hasTouch: true }, 'zh'], [{ width: 390, height: 844, isMobile: true, hasTouch: true }, 'uzc']]) {
-    const p = await page(u, vp);
+    const p = await page(lang === 'uz' ? u : await srv.register(u.user.username.slice(0, 6) + lang), vp); // akkaunt tili sinxronlanadi — har tilga o'z akkaunti
     await p.evaluateOnNewDocument((l) => localStorage.setItem('justChessLang', l), lang);
     await p.goto(srv.base + '/', { waitUntil: 'load' });
     await sleep(800);
@@ -897,6 +897,97 @@ test("Joylashuv L5: asosiy rangli tugmalardagi yozuv o'qiladi — kontrast ≥ 4
     }
     assert.deepEqual(p.errors, []);
   }
+});
+
+test("Ovoz bilan yurish (yaxshilangan): panel eshitilgan gap va natijani ko'rsatadi; buyruqlar; «qaysi biri?»; bosib gapirish rejimi", opts, async () => {
+  const u = await srv.register('Voice2');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => {
+    window.__vc = null;
+    window.webkitSpeechRecognition = function () { window.__vc = this; window.__vcCount = (window.__vcCount || 0) + 1; };
+    window.webkitSpeechRecognition.prototype.start = function () { setTimeout(() => this.onstart && this.onstart(), 0); };
+    window.webkitSpeechRecognition.prototype.abort = function () {};
+    window.webkitSpeechRecognition.prototype.stop = function () {};
+    window.SpeechRecognition = window.webkitSpeechRecognition;
+    window.__say = (...alts) => { const res = alts.map((t) => ({ transcript: t })); res.isFinal = true; window.__vc.onresult({ results: [res] }); };
+    window.__spoken = [];
+    localStorage.setItem('justChessLocalFlip', '0'); // avto-aylantirish «aylantir» buyrug'ini bekor qilmasin
+    Object.defineProperty(window, 'speechSynthesis', { configurable: true, value: { speak: (u) => window.__spoken.push(u.text), cancel() {}, getVoices: () => [] } });
+    window.SpeechSynthesisUtterance = function (t) { this.text = t; };
+  });
+  await p.goto(srv.base + '/oyin', { waitUntil: 'domcontentloaded' });
+  await p.waitForSelector('#pgVoiceBtn', { timeout: 10000 });
+  await sleep(600);
+  await p.evaluate(() => document.getElementById('btnLocalGame').click());
+  await sleep(300);
+  await p.evaluate(() => document.getElementById('pgVoiceBtn').click());
+  await p.waitForSelector('#vcBar:not([hidden])', { timeout: 5000 });
+  const heard = () => p.evaluate(() => document.querySelector('#vcBar .vc-heard').textContent);
+  // Yurish: eshitilgan gap va natija panelda
+  await p.evaluate(() => window.__say('e4'));
+  assert.match(await heard(), /«e4».*✓ e4/);
+  for (const m of ['e5', 'ot f3', 'ot c6', 'd3', 'd6']) await p.evaluate((x) => window.__say(x), m);
+  assert.deepEqual(await p.evaluate(() => game.history()), ['e4', 'e5', 'Nf3', 'Nc6', 'd3', 'd6']);
+  // «ot d2» — ikkita ot: panel so'raydi, «be» javobi b1 dagi otni tanlaydi
+  await p.evaluate(() => window.__say('ot d2'));
+  assert.match(await heard(), /Nbd2.*Nfd2|Nfd2.*Nbd2/);
+  assert.equal(await p.evaluate(() => game.history().length), 6);
+  await p.evaluate(() => window.__say('be'));
+  assert.equal(await p.evaluate(() => game.history().slice(-1)[0]), 'Nbd2');
+  // Buyruqlar: aylantir, vaqt (ovoz bilan o'qiladi), tushunarsiz gap
+  const before = await p.evaluate(() => board.orientation());
+  await p.evaluate(() => window.__say('aylantir'));
+  assert.notEqual(await p.evaluate(() => board.orientation()), before);
+  await p.evaluate(() => window.__say('vaqt'));
+  assert.match(await heard(), /Oq: .*qora: /);
+  assert.match((await p.evaluate(() => window.__spoken.slice(-1)[0])) || '', /Oq: /);
+  await p.evaluate(() => window.__say('salom dunyo'));
+  assert.match(await heard(), /Tushunmadim/);
+  // Bosib gapirish: rejim almashadi (akkaunt sozlamasiga ham), tugma bosilganda tinglaydi
+  await p.evaluate(() => document.querySelector('#vcBar .vc-mode').click());
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings')).voiceMode), 'ptt');
+  assert.equal(await p.evaluate(() => document.querySelector('#vcBar .vc-ptt').hidden), false);
+  const n0 = await p.evaluate(() => window.__vcCount);
+  await p.evaluate(() => document.querySelector('#vcBar .vc-ptt').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerType: 'mouse', pointerId: 1 })));
+  await sleep(100);
+  assert.ok((await p.evaluate(() => window.__vcCount)) > n0, 'bosilganda tinglash boshlandi');
+  assert.equal(await p.evaluate(() => document.getElementById('vcBar').classList.contains('listening')), true);
+  await p.evaluate(() => window.__say('a6'));
+  await p.evaluate(() => document.querySelector('#vcBar .vc-ptt').dispatchEvent(new PointerEvent('pointerup', { bubbles: true, button: 0, pointerType: 'mouse', pointerId: 1 })));
+  assert.equal(await p.evaluate(() => game.history().slice(-1)[0]), 'a6');
+  assert.deepEqual(p.errors, []);
+});
+
+test("Sozlamalar akkauntda: bir qurilmada saqlangan rang va til boshqa qurilmada (toza brauzer) kirganda o'zi qo'llanadi", opts, async () => {
+  const u = await srv.register('SyncUi');
+  const a = await page(u);
+  await a.goto(srv.base + '/sozlamalar', { waitUntil: 'load' });
+  await a.waitForSelector('[data-section="board"]', { timeout: 15000 });
+  await a.evaluate(() => document.querySelector('[data-section="board"]').click());
+  await a.waitForSelector('[data-theme-pick="ruby"]', { timeout: 5000 });
+  await a.evaluate(() => document.querySelector('[data-theme-pick="ruby"]').click());
+  await a.evaluate(() => document.querySelector('[data-save]').click());
+  await a.waitForFunction(async (tok) => {
+    const d = await fetch('/api/users/me/settings', { headers: { Authorization: 'Bearer ' + tok } }).then((r) => r.json());
+    return !!(d.settings && d.settings.siteTheme === 'ruby');
+  }, { timeout: 10000, polling: 300 }, u.token);
+  // Saqlab, darhol sahifani yangilash — kechiktirilgan yuborish yo'qolmaydi, eski server nusxasi ustidan yozmaydi
+  await a.evaluate(() => document.querySelector('[data-section="board"]').click());
+  await a.evaluate(() => document.querySelector('[data-theme-pick="jade"]').click());
+  await a.evaluate(() => document.querySelector('[data-save]').click());
+  await a.reload({ waitUntil: 'load' });
+  await a.waitForFunction(async (tok) => {
+    const d = await fetch('/api/users/me/settings', { headers: { Authorization: 'Bearer ' + tok } }).then((r) => r.json());
+    return !!(d.settings && d.settings.siteTheme === 'jade') && document.documentElement.dataset.theme === 'jade';
+  }, { timeout: 10000, polling: 300 }, u.token);
+  await a.evaluate(() => window.changeLanguage('ru'));
+  await a.waitForFunction(async (tok) => (await fetch('/api/users/me/settings', { headers: { Authorization: 'Bearer ' + tok } }).then((r) => r.json())).lang === 'ru', { timeout: 10000, polling: 300 }, u.token);
+  // Ikkinchi qurilma: yangi brauzer konteksti, mahalliy sozlamalar yo'q
+  const b = await page(u);
+  await b.goto(srv.base + '/', { waitUntil: 'load' });
+  await b.waitForFunction(() => document.documentElement.dataset.theme === 'jade' && localStorage.getItem('justChessLang') === 'ru', { timeout: 10000 });
+  assert.equal(await b.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings')).siteTheme), 'jade');
+  assert.deepEqual([...a.errors, ...b.errors], []);
 });
 
 test("Ovoz bilan yurish: tugma tinglashni yoqadi, aytilgan yurish taxtada bajariladi", opts, async () => {
@@ -1240,6 +1331,7 @@ test("O'yin hikoyasini tinglash: bosqichlar navbat bilan o'qiladi (yurishlar so'
   // Soxta speechSynthesis: o'zbekcha ovoz bor, o'qilgan matnlar yoziladi, har bosqich darhol tugaydi
   await p.evaluateOnNewDocument(() => {
     window.__spoken = [];
+    localStorage.setItem('justChessLocalFlip', '0'); // avto-aylantirish «aylantir» buyrug'ini bekor qilmasin
     window.__voices = [{ lang: 'uz-UZ', name: 'Test Madina' }];
     window.SpeechSynthesisUtterance = function (text) { this.text = text; };
     const synth = { speaking: false, getVoices: () => window.__voices, cancel() { window.__cancelled = (window.__cancelled || 0) + 1; }, addEventListener() {},
@@ -2261,7 +2353,7 @@ test("Тоҷикӣ, Кыргызча, Türkmençe, Azərbaycanca: menyu va kutub
   const u = await srv.register('Tillar4');
   const want = { tg: ['Саҳифаи асосӣ', 'Тактика: чангак'], ky: ['Башкы бет', 'Тактика: айры'], tk: ['Baş sahypa', 'Taktika: çeňňek'], az: ['Ana səhifə', 'Taktika: çəngəl'] };
   for (const l of Object.keys(want)) {
-    const p = await page(u);
+    const p = await page(await srv.register('Lng' + l)); // akkaunt tili sinxronlanadi — har tilga o'z akkaunti
     await p.evaluateOnNewDocument((lang) => localStorage.setItem('justChessLang', lang), l);
     await p.goto(srv.base + '/kutubxona?m=fork', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('#libraryRoot .lib-article h1', { timeout: 15000 });
@@ -2282,7 +2374,7 @@ test("中文, Italiano: menyu, kutubxona va huquqiy sahifa shu tillarda, sozlama
   const u = await srv.register('Tillar5');
   const want = { zh: ['首页', '战术：双重攻击（捉双）', '隐私政策'], it: ['Home', 'Tattica: la forchetta', 'Informativa sulla privacy'] };
   for (const l of Object.keys(want)) {
-    const p = await page(u);
+    const p = await page(await srv.register('Lng' + l)); // akkaunt tili sinxronlanadi — har tilga o'z akkaunti
     await p.evaluateOnNewDocument((lang) => localStorage.setItem('justChessLang', lang), l);
     await p.goto(srv.base + '/kutubxona?m=fork', { waitUntil: 'domcontentloaded' });
     await p.waitForSelector('#libraryRoot .lib-article h1', { timeout: 15000 });

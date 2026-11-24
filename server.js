@@ -2189,6 +2189,40 @@ async function start() {
     catch (err) { console.error('Privacy xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
   });
 
+  // ☁️ Sayt sozlamalari akkauntda (2026-11-24, foydalanuvchi so'rovi: «boshqa qurilmadan kirsa sozlamalarini qayta to'g'irlamasin»):
+  // justChessSettings (to'plam, donalar, taxta, rang, fon, ovoz, o'yin sozlamalari, davlat…) va til. Faqat oddiy qiymatlar,
+  // ko'pi bilan 80 kalit va 8 KB. Mehmonga POST yopiq (GUEST_ALLOWED da yo'q) — uning sozlamalari faqat qurilmada.
+  const UI_LANGS = new Set(['uz', 'uzc', 'en', 'ru', 'es', 'de', 'fr', 'tr', 'kk', 'tg', 'ky', 'tk', 'az', 'zh', 'it']);
+  const plainValue = (v) => v === null || typeof v === 'boolean' || (typeof v === 'number' && Number.isFinite(v)) || typeof v === 'string';
+  function cleanUiSettings(s) {
+    if (!s || typeof s !== 'object' || Array.isArray(s)) return null;
+    if (JSON.stringify(s).length > 8000) return null;
+    const out = {};
+    for (const [k, v] of Object.entries(s).slice(0, 80)) {
+      if (!/^[A-Za-z][A-Za-z0-9_]{0,40}$/.test(k)) continue;
+      if (plainValue(v)) out[k] = typeof v === 'string' ? v.slice(0, 200) : v;
+      else if (Array.isArray(v) && v.length <= 12 && v.every(plainValue)) out[k] = v.map((x) => (typeof x === 'string' ? x.slice(0, 60) : x));
+    }
+    return out;
+  }
+  app.get('/api/users/me/settings', authMiddleware, async (req, res) => {
+    try {
+      const v = await db.getUiSettings(req.user.userId);
+      res.json({ success: true, settings: (v && v.settings) || null, lang: (v && v.lang) || null, updatedAt: (v && v.at) || null });
+    } catch (err) { res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+  app.post('/api/users/me/settings', authMiddleware, async (req, res) => {
+    try {
+      const b = req.body || {};
+      const settings = cleanUiSettings(b.settings);
+      if (!settings) return res.status(400).json({ success: false, message: "Noto'g'ri ma'lumot!" });
+      const lang = UI_LANGS.has(b.lang) ? b.lang : null;
+      const at = new Date().toISOString();
+      await db.setUiSettings(req.user.userId, { settings, lang, at });
+      res.json({ success: true, updatedAt: at });
+    } catch (err) { console.error('Sozlamalar xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
+
   app.post('/api/users/me/password', authMiddleware, loginLimiter, async (req, res) => {
     try {
       const current = String((req.body && req.body.current) || '').trim();

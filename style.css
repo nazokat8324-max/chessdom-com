@@ -251,6 +251,9 @@
       .chess-king {
         animation: kingGlow 2.5s ease-in-out infinite;
       }
+      /* Unumdorlik (2026-11-24 o'lchov): bu animatsiyalar yashirin oynachada ham doim (har sahifada, telefonda ham) ishlab,
+         brauzerni har kadrda qayta hisoblashga majburlardi — endi faqat oynacha ko'rinayotganda (logotip ustida) yuradi */
+      .logo-area:not(:hover) .logo-tooltip * { animation-play-state: paused !important; }
       .logo-shimmer {
         position: absolute;
         top: 0;
@@ -15093,24 +15096,9 @@ html.landscape-phone .fc-pitch-wrap { max-width: calc((100dvh - 16px) * 13 / 7);
 .fc-stadium .fc-pitch-wrap { max-width: calc((100dvh - 210px) * 13 / 7); }
 .fc-stand { display: flex; gap: 8px; height: 44px; overflow: hidden; border-radius: 10px; flex: none;
   background: repeating-linear-gradient(180deg, #223440 0 10px, #172630 10px 14px); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.35); }
-.fc-sec { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
-.fc-stand.top .fc-frow.back { order: -1; }
-.fc-stand.bottom .fc-sec { justify-content: flex-start; }
-.fc-stand.bottom .fc-frow.back { order: 1; }
-.fc-frow { display: flex; justify-content: space-around; align-items: flex-end; height: 22px; gap: 2px; padding: 0 4px; flex: none; }
-.fc-frow.back { height: 20px; opacity: 0.72; transform: scale(0.86); }
-.fan { position: relative; flex: none; width: 11px; height: 9px; border-radius: 6px 6px 2px 2px; background: var(--c); animation: fanBob var(--t) ease-in-out var(--d) infinite alternate; }
-.fan::before { content: ""; position: absolute; left: 50%; top: -7px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: var(--s); }
-.fan .fl { position: absolute; left: 7px; bottom: 5px; width: 1.5px; height: 15px; background: #d9d2c3; transform-origin: 50% 100%; animation: fanWave var(--t) ease-in-out var(--d) infinite alternate; }
-.fan .fl::after { content: ""; position: absolute; left: 1.5px; top: 0; width: 13px; height: 9px; border-radius: 1px; background: var(--fl, #f4f6f6) center / cover no-repeat; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.35); }
-.fan .fl.plain-w::after { background: #f4f6f6; }
-.fan .fl.plain-b::after { background: #1d2b2d; box-shadow: 0 0 0 1px #e8eef0; }
-@keyframes fanBob { to { transform: translateY(-2px); } }
-@keyframes fanWave { from { transform: rotate(-16deg); } to { transform: rotate(14deg); } }
-@keyframes fanJump { to { transform: translateY(-7px); } }
-#fcStadium.cheer-w .fc-sec[data-side="w"] .fan, #fcStadium.cheer-b .fc-sec[data-side="b"] .fan { animation: fanJump 0.3s ease-in-out var(--d) infinite alternate; }
-#fcStadium.cheer-w .fc-sec[data-side="w"] .fan .fl, #fcStadium.cheer-b .fc-sec[data-side="b"] .fan .fl { animation-duration: 0.35s; }
-@media (prefers-reduced-motion: reduce) { .fan, .fan .fl, #fcStadium .fan { animation: none !important; } }
+.fc-sec { flex: 1 1 0; min-width: 0; height: 100%; overflow: hidden; }
+/* Muxlislar bitta canvas'ga chiziladi (footchess-page.js drawStand) — yuzlab alohida animatsiya telefonni qotirardi */
+.fc-scv { display: block; width: 100%; height: 100%; }
 
 /* Zaxira va almashtirish */
 .fc-benches { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
@@ -15156,9 +15144,7 @@ html.landscape-phone .fc-pitch-wrap { max-width: calc((100dvh - 16px) * 13 / 7);
   .fc-bc { width: 30px; height: 30px; }
   .fc-lu-b { width: 32px; height: 32px; }
   .fc-stadium { padding: 4px; gap: 4px; }
-  .fc-stand { height: 34px; }
-  .fc-frow { height: 17px; }
-  .fc-frow.back { height: 15px; }
+  .fc-stand { height: 38px; }
 }
 /* Telefon (tik): maydon burilgan — tepada tepadagi darvoza egasining, pastda o'z muxlislari */
 @media (max-width: 600px) and (orientation: portrait) {
@@ -15168,7 +15154,6 @@ html.landscape-phone .fc-pitch-wrap { max-width: calc((100dvh - 16px) * 13 / 7);
 }
 html.landscape-phone .fc-stadium .fc-pitch-wrap { max-width: calc((100dvh - 70px) * 13 / 7); }
 html.landscape-phone .fc-stand { height: 22px; }
-html.landscape-phone .fc-frow.back { display: none; }
 
 /* ===== 💬 Xabarlar — yon menyu pastida, profil kartasi yonida (kompyuter; 2026-11-07, foydalanuvchi so'rovi) ===== */
 .sb-user-row { display: flex; align-items: stretch; gap: 8px; min-width: 0; }

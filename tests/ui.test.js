@@ -1723,6 +1723,24 @@ test("Shaxmat-futbol: menyu bandi, bir qurilmada 2 kishi (tanlash, zarba nishonl
   assert.deepEqual(p.errors, []);
 });
 
+test("Unumdorlik: ko'rinmaydigan cheksiz CSS animatsiyalar to'xtab turadi (logotip oynachasi) — telefonda sahifa bo'sh turganda har kadrda qayta hisoblanmaydi", opts, async () => {
+  const u = await srv.register('Perf');
+  for (const vp of [{ width: 390, height: 844, isMobile: true, hasTouch: true }, { width: 1366, height: 860 }]) {
+    const p = await page(u, vp);
+    await p.goto(srv.base + '/reyting', { waitUntil: 'load' });
+    await sleep(1500);
+    const running = await p.evaluate(() => document.getAnimations().filter((a) => a.playState === 'running' && a.effect && a.effect.getTiming().iterations === Infinity)
+      .map((a) => a.animationName + ' ' + ((a.effect.target && a.effect.target.getAttribute && a.effect.target.getAttribute('class')) || '')));
+    assert.deepEqual(running, [], vp.width + ' px');
+    // Logotip ustiga kelinsa — oynacha animatsiyasi yuradi
+    if (vp.width > 800) {
+      await p.hover('.logo-area');
+      await p.waitForFunction(() => document.getAnimations().some((a) => a.playState === 'running' && a.animationName === 'ferrisRotate'), { timeout: 3000 });
+    }
+    assert.deepEqual(p.errors, []);
+  }
+});
+
 test("Futbol: tarkib tanlash (zaxiradan o'rin almashtirish), o'yinda almashtirish (navbat o'rniga, 3 tagacha), bayroqli tribunalar, stadion ovozi tugmasi", opts, async () => {
   const u = await srv.register('FcSquad');
   const p = await page(u);
@@ -1747,9 +1765,12 @@ test("Futbol: tarkib tanlash (zaxiradan o'rin almashtirish), o'yinda almashtiris
   assert.equal(titles.filter((t) => /^Rux — O'zbekiston/.test(t)).length, 0);
   assert.deepEqual(JSON.parse(await p.evaluate(() => localStorage.getItem('justChessFootLocal'))).lu.w, ['P1', 'F1', 'FZ', 'O1', 'O2', 'P3'], "tarkib eslab qolinadi");
   // Tribunalar: ikkala jamoa muxlislari o'z bayrog'i bilan
-  assert.ok(await p.$$eval('#fcStadium .fc-sec[data-side="w"] .fan', (l) => l.length) > 20);
-  assert.match(await p.$eval('#fcStadium .fc-sec[data-side="w"] .fl', (e) => e.getAttribute('style')), /flagcdn\.com\/w80\/uz\.png/);
-  assert.match(await p.$eval('#fcStadium .fc-sec[data-side="b"] .fl', (e) => e.getAttribute('style')), /flagcdn\.com\/w80\/kz\.png/);
+  // (har bo'lim — bitta canvas: yuzlab CSS animatsiya telefonni qotirardi; chizilgan — o'lchami bor)
+  assert.equal(await p.$$eval('#fcStadium canvas.fc-scv', (l) => l.length), 4);
+  assert.match(await p.$eval('#fcStadium .fc-sec[data-side="w"] canvas', (e) => e.dataset.flag), /flagcdn\.com\/w80\/uz\.png/);
+  assert.match(await p.$eval('#fcStadium .fc-sec[data-side="b"] canvas', (e) => e.dataset.flag), /flagcdn\.com\/w80\/kz\.png/);
+  await p.waitForFunction(() => { const c = document.querySelector('#fcStadium canvas.fc-scv'); return c.width > 100 && c.height > 20 && c._fc; }, { timeout: 3000 });
+  assert.equal(await p.evaluate(() => document.querySelectorAll('#fcStadium .fan').length), 0);
   // Zaxira: 9 tadan; ot (3,1) tanlansa — oqning zaxirasi faollashadi
   assert.equal(await p.$$eval('#fcBench .fc-brow.side-w [data-sub-in]', (l) => l.length), 9);
   assert.equal(await p.$$eval('#fcBench .fc-bc.can', (l) => l.length), 0);

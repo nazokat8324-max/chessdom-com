@@ -503,15 +503,31 @@
   // ---------- 🏟️ Tribunalar: o'z bayrog'ini silkitayotgan muxlislar ----------
   // Kompyuterda: tepada va pastda, chap yarmi — 1-jamoa (o'z darvozasi chapda), o'ng yarmi — 2-jamoa. Telefonda (tik, maydon burilgan):
   // tepada — tepadagi darvoza egasi muxlislari, pastda — o'zinikilar (data-top).
+  // Unumdorlik (2026-11-24 o'lchov: har muxlis alohida CSS animatsiya bo'lganda telefonda ~1 kadr/s): har bo'lim — bitta <canvas>,
+  // soniyasiga 10 marta chiziladi; ko'rinmasa (ekrandan chiqqan, (telefonda yashirin yarim, boshqa sahifa, fondagi oyna) chizilmaydi; «harakatni kamaytirish» — bir marta.
   const SHIRTS = ['#e8eef0', '#f5c542', '#ff6b6b', '#4dabf7', '#51cf66', '#cc5de8', '#ff922b', '#20c997', '#f06595', '#94d82d', '#ced4da', '#339af0'];
   const SKINS = ['#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#ffdbac', '#d4a373'];
-  function fansHtml(side, tm, n, seed) {
-    const fl = tm[side].country ? ` style="--fl:url('${esc(flagUrl(tm[side].country))}')"` : '';
-    let out = '';
+  const STAND_FPS = 10;
+  const reducedMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const flagImgs = {};
+  function flagImg(code) {
+    if (!code) return null;
+    if (!flagImgs[code]) {
+      const im = new Image();
+      im.decoding = 'async';
+      im.onload = () => { st.standLast = 0; startStands(); }; // «harakatni kamaytirish» rejimida ham bayroq chiqsin
+      im.src = flagUrl(code);
+      flagImgs[code] = im;
+    }
+    const im = flagImgs[code];
+    return im.complete && im.naturalWidth ? im : null;
+  }
+  // Har muxlisning doimiy xususiyatlari (rang, bayroq, sur'at) — bir marta
+  function crowdOf(seed, n) {
+    const out = [];
     for (let i = 0; i < n; i++) {
       const k = (i * 7 + seed * 13) % 97;
-      const flag = k % 3 !== 0;
-      out += `<i class="fan" style="--c:${SHIRTS[k % SHIRTS.length]};--s:${SKINS[(k >> 1) % SKINS.length]};--d:-${((k % 17) / 10).toFixed(1)}s;--t:${(0.9 + (k % 7) / 10).toFixed(1)}s">${flag ? `<b class="fl${fl ? '' : ' plain-' + side}"${fl}></b>` : ''}</i>`;
+      out.push({ shirt: SHIRTS[k % SHIRTS.length], skin: SKINS[(k >> 1) % SKINS.length], flag: k % 3 !== 0, ph: (k % 17) * 0.37, sp: 4 + (k % 7) * 0.6 });
     }
     return out;
   }
@@ -522,18 +538,104 @@
     const key = [tm.w.country, tm.b.country, tm.w.kit, tm.b.kit].join('|');
     if (st.standKey === key) return;
     st.standKey = key;
-    const sec = (side, seed) => `<div class="fc-sec" data-side="${side}"><div class="fc-frow">${fansHtml(side, tm, 30, seed)}</div><div class="fc-frow back">${fansHtml(side, tm, 30, seed + 5)}</div></div>`;
-    stad.querySelector('.fc-stand.top').innerHTML = sec('w', 1) + sec('b', 2);
-    stad.querySelector('.fc-stand.bottom').innerHTML = sec('w', 3) + sec('b', 4);
+    st.standTeams = { w: tm.w.country || null, b: tm.b.country || null };
+    const sec = (side, seed, pos) => `<div class="fc-sec" data-side="${side}"><canvas class="fc-scv" data-side="${side}" data-seed="${seed}" data-pos="${pos}"${tm[side].country ? ` data-flag="${esc(flagUrl(tm[side].country))}"` : ''}></canvas></div>`;
+    stad.querySelector('.fc-stand.top').innerHTML = sec('w', 1, 'top') + sec('b', 2, 'top');
+    stad.querySelector('.fc-stand.bottom').innerHTML = sec('w', 3, 'bottom') + sec('b', 4, 'bottom');
+    st.standCrowds = {};
+    startStands();
+  }
+  // Muxlislar tanasi bir marta alohida qatlamga (har qator — bitta offscreen canvas), bayroq tayog'i bilan — bitta kichik rasmga
+  // chiziladi; har kadrda faqat qatlam (sakrash) va bayroqlar (burilish) ko'chiriladi — telefonda arzon.
+  function standCache(cv, w, h, dpr) {
+    const side = cv.dataset.side, seed = Number(cv.dataset.seed), top = cv.dataset.pos === 'top';
+    const img = flagImg(st.standTeams && st.standTeams[side]);
+    const key = [w, h, dpr, seed, top, img ? img.src : 'plain-' + side].join('|');
+    if (cv._fc && cv._fc.key === key) return cv._fc;
+    const gap = 13, n = Math.ceil(w / gap) + 1;
+    const mk = (cw, ch) => { const o = document.createElement('canvas'); o.width = Math.max(1, Math.round(cw * dpr)); o.height = Math.max(1, Math.round(ch * dpr)); const x = o.getContext('2d'); x.setTransform(dpr, 0, 0, dpr, 0, 0); return [o, x]; };
+    // Bayroq tayog'i bilan: tayoq pastki chap burchakda (0, sh)
+    const sprite = (sc) => {
+      const fw = 13 * sc, fh = 9 * sc, sh = 15 * sc, sw = fw + 2;
+      const [o, x] = mk(sw, sh + 1);
+      x.strokeStyle = '#d9d2c3'; x.lineWidth = 1.3;
+      x.beginPath(); x.moveTo(0.7, sh); x.lineTo(0.7, 0); x.stroke();
+      if (img) x.drawImage(img, 1.5, 0, fw, fh);
+      else { x.fillStyle = side === 'w' ? '#f4f6f6' : '#1d2b2d'; x.fillRect(1.5, 0, fw, fh); if (side === 'b') { x.strokeStyle = '#e8eef0'; x.lineWidth = 1; x.strokeRect(1.5, 0, fw, fh); } }
+      return { o, w: sw, h: sh + 1 };
+    };
+    // [o'lcham, asos chizig'i, shaffoflik, siljish, urug'] — orqa qator birinchi
+    const spec = top ? [[0.82, h * 0.5, 0.7, 6, seed + 5], [1, h - 1, 1, 0, seed]] : [[0.82, h - 1, 0.7, 6, seed + 5], [1, h * 0.55, 1, 0, seed]];
+    const rows = spec.map(([sc, baseY, alpha, shift, sd]) => {
+      const fans = crowdOf(sd, n);
+      const [o, x] = mk(w, h);
+      const flags = [];
+      fans.forEach((f, i) => {
+        const fx = i * gap + shift + 6, bw = 11 * sc, bh = 9 * sc, hr = 3.5 * sc;
+        x.fillStyle = f.shirt;
+        x.beginPath(); x.moveTo(fx - bw / 2, baseY); x.lineTo(fx - bw / 2, baseY - bh + 3); x.quadraticCurveTo(fx - bw / 2, baseY - bh, fx, baseY - bh);
+        x.quadraticCurveTo(fx + bw / 2, baseY - bh, fx + bw / 2, baseY - bh + 3); x.lineTo(fx + bw / 2, baseY); x.fill();
+        x.fillStyle = f.skin;
+        x.beginPath(); x.arc(fx, baseY - bh - hr + 0.5, hr, 0, Math.PI * 2); x.fill();
+        if (f.flag) flags.push({ x: fx + 3 * sc, y: baseY - bh * 0.4, ph: f.ph, sp: f.sp });
+      });
+      return { o, alpha, flags, spr: sprite(sc) };
+    });
+    cv._fc = { key, rows };
+    return cv._fc;
+  }
+  function drawStand(cv, t) {
+    const w = cv.clientWidth, h = cv.clientHeight;
+    if (!w || !h) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+    const cache = standCache(cv, w, h, dpr);
+    const c = cv.getContext('2d');
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.clearRect(0, 0, cv.width, cv.height);
+    const jumping = st.cheer && st.cheer.side === cv.dataset.side && t < st.cheer.until;
+    cache.rows.forEach((r, ri) => {
+      // Qator birga «nafas oladi»; gol bo'lsa — sakraydi
+      const dy = jumping ? -Math.abs(Math.sin(t * 11 + ri * 1.3)) * 6 : -(Math.sin(t * 1.6 + ri * 2) + 1) * 0.6;
+      c.globalAlpha = r.alpha;
+      c.setTransform(1, 0, 0, 1, 0, Math.round(dy * dpr));
+      c.drawImage(r.o, 0, 0);
+      const spr = r.spr;
+      for (const f of r.flags) {
+        const ang = Math.sin(t * (jumping ? 9 : f.sp) + f.ph) * 0.28, cs = Math.cos(ang), sn = Math.sin(ang);
+        c.setTransform(dpr * cs, dpr * sn, -dpr * sn, dpr * cs, dpr * f.x, dpr * (f.y + dy));
+        c.drawImage(spr.o, 0, -spr.h, spr.w, spr.h);
+      }
+    });
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.globalAlpha = 1;
+  }
+  function standsFrame(now) {
+    st.standRaf = 0;
+    const stad = document.getElementById('fcStadium');
+    if (!stad || !st.mode) return;
+    if (!document.hidden && now - (st.standLast || 0) >= 1000 / STAND_FPS) {
+      st.standLast = now;
+      const t = now / 1000;
+      const vh = window.innerHeight;
+      stad.querySelectorAll('canvas.fc-scv').forEach((cv) => {
+        if (cv.offsetParent === null) return;
+        const b = cv.getBoundingClientRect();
+        if (b.bottom > 0 && b.top < vh) drawStand(cv, t);
+      });
+    }
+    if (reducedMotion()) return; // harakatsiz — bir marta chizildi
+    st.standRaf = requestAnimationFrame(standsFrame);
+  }
+  function startStands() {
+    if (st.standRaf) return;
+    st.standLast = 0;
+    st.standRaf = requestAnimationFrame(standsFrame);
   }
   function cheer(side) {
-    const stad = document.getElementById('fcStadium');
-    if (!stad || !side) return;
-    stad.classList.remove('cheer-w', 'cheer-b');
-    void stad.offsetWidth;
-    stad.classList.add('cheer-' + side);
-    clearTimeout(st.cheerT);
-    st.cheerT = setTimeout(() => stad.classList.remove('cheer-w', 'cheer-b'), 2600);
+    if (!side) return;
+    st.cheer = { side, until: performance.now() / 1000 + 2.6 };
+    if (reducedMotion()) { st.standLast = 0; startStands(); }
   }
 
   // ---------- 🔊 Stadion ovozi (Web Audio: shovqindan olomon g'uvillashi, golda — hayqiriq; fayl yuklanmaydi) ----------

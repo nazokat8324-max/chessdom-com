@@ -136,29 +136,103 @@ const sheenBand = (d, delay, w = 260) => `<g ${anim('sh', d, delay)}><rect x="0"
 // Yuqoriga ko'tariluvchi zarralar (chang, qum, oltin kukun)
 const RISECSS = (dx, dy) => `$.rs{opacity:0;animation:~rs var(--d) linear infinite}@keyframes ~rs{0%{opacity:0;transform:translate(0,0)}20%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translate(${dx}px,${dy}px)}}`;
 
-// 🐪 Karvon — shom paytidagi cho'l: barxanlar va qator tuyalar
-const camelSvg = (x, y, s) => `<g transform="translate(${f(x)} ${f(y)}) scale(${s})" fill="#1a0d06"><path d="M0 0 q6 -22 22 -24 q8 -14 18 -2 q10 -12 20 0 q10 2 14 12 l10 -18 q4 -6 9 -2 l4 6 q-2 4 -6 4 l-12 26 q-2 6 -8 8 l0 30 h-5 l-2 -28 h-30 l-2 28 h-5 l-1 -28 q-4 2 -8 0 l-2 28 h-5 l0 -30 q-6 -4 -6 -12z"/></g>`;
-function karvon(camels = true) {
+// 🐪 Karvon — shom paytidagi cho'l (2026-11-24, «yanada jonliroq»): uzoq tog'lar, quyosh, qirrali barxanlar, voha palmalari,
+// yukli tuyalar va karvonboshi. Harakatli qatlamda: tuyalar oyoq bosib yuradi (ikki kadr), chang, qushlar, bulutlar, shamol izlari.
+const CAMEL_BODY = 'M14 44 C6 40 6 28 16 24 C22 4 46 0 56 18 C62 26 70 26 76 22 C82 16 84 6 90 2 C96 -1 104 2 106 8 L104 12 C100 13 94 12 92 12 C90 20 88 32 80 40 C70 46 30 48 14 44Z';
+const CAMEL_LEGS = [
+  'M72 42 L78 80 M64 42 L60 80 M28 42 L32 80 M20 42 L16 80', // 1-kadr
+  'M72 42 L66 80 M64 42 L70 80 M28 42 L24 80 M20 42 L26 80', // 2-kadr
+];
+const CLOTH = ['#b8342a', '#2b6f9e', '#c98a1c', '#6e3b8f', '#2d8a5f', '#b8342a'];
+// Tuya (o'ngga qaragan); legs: 0/1 — bitta kadr, 'anim' — ikki kadr navbat bilan (harakatli qatlam)
+function camelSvg2(x, y, s, i, legs) {
+  const ink = '#1c0e07';
+  let g = `<g transform="translate(${f(x)} ${f(y)}) scale(${s})">`;
+  const legPath = (k, extra) => `<path${extra || ''} d="${CAMEL_LEGS[k]}" stroke="${ink}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  if (legs === 'anim') g += legPath(0, ' class="la"') + legPath(1, ' class="lb"');
+  else g += legPath(legs || 0);
+  g += `<path d="M8 32 q-7 6 -4 17" stroke="${ink}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  g += `<path d="${CAMEL_BODY}" fill="${ink}"/>`;
+  if (i === 0) {
+    // karvonboshi: o'tirgan odam, salla, to'n
+    g += `<path d="M34 6 C34 -6 46 -8 48 6Z" fill="${CLOTH[0]}"/><circle cx="41" cy="-12" r="5" fill="${ink}"/><path d="M35 -15 Q41 -23 47 -15 Q41 -12 35 -15Z" fill="#efe3c8"/><path d="M47 -4 L58 -10" stroke="${ink}" stroke-width="2"/>`;
+  } else {
+    // yuk: rangli mato o'ralgan tugunlar
+    const c = CLOTH[i % CLOTH.length];
+    g += `<rect x="26" y="2" width="30" height="14" rx="5" fill="${c}"/><path d="M26 9 H56" stroke="#f3d58a" stroke-width="2" opacity="0.8"/><rect x="20" y="10" width="10" height="16" rx="3" fill="${c}" opacity="0.85"/><rect x="52" y="10" width="10" height="16" rx="3" fill="${c}" opacity="0.85"/>`;
+  }
+  // jilov ipi keyingi tuyaga
+  if (i > 0) g += `<path d="M106 10 Q118 18 128 14" stroke="${ink}" stroke-width="1.5" fill="none" opacity="0.7"/>`;
+  return g + '</g>';
+}
+const palmSvg = (x, y, s) => `<g transform="translate(${f(x)} ${f(y)}) scale(${f(s)})" fill="#2a1408"><path d="M0 0 C-4 -40 4 -80 12 -110 L16 -108 C10 -80 4 -40 6 0Z"/>`
+  + [[-60, -96, -20], [-46, -126, -8], [40, -126, 8], [62, -96, 20], [0, -140, 0]].map(([dx, dy, k]) => `<path d="M14 -110 Q${f(14 + dx * 0.5)} ${f(-110 + (dy + 110) * 1.4 - 20)} ${f(14 + dx)} ${f(dy + 10 + Math.abs(k))} Q${f(14 + dx * 0.45)} ${f(-110 + (dy + 110) * 0.6 - 8)} 14 -108Z"/>`).join('') + '</g>';
+// Barxanlar (ustki egri chiziqlari bilan — qirradagi yorug' chiziq uchun)
+const KV_DUNES = [
+  ['M0 640 Q300 548 620 622 T1200 612 T1600 580', 'd1', 0.5],
+  ['M0 720 Q380 664 760 740 T1600 700', 'd2', 0.38],
+  ['M0 840 Q420 784 900 852 T1600 820', 'd3', 0.28],
+];
+function karvon(dynamic = true) {
   const r = rng(1);
-  const defs = lin('sky', [[0, '#1d1430'], [0.55, '#6b3a4a'], [1, '#e08a4a']]) + rad('sun', [[0, '#ffe2a1'], [1, '#ffb15c']]) + lin('d1', [[0, '#c27a3e'], [1, '#7a4422']]) + lin('d2', [[0, '#9a5a2e'], [1, '#4e2a16']]) + lin('d3', [[0, '#6b3c1e'], [1, '#2a160b']]);
-  let body = `<rect width="${W}" height="${H}" fill="url(#sky)"/>` + stars(r, 90, '#fff', 1.2, 380) + `<circle cx="1180" cy="560" r="120" fill="url(#sun)" opacity="0.95"/>`;
-  body += `<path d="M0 620 Q300 520 620 600 T1200 590 T1600 560 V1000 H0z" fill="url(#d1)"/>`;
-  if (camels) { let cx = 330; for (let i = 0; i < 6; i++) { body += camelSvg(cx, 548 + Math.sin(i) * 4, 1.05); cx += 112; } }
-  body += `<path d="M0 700 Q380 640 760 720 T1600 680 V1000 H0z" fill="url(#d2)"/><path d="M0 820 Q420 760 900 830 T1600 800 V1000 H0z" fill="url(#d3)"/>`;
+  const defs = lin('sky', [[0, '#140d26'], [0.35, '#3b1f4a'], [0.62, '#8a3d4f'], [0.85, '#e9864a'], [1, '#f6b25e']])
+    + rad('sun', [[0, '#fff1c4'], [0.6, '#ffd27a'], [1, '#ff9a4a']]) + rad('sunHalo', [[0, '#ffcf7a', 0.55], [1, '#ff9a4a', 0]])
+    + lin('d1', [[0, '#d08a48'], [1, '#7a4422']]) + lin('d2', [[0, '#a4622f'], [1, '#4e2a16']]) + lin('d3', [[0, '#734020'], [1, '#2a160b']])
+    + lin('mtn', [[0, '#5a3352'], [1, '#7e4552']]);
+  let body = `<rect width="${W}" height="${H}" fill="url(#sky)"/>` + stars(r, 110, '#fff', 1.3, 340);
+  body += `<circle cx="1180" cy="560" r="330" fill="url(#sunHalo)"/><circle cx="1180" cy="560" r="135" fill="url(#sun)"/>`;
+  for (let i = 0; i < 4; i++) body += `<rect x="1020" y="${548 + i * 18}" width="320" height="${3 + i}" fill="#e9864a" opacity="0.35"/>`;
+  // uzoq tog'lar
+  let m = 'M0 640'; let x = 0;
+  while (x < W) { x += 60 + r() * 90; m += ` L${f(x)} ${f(520 + r() * 70)}`; x += 50 + r() * 70; m += ` L${f(x)} ${f(585 + r() * 30)}`; }
+  body += `<path d="${m} L${W} 640z" fill="url(#mtn)" opacity="0.75"/>`;
+  if (dynamic) {
+    // bulutlar (harakatli qatlamda suzadi — asosda yo'q)
+    for (const [cx, cy, s] of [[300, 210, 1.2], [880, 150, 0.9], [1420, 260, 1]]) body += kvCloud(cx, cy, s, 0.35);
+  }
+  KV_DUNES.forEach(([top, grad, hl], i) => {
+    body += `<path d="${top} V1000 H0z" fill="url(#${grad})"/><path d="${top}" stroke="#ffd59a" stroke-opacity="${hl}" stroke-width="3" fill="none"/>`;
+    if (i === 0) {
+      body += palmSvg(1440, 600, 0.8) + palmSvg(1500, 596, 0.62) + palmSvg(1395, 606, 0.5);
+      body += `<ellipse cx="1460" cy="612" rx="70" ry="8" fill="#3d7f7a" opacity="0.6"/>`;
+      if (dynamic) { let cx = 300; for (let k = 0; k < 6; k++) { body += camelSvg2(cx, 532 + Math.sin(k) * 4, 1.05, k, k % 2); cx += 124; } }
+    }
+  });
+  // qum to'lqinlari (shamol izlari) — old barxanda
+  for (let i = 0; i < 18; i++) { const y = 870 + r() * 120, xx = r() * W; body += `<path d="M${f(xx)} ${f(y)} q40 -6 80 0 t80 0" stroke="#a86a38" stroke-opacity="0.35" stroke-width="2" fill="none"/>`; }
   return svg(defs, body);
 }
-// Tuyalar qatori cho'l bo'ylab sekin yuradi (har biri biroz chayqaladi), quyosh nafas oladi, qum zarralari shamolda uchadi
+function kvCloud(cx, cy, s, op) {
+  return `<g transform="translate(${cx} ${cy}) scale(${s})" fill="#f3b48a" opacity="${op}"><ellipse cx="0" cy="0" rx="120" ry="14"/><ellipse cx="40" cy="-10" rx="70" ry="12"/><ellipse cx="-60" cy="6" rx="80" ry="9"/></g>`;
+}
+// Harakatli qatlam: karvon yuradi (oyoqlar ikki kadr), har tuya chayqaladi, ortidan chang; qushlar galasi; bulutlar; shamol izlari
 function karvonFx() {
   const r = rng(101);
-  const css = TWCSS + RISECSS(-260, -40)
-    + '$.cv{animation:~cv 150s linear infinite}@keyframes ~cv{from{transform:translateX(-900px)}to{transform:translateX(1750px)}}'
-    + '$.bob{animation:~bob 1.1s ease-in-out infinite alternate}@keyframes ~bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}'
-    + '$.sun{animation:~sun 8s ease-in-out infinite alternate}@keyframes ~sun{from{opacity:.35;transform:scale(.95)}to{opacity:.85;transform:scale(1.06)}}';
-  let b = `<circle class="sun" style="transform-origin:1180px 560px" cx="1180" cy="560" r="230" fill="url(#glow)"/>` + twinkles(r, 40, '#fff', 0, 380, 0.8, 1.6);
-  b += `<g ${anim('cv', 150, 40)}>`;
-  for (let i = 0; i < 6; i++) b += `<g ${anim('bob', 1.1, i * 0.37)}>${camelSvg(i * 112, 548 + Math.sin(i) * 4, 1.05)}</g>`;
+  const css = TWCSS + RISECSS(-90, -26)
+    + '$.cv{animation:~cv 170s linear infinite}@keyframes ~cv{from{transform:translateX(-1000px)}to{transform:translateX(1700px)}}'
+    + '$.bob{animation:~bob .9s ease-in-out infinite alternate}@keyframes ~bob{from{transform:translateY(0)}to{transform:translateY(-3px)}}'
+    + '$.la{animation:~lg .9s steps(1) infinite}$.lb{animation:~lg .9s steps(1) infinite;animation-delay:-.45s}@keyframes ~lg{0%{opacity:1}50%{opacity:0}}'
+    + '$.sun{animation:~sun 8s ease-in-out infinite alternate}@keyframes ~sun{from{opacity:.35;transform:scale(.95)}to{opacity:.9;transform:scale(1.07)}}'
+    + '$.cl{animation:~cl var(--d) linear infinite}@keyframes ~cl{from{transform:translateX(-500px)}to{transform:translateX(2100px)}}'
+    + '$.bd{animation:~bd var(--d) linear infinite}@keyframes ~bd{0%{transform:translate(-200px,40px)}100%{transform:translate(1900px,-80px)}}'
+    + '$.wg{transform-box:fill-box;transform-origin:center;animation:~wg .5s ease-in-out infinite alternate}@keyframes ~wg{from{transform:scaleY(1)}to{transform:scaleY(-.6)}}'
+    + '$.wd{opacity:0;animation:~wd var(--d) ease-in-out infinite}@keyframes ~wd{0%{opacity:0;transform:translateX(0)}30%{opacity:.8}100%{opacity:0;transform:translateX(-260px)}}';
+  let b = `<circle class="sun" style="transform-origin:1180px 560px" cx="1180" cy="560" r="260" fill="url(#glow)"/>` + twinkles(r, 46, '#fff', 0, 330, 0.8, 1.6);
+  // bulutlar
+  [[210, 1.2, 140, 20], [150, 0.9, 190, 110], [270, 1, 160, 70]].forEach(([y, s, d, del]) => { b += `<g ${anim('cl', d, del)}>${kvCloud(0, y, s, 0.4)}</g>`; });
+  // qushlar galasi
+  const bird = (x, y) => `<g transform="translate(${x} ${y})"><path class="wg" d="M0 0 q6 -5 12 0 q6 -5 12 0" stroke="#2a1530" stroke-width="2.2" fill="none" stroke-linecap="round"/></g>`;
+  b += `<g ${anim('bd', 46, 10)}>` + [[0, 0], [28, 14], [-26, 16], [54, 28], [-52, 30]].map(([x, y]) => bird(x, 200 + y)).join('') + '</g>';
+  b += `<g ${anim('bd', 63, 40)}>` + [[0, 0], [24, 12], [-22, 14]].map(([x, y]) => bird(x, 120 + y)).join('') + '</g>';
+  // karvon
+  b += `<g ${anim('cv', 170, 50)}>`;
+  for (let i = 0; i < 6; i++) {
+    b += `<g ${anim('bob', 0.9, i * 0.31)}>${camelSvg2(i * 124, 532 + Math.sin(i) * 4, 1.05, i, 'anim')}</g>`;
+    for (let k = 0; k < 4; k++) b += `<circle ${anim('rs', 2.5 + r() * 2, r() * 4)} cx="${f(i * 124 + 10 + r() * 20)}" cy="${f(612 + r() * 6)}" r="${f(2 + r() * 3)}" fill="#e7b27a" fill-opacity="0.55"/>`;
+  }
   b += '</g>';
-  for (let i = 0; i < 46; i++) b += `<circle ${anim('rs', 7 + r() * 8, r() * 15)} cx="${f(200 + r() * 1500)}" cy="${f(600 + r() * 380)}" r="${f(1 + r() * 2)}" fill="#ffd9a0"/>`;
+  // shamol izlari va qum zarralari
+  for (let i = 0; i < 12; i++) b += `<path ${anim('wd', 5 + r() * 5, r() * 10)} d="M${f(300 + r() * 1300)} ${f(660 + r() * 320)} q60 -5 120 0" stroke="#ffd9a0" stroke-width="1.6" fill="none" stroke-linecap="round"/>`;
   return fxSvg('kv', css, b, rad('glow', [[0, '#ffd27a', 0.55], [1, '#ffb15c', 0]]));
 }
 
@@ -297,31 +371,78 @@ function woodFx() {
   return fxSvg('wd', css, b, SHEEN(0.1).replace(/#fff/g, '#ffd8a8'));
 }
 
-// 👑 Shohona — saroy ravoqlari, oltin chiziqlar va toj
+// 👑 Shohona — saroy zali (2026-11-24, «yanada jonliroq»): naqshli ravoqlar va ustunlar, qizil-oltin gilam, baxmal pardalar,
+// gavharli toj, ravoqlarda osma chiroqlar. Harakatli qatlamda: chiroqlar tebranadi va lipillaydi, gavharlar yaltiraydi, oltin zarralar.
 const CROWN = '<path d="M-90 40 L-70 -30 L-35 10 L0 -50 L35 10 L70 -30 L90 40z"/><rect x="-92" y="44" width="184" height="18" rx="4"/><circle cx="0" cy="-58" r="10"/><circle cx="-70" cy="-38" r="8"/><circle cx="70" cy="-38" r="8"/>';
-function royal() {
-  const defs = lin('bg', [[0, '#1d1406'], [1, '#0d0904']]);
-  let body = `<rect width="${W}" height="${H}" fill="url(#bg)"/>`;
-  for (let i = 0; i < 7; i++) {
-    const x = 40 + i * 240;
-    body += `<path d="M${x} 1000 V420 Q${x} 260 ${x + 100} 230 Q${x + 200} 260 ${x + 200} 420 V1000" fill="none" stroke="#d4a017" stroke-opacity="0.28" stroke-width="5"/>`;
-    body += `<path d="M${x + 20} 1000 V430 Q${x + 20} 290 ${x + 100} 266 Q${x + 180} 290 ${x + 180} 430 V1000" fill="#d4a017" opacity="0.05"/>`;
-    body += `<rect x="${x - 18}" y="400" width="18" height="600" fill="#d4a017" opacity="0.12"/>`;
+const RY_ARCHES = [160, 480, 800, 1120, 1440]; // ravoq markazlari
+const RY_ARCH_W = 250, RY_SPRING = 430, RY_APEX = 200; // kenglik, egilish boshlanishi, uchi
+const ryArch = (cx, w, spring, apex) => `M${cx - w / 2} 1000 V${spring} Q${cx - w / 2} ${f(apex + (spring - apex) * 0.25)} ${cx} ${apex} Q${cx + w / 2} ${f(apex + (spring - apex) * 0.25)} ${cx + w / 2} ${spring} V1000`;
+// Osma chiroq (zanjir uchi 0,0 da): zanjir, qopqoq, oltin panjarali chiroq, pastki uchi
+const ryLantern = (len) => `<path d="M0 0 V${len}" stroke="#c8961e" stroke-width="2" stroke-dasharray="4 3"/><g transform="translate(0 ${len})">`
+  + '<path d="M-14 0 L14 0 L8 -10 L-8 -10Z" fill="#d4a017"/><path d="M-18 2 L18 2 L22 30 L14 54 L-14 54 L-22 30Z" fill="#ffcf6a" opacity="0.85"/>'
+  + '<path d="M-18 2 L18 2 L22 30 L14 54 L-14 54 L-22 30Z M-6 2 V54 M6 2 V54 M-22 30 H22" stroke="#8a5a0a" stroke-width="2.5" fill="none"/>'
+  + '<path d="M-14 54 L14 54 L4 66 L-4 66Z" fill="#d4a017"/><circle cx="0" cy="72" r="4" fill="#d4a017"/></g>';
+const RY_GEMS = [[0, -58, '#e8443a'], [-70, -38, '#3f8fe0'], [70, -38, '#3fbf7a'], [-40, 53, '#e8443a'], [0, 53, '#3f8fe0'], [40, 53, '#e8443a']];
+function royal(lanterns = true) {
+  const defs = lin('bg', [[0, '#1c1206'], [1, '#0a0603']]) + rad('archIn', [[0, '#5a3a0c', 0.75], [1, '#1c1206', 0]], 0.5, 0.45, 0.6)
+    + lin('gold', [[0, '#ffe08a'], [0.5, '#e6b422'], [1, '#9a6a0c']]) + lin('velvet', [[0, '#8a1428'], [1, '#3a0610']], 1, 0)
+    + lin('carpet', [[0, '#6a1616'], [1, '#3a0a0a']])
+    + '<pattern id="lat" width="60" height="60" patternUnits="userSpaceOnUse"><path d="M30 0 L60 30 L30 60 L0 30Z M30 14 L46 30 L30 46 L14 30Z" fill="none" stroke="#d4a017" stroke-opacity="0.07" stroke-width="2"/></pattern>';
+  let body = `<rect width="${W}" height="${H}" fill="url(#bg)"/><rect width="${W}" height="${H}" fill="url(#lat)"/>`;
+  for (const cx of RY_ARCHES) {
+    body += `<path d="${ryArch(cx, RY_ARCH_W, RY_SPRING, RY_APEX)}Z" fill="url(#archIn)"/>`;
+    body += `<path d="${ryArch(cx, RY_ARCH_W, RY_SPRING, RY_APEX)}" fill="none" stroke="#d4a017" stroke-opacity="0.42" stroke-width="6"/>`;
+    body += `<path d="${ryArch(cx, RY_ARCH_W - 34, RY_SPRING + 10, RY_APEX + 26)}" fill="none" stroke="#d4a017" stroke-opacity="0.2" stroke-width="2"/>`;
+    // tepadagi «tosh» (kalit tosh) va naqsh doirachalari
+    body += `<path d="M${cx} ${RY_APEX - 14} L${cx + 10} ${RY_APEX} L${cx} ${RY_APEX + 14} L${cx - 10} ${RY_APEX}Z" fill="url(#gold)"/>`;
+    for (const s of [-1, 1]) {
+      const x = cx + s * (RY_ARCH_W / 2 + 18);
+      body += `<rect x="${x - 12}" y="${RY_SPRING - 30}" width="24" height="${1000 - RY_SPRING + 30}" fill="#d4a017" opacity="0.14"/>`;
+      body += `<rect x="${x - 20}" y="${RY_SPRING - 40}" width="40" height="14" rx="3" fill="url(#gold)" opacity="0.55"/><rect x="${x - 20}" y="${930}" width="40" height="14" rx="3" fill="url(#gold)" opacity="0.4"/>`;
+      for (let k = 0; k < 6; k++) body += `<path d="M${x} ${RY_SPRING + k * 80} l7 14 l-7 14 l-7 -14z" fill="#d4a017" opacity="0.2"/>`;
+    }
+    if (lanterns) body += `<g transform="translate(${cx} ${RY_APEX + 16})">${ryLantern(120 + (cx % 3) * 10)}</g>`;
   }
-  body += `<g transform="translate(800 120)" fill="#e6b422" opacity="0.4">${CROWN}</g>`;
+  // gilam (perspektivada) va pol
+  body += `<path d="M0 900 H1600 V1000 H0z" fill="#140c04"/><path d="M420 880 L1180 880 L1420 1000 L180 1000Z" fill="url(#carpet)"/>`;
+  body += `<path d="M450 892 L1150 892 L1370 994 L230 994Z" fill="none" stroke="#e6b422" stroke-opacity="0.65" stroke-width="3"/><path d="M500 906 L1100 906 L1290 986 L310 986Z" fill="none" stroke="#e6b422" stroke-opacity="0.35" stroke-width="2"/>`;
+  body += `<ellipse cx="800" cy="944" rx="170" ry="26" fill="none" stroke="#e6b422" stroke-opacity="0.55" stroke-width="3"/><path d="M800 922 L840 944 L800 966 L760 944Z" fill="#e6b422" opacity="0.5"/>`;
+  // baxmal pardalar burchaklarda
+  for (const s of [1, -1]) {
+    const x0 = s === 1 ? 0 : W, sx = s;
+    body += `<path d="M${x0} 0 H${x0 + sx * 330} Q${x0 + sx * 250} 120 ${x0 + sx * 120} 210 Q${x0 + sx * 60} 260 ${x0 + sx * 40} 520 L${x0} 540Z" fill="url(#velvet)"/>`;
+    for (let k = 1; k < 4; k++) body += `<path d="M${x0 + sx * k * 70} 0 Q${x0 + sx * (k * 60 - 10)} 140 ${x0 + sx * 30} ${300 + k * 40}" stroke="#2a040c" stroke-opacity="0.6" stroke-width="5" fill="none"/>`;
+    body += `<path d="M${x0 + sx * 40} 300 Q${x0 + sx * 90} 290 ${x0 + sx * 110} 250" stroke="url(#gold)" stroke-width="5" fill="none"/><circle cx="${x0 + sx * 40}" cy="310" r="10" fill="url(#gold)"/><path d="M${x0 + sx * 32} 318 L${x0 + sx * 48} 318 L${x0 + sx * 44} 352 L${x0 + sx * 36} 352Z" fill="#e6b422"/>`;
+    body += `<path d="M${x0} 0 H${x0 + sx * 330}" stroke="url(#gold)" stroke-width="10"/>`;
+  }
+  // gavharli toj
+  body += `<g transform="translate(800 110)"><g fill="url(#gold)" opacity="0.85">${CROWN}</g>` + RY_GEMS.map(([x, y, c]) => `<circle cx="${x}" cy="${y}" r="${y > 40 ? 6 : 7}" fill="${c}" opacity="0.9"/>`).join('') + '</g>';
   return svg(defs, body);
 }
-// Toj porlaydi, ravoqlar ichida oltin uchqunlar yonib-o'chadi, oltin jilo o'tadi
+// Harakatli qatlam: chiroqlar tebranadi (zanjir uchidan), ichidagi olov lipillaydi, toj gavharlari va uchqunlar, oltin zarralar yog'iladi
 const sparkle = (x, y, s) => `<path d="M${f(x)} ${f(y - s)} Q${f(x)} ${f(y)} ${f(x + s)} ${f(y)} Q${f(x)} ${f(y)} ${f(x)} ${f(y + s)} Q${f(x)} ${f(y)} ${f(x - s)} ${f(y)} Q${f(x)} ${f(y)} ${f(x)} ${f(y - s)}z"/>`;
 const SPARKCSS = '$.sp{opacity:0;transform-box:fill-box;transform-origin:center;animation:~sp var(--d) ease-in-out infinite}@keyframes ~sp{0%,100%{opacity:0;transform:scale(.2) rotate(0)}50%{opacity:1;transform:scale(1) rotate(45deg)}}';
 function royalFx() {
   const r = rng(107);
-  const css = SHEENCSS + SPARKCSS + '$.cr{animation:~cr 6s ease-in-out infinite alternate}@keyframes ~cr{from{opacity:0}to{opacity:.55}}';
-  let b = sheenBand(20, 4, 300) + `<g class="cr" fill="#ffe08a"><g transform="translate(800 120)">${CROWN}</g></g><g fill="#ffe08a">`;
-  for (let i = 0; i < 34; i++) b += sparkle(r() * W, 220 + r() * 760, 5 + r() * 9).replace('<path ', `<path ${anim('sp', 3 + r() * 5, r() * 8)} `);
-  b += sparkle(800, 62, 16).replace('<path ', `<path ${anim('sp', 4, 1)} `) + '</g>';
-  return fxSvg('ro', css, b, SHEEN(0.09).replace(/#fff/g, '#ffd36b'));
+  const css = SHEENCSS + SPARKCSS
+    + '$.sw{animation:~sw var(--d) ease-in-out infinite alternate}@keyframes ~sw{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}'
+    + '$.fl{animation:~fl var(--d) ease-in-out infinite alternate}@keyframes ~fl{0%{opacity:.45}40%{opacity:.95}70%{opacity:.6}100%{opacity:1}}'
+    + '$.cr{animation:~cr 6s ease-in-out infinite alternate}@keyframes ~cr{from{opacity:0}to{opacity:.5}}'
+    + '$.dust{opacity:0;animation:~du var(--d) linear infinite}@keyframes ~du{0%{opacity:0;transform:translate(0,0)}15%{opacity:1}85%{opacity:.8}100%{opacity:0;transform:translate(30px,520px)}}';
+  let b = sheenBand(22, 4, 300);
+  RY_ARCHES.forEach((cx, i) => {
+    const y = RY_APEX + 16, len = 120 + (cx % 3) * 10;
+    b += `<g ${anim('sw', 3.2 + i * 0.4, i * 0.9, ORIGIN(cx, y))}><g transform="translate(${cx} ${y})">${ryLantern(len)}`
+      + `<circle ${anim('fl', 0.7 + r() * 0.6, r())} cx="0" cy="${len + 30}" r="46" fill="url(#lg)"/><ellipse ${anim('fl', 0.5 + r() * 0.4, r())} cx="0" cy="${len + 32}" rx="6" ry="11" fill="#fff4c2"/></g></g>`;
+  });
+  b += `<g class="cr" fill="#ffe08a"><g transform="translate(800 110)">${CROWN}</g></g><g fill="#fff6d1">`;
+  b += RY_GEMS.map(([x, y]) => sparkle(800 + x + 4, 110 + y - 4, 9).replace('<path ', `<path ${anim('sp', 2.5 + r() * 2.5, r() * 5)} `)).join('');
+  for (let i = 0; i < 26; i++) b += sparkle(r() * W, 300 + r() * 600, 4 + r() * 7).replace('<path ', `<path ${anim('sp', 3 + r() * 5, r() * 8)} `);
+  b += '</g>';
+  for (let i = 0; i < 34; i++) b += `<circle ${anim('dust', 12 + r() * 10, r() * 22)} cx="${f(r() * W)}" cy="${f(r() * 300)}" r="${f(1 + r() * 1.6)}" fill="#ffd36b"/>`;
+  return fxSvg('ro', css, b, SHEEN(0.09).replace(/#fff/g, '#ffd36b') + rad('lg', [[0, '#ffd27a', 0.55], [1, '#ffb15c', 0]]) + lin('gold', [[0, '#ffe08a'], [0.5, '#e6b422'], [1, '#9a6a0c']]));
 }
+
 
 // 💡 Neon — synthwave: chiziqli quyosh va istiqbolli to'r
 function neon(grid = true) {
@@ -461,44 +582,118 @@ function tangaFx() {
   return fxSvg('tg', css, b);
 }
 
-// 🕌 Samarqand — Registon: tungi osmon, yarim oy, uch madrasa siluetlari va gumbazlar
-function samarqand() {
+// 🕌 Samarqand — Registon tunda (2026-11-24, «yanada jonliroq»): Somon yo'li, yarim oy, uzoq tog'lar, uch madrasa — koshinli
+// peshtoqlar, qovurg'ali firuza gumbazlar, yo'l-yo'l minoralar, derazalar, maydon. Harakatli qatlamda: derazalarda chiroq,
+// oy oldidan bulutlar, qushlar, yulduzlar, gumbazlarda oy nuri, uchar yulduz.
+const SM_GROUND = 900;
+// Binolar: cx, blok kengligi va balandligi, peshtoq kengligi va balandligi, minoralar
+const SM_BUILD = [
+  { cx: 330, bw: 380, bh: 210, pw: 190, ph: 330, min: true },
+  { cx: 800, bw: 460, bh: 220, pw: 220, ph: 345, min: false },
+  { cx: 1270, bw: 380, bh: 210, pw: 190, ph: 330, min: true },
+];
+// Qovurg'ali gumbazlar: cx, asos y, radius
+const SM_DOMES = [[640, 680, 74], [1150, 690, 52], [1390, 690, 52]];
+// Derazalar (ravoqli) — har blokning ikki qanotida ikki qator
+function smWindows() {
+  const out = [];
+  for (const b of SM_BUILD) {
+    const top = SM_GROUND - b.bh;
+    for (const side of [-1, 1]) {
+      const x0 = b.cx + side * (b.pw / 2 + 16), x1 = b.cx + side * (b.bw / 2 - 18);
+      const lo = Math.min(x0, x1), hi = Math.max(x0, x1);
+      for (const row of [40, 115]) for (let x = lo; x + 18 <= hi; x += 34) out.push([x, top + row]);
+    }
+  }
+  return out;
+}
+const smArch = (x, y, w, h) => `M${f(x)} ${f(y + h)} V${f(y + w * 0.6)} Q${f(x)} ${f(y)} ${f(x + w / 2)} ${f(y - w * 0.15)} Q${f(x + w)} ${f(y)} ${f(x + w)} ${f(y + w * 0.6)} V${f(y + h)}Z`;
+function smDome(cx, base, rr) {
+  let g = `<rect x="${cx - rr * 0.8}" y="${base - 16}" width="${rr * 1.6}" height="22" fill="url(#tile)"/><rect x="${cx - rr * 0.8}" y="${base - 16}" width="${rr * 1.6}" height="22" fill="#05101a" opacity="0.4"/>`;
+  g += `<path d="M${cx - rr} ${base - 14} C${cx - rr} ${base - 14 - rr * 1.1} ${cx - rr * 0.25} ${base - 14 - rr * 1.25} ${cx} ${base - 14 - rr * 1.35} C${cx + rr * 0.25} ${base - 14 - rr * 1.25} ${cx + rr} ${base - 14 - rr * 1.1} ${cx + rr} ${base - 14}Z" fill="url(#dome)"/>`;
+  for (let k = -3; k <= 3; k++) if (k) g += `<path d="M${f(cx + k * rr / 3.4)} ${base - 14} Q${f(cx + k * rr / 4.2)} ${f(base - 14 - rr)} ${cx} ${f(base - 14 - rr * 1.35)}" stroke="#0e4f5a" stroke-opacity="0.6" stroke-width="2" fill="none"/>`;
+  g += `<path d="M${cx} ${f(base - 14 - rr * 1.35)} v-22" stroke="#e8d9a8" stroke-width="3"/><path d="M${cx + 6} ${f(base - 14 - rr * 1.35 - 30)} a7 7 0 1 1 -2 -12 a5 5 0 1 0 2 12z" fill="#e8d9a8"/>`;
+  return g;
+}
+function samarqand(dynamic = true) {
   const r = rng(13);
-  const defs = lin('sky', [[0, '#071224'], [0.7, '#123a5c'], [1, '#1b5a7a']]) + lin('dome', [[0, '#3fc1c9'], [1, '#14707a']]);
-  let body = `<rect width="${W}" height="${H}" fill="url(#sky)"/>` + stars(r, 160, '#fff', 1.4, 560);
-  body += `<path d="M1320 150 a60 60 0 1 0 50 95 a46 46 0 1 1 -50 -95z" fill="#ffe8a3" opacity="0.85"/>`;
-  const sil = '#0a1a26';
-  const madrasa = (cx, w, h) => {
-    let g = `<rect x="${cx - w / 2}" y="${1000 - h}" width="${w}" height="${h}" fill="${sil}"/>`;
-    // peshtoq ravog'i
-    g += `<path d="M${cx - w * 0.22} 1000 V${1000 - h * 0.7} Q${cx - w * 0.22} ${1000 - h * 0.9} ${cx} ${1000 - h * 0.94} Q${cx + w * 0.22} ${1000 - h * 0.9} ${cx + w * 0.22} ${1000 - h * 0.7} V1000z" fill="#14707a" opacity="0.45"/>`;
-    g += `<path d="M${cx - w * 0.22} ${1000 - h * 0.62} H${cx + w * 0.22}" stroke="#3fc1c9" stroke-opacity="0.35" stroke-width="4"/>`;
-    // minoralar
-    for (const s of [-1, 1]) { const mx = cx + s * (w / 2 + 14); g += `<rect x="${mx - 14}" y="${1000 - h * 1.25}" width="28" height="${h * 1.25}" fill="${sil}"/><path d="M${mx - 18} ${1000 - h * 1.25} h36 l-6 -16 h-24z" fill="${sil}"/>`; }
-    return g;
-  };
-  body += `<path d="M0 1000 V860 H1600 V1000z" fill="${sil}"/>`;
-  body += madrasa(330, 340, 330) + madrasa(1270, 340, 330);
-  // markaziy madrasa va gumbazlar
-  body += madrasa(800, 400, 380);
-  for (const [x, rr] of [[600, 70], [1000, 70]]) body += `<path d="M${x - rr} ${1000 - 380} a${rr} ${rr * 1.15} 0 0 1 ${rr * 2} 0z" fill="url(#dome)"/><path d="M${x} ${1000 - 380 - rr * 1.15} v-26" stroke="#3fc1c9" stroke-width="4"/>`;
-  for (let i = -3; i <= 3; i++) body += `<path d="M${600 + i * 18} ${620} q${-i * 4} ${-60} ${-i * 2} ${-78}" stroke="#0a1a26" stroke-opacity="0.35" stroke-width="2" fill="none"/>`;
+  const sil = '#08151f';
+  const defs = lin('sky', [[0, '#040a19'], [0.55, '#0c2445'], [0.82, '#1b4f70'], [1, '#2b7488']])
+    + lin('dome', [[0, '#5fd6dc'], [1, '#13707a']]) + rad('mw', [[0, '#9fc3ff', 0.18], [1, '#9fc3ff', 0]]) + rad('moonG', [[0, '#ffe8a3', 0.28], [1, '#ffe8a3', 0]])
+    + lin('niche', [[0, '#051019'], [1, '#0c2433']])
+    + '<pattern id="tile" width="16" height="16" patternUnits="userSpaceOnUse"><rect width="16" height="16" fill="#123b52"/><path d="M8 1 L15 8 L8 15 L1 8z" fill="#2a8fa8"/><circle cx="8" cy="8" r="2" fill="#e8d9a8"/></pattern>'
+    + '<pattern id="mstr" width="20" height="26" patternUnits="userSpaceOnUse"><rect width="20" height="26" fill="#0f2e40"/><rect width="20" height="5" fill="#2a8fa8"/><path d="M0 16 L5 10 L10 16 L15 10 L20 16" stroke="#3fc1c9" stroke-width="2" fill="none"/></pattern>';
+  let body = `<rect width="${W}" height="${H}" fill="url(#sky)"/>`;
+  // Somon yo'li
+  body += `<ellipse cx="700" cy="250" rx="760" ry="120" fill="url(#mw)" transform="rotate(-14 700 250)"/>`;
+  for (let i = 0; i < 260; i++) { const t = r(), x = t * W, y = 250 - (x - 700) * 0.25 + (r() - 0.5) * 180; body += `<circle cx="${f(x)}" cy="${f(y)}" r="${f(0.4 + r() * 0.9)}" fill="#fff" opacity="${f(0.2 + r() * 0.5)}"/>`; }
+  body += stars(r, 140, '#fff', 1.4, 600);
+  // oy
+  body += `<circle cx="1335" cy="190" r="150" fill="url(#moonG)"/><path d="M1320 130 a70 70 0 1 0 58 110 a54 54 0 1 1 -58 -110z" fill="#ffe8a3" opacity="0.92"/>`;
+  if (dynamic) body += smCloud(1290, 215, 1, 0.5) + smCloud(420, 300, 1.3, 0.3);
+  // uzoq tog'lar
+  let m = `M0 ${SM_GROUND - 60}`; let x = 0;
+  while (x < W) { x += 80 + r() * 120; m += ` L${f(x)} ${f(SM_GROUND - 150 - r() * 90)}`; x += 60 + r() * 90; m += ` L${f(x)} ${f(SM_GROUND - 70 - r() * 40)}`; }
+  body += `<path d="${m} L${W} ${SM_GROUND - 60} V${SM_GROUND} H0z" fill="#0d2a3d" opacity="0.85"/>`;
+  // gumbazlar (binolar ortida)
+  for (const [cx, base, rr] of SM_DOMES) body += smDome(cx, base, rr);
+  for (const b of SM_BUILD) {
+    const top = SM_GROUND - b.bh, ptop = SM_GROUND - b.ph;
+    // blok + koshin chizig'i
+    body += `<rect x="${b.cx - b.bw / 2}" y="${top}" width="${b.bw}" height="${b.bh}" fill="${sil}"/><rect x="${b.cx - b.bw / 2}" y="${top}" width="${b.bw}" height="14" fill="url(#tile)" opacity="0.7"/>`;
+    // peshtoq: koshinli ramka, ichida ravoqli tokcha
+    body += `<rect x="${b.cx - b.pw / 2}" y="${ptop}" width="${b.pw}" height="${b.ph}" fill="url(#tile)"/><rect x="${b.cx - b.pw / 2}" y="${ptop}" width="${b.pw}" height="${b.ph}" fill="#05101a" opacity="0.45"/>`;
+    const nw = b.pw * 0.62, nx = b.cx - nw / 2, ny = ptop + 34;
+    body += `<path d="${smArch(nx - 8, ny - 6, nw + 16, SM_GROUND - ny + 6)}" fill="#0a2230"/><path d="${smArch(nx, ny, nw, SM_GROUND - ny)}" fill="url(#niche)"/>`;
+    body += `<path d="${smArch(nx + nw * 0.22, ny + nw * 0.55, nw * 0.56, SM_GROUND - ny - nw * 0.55)}" fill="none" stroke="#3fc1c9" stroke-opacity="0.45" stroke-width="2"/>`;
+    for (let k = 0; k < 5; k++) body += `<path d="M${f(nx + 8 + k * (nw - 16) / 4 - 8)} ${f(ny + nw * 0.42)} q8 -14 16 0" stroke="#3fc1c9" stroke-opacity="0.3" stroke-width="1.5" fill="none"/>`;
+    body += `<path d="M${b.cx - b.pw / 2} ${ptop} H${b.cx + b.pw / 2}" stroke="#3fc1c9" stroke-opacity="0.55" stroke-width="4"/>`;
+    if (b.min) for (const s of [-1, 1]) {
+      const mx = b.cx + s * (b.bw / 2 + 4), mt = SM_GROUND - b.ph * 1.15;
+      body += `<rect x="${mx - 14}" y="${mt}" width="28" height="${SM_GROUND - mt}" fill="url(#mstr)"/><rect x="${mx - 14}" y="${mt}" width="28" height="${SM_GROUND - mt}" fill="#05101a" opacity="0.35"/>`;
+      body += `<path d="M${mx - 20} ${mt} h40 l-6 -14 h-28z" fill="#1a4a5e"/><path d="M${mx - 12} ${mt - 14} q12 -26 24 0z" fill="url(#dome)"/>`;
+    } else for (const s of [-1, 1]) {
+      const mx = b.cx + s * (b.bw / 2 - 10);
+      body += `<rect x="${mx - 10}" y="${top - 40}" width="20" height="${b.bh + 40}" fill="url(#mstr)" opacity="0.8"/><path d="M${mx - 10} ${top - 40} q10 -22 20 0z" fill="url(#dome)"/>`;
+    }
+  }
+  for (const [wx, wy] of smWindows()) body += `<path d="${smArch(wx, wy, 18, 30)}" fill="#04101a" stroke="#3fc1c9" stroke-opacity="0.35" stroke-width="1.2"/>`;
+  // maydon: tosh yo'lak chiziqlari va daraxtlar
+  body += `<rect y="${SM_GROUND}" width="${W}" height="${H - SM_GROUND}" fill="#0b1b26"/>`;
+  for (let i = -8; i <= 8; i++) body += `<path d="M${800 + i * 60} ${SM_GROUND} L${800 + i * 180} ${H}" stroke="#1d3a4a" stroke-opacity="0.6" stroke-width="1.5"/>`;
+  for (const y of [925, 955, 990]) body += `<path d="M0 ${y} H${W}" stroke="#1d3a4a" stroke-opacity="0.5" stroke-width="1.5"/>`;
+  for (const [tx, ts] of [[40, 1.1], [95, 0.8], [1520, 1], [1575, 0.75]]) body += `<g transform="translate(${tx} ${SM_GROUND}) scale(${ts})" fill="#061018"><rect x="-4" y="-40" width="8" height="40"/><ellipse cx="0" cy="-70" rx="34" ry="44"/><ellipse cx="-16" cy="-52" rx="22" ry="24"/><ellipse cx="18" cy="-56" rx="22" ry="26"/></g>`;
   return svg(defs, body);
 }
-// Registon tunda: yulduzlar miltillaydi, oy atrofida yog'du, gumbazlar koshinida oy nuri yaltiraydi, peshtoq ravoqlarida
-// chiroq yonib-so'nadi, ba'zan uchar yulduz
+function smCloud(cx, cy, s, op) {
+  return `<g transform="translate(${cx} ${cy}) scale(${s})" fill="#9fb8cc" opacity="${op}"><ellipse cx="0" cy="0" rx="110" ry="13"/><ellipse cx="36" cy="-9" rx="64" ry="11"/><ellipse cx="-56" cy="5" rx="70" ry="8"/></g>`;
+}
 function samarqandFx() {
   const r = rng(113);
   const css = TWCSS
-    + '$.moon{transform-origin:1335px 200px;animation:~mo 7s ease-in-out infinite alternate}@keyframes ~mo{from{opacity:.4;transform:scale(.95)}to{opacity:1;transform:scale(1.06)}}'
-    + '$.dm{animation:~dm var(--d) ease-in-out infinite alternate}@keyframes ~dm{from{opacity:0}to{opacity:.55}}'
+    + '$.moon{transform-origin:1335px 190px;animation:~mo 7s ease-in-out infinite alternate}@keyframes ~mo{from{opacity:.4;transform:scale(.95)}to{opacity:1;transform:scale(1.06)}}'
+    + '$.dm{animation:~dm var(--d) ease-in-out infinite alternate}@keyframes ~dm{from{opacity:0}to{opacity:.6}}'
+    + '$.wl{opacity:0;animation:~wl var(--d) ease-in-out infinite}@keyframes ~wl{0%,100%{opacity:0}20%,70%{opacity:.95}45%{opacity:.7}}'
+    + '$.cl{animation:~cl var(--d) linear infinite}@keyframes ~cl{from{transform:translateX(-600px)}to{transform:translateX(2200px)}}'
+    + '$.bd{animation:~bd var(--d) linear infinite}@keyframes ~bd{0%{transform:translate(1800px,60px)}100%{transform:translate(-300px,-40px)}}'
+    + '$.wg{transform-box:fill-box;transform-origin:center;animation:~wg .45s ease-in-out infinite alternate}@keyframes ~wg{from{transform:scaleY(1)}to{transform:scaleY(-.6)}}'
     + '$.met{opacity:0;animation:~met var(--d) linear infinite}@keyframes ~met{0%{opacity:0;transform:translate(0,0)}3%{opacity:1}12%{opacity:0;transform:translate(-520px,300px)}100%{opacity:0;transform:translate(-520px,300px)}}';
-  let b = `<circle class="moon" cx="1335" cy="200" r="190" fill="url(#mg)"/>` + twinkles(r, 70, ['#fff', '#fff', '#ffe8a3'], 0, 560, 0.8, 1.7);
-  for (const [x, rr, d] of [[600, 70, 6], [1000, 70, 8]]) b += `<path ${anim('dm', d, d / 2)} d="M${x - rr * 0.55} ${1000 - 380 - 10} a${rr * 0.5} ${rr * 0.95} 0 0 1 ${rr * 0.5} ${-rr * 0.95}" stroke="#d4fbff" stroke-width="7" stroke-linecap="round" fill="none"/>`;
-  for (const [cx, w, h, d] of [[330, 340, 330, 9], [800, 400, 380, 11], [1270, 340, 330, 10]]) b += `<path ${anim('dm', d, d / 3)} d="M${cx - w * 0.16} 1000 V${f(1000 - h * 0.66)} Q${cx} ${f(1000 - h * 0.86)} ${cx + w * 0.16} ${f(1000 - h * 0.66)} V1000z" fill="url(#lamp)"/>`;
+  let b = `<circle class="moon" cx="1335" cy="190" r="200" fill="url(#mg)"/>` + twinkles(r, 80, ['#fff', '#fff', '#ffe8a3'], 0, 560, 0.8, 1.7);
+  // bulutlar oy oldidan o'tadi
+  [[215, 1, 0.5, 120, 30], [300, 1.3, 0.32, 160, 100], [140, 0.8, 0.4, 140, 70]].forEach(([y, s, op, d, del]) => { b += `<g ${anim('cl', d, del)}>${smCloud(0, y, s, op)}</g>`; });
+  // gumbazlarda oy nuri
+  for (const [cx, base, rr] of SM_DOMES) b += `<path ${anim('dm', 5 + r() * 4, r() * 6)} d="M${f(cx + rr * 0.2)} ${f(base - 20)} Q${f(cx + rr * 0.55)} ${f(base - 14 - rr * 0.8)} ${f(cx + rr * 0.12)} ${f(base - 14 - rr * 1.25)}" stroke="#d4fbff" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  // derazalarda chiroq (har uchinchisi)
+  smWindows().forEach(([wx, wy], i) => { if (i % 3 === 0 || r() < 0.15) b += `<path ${anim('wl', 6 + r() * 10, r() * 16)} d="${smArch(wx + 3, wy + 4, 12, 24)}" fill="#ffc861"/>`; });
+  // peshtoq tokchalarida yumshoq yorug'
+  for (const bld of SM_BUILD) b += `<ellipse ${anim('dm', 8 + r() * 4, r() * 6)} cx="${bld.cx}" cy="${SM_GROUND - 40}" rx="${bld.pw * 0.28}" ry="60" fill="url(#lamp)"/>`;
+  // qushlar
+  const bird = (x, y) => `<g transform="translate(${x} ${y})"><path class="wg" d="M0 0 q5 -4 10 0 q5 -4 10 0" stroke="#02070d" stroke-width="2" fill="none" stroke-linecap="round"/></g>`;
+  b += `<g ${anim('bd', 52, 15)}>` + [[0, 0], [22, -10], [-20, -12], [44, -18]].map(([x, y]) => bird(x, 420 + y)).join('') + '</g>';
+  b += `<g ${anim('bd', 70, 50)}>` + [[0, 0], [18, -9], [-18, -8]].map(([x, y]) => bird(x, 340 + y)).join('') + '</g>';
   const met = (x, y, d, delay) => `<g class="met" style="--d:${d}s;animation-delay:${delay}s"><path d="M${x} ${y} l130 -75" stroke="url(#mt)" stroke-width="2.4" stroke-linecap="round"/><circle cx="${x}" cy="${y}" r="2.4" fill="#fff"/></g>`;
   b += met(1150, 90, 17, 4) + met(700, 60, 23, 13);
-  const defs = rad('mg', [[0, '#ffe8a3', 0.35], [1, '#ffe8a3', 0]]) + rad('lamp', [[0, '#ffd27a', 0.35], [1, '#ffd27a', 0]], 0.5, 0.85, 0.7)
+  const defs = rad('mg', [[0, '#ffe8a3', 0.32], [1, '#ffe8a3', 0]]) + rad('lamp', [[0, '#ffd27a', 0.4], [1, '#ffd27a', 0]], 0.5, 0.85, 0.7)
     + '<linearGradient id="mt" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#9fe7ff" stop-opacity="0"/></linearGradient>';
   return fxSvg('sm', css, b, defs);
 }
@@ -535,7 +730,7 @@ function origamiFx() {
 
 const BACKGROUNDS = { karvon, classic, clear, atlas, rishton, wood, royal, neon, geo, cute, pixel, tanga, samarqand, origami, kosmos };
 // Harakatli fon fayllari (bgfx.js): <id>-fx — harakatli qatlam (har to'plamda); <id>-base — harakatlanuvchi narsalarsiz asos
-const BASES = { karvon: () => karvon(false), rishton: () => rishton(false), neon: () => neon(false), cute: () => cute(false), pixel: () => pixel(false), origami: () => origami(false), kosmos: kosmosBase };
+const BASES = { karvon: () => karvon(false), royal: () => royal(false), samarqand: () => samarqand(false), rishton: () => rishton(false), neon: () => neon(false), cute: () => cute(false), pixel: () => pixel(false), origami: () => origami(false), kosmos: kosmosBase };
 const FXS = { karvon: karvonFx, classic: classicFx, clear: clearFx, atlas: atlasFx, rishton: rishtonFx, wood: woodFx, royal: royalFx, neon: neonFx, geo: geoFx, cute: cuteFx, pixel: pixelFx, tanga: tangaFx, samarqand: samarqandFx, origami: origamiFx, kosmos: kosmosFx };
 const EXTRAS = {};
 for (const id of Object.keys(BACKGROUNDS)) { if (BASES[id]) EXTRAS[id + '-base'] = BASES[id]; EXTRAS[id + '-fx'] = FXS[id]; }

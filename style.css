@@ -15191,6 +15191,8 @@ html[data-bg="kosmos"] { --bg-img: url(img/backgrounds/kosmos.svg); }
 /* ===== 🌌 Harakatli fon (bgfx.js): .main-wrapper ustida, kontent ostida ===== */
 /* Harakatlanuvchi narsalar (tuyalar, laganlar, to'r, bulutlar, turnalar, sayyoralar) qatlamda — fon ularsiz asosga almashadi */
 html.bg-motion[data-bg="karvon"] { --bg-img: url(img/backgrounds/karvon-base.svg); }
+html.bg-motion[data-bg="royal"] { --bg-img: url(img/backgrounds/royal-base.svg); }
+html.bg-motion[data-bg="samarqand"] { --bg-img: url(img/backgrounds/samarqand-base.svg); }
 html.bg-motion[data-bg="rishton"] { --bg-img: url(img/backgrounds/rishton-base.svg); }
 html.bg-motion[data-bg="neon"] { --bg-img: url(img/backgrounds/neon-base.svg); }
 html.bg-motion[data-bg="cute"] { --bg-img: url(img/backgrounds/cute-base.svg); }

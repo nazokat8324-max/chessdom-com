@@ -1920,9 +1920,14 @@ test("Boshqa to'plamlar ham jonli: Karvon — tuyalar qatlamda yuradi, fon tuyas
   // Boshqa to'plam (Origami) — turnalar qatlami, asos turnasiz
   await p.evaluate(() => window.applyBackground('origami'));
   await p.waitForFunction(() => !!document.querySelector('#bgFx .fly') && !document.querySelector('#bgFx .cv') && /origami-base\.svg/.test(getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
-  // Asos kerak bo'lmagan to'plam (Samarqand) — fon o'sha rasm, ustida jilo qatlami
+  // Asos kerak bo'lmagan to'plam (Tanga) — fon o'sha rasm, ustida uchqunlar qatlami; Samarqand — bulutsiz asos
+  await p.evaluate(() => window.applyBackground('tanga'));
+  await p.waitForFunction(() => !!document.querySelector('#bgFx .sp') && /tanga\.svg/.test(getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
+  // Samarqand (2026-11-24, jonliroq): bulutsiz asos, derazalarda chiroq; Shohona: chiroqlarsiz asos, 5 ta tebranuvchi chiroq
   await p.evaluate(() => window.applyBackground('samarqand'));
-  await p.waitForFunction(() => !!document.querySelector('#bgFx .moon') && /samarqand\.svg/.test(getComputedStyle(document.documentElement.classList.contains('fx-stage') ? document.getElementById('fxStage') : document.querySelector('.main-wrapper')).backgroundImage), { timeout: 8000 });
+  await p.waitForFunction(() => !!document.querySelector('#bgFx .moon') && !!document.querySelector('#bgFx .wl') && /samarqand-base\.svg/.test(getComputedStyle(document.getElementById('fxStage')).backgroundImage), { timeout: 8000 });
+  await p.evaluate(() => window.applyBackground('royal'));
+  await p.waitForFunction(() => document.querySelectorAll('#bgFx .sw').length === 5 && /royal-base\.svg/.test(getComputedStyle(document.getElementById('fxStage')).backgroundImage), { timeout: 8000 });
   assert.deepEqual(p.errors, []);
 });
 

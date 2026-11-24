@@ -1674,6 +1674,20 @@ test("2 ga 2: stol ro'yxati, o'rinda o'tirish, o'z navbatida sudrab yurish, jamo
   assert.deepEqual(p.errors, []);
 });
 
+// ⚽ Futbol (bir qurilmada): avval 1-jamoa, keyin 2-jamoa tarkibi — «Tayyor»
+async function fcLocalReady(p) {
+  for (const side of ['w', 'b']) {
+    await p.waitForSelector(`#fcLineup[data-mode="edit-${side}"] [data-lu-ready]`, { timeout: 8000 });
+    await p.evaluate((sd) => document.querySelector(`#fcLineup[data-mode="edit-${sd}"] [data-lu-ready]`).click(), side);
+  }
+  await p.waitForFunction(() => !document.getElementById('fcLineup') && document.querySelectorAll('#fcPitch .fc-pc').length === 14, { timeout: 8000 });
+}
+// Onlayn: sahifadagi o'yinchi o'z tarkibini tasdiqlaydi
+async function fcOnlineReady(p) {
+  await p.waitForSelector('#fcLineup [data-lu-ready]', { timeout: 10000 });
+  await p.evaluate(() => document.querySelector('#fcLineup [data-lu-ready]').click());
+}
+
 test("Shaxmat-futbol: menyu bandi, bir qurilmada 2 kishi (tanlash, zarba nishonlari, navbat), bayroq va mehmon formasi", opts, async () => {
   const u = await srv.register('FcLocal');
   const p = await page(u);
@@ -1683,8 +1697,9 @@ test("Shaxmat-futbol: menyu bandi, bir qurilmada 2 kishi (tanlash, zarba nishonl
   await p.waitForSelector('[data-fc-local]', { timeout: 10000 });
   assert.equal(await p.evaluate(() => location.pathname), '/futbol');
   assert.ok(await p.evaluate(() => document.getElementById('navFoot').classList.contains('active')));
+  assert.equal(await p.evaluate(() => document.querySelector('#navFoot [data-i18n]').textContent.trim()), 'Futbol');
   await p.evaluate(() => document.querySelector('[data-fc-local]').click());
-  await p.waitForSelector('#fcPitch .fc-pc', { timeout: 8000 });
+  await fcLocalReady(p);
   assert.equal(await p.evaluate(() => location.pathname + location.search), '/futbol?m=local');
   assert.equal(await p.$$eval('#fcPitch .fc-pc', (l) => l.length), 14);
   // Oq piyoda (to'p unda) → zarba nishonlari: oldinga (5,3) va raqib piyodasi (6,3) — ushlab qolish
@@ -1697,11 +1712,67 @@ test("Shaxmat-futbol: menyu bandi, bir qurilmada 2 kishi (tanlash, zarba nishonl
   assert.match(await p.$eval('#fcTicker', (e) => e.textContent), /tepdi/);
   // Ikkala jamoa bir davlat — ikkinchisi mehmon formasida; davlatsiz — oddiy forma
   await p.select('#fcSelW', 'uz');
+  await fcLocalReady(p);
   await p.select('#fcSelB', 'uz');
+  await fcLocalReady(p);
   await p.waitForFunction(() => document.querySelectorAll('#fcPitch .kit-away').length === 7 && document.querySelectorAll('#fcPitch .kit-flag').length === 7, { timeout: 4000 });
   assert.match(await p.$eval('#fcPitch .kit-flag img', (e) => e.src), /flagcdn\.com\/w80\/uz\.png/);
   await p.select('#fcSelB', '');
+  await fcLocalReady(p);
   await p.waitForFunction(() => document.querySelectorAll('#fcPitch .kit-plain.kit-b').length === 7, { timeout: 4000 });
+  assert.deepEqual(p.errors, []);
+});
+
+test("Futbol: tarkib tanlash (zaxiradan o'rin almashtirish), o'yinda almashtirish (navbat o'rniga, 3 tagacha), bayroqli tribunalar, stadion ovozi tugmasi", opts, async () => {
+  const u = await srv.register('FcSquad');
+  const p = await page(u);
+  await p.evaluateOnNewDocument(() => { if (!sessionStorage.getItem('fcSet')) { sessionStorage.setItem('fcSet', '1'); localStorage.setItem('justChessFootLocal', JSON.stringify({ w: 'uz', b: 'kz' })); } });
+  await p.goto(srv.base + '/futbol?m=local', { waitUntil: 'load' });
+  // 1-jamoa tarkibi: shoh darvozabon, 6 o'rin, zaxirada 9 dona
+  await p.waitForSelector('#fcLineup[data-mode="edit-w"]', { timeout: 15000 });
+  assert.equal(await p.$$eval('#fcLineup [data-lu-slot]', (l) => l.length), 6);
+  assert.equal(await p.$$eval('#fcLineup [data-lu-pick]', (l) => l.length), 9);
+  assert.ok(await p.$('#fcLineup .fc-lu-slot.gk'));
+  // Ruxning o'rniga (1-o'rin) zaxiradagi piyoda
+  await p.evaluate(() => document.querySelector('#fcLineup [data-lu-slot="0"]').click());
+  await p.waitForSelector('#fcLineup [data-lu-slot="0"].sel');
+  await p.evaluate(() => document.querySelector('#fcLineup [data-lu-pick="P1"]').click());
+  await p.waitForFunction(() => !document.querySelector('#fcLineup [data-lu-pick="P1"]') && document.querySelector('#fcLineup [data-lu-pick="R1"]'), { timeout: 3000 });
+  await p.evaluate(() => document.querySelector('#fcLineup [data-lu-ready]').click());
+  await p.waitForSelector('#fcLineup[data-mode="edit-b"] [data-lu-ready]', { timeout: 3000 });
+  await p.evaluate(() => document.querySelector('#fcLineup [data-lu-ready]').click());
+  await p.waitForFunction(() => document.querySelectorAll('#fcPitch .fc-pc').length === 14, { timeout: 5000 });
+  const titles = await p.$$eval('#fcPitch .fc-pc', (l) => l.map((e) => e.title));
+  assert.equal(titles.filter((t) => /^Piyoda — O'zbekiston/.test(t)).length, 2, "tarkibdagi ikkinchi piyoda maydonda");
+  assert.equal(titles.filter((t) => /^Rux — O'zbekiston/.test(t)).length, 0);
+  assert.deepEqual(JSON.parse(await p.evaluate(() => localStorage.getItem('justChessFootLocal'))).lu.w, ['P1', 'F1', 'FZ', 'O1', 'O2', 'P3'], "tarkib eslab qolinadi");
+  // Tribunalar: ikkala jamoa muxlislari o'z bayrog'i bilan
+  assert.ok(await p.$$eval('#fcStadium .fc-sec[data-side="w"] .fan', (l) => l.length) > 20);
+  assert.match(await p.$eval('#fcStadium .fc-sec[data-side="w"] .fl', (e) => e.getAttribute('style')), /flagcdn\.com\/w80\/uz\.png/);
+  assert.match(await p.$eval('#fcStadium .fc-sec[data-side="b"] .fl', (e) => e.getAttribute('style')), /flagcdn\.com\/w80\/kz\.png/);
+  // Zaxira: 9 tadan; ot (3,1) tanlansa — oqning zaxirasi faollashadi
+  assert.equal(await p.$$eval('#fcBench .fc-brow.side-w [data-sub-in]', (l) => l.length), 9);
+  assert.equal(await p.$$eval('#fcBench .fc-bc.can', (l) => l.length), 0);
+  await p.evaluate(() => document.querySelector('.fc-cell[data-x="3"][data-y="1"]').click());
+  await p.waitForFunction(() => document.querySelectorAll('#fcBench .fc-brow.side-w .fc-bc.can').length === 9 && !document.querySelector('#fcBench .fc-brow.side-b .fc-bc.can'), { timeout: 3000 });
+  assert.match(await p.$eval('#fcTicker', (e) => e.textContent), /zaxira/i);
+  await p.evaluate(() => document.querySelector('#fcBench .fc-brow.side-w [data-sub-in="R1"]').click());
+  await p.waitForFunction(() => /o'rniga/.test(document.getElementById('fcTicker').textContent) && /Kazax|Qozo/.test(document.getElementById('fcTurn').textContent), { timeout: 3000 });
+  assert.match(await p.$eval('#fcBench .fc-brow.side-w .fc-subs', (e) => e.textContent), /1\/3/);
+  assert.equal(await p.$$eval('#fcBench .fc-brow.side-w .fc-bc.out', (l) => l.length), 1);
+  assert.equal(await p.$$eval('#fcBench .fc-brow.side-w [data-sub-in]', (l) => l.length), 8);
+  assert.equal((await p.$$eval('#fcPitch .fc-pc', (l) => l.map((e) => e.title))).filter((t) => /^Rux — O'zbekiston/.test(t)).length, 1, "ot o'rniga rux kirdi");
+  // Stadion ovozi tugmasi: o'chiriladi va sozlamaga yoziladi
+  assert.equal(await p.$eval('[data-fc-crowd]', (e) => e.getAttribute('aria-pressed')), 'true');
+  await p.evaluate(() => document.querySelector('[data-fc-crowd]').click());
+  assert.equal(await p.$eval('[data-fc-crowd]', (e) => e.getAttribute('aria-pressed')), 'false');
+  assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('justChessSettings')).footCrowd), false);
+  // Telefonda (tik): tribunada faqat bitta jamoa — tepada raqib, pastda o'zimiz
+  await p.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+  await sleep(300);
+  const vis = await p.evaluate(() => ['top', 'bottom'].map((k) => [...document.querySelectorAll('#fcStadium .fc-stand.' + k + ' .fc-sec')].filter((e) => getComputedStyle(e).display !== 'none').map((e) => e.dataset.side).join()));
+  assert.deepEqual(vis, ['b', 'w']);
+  assert.ok(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "telefonda ekrandan chiqmaydi");
   assert.deepEqual(p.errors, []);
 });
 
@@ -1709,7 +1780,7 @@ test("Shaxmat-futbol penaltilar: bir qurilmada 100 yurish durrang → penaltilar
   const u = await srv.register('FcPens');
   const p = await page(u);
   await p.goto(srv.base + '/futbol?m=local', { waitUntil: 'load' });
-  await p.waitForSelector('#fcPitch .fc-pc', { timeout: 15000 });
+  await fcLocalReady(p);
   // Ikkala tomon otini u yoq-bu yoqqa yuradi: 100 yurish, gol yo'q
   await p.evaluate(() => {
     const click = (x, y) => document.querySelector(`.fc-cell[data-x="${x}"][data-y="${y}"]`).click();
@@ -1756,6 +1827,8 @@ test("Shaxmat-futbol onlayn penaltilar: durrangdan keyin panel, o'z rolim (tepuv
   await p.goto(srv.base + '/futbol', { waitUntil: 'load' });
   await p.waitForSelector(`#fcWaiting [data-fc-open="${c.code}"]`, { timeout: 15000 });
   await p.evaluate((code) => document.querySelector(`#fcWaiting [data-fc-open="${code}"]`).click(), c.code);
+  await fcOnlineReady(p);
+  assert.equal((await em(hs, 'fc-lineup', { code: c.code, lineup: ['R1', 'F1', 'FZ', 'O1', 'O2', 'P3'] })).ok, true);
   await p.waitForFunction(() => document.querySelectorAll('#fcPitch .fc-pc').length === 14, { timeout: 10000 });
   for (let i = 0; i < 50 && !(last && last.status === 'active'); i++) await sleep(100);
   const meColor = last.players.w.username === me.name ? 'w' : 'b';
@@ -1795,6 +1868,10 @@ test("Shaxmat-futbol onlayn: ochiq stolga qo'shilish, bosib yurish serverga bora
   await p.goto(srv.base + '/futbol', { waitUntil: 'load' });
   await p.waitForSelector(`#fcWaiting [data-fc-open="${c.code}"]`, { timeout: 15000 });
   await p.evaluate((code) => document.querySelector(`#fcWaiting [data-fc-open="${code}"]`).click(), c.code);
+  // Tarkib bosqichi: raqib (host) tayyor — sahifada «raqib kutilmoqda» emas, o'z tarkibim; men tayyor bo'lgach o'yin boshlanadi
+  await p.waitForSelector('#fcLineup [data-lu-ready]', { timeout: 10000 });
+  assert.equal((await em(hs, 'fc-lineup', { code: c.code, lineup: ['R1', 'F1', 'FZ', 'O1', 'O2', 'P3'] })).ok, true);
+  await fcOnlineReady(p);
   await p.waitForFunction((code) => location.search === '?t=' + code && document.querySelectorAll('#fcPitch .fc-pc').length === 14, { timeout: 10000 }, c.code);
   for (let i = 0; i < 50 && !(last && last.status === 'active'); i++) await sleep(100);
   const meWhite = last.players.w.username === me.name;

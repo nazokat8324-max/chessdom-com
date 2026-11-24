@@ -83,7 +83,7 @@ app.use((req, res, next) => {
 });
 // SEO: index.html sarlavha/tavsif/OpenGraph bilan (profil havolasi ?profile=ism — o'yinchi ma'lumoti bilan)
 const INDEX_HTML = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
-const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library', jamoa: '2 vs 2 consultation chess', futbol: 'Chess-football', profil: 'Player profile', admin: 'Admin' };
+const PAGE_TITLES = { '': 'ChessCaravan — Play chess online', oyin: 'Play', reyting: 'Leaderboard', jonli: 'Live games', xabarlar: 'Messages', klublar: 'Country clubs', ligalar: 'Leagues', chempionlar: 'Champions League', sozlamalar: 'Settings', tarix: 'Game history', bayroqlar: 'Battle of Flags', choyxona: 'Teahouse', karvon: 'Caravan Road', kutubxona: 'Chess library', jamoa: '2 vs 2 consultation chess', futbol: 'Football — chess pieces on the pitch', profil: 'Player profile', admin: 'Admin' };
 const DEFAULT_DESC = 'ChessCaravan — free online chess: rated games, Chess960, the Teahouse lobby, country clubs and leagues, post-game analysis.';
 // C4 (2026-11-02): har bo'limga o'z tavsifi (avval hammasida bir xil edi)
 const PAGE_DESC = {
@@ -98,7 +98,7 @@ const PAGE_DESC = {
   karvon: 'The Caravan Road: every game moves your camel along the Silk Road — from Xi’an to Samarkand and Istanbul.',
   kutubxona: 'Chess library: guides for beginners, famous games with analysis, classic public-domain chess books and a museum of chess history.',
   jamoa: 'Consultation chess: two against two on one board, with a private team chat.',
-  futbol: 'Chess-football: pieces move like in chess but nobody is captured — pass the ball and score in the opponent goal. Play online or two players on one device.'
+  futbol: 'Football with chess pieces: a squad of all 16 pieces, pick your line-up, make substitutions, pass the ball and score in front of flag-waving fans. Play online or two players on one device.'
 };
 // Kirishni talab qiladigan yoki shaxsiy bo'limlar qidiruvga kiritilmaydi
 const NOINDEX = new Set(['xabarlar', 'sozlamalar', 'admin', 'profil']);

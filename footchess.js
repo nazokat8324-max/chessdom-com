@@ -1,15 +1,31 @@
 // ⚽ Shaxmat-futbol — qoidalar (2026-11-07; foydalanuvchining shaxmat_futbol.html prototipidan aynan ko'chirilgan, AI siz).
 // UMD: server (footchess-server.js — har yurish shu yerda tekshiriladi) va brauzer (window.FootChess — sahifa va bir qurilmada o'yin).
 // Maydon 11×7 (x 0..10, y 0..6); darvozalar x = -1 (oq himoya qiladi, qora shu yerga uradi) va x = 11 (oq uradi), y 1..5.
-// Har jamoada 7 dona; donalar shaxmatdagidek yuradi, faqat bo'sh kataklarga, hech kim yeyilmaydi. 3 gol yoki 100 yurish.
+// Donalar shaxmatdagidek yuradi, faqat bo'sh kataklarga, hech kim yeyilmaydi. 3 gol yoki 100 yurish.
+// 2026-11-24 (foydalanuvchi tanlovi; nomi endi «Futbol»): jamoada shaxmatdagi 16 dona (SQUAD: 8 piyoda, 2 rux, 2 ot, 2 fil, farzin, shoh);
+// maydonda 7 ta — shoh darvozabon + o'yindan oldin tanlangan 6 ta (tarkib `lu`, SLOTS tartibida; 6-o'rin markaz — boshlovchi to'pni oladi),
+// qolgan 9 tasi zaxirada. O'z navbatida yurish o'rniga almashtirish (t: 'sub', MAX_SUBS = 3): shoh va to'pli dona almashtirilmaydi,
+// chiqqan dona qaytmaydi (`out`). Goldan keyin jamoa joriy tarkibi bilan joylashadi.
 (function (root, factory) {
   if (typeof module === 'object' && module.exports) module.exports = factory();
   else root.FootChess = factory();
 })(typeof self !== 'undefined' ? self : this, function () {
-  const W = 11, H = 7, GOALS = 3, MAXM = 100;
+  const W = 11, H = 7, GOALS = 3, MAXM = 100, MAX_SUBS = 3;
   // Boshlang'ich joylashuv (oq uchun; qora — x ko'zgu): SH shoh (darvozabon), R1 ruh, F1 fil, FZ farzin, O1/O2 otlar, P3 piyoda
   const KS = { SH: [0, 3], R1: [1, 1], F1: [2, 5], FZ: [2, 3], O1: [3, 1], O2: [3, 5], P3: [4, 3] };
-  const KIND = { SH: 'k', R1: 'r', R2: 'r', P1: 'p', P2: 'p', P3: 'p', F1: 'b', F2: 'b', FZ: 'q', O1: 'n', O2: 'n' };
+  const KIND = { SH: 'k', FZ: 'q', R1: 'r', R2: 'r', F1: 'b', F2: 'b', O1: 'n', O2: 'n', P1: 'p', P2: 'p', P3: 'p', P4: 'p', P5: 'p', P6: 'p', P7: 'p', P8: 'p' };
+  const SQUAD = Object.keys(KIND);
+  const GK = [0, 3];
+  const SLOTS = [[1, 1], [2, 5], [2, 3], [3, 1], [3, 5], [4, 3]];
+  const DEFAULT_LINEUP = ['R1', 'F1', 'FZ', 'O1', 'O2', 'P3'];
+  // Tarkib: 6 ta har xil maydon o'yinchisi (shohsiz) — noto'g'ri bo'lsa null
+  function validLineup(lu) {
+    if (!Array.isArray(lu) || lu.length !== 6) return null;
+    const ids = lu.map((v) => String(v));
+    if (new Set(ids).size !== 6 || ids.some((id) => id === 'SH' || !KIND[id])) return null;
+    return ids;
+  }
+  const bench = (st, side) => (st.lu ? SQUAD.filter((id) => id !== 'SH' && !st.lu[side].includes(id) && !st.out[side].includes(id)) : []);
   const ORTH = [[1, 0], [-1, 0], [0, 1], [0, -1]], DIAG = [[1, 1], [1, -1], [-1, 1], [-1, -1]], ALL = ORTH.concat(DIAG);
   const LS = [[1, 2], [2, 1], [-1, 2], [-2, 1], [1, -2], [2, -1], [-1, -2], [-2, -1]];
 
@@ -21,13 +37,30 @@
   // Darvoza katagi: x = 11 — oq gol uradi ('w'), x = -1 — qora ('b')
   const goalAt = (x, y) => ((y >= 1 && y <= 5) ? (x === 11 ? 'w' : x === -1 ? 'b' : null) : null);
 
-  function formation(kick, score, moves) {
+  // prev — oldingi holat (tarkib, chiqqanlar, almashtirishlar soni saqlanadi) yoki { lu: { w, b } } — o'yin boshidagi tarkiblar
+  function formation(kick, score, moves, prev) {
+    const lu = { w: (prev && prev.lu && validLineup(prev.lu.w)) || DEFAULT_LINEUP.slice(), b: (prev && prev.lu && validLineup(prev.lu.b)) || DEFAULT_LINEUP.slice() };
     const pcs = [];
-    for (const s of ['w', 'b']) for (const k in KS) { const [x, y] = KS[k]; pcs.push({ id: s + k, side: s, kind: KIND[k], x: s === 'w' ? x : 10 - x, y }); }
-    const h = pcs.find((p) => p.id === kick + 'P3');
-    return { pcs, ball: { h: h.id, x: h.x, y: h.y }, turn: kick, score: score || { w: 0, b: 0 }, moves: moves || 0 };
+    for (const s of ['w', 'b']) {
+      const place = (k, [x, y]) => pcs.push({ id: s + k, side: s, kind: KIND[k], x: s === 'w' ? x : 10 - x, y });
+      place('SH', GK);
+      lu[s].forEach((k, i) => place(k, SLOTS[i]));
+    }
+    const h = pcs.find((p) => p.id === kick + lu[kick][5]);
+    return { pcs, ball: { h: h.id, x: h.x, y: h.y }, turn: kick, score: score || { w: 0, b: 0 }, moves: moves || 0,
+      lu, out: { w: ((prev && prev.out && prev.out.w) || []).slice(), b: ((prev && prev.out && prev.out.b) || []).slice() },
+      subs: { w: (prev && prev.subs && prev.subs.w) || 0, b: (prev && prev.subs && prev.subs.b) || 0 } };
   }
-  function clone(st) { return { pcs: st.pcs.map((p) => ({ ...p })), ball: { ...st.ball }, turn: st.turn, score: { ...st.score }, moves: st.moves, lock: st.lock }; }
+  function clone(st) {
+    return { pcs: st.pcs.map((p) => ({ ...p })), ball: { ...st.ball }, turn: st.turn, score: { ...st.score }, moves: st.moves, lock: st.lock,
+      ...(st.lu ? { lu: { w: st.lu.w.slice(), b: st.lu.b.slice() }, out: { w: st.out.w.slice(), b: st.out.b.slice() }, subs: { ...st.subs } } : {}) };
+  }
+  // Almashtirish: maydondagi dona (shoh va to'pli emas) ↔ zaxiradagi; x, y — chiqayotgan dona joyi
+  function subs(st, p) {
+    const s = p.side, key = p.id.slice(1);
+    if (!st.lu || key === 'SH' || st.ball.h === p.id || st.subs[s] >= MAX_SUBS || !st.lu[s].includes(key)) return [];
+    return bench(st, s).map((inn) => ({ t: 'sub', id: p.id, in: inn, x: p.x, y: p.y }));
+  }
 
   // Yurishlar: sirpanuvchi donalar bo'sh to'p katagida to'xtaydi (undan o'tib ketmaydi); piyoda oldinga yoki qiya oldinga 1 katak
   function moves(st, p) {
@@ -92,13 +125,19 @@
   }
   function actions(st, side) {
     const out = [];
-    for (const p of st.pcs) if (p.side === side) { out.push(...moves(st, p)); if (st.ball.h === p.id) out.push(...kicks(st, p)); const t = tackle(st, p); if (t) out.push(t); }
+    for (const p of st.pcs) if (p.side === side) { out.push(...moves(st, p)); if (st.ball.h === p.id) out.push(...kicks(st, p)); const t = tackle(st, p); if (t) out.push(t); out.push(...subs(st, p)); }
     return out;
   }
 
   function apply(st0, a) {
     const st = clone(st0); const p = byId(st, a.id); const ev = { a, p: { ...p } };
-    if (a.t === 'move') {
+    if (a.t === 'sub') {
+      const s = p.side, key = p.id.slice(1), i = st.lu[s].indexOf(key);
+      st.lu[s][i] = a.in; st.out[s].push(key); st.subs[s]++;
+      const q = { id: s + a.in, side: s, kind: KIND[a.in], x: p.x, y: p.y };
+      st.pcs[st.pcs.indexOf(p)] = q;
+      ev.sub = { out: { ...p }, in: { ...q } };
+    } else if (a.t === 'move') {
       p.x = a.x; p.y = a.y;
       if (st.ball.h === p.id) { st.ball.x = p.x; st.ball.y = p.y; }
       else if (st.ball.h === null && st.ball.x === p.x && st.ball.y === p.y) { st.ball.h = p.id; ev.pick = true; }
@@ -116,6 +155,7 @@
   function findAction(st, a) {
     if (!a || typeof a !== 'object') return null;
     const t = String(a.t || ''), id = String(a.id || ''), x = a.x, y = a.y;
+    if (t === 'sub') { const inn = String(a.in || ''); return actions(st, st.turn).find((c) => c.t === 'sub' && c.id === id && c.in === inn) || null; }
     if (!['move', 'kick', 'tackle'].includes(t) || !Number.isInteger(x) || !Number.isInteger(y)) return null;
     return actions(st, st.turn).find((c) => c.t === t && c.id === id && c.x === x && c.y === y) || null;
   }
@@ -128,7 +168,7 @@
     if (r.ev.goal) {
       const sc = r.ev.goal;
       if (r.st.score[sc] >= GOALS) return { st: r.st, ev: r.ev, over: true, winner: winnerOf(r.st) };
-      return { st: formation(other(sc), r.st.score, r.st.moves), ev: r.ev, over: false, kickoff: other(sc) };
+      return { st: formation(other(sc), r.st.score, r.st.moves, r.st), ev: r.ev, over: false, kickoff: other(sc) };
     }
     if (r.st.moves >= MAXM) return { st: r.st, ev: r.ev, over: true, winner: winnerOf(r.st) };
     return { st: r.st, ev: r.ev, over: false };
@@ -164,6 +204,6 @@
     return null;
   }
 
-  return { W, H, GOALS, MAXM, KS, KIND, other, inB, goalAt, at, byId, formation, clone, moves, kicks, attacks, tackle, actions, apply, findAction, step, winnerOf,
+  return { W, H, GOALS, MAXM, MAX_SUBS, KS, KIND, SQUAD, GK, SLOTS, DEFAULT_LINEUP, validLineup, bench, subs, other, inB, goalAt, at, byId, formation, clone, moves, kicks, attacks, tackle, actions, apply, findAction, step, winnerOf,
     PENS, PEN_MAX, penStart, penKicker, penTally, penKick, penWinner };
 });

@@ -1,7 +1,9 @@
-// ⚽ Shaxmat-futbol — onlayn o'yin (server-faqat, PRIVATE_FILES). Qoidalar footchess.js da — har bir harakat shu yerda tekshiriladi
+// ⚽ Futbol (2026-11-24 gacha «Shaxmat-futbol») — onlayn o'yin (server-faqat, PRIVATE_FILES). Qoidalar footchess.js da — har bir harakat shu yerda tekshiriladi
 // (findAction + step: navbat, qonuniylik, gol, hisob — mijoz natijani soxtalashtira olmaydi). 2 ga 2 kabi: xotirada, reytingsiz,
 // statistika/tarix/klub ochkosiga yozilmaydi, deploydan keyin tiklanmaydi. Stol: /futbol?t=KOD, socket xonasi fc_<kod>.
 // Navbat vaqti MOVE_MS (60 s): tugasa navbat raqibga o'tadi, ketma-ket 3 marta — texnik mag'lubiyat. Uzilish — AWAY_MS (60 s) ichida qaytmasa mag'lubiyat.
+// Tarkib bosqichi (2026-11-24): qo'shilgandan (va revanshdan) keyin status 'lineup' — har o'yinchi `fc-lineup {code, lineup: [6 id]}`
+// yuboradi (LINEUP_MS ichida; yubormasa — standart tarkib), ikkalasi tayyor bo'lgach o'yin boshlanadi. Tarkiblar o'yin boshlanguncha sir.
 // server.js: init(deps) → { attach(socket), socketGone(socket), inFootGame, leaveWaiting }.
 const F = require('./footchess');
 
@@ -9,6 +11,7 @@ const MOVE_MS = Number(process.env.FOOT_MOVE_MS) || 60 * 1000;
 // Penalti: har zarbada tepuvchi va darvozabon tanlashi uchun vaqt; tanlamagan tomon ketma-ket 3 marta — mag'lubiyat
 const PEN_MS = Number(process.env.FOOT_PEN_MS) || 20 * 1000;
 const AWAY_MS = Number(process.env.FOOT_AWAY_MS) || 60 * 1000;
+const LINEUP_MS = Number(process.env.FOOT_LINEUP_MS) || 45 * 1000;
 const WAIT_TTL_MS = Number(process.env.FOOT_WAIT_TTL_MS) || 30 * 60 * 1000;
 const OVER_TTL_MS = 10 * 60 * 1000;
 const MAX_TIMEOUTS = 3;
@@ -33,7 +36,8 @@ function publicState(t) {
   return {
     code: t.code, status: t.status, seq: t.seq, players: { w: pub(t.players.w), b: pub(t.players.b) }, away: sameCountry(t),
     st: t.st, ev: t.ev, kickoff: t.kickoff || null, timeouts: { ...t.timeouts }, result: t.result,
-    moveLeft: t.status === 'active' ? Math.max(0, (t.turnMs || MOVE_MS) - (Date.now() - t.turnAt)) : null, moveMs: t.turnMs || MOVE_MS,
+    moveLeft: t.status === 'active' || t.status === 'lineup' ? Math.max(0, (t.turnMs || MOVE_MS) - (Date.now() - t.turnAt)) : null, moveMs: t.turnMs || MOVE_MS,
+    lineupReady: t.status === 'lineup' ? { w: !!t.lineups.w, b: !!t.lineups.b } : null,
     // Penaltilar: tanlovlar sir — faqat «tanlandimi» belgisi; natija zarba hal bo'lgach kicks da
     pen: t.pen ? { first: t.pen.first, kicks: t.pen.kicks, kicker: F.penKicker(t.pen), chosen: { aim: t.penPick.aim !== null, dive: t.penPick.dive !== null } } : null,
     rematch: t.status === 'over' ? [...t.rematch].map((uid) => colorOf(t, uid)).filter(Boolean) : []
@@ -42,7 +46,8 @@ function publicState(t) {
 function broadcast(t) { t.seq++; io.to('fc_' + t.code).emit('fc-state', publicState(t)); }
 
 function end(t, winner, reason) {
-  if (t.status !== 'active') return;
+  if (t.status !== 'active' && t.status !== 'lineup') return;
+  if (!t.st) t.st = F.formation('w'); // tarkib bosqichida tugadi
   t.status = 'over';
   clearTimeout(t.timer);
   t.result = { winner, reason };
@@ -101,12 +106,31 @@ function onTimeout(t) {
   schedule(t);
   broadcast(t);
 }
+// Qo'shilish / revansh: ranglar tasodifiy, avval tarkib tanlanadi
 function start(t) {
-  // Ranglar tasodifiy; oq markazdan boshlaydi
   if (Math.random() < 0.5) [t.players.w, t.players.b] = [t.players.b, t.players.w];
-  t.status = 'active';
+  clearTimeout(t.timer);
+  t.status = 'lineup';
   t.gameNo++;
-  t.st = F.formation('w');
+  t.st = null;
+  t.ev = null;
+  t.kickoff = null;
+  t.result = null;
+  t.pen = null;
+  t.lineups = { w: null, b: null };
+  t.rematch = new Set();
+  for (const c of ['w', 'b']) if (deps.onStart) deps.onStart(t.players[c].userId);
+  t.turnAt = Date.now();
+  t.turnMs = LINEUP_MS;
+  const ref = t.gameNo;
+  t.timer = setTimeout(() => { if (t.status === 'lineup' && t.gameNo === ref) kickoff(t); }, LINEUP_MS + 50);
+  broadcast(t);
+}
+// Ikkala tarkib tayyor (yoki vaqt tugadi) — oq markazdan boshlaydi
+function kickoff(t) {
+  if (t.status !== 'lineup') return;
+  t.status = 'active';
+  t.st = F.formation('w', null, 0, { lu: { w: t.lineups.w, b: t.lineups.b } });
   t.ev = null;
   t.kickoff = 'w';
   t.timeouts = { w: 0, b: 0 };
@@ -114,7 +138,6 @@ function start(t) {
   t.pen = null;
   t.penPick = { aim: null, dive: null };
   t.rematch = new Set();
-  for (const c of ['w', 'b']) if (deps.onStart) deps.onStart(t.players[c].userId);
   schedule(t);
   broadcast(t);
 }
@@ -127,7 +150,7 @@ function leaveWaiting(userId, exceptCode) {
   }
 }
 function inFootGame(userId) {
-  for (const t of tables.values()) if (t.status === 'active' && colorOf(t, userId)) return true;
+  for (const t of tables.values()) if ((t.status === 'active' || t.status === 'lineup') && colorOf(t, userId)) return true;
   return false;
 }
 // deps.inActiveGame oddiy, 2 ga 2 va futbol o'yinlarini sanaydi (server.js)
@@ -152,7 +175,7 @@ function attach(socket) {
     const me = await playerOf(socket);
     if (busy(uid())) return reply(ack, { ok: false, reason: 'busy' });
     leaveWaiting(uid());
-    const t = { code: newCode(), createdAt: Date.now(), status: 'waiting', players: { w: me, b: null }, st: null, ev: null, timeouts: { w: 0, b: 0 },
+    const t = { code: newCode(), createdAt: Date.now(), status: 'waiting', players: { w: me, b: null }, st: null, ev: null, timeouts: { w: 0, b: 0 }, lineups: { w: null, b: null },
       result: null, timer: null, turnAt: 0, seq: 0, gameNo: 0, rematch: new Set() };
     tables.set(t.code, t);
     socket.join('fc_' + t.code);
@@ -239,10 +262,24 @@ function attach(socket) {
     broadcast(t);
   });
 
+  // Tarkib: 6 ta har xil maydon o'yinchisi (shoh — darvozabon, avtomatik); bir marta, ikkalasi tayyor bo'lsa — o'yin boshlanadi
+  socket.on('fc-lineup', (data, ack) => {
+    const t = tables.get(codeOf(data));
+    const color = t && uid() ? colorOf(t, uid()) : null;
+    if (!color || t.status !== 'lineup') return reply(ack, { ok: false, reason: 'not_active' });
+    if (t.lineups[color]) return reply(ack, { ok: false, reason: 'already' });
+    const lu = F.validLineup(data && data.lineup);
+    if (!lu) return reply(ack, { ok: false, reason: 'invalid_lineup' });
+    t.lineups[color] = lu;
+    reply(ack, { ok: true });
+    if (t.lineups.w && t.lineups.b) return kickoff(t);
+    broadcast(t);
+  });
+
   socket.on('fc-resign', (data, ack) => {
     const t = tables.get(codeOf(data));
     const color = t && uid() ? colorOf(t, uid()) : null;
-    if (!color || t.status !== 'active') return reply(ack, { ok: false });
+    if (!color || (t.status !== 'active' && t.status !== 'lineup')) return reply(ack, { ok: false });
     end(t, F.other(color), 'resign');
     reply(ack, { ok: true });
   });
@@ -271,9 +308,9 @@ function socketGone(socket) {
       if (!color) continue;
       if (t.status === 'waiting') { tables.delete(t.code); continue; }
       broadcast(t);
-      if (t.status !== 'active') continue;
+      if (t.status !== 'active' && t.status !== 'lineup') continue;
       const ref = t.gameNo;
-      setTimeout(() => { if (t.status === 'active' && t.gameNo === ref && !online(id)) end(t, F.other(color), 'abandon'); }, AWAY_MS);
+      setTimeout(() => { if ((t.status === 'active' || t.status === 'lineup') && t.gameNo === ref && !online(id)) end(t, F.other(color), 'abandon'); }, AWAY_MS);
     }
   }, 100);
 }
@@ -289,4 +326,4 @@ function init(d) {
   return { attach, socketGone, tables, inFootGame, leaveWaiting };
 }
 
-module.exports = { init, MOVE_MS };
+module.exports = { init, MOVE_MS, LINEUP_MS };

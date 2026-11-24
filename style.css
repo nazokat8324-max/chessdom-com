@@ -15084,6 +15084,92 @@ html.landscape-phone .fc-pitch-wrap { max-width: calc((100dvh - 16px) * 13 / 7);
   .fc-kit { width: 86%; height: 86%; }
 }
 
+/* ===== ⚽ Futbol: stadion, bayroqli muxlislar, tarkib tanlash, zaxira (2026-11-24, foydalanuvchi tanlovi) ===== */
+.fc-crowd-btn { font-size: 18px; width: 42px; height: 38px; border-radius: 10px; background: var(--cd-surface); border: 1px solid var(--cd-border-strong); color: var(--cd-text); cursor: pointer; padding: 0; display: inline-flex; align-items: center; justify-content: center; touch-action: manipulation; }
+.fc-crowd-btn[aria-pressed="false"] { opacity: 0.7; }
+.fc-stadium { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 6px 8px; border-radius: 16px; min-width: 0;
+  background: radial-gradient(90% 50% at 12% -8%, rgba(255,255,220,0.18), transparent 60%), radial-gradient(90% 50% at 88% -8%, rgba(255,255,220,0.18), transparent 60%),
+    linear-gradient(180deg, #13212b, #0b151b 45%, #13212b); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06); }
+.fc-stadium .fc-pitch-wrap { max-width: calc((100dvh - 210px) * 13 / 7); }
+.fc-stand { display: flex; gap: 8px; height: 44px; overflow: hidden; border-radius: 10px; flex: none;
+  background: repeating-linear-gradient(180deg, #223440 0 10px, #172630 10px 14px); box-shadow: inset 0 -2px 0 rgba(0,0,0,0.35); }
+.fc-sec { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; }
+.fc-stand.top .fc-frow.back { order: -1; }
+.fc-stand.bottom .fc-sec { justify-content: flex-start; }
+.fc-stand.bottom .fc-frow.back { order: 1; }
+.fc-frow { display: flex; justify-content: space-around; align-items: flex-end; height: 22px; gap: 2px; padding: 0 4px; flex: none; }
+.fc-frow.back { height: 20px; opacity: 0.72; transform: scale(0.86); }
+.fan { position: relative; flex: none; width: 11px; height: 9px; border-radius: 6px 6px 2px 2px; background: var(--c); animation: fanBob var(--t) ease-in-out var(--d) infinite alternate; }
+.fan::before { content: ""; position: absolute; left: 50%; top: -7px; width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%; background: var(--s); }
+.fan .fl { position: absolute; left: 7px; bottom: 5px; width: 1.5px; height: 15px; background: #d9d2c3; transform-origin: 50% 100%; animation: fanWave var(--t) ease-in-out var(--d) infinite alternate; }
+.fan .fl::after { content: ""; position: absolute; left: 1.5px; top: 0; width: 13px; height: 9px; border-radius: 1px; background: var(--fl, #f4f6f6) center / cover no-repeat; box-shadow: 0 0 0 0.5px rgba(0,0,0,0.35); }
+.fan .fl.plain-w::after { background: #f4f6f6; }
+.fan .fl.plain-b::after { background: #1d2b2d; box-shadow: 0 0 0 1px #e8eef0; }
+@keyframes fanBob { to { transform: translateY(-2px); } }
+@keyframes fanWave { from { transform: rotate(-16deg); } to { transform: rotate(14deg); } }
+@keyframes fanJump { to { transform: translateY(-7px); } }
+#fcStadium.cheer-w .fc-sec[data-side="w"] .fan, #fcStadium.cheer-b .fc-sec[data-side="b"] .fan { animation: fanJump 0.3s ease-in-out var(--d) infinite alternate; }
+#fcStadium.cheer-w .fc-sec[data-side="w"] .fan .fl, #fcStadium.cheer-b .fc-sec[data-side="b"] .fan .fl { animation-duration: 0.35s; }
+@media (prefers-reduced-motion: reduce) { .fan, .fan .fl, #fcStadium .fan { animation: none !important; } }
+
+/* Zaxira va almashtirish */
+.fc-benches { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; }
+.fc-benches:empty { display: none; }
+.fc-brow { background: var(--cd-surface-2, rgba(255,255,255,0.03)); border: 1px solid var(--cd-border-strong); border-radius: 12px; padding: 6px 8px; min-width: 0; }
+.fc-brow.turn { border-color: rgba(245,197,66,0.65); }
+.fc-bhead { display: flex; align-items: center; gap: 6px; font-size: 13px; flex-wrap: wrap; min-width: 0; }
+.fc-subs { margin-left: auto; color: var(--cd-muted, #a9b6b0); font-size: 12px; white-space: nowrap; }
+.fc-bchips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.fc-bc { position: relative; width: 34px; height: 34px; padding: 0; margin: 0; border: 0; background: transparent; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  opacity: 0.6; cursor: default; box-shadow: none; transform: none; min-height: 0; min-width: 0; flex: none; }
+.fc-bc:hover { background: transparent; transform: none; box-shadow: none; }
+.fc-bc.can { opacity: 1; cursor: pointer; outline: 2px dashed #f5c542; outline-offset: 1px; touch-action: manipulation; }
+.fc-bc.out { opacity: 0.35; filter: grayscale(1); }
+.fc-bc.out::after { content: "✕"; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #ff6b6b; font-weight: 800; font-size: 20px; }
+.fc-lu-pc { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.fc-lu-pc .fc-kit { width: 100%; height: 100%; border-width: 2px; box-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+.fc-lu-pc .fc-pimg { width: 66%; height: 66%; }
+
+/* Tarkib tanlash oynasi */
+.fc-overlay.fc-lineup { justify-content: flex-start; background: rgba(4,14,13,0.92); }
+.fc-lu { width: min(100%, 520px); display: flex; flex-direction: column; gap: 8px; align-items: center; margin: auto 0; }
+.fc-lu h3 { margin: 0; display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap; font-size: clamp(15px, 2.6cqw, 21px); color: #f5c542; }
+.fc-overlay .fc-lu > .fc-muted { font-size: 12px; font-weight: 500; max-width: 440px; }
+.fc-lu-pitch { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: repeat(5, minmax(0, 1fr)); gap: 4px; width: min(100%, 330px); aspect-ratio: 7 / 5; padding: 8px 8px 14px; box-sizing: border-box;
+  border-radius: 10px; background: repeating-linear-gradient(0deg, #2f8a41 0 20%, #2a7d3a 20% 40%); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.75); }
+.fc-lu-slot { position: relative; padding: 0; margin: 0; border: 0; background: transparent; border-radius: 50%; cursor: pointer; aspect-ratio: 1; min-width: 0; min-height: 0;
+  box-shadow: none; transform: none; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
+.fc-lu-slot:hover { background: transparent; transform: none; box-shadow: none; }
+.fc-lu-slot.sel { outline: 3px solid #f5c542; outline-offset: 1px; }
+.fc-lu-slot.can { outline: 2px dashed #f5c542; outline-offset: 1px; }
+.fc-lu-slot.gk { cursor: default; }
+.fc-lu-slot.gk small { position: absolute; bottom: -13px; left: 50%; transform: translateX(-50%); font-size: 9px; white-space: nowrap; color: #fff; font-weight: 700; }
+.fc-lu-ball { position: absolute; right: -6%; bottom: -6%; width: 34%; height: 34%; border-radius: 50%; border: 1.5px solid #111; background: #fff radial-gradient(circle, #111 0 28%, transparent 30%); }
+.fc-lu-bench { width: 100%; display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.fc-lu-bench > b { font-size: 12px; color: #c9dcd8; }
+.fc-lu-bchips { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+.fc-lu-b { width: 36px; height: 36px; padding: 0; margin: 0; border: 0; background: transparent; border-radius: 50%; cursor: pointer; box-shadow: none; transform: none; min-width: 0; min-height: 0; touch-action: manipulation; }
+.fc-lu-b:hover { background: transparent; transform: none; box-shadow: none; }
+.fc-lu-b.sel { outline: 3px solid #f5c542; outline-offset: 1px; }
+@media (max-width: 600px) {
+  .fc-benches { grid-template-columns: minmax(0, 1fr); }
+  .fc-bc { width: 30px; height: 30px; }
+  .fc-lu-b { width: 32px; height: 32px; }
+  .fc-stadium { padding: 4px; gap: 4px; }
+  .fc-stand { height: 34px; }
+  .fc-frow { height: 17px; }
+  .fc-frow.back { height: 15px; }
+}
+/* Telefon (tik): maydon burilgan — tepada tepadagi darvoza egasining, pastda o'z muxlislari */
+@media (max-width: 600px) and (orientation: portrait) {
+  .fc-stadium .fc-pitch-wrap { width: min(100%, calc(58dvh * 7 / 13)); max-width: none; }
+  #fcStadium[data-top="b"] .fc-stand.top .fc-sec[data-side="w"], #fcStadium[data-top="b"] .fc-stand.bottom .fc-sec[data-side="b"],
+  #fcStadium[data-top="w"] .fc-stand.top .fc-sec[data-side="b"], #fcStadium[data-top="w"] .fc-stand.bottom .fc-sec[data-side="w"] { display: none; }
+}
+html.landscape-phone .fc-stadium .fc-pitch-wrap { max-width: calc((100dvh - 70px) * 13 / 7); }
+html.landscape-phone .fc-stand { height: 22px; }
+html.landscape-phone .fc-frow.back { display: none; }
+
 /* ===== 💬 Xabarlar — yon menyu pastida, profil kartasi yonida (kompyuter; 2026-11-07, foydalanuvchi so'rovi) ===== */
 .sb-user-row { display: flex; align-items: stretch; gap: 8px; min-width: 0; }
 .sb-user-row .user-mini-profile { flex: 1 1 auto; min-width: 0; }

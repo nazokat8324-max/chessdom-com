@@ -1,4 +1,5 @@
-// ⚽ Shaxmat-futbol sahifasi (2026-11-07; foydalanuvchining prototipidan): /futbol — lobbi (onlayn stol ochish, ochiq stollar,
+// ⚽ Futbol sahifasi (2026-11-07 «Shaxmat-futbol» nomi bilan; 2026-11-24 — «Futbol», 16 donali jamoa, tarkib tanlash, almashtirish,
+// bayroqli muxlislar tribunasi va stadion ovozi; foydalanuvchining prototipidan): /futbol — lobbi (onlayn stol ochish, ochiq stollar,
 // jonli o'yinlar, qoidalar), /futbol?t=KOD — onlayn stol (har harakat serverda tekshiriladi: footchess-server.js, fc-* hodisalar),
 // /futbol?m=local — bir qurilmada 2 kishi (serverga hech narsa ketmaydi). Qoidalar — footchess.js (window.FootChess).
 // Donalar: o'yinchi davlati bayrog'i ustida saytdagi dona to'plami rasmi; bir davlat — ikkinchi jamoa mehmon formasida;
@@ -18,7 +19,7 @@
 
   // mode: null (lobbi) | 'online' | 'local'
   const st = { mode: null, code: null, state: null, myColor: null, receivedAt: 0, sel: null, kmode: 'kick', busy: false, pending: false, tick: null,
-    local: null, localCfg: { w: null, b: null }, lastSeq: -1, overlayShown: null };
+    local: null, localCfg: { w: null, b: null }, lastSeq: -1, overlayShown: null, lu: null, lphase: null, luSent: false, standKey: '' };
   const setPlaying = (on) => { const v = document.getElementById('footView'); if (v) v.classList.toggle('fc-playing', !!on); };
 
   // ---------- Jamoalar va forma ----------
@@ -63,6 +64,7 @@
   function describe(ev, tm) {
     if (!ev || !ev.a) return '';
     const p = ev.p, team = tm[p.side].name, piece = pieceName(p.kind);
+    if (ev.sub) return T('fcEvSub', "{{team}}: {{out}} o'rniga {{in}} maydonga tushdi.", { team, out: pieceName(ev.sub.out.kind), in: pieceName(ev.sub.in.kind) });
     if (ev.goal) return ev.own ? T('fcEvOwn', "O'z darvozasiga gol! {{team}}: {{piece}} xato qildi.", { team, piece }) : T('fcEvGoal', 'GOL! {{team}}: {{piece}} zarba berdi!', { team, piece });
     if (ev.tackle) return T('fcEvTackle', "{{team}}: {{piece}} to'pni tortib oldi!", { team, piece });
     if (ev.a.t === 'kick') {
@@ -82,7 +84,7 @@
     setPlaying(false);
     el.innerHTML = `<section class="fc-hero">
         <span class="tea-kicker">⚽ ${esc(T('teaKicker', 'Faqat ChessCaravan da'))}</span>
-        <h1>${esc(T('fcTitle', 'Shaxmat-futbol'))}</h1>
+        <h1>${esc(T('fcTitle', 'Futbol'))}</h1>
         <p>${esc(T('fcLead', "Donalar shaxmatdagi kabi yuradi, lekin hech kimni yemaydi: to'pni oling, pas bering va raqib darvozasiga gol uring. 3 ta gol urgan jamoa yutadi."))}</p>
         <div class="fc-actions">
           <button type="button" class="fc-btn" data-fc-create>🌐 ${esc(T('fcNewOnline', 'Onlayn stol ochish'))}</button>
@@ -145,6 +147,7 @@
         ${li('fcRule4', "Zarba berilgan to'p o'z donalaringiz ustidan o'tib ketadi; pas berish uchun to'pni sherigingiz katagiga yo'naltiring. Yo'lda turgan birinchi raqib donasi to'pni ushlab qoladi.")}
         ${li('fcRule5', "Raqibning to'pli donasini shaxmatdagi kabi «ura olsangiz», to'pni tortib olasiz. Donalar joyida qoladi. To'pni yo'qotgan dona keyingi navbatda uni darhol qaytarib ololmaydi.")}
         ${li('fcRule6', "Darvoza — maydon chetidagi 5 ta katak. Har jamoada 7 ta dona. 3 ta gol yoki 100 ta yurishdan keyin o'yin tugaydi.")}
+        ${li('fcRule9', "Jamoada shaxmatdagi 16 dona: 8 piyoda, 2 rux, 2 ot, 2 fil, farzin va shoh. O'yindan oldin maydonga 7 tasini tanlaysiz (shoh — darvozabon), qolganlari zaxirada. O'z navbatingizda yurish o'rniga almashtirish mumkin — o'yinda 3 marta; shoh va to'pli dona almashtirilmaydi, chiqqan dona qaytib kirmaydi.")}
         ${li('fcRule8', "Durrang bo'lsa — penaltilar: tepuvchi va darvozabon darvozaning 5 katagidan birini yashirincha tanlaydi; bir xil katak — qaytarildi. 5 tadan, teng bo'lsa — bittadan.")}
         ${li('fcRule7', "Onlayn o'yinda har navbatga 60 soniya: vaqt tugasa navbat raqibga o'tadi, ketma-ket 3 marta tugasa — mag'lubiyat. Natija reytingga yozilmaydi.")}
       </ol></section>
@@ -168,8 +171,9 @@
       .map((c) => ({ code: String(c.code).toLowerCase(), name: countryLabel(String(c.code).toLowerCase()) || c.name }))
       .sort((a, b) => a.name.localeCompare(b.name)).map((c) => `<option value="${esc(c.code)}"${c.code === sel ? ' selected' : ''}>${esc(c.name)}</option>`).join('');
     el.innerHTML = `<div class="fc-game">
-      <header class="fc-head"><h1 class="sr-only">${esc(T('fcTitle', 'Shaxmat-futbol'))}</h1>
-        <button type="button" class="ps-back" data-fc-back>← ${esc(T('fcTitle', 'Shaxmat-futbol'))}</button>
+      <header class="fc-head"><h1 class="sr-only">${esc(T('fcTitle', 'Futbol'))}</h1>
+        <button type="button" class="ps-back" data-fc-back>← ${esc(T('fcTitle', 'Futbol'))}</button>
+        <button type="button" class="fc-crowd-btn" data-fc-crowd></button>
         ${local ? `<div class="fc-pick">
           <label>${esc(T('fcTeam1', '1-jamoa'))}<select id="fcSelW" aria-label="${esc(T('fcTeam1', '1-jamoa'))}">${opts(st.localCfg.w)}</select></label>
           <label>${esc(T('fcTeam2', '2-jamoa'))}<select id="fcSelB" aria-label="${esc(T('fcTeam2', '2-jamoa'))}">${opts(st.localCfg.b)}</select></label>
@@ -179,10 +183,15 @@
       <div class="fc-card">
         <div class="fc-scorebar"><div class="fc-team" id="fcTW"></div><div class="fc-score" id="fcScore">0 : 0</div><div class="fc-team r" id="fcTB"></div></div>
         <div class="fc-meta"><span id="fcTurn"></span><span id="fcClock"></span><span id="fcMoves"></span></div>
-        <div class="fc-pitch-wrap" id="fcWrap"><div class="fc-pitch" id="fcPitch">
-          <div class="fc-net l"></div><div class="fc-net r"></div>
-          <div class="fc-field"><div class="fc-mark mid"></div><div class="fc-mark circle"></div><div class="fc-mark box l"></div><div class="fc-mark box r"></div></div>
-        </div></div>
+        <div class="fc-stadium" id="fcStadium">
+          <div class="fc-stand top" aria-hidden="true"></div>
+          <div class="fc-pitch-wrap" id="fcWrap"><div class="fc-pitch" id="fcPitch">
+            <div class="fc-net l"></div><div class="fc-net r"></div>
+            <div class="fc-field"><div class="fc-mark mid"></div><div class="fc-mark circle"></div><div class="fc-mark box l"></div><div class="fc-mark box r"></div></div>
+          </div></div>
+          <div class="fc-stand bottom" aria-hidden="true"></div>
+        </div>
+        <div class="fc-benches" id="fcBench"></div>
         <div class="fc-kickbar" id="fcKickbar" hidden><span>${esc(T('fcBallYours', "To'p sizda:"))}</span>
           <button type="button" data-km="kick">⚽ ${esc(T('fcKickMode', 'Zarba / pas'))}</button>
           <button type="button" data-km="move">${esc(T('fcMoveMode', "To'p bilan yurish"))}</button></div>
@@ -205,6 +214,18 @@
     pitch.insertAdjacentHTML('beforeend', cells + '<div class="fc-ball" id="fcBall"></div>');
     pitch.addEventListener('click', (e) => { const c = e.target.closest('.fc-cell'); if (c) clickCell(Number(c.dataset.x), Number(c.dataset.y)); });
     el.querySelector('[data-fc-back]').onclick = () => window.openFootChess(null);
+    el.querySelector('[data-fc-crowd]').onclick = toggleCrowd;
+    refreshCrowdBtn();
+    // Zaxiradan almashtirish: maydondagi dona tanlangan bo'lsa, zaxiradagi dona bosiladi
+    document.getElementById('fcBench').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-sub-in]');
+      const s = S();
+      if (!b || b.disabled || !s || !st.sel || !myTurn()) return;
+      const a = F.subs(s, F.byId(s, st.sel)).find((x) => x.in === b.dataset.subIn);
+      if (a) act(a);
+    });
+    // Brauzer ovozni faqat bosishdan keyin ruxsat beradi
+    el.addEventListener('pointerdown', () => { if (crowdPref()) crowdStart(); });
     el.querySelectorAll('[data-km]').forEach((b) => b.onclick = () => { st.kmode = b.dataset.km; render(); });
     if (local) {
       const pick = () => { st.localCfg.w = document.getElementById('fcSelW').value || null; st.localCfg.b = document.getElementById('fcSelB').value || null; saveLocalCfg(); startLocal(); };
@@ -223,10 +244,19 @@
     // Kutish holati (onlayn stol hali to'lmagan)
     if (st.mode === 'online' && st.state && st.state.status === 'waiting') renderWaiting();
     else { const w = document.getElementById('fcWaitBox'); if (w) w.remove(); }
-    if (!s) return;
-    setPlaying(st.mode === 'online' ? st.state.status === 'active' && !!st.myColor : true);
-    // Telefonda maydon tik holatda: o'z darvozangiz pastda (qora o'yinchi uchun teskari)
+    // Telefonda maydon tik holatda: o'z darvozangiz pastda (qora o'yinchi uchun teskari); tribunalar ham shunga mos
     pitch.classList.toggle('fc-flip', st.myColor === 'b');
+    renderStands(tm);
+    const lineup = renderLineupPhase();
+    if (lineup) setPlaying(st.mode === 'local' || !!st.myColor);
+    const ballEl = document.getElementById('fcBall');
+    if (ballEl) ballEl.hidden = !s;
+    if (!s) {
+      // Tarkib tanlanmoqda — maydon bo'sh (oldingi o'yin donalari olib tashlanadi)
+      for (const id of Object.keys(st.pieceEls || {})) { st.pieceEls[id].remove(); delete st.pieceEls[id]; }
+      renderBench(null, tm); tickClock(); renderHeadActions(); return;
+    }
+    setPlaying(st.mode === 'online' ? st.state.status === 'active' && !!st.myColor : true);
     // Donalar
     const seen = new Set();
     for (const p of s.pcs) {
@@ -243,6 +273,7 @@
       e.classList.toggle('sel', st.sel === p.id);
       e.classList.toggle('side-b', p.side === 'b');
     }
+    renderBench(s, tm);
     for (const id of Object.keys(st.pieceEls)) if (!seen.has(id)) { st.pieceEls[id].remove(); delete st.pieceEls[id]; }
     const h = s.ball.h && F.byId(s, s.ball.h);
     const bx = h ? h.x : s.ball.x, by = h ? h.y : s.ball.y;
@@ -278,17 +309,19 @@
   function tickClock() {
     const el = document.getElementById('fcClock');
     if (!el) return;
-    if (st.mode !== 'online' || !st.state || st.state.status !== 'active') { el.textContent = ''; return; }
+    if (st.mode !== 'online' || !st.state || (st.state.status !== 'active' && st.state.status !== 'lineup')) { el.textContent = ''; return; }
     const left = Math.max(0, st.state.moveLeft - (Date.now() - st.receivedAt));
     const sec = Math.ceil(left / 1000);
     el.textContent = '⏱ ' + sec + ' s';
     el.classList.toggle('warn', sec <= 10);
+    const lt = document.getElementById('fcLuTimer');
+    if (lt) lt.textContent = st.state.status === 'lineup' ? '⏱ ' + sec + ' s' : '';
   }
   function renderHeadActions() {
     const box = document.getElementById('fcHeadActions');
     if (!box || st.mode !== 'online' || !st.state) return;
     const s = st.state;
-    const want = s.status === 'active' && st.myColor ? 'resign' : s.status === 'waiting' && st.myColor ? 'wait' : '';
+    const want = (s.status === 'active' || s.status === 'lineup') && st.myColor ? 'resign' : s.status === 'waiting' && st.myColor ? 'wait' : '';
     if (box.dataset.want === want) return;
     box.dataset.want = want;
     box.innerHTML = want === 'resign' ? `<button type="button" class="fc-btn small ghost" data-fc-resign>🏳️ ${esc(T('fcResign', 'Taslim'))}</button>` : '';
@@ -325,6 +358,8 @@
   }
   const say = (t) => { const el = document.getElementById('fcTicker'); if (el) el.textContent = t; };
   function goalFlash(scorer, score, tm) {
+    cheer(scorer);
+    roar(1, 3.2);
     overlay(`<div class="fc-big pop">${esc(T('fcGoal', 'GOL!'))}</div><p>${esc(tm[scorer].name)} · ${score.w} : ${score.b}</p>`, 1700);
     if (typeof playSound === 'function') playSound('check');
     if (typeof window.haptic === 'function') window.haptic([30, 40, 30]);
@@ -352,6 +387,227 @@
     o.querySelector('[data-fc-lobby]').onclick = () => window.openFootChess(null);
   }
 
+  // ---------- 🧩 Tarkib tanlash (o'yindan oldin) ----------
+  // Bir qurilmada: avval 1-jamoa, keyin 2-jamoa (st.lphase); onlayn: status 'lineup' — har o'yinchi o'z tarkibini fc-lineup bilan yuboradi.
+  const LU_KEY = 'justChessFootLineup';
+  function savedLineup(side) {
+    if (st.mode === 'local') return (st.localCfg.lu && F.validLineup(st.localCfg.lu[side])) || F.DEFAULT_LINEUP.slice();
+    try { return F.validLineup(JSON.parse(localStorage.getItem(LU_KEY) || 'null')) || F.DEFAULT_LINEUP.slice(); } catch (e) { return F.DEFAULT_LINEUP.slice(); }
+  }
+  function lineupContext() {
+    if (st.mode === 'local') return st.lphase ? { side: st.lphase, edit: true } : null;
+    const s = st.state;
+    if (!s || s.status !== 'lineup') return null;
+    if (!st.myColor) return { watch: true };
+    if ((s.lineupReady && s.lineupReady[st.myColor]) || st.luSent) return { wait: true };
+    return { side: st.myColor, edit: true };
+  }
+  const luPiece = (tm, side, kind) => `<span class="fc-lu-pc">${kitHtml(tm[side], side)}<img class="fc-pimg" src="${esc(pieceSrc(side, kind))}" alt="" draggable="false"></span>`;
+  function renderLineupPhase() {
+    const wrap = document.getElementById('fcWrap');
+    if (!wrap) return false;
+    const ctx = lineupContext();
+    let el = document.getElementById('fcLineup');
+    if (!ctx) { if (el) el.remove(); st.lu = null; return false; }
+    const mode = ctx.edit ? 'edit-' + ctx.side : ctx.wait ? 'wait' : 'watch';
+    if (el && el.dataset.mode === mode) return true;
+    if (el) el.remove();
+    el = document.createElement('div');
+    el.id = 'fcLineup';
+    el.className = 'fc-overlay fc-lineup';
+    el.dataset.mode = mode;
+    wrap.appendChild(el);
+    if (ctx.edit) {
+      st.lu = { side: ctx.side, lu: savedLineup(ctx.side), sel: null, pick: null };
+      el.addEventListener('click', onLineupClick);
+      drawLineup(el);
+    } else {
+      el.innerHTML = `<div class="fc-big small">⏳</div><p>${esc(ctx.wait ? T('fcLineupWait', 'Tarkib yuborildi — raqib kutilmoqda…') : T('fcLineupWatch', 'Jamoalar tarkib tanlayapti…'))}</p><p class="fc-muted" id="fcLuTimer"></p>`;
+    }
+    return true;
+  }
+  function drawLineup(el) {
+    const L = st.lu, tm = teams(), side = L.side;
+    const kindOf = (id) => F.KIND[id];
+    const slots = F.SLOTS.map(([x, y], i) => {
+      const id = L.lu[i];
+      return `<button type="button" class="fc-lu-slot${L.sel === i ? ' sel' : ''}${L.pick ? ' can' : ''}" data-lu-slot="${i}" style="grid-column:${y + 1};grid-row:${5 - x}" title="${esc(pieceName(kindOf(id)))}" aria-label="${esc(pieceName(kindOf(id)))}">${luPiece(tm, side, kindOf(id))}${i === 5 ? '<span class="fc-lu-ball"></span>' : ''}</button>`;
+    }).join('');
+    const gk = `<div class="fc-lu-slot gk" style="grid-column:${F.GK[1] + 1};grid-row:5" title="${esc(T('fcGK', 'Darvozabon'))}">${luPiece(tm, side, 'k')}<small>${esc(T('fcGK', 'Darvozabon'))}</small></div>`;
+    const bench = F.SQUAD.filter((id) => id !== 'SH' && !L.lu.includes(id))
+      .map((id) => `<button type="button" class="fc-lu-b${L.pick === id ? ' sel' : ''}" data-lu-pick="${id}" title="${esc(pieceName(kindOf(id)))}" aria-label="${esc(T('fcBench', 'Zaxira') + ': ' + pieceName(kindOf(id)))}">${luPiece(tm, side, kindOf(id))}</button>`).join('');
+    const title = st.mode === 'local' ? T('fcLineupTeam', '{{team}}: tarkibni tanlang', { team: tm[side].name }) : T('fcLineupH', 'Tarkibni tanlang');
+    el.innerHTML = `<div class="fc-lu">
+      <h3>${teamFlag(tm[side], side)} ${esc(title)}</h3>
+      <p class="fc-muted">${esc(T('fcLineupHint', "O'rinni bosing, keyin zaxiradan donani tanlang. Shoh — doim darvozabon; markazdagi o'yinchi boshlashda to'pni oladi."))}</p>
+      <div class="fc-lu-pitch">${gk}${slots}</div>
+      <div class="fc-lu-bench"><b>${esc(T('fcBench', 'Zaxira'))}</b><div class="fc-lu-bchips">${bench}</div></div>
+      <div class="fc-row-btns"><button type="button" class="fc-btn small ghost" data-lu-reset>${esc(T('fcLineupDefault', 'Standart tarkib'))}</button>
+        <button type="button" class="fc-btn" data-lu-ready>✓ ${esc(T('fcReady', 'Tayyor'))}</button></div>
+      ${st.mode === 'online' ? '<p class="fc-muted" id="fcLuTimer"></p>' : ''}
+    </div>`;
+    tickClock();
+  }
+  function onLineupClick(e) {
+    const L = st.lu, el = document.getElementById('fcLineup');
+    if (!L || !el) return;
+    const slot = e.target.closest('[data-lu-slot]'), pick = e.target.closest('[data-lu-pick]');
+    if (slot) {
+      const i = Number(slot.dataset.luSlot);
+      if (L.pick) { L.lu[i] = L.pick; L.pick = null; L.sel = null; } else L.sel = L.sel === i ? null : i;
+    } else if (pick) {
+      const id = pick.dataset.luPick;
+      if (L.sel !== null) { L.lu[L.sel] = id; L.sel = null; L.pick = null; } else L.pick = L.pick === id ? null : id;
+    } else if (e.target.closest('[data-lu-reset]')) { L.lu = F.DEFAULT_LINEUP.slice(); L.sel = null; L.pick = null; }
+    else if (e.target.closest('[data-lu-ready]')) return submitLineup();
+    else return;
+    drawLineup(el);
+  }
+  async function submitLineup() {
+    const L = st.lu;
+    if (!L || !F.validLineup(L.lu)) return;
+    crowdStart();
+    if (st.mode === 'local') {
+      st.localCfg.lu = Object.assign({}, st.localCfg.lu || {}, { [L.side]: L.lu.slice() });
+      saveLocalCfg();
+      if (L.side === 'w') { st.lphase = 'b'; st.lu = null; render(); say(T('fcLineupTeam', '{{team}}: tarkibni tanlang', { team: teams().b.name })); return; }
+      return kickoffLocal();
+    }
+    try { localStorage.setItem(LU_KEY, JSON.stringify(L.lu)); } catch (e) { /* eslab qolish shart emas */ }
+    st.luSent = true;
+    render();
+    const r = await emit('fc-lineup', { code: st.code, lineup: L.lu });
+    if (!r || !r.ok) { st.luSent = false; if (!r || r.reason !== 'already') toast(T('fcRejected', "Bu harakatni qilib bo'lmaydi."), 'warning'); render(); }
+  }
+
+  // ---------- 🔁 Zaxira va almashtirish ----------
+  function renderBench(s, tm) {
+    const box = document.getElementById('fcBench');
+    if (!box) return;
+    if (!s || !s.lu) { box.innerHTML = ''; return; }
+    const selP = st.sel && F.byId(s, st.sel);
+    const canSide = selP && myTurn() && F.subs(s, selP).length ? selP.side : null;
+    const row = (side) => {
+      const chips = F.bench(s, side).map((id) => {
+        const on = canSide === side, nm = pieceName(F.KIND[id]);
+        return `<button type="button" class="fc-bc${on ? ' can' : ''}" data-sub-in="${id}" ${on ? '' : 'disabled'} title="${esc(nm)}" aria-label="${esc(T('fcBench', 'Zaxira') + ': ' + nm)}">${luPiece(tm, side, F.KIND[id])}</button>`;
+      }).join('');
+      const outs = s.out[side].map((id) => `<span class="fc-bc out" title="${esc(pieceName(F.KIND[id]))}">${luPiece(tm, side, F.KIND[id])}</span>`).join('');
+      return `<div class="fc-brow side-${side}${s.turn === side ? ' turn' : ''}">
+        <div class="fc-bhead">${teamFlag(tm[side], side)}<b>${esc(T('fcBench', 'Zaxira'))}</b><span class="fc-subs">🔁 ${esc(T('fcSubsLeft', 'Almashtirish: {{n}}/{{max}}', { n: s.subs[side], max: F.MAX_SUBS }))}</span></div>
+        <div class="fc-bchips">${chips}${outs}</div></div>`;
+    };
+    box.innerHTML = row('w') + row('b');
+  }
+
+  // ---------- 🏟️ Tribunalar: o'z bayrog'ini silkitayotgan muxlislar ----------
+  // Kompyuterda: tepada va pastda, chap yarmi — 1-jamoa (o'z darvozasi chapda), o'ng yarmi — 2-jamoa. Telefonda (tik, maydon burilgan):
+  // tepada — tepadagi darvoza egasi muxlislari, pastda — o'zinikilar (data-top).
+  const SHIRTS = ['#e8eef0', '#f5c542', '#ff6b6b', '#4dabf7', '#51cf66', '#cc5de8', '#ff922b', '#20c997', '#f06595', '#94d82d', '#ced4da', '#339af0'];
+  const SKINS = ['#f1c27d', '#e0ac69', '#c68642', '#8d5524', '#ffdbac', '#d4a373'];
+  function fansHtml(side, tm, n, seed) {
+    const fl = tm[side].country ? ` style="--fl:url('${esc(flagUrl(tm[side].country))}')"` : '';
+    let out = '';
+    for (let i = 0; i < n; i++) {
+      const k = (i * 7 + seed * 13) % 97;
+      const flag = k % 3 !== 0;
+      out += `<i class="fan" style="--c:${SHIRTS[k % SHIRTS.length]};--s:${SKINS[(k >> 1) % SKINS.length]};--d:-${((k % 17) / 10).toFixed(1)}s;--t:${(0.9 + (k % 7) / 10).toFixed(1)}s">${flag ? `<b class="fl${fl ? '' : ' plain-' + side}"${fl}></b>` : ''}</i>`;
+    }
+    return out;
+  }
+  function renderStands(tm) {
+    const stad = document.getElementById('fcStadium');
+    if (!stad) return;
+    stad.dataset.top = st.myColor === 'b' ? 'w' : 'b';
+    const key = [tm.w.country, tm.b.country, tm.w.kit, tm.b.kit].join('|');
+    if (st.standKey === key) return;
+    st.standKey = key;
+    const sec = (side, seed) => `<div class="fc-sec" data-side="${side}"><div class="fc-frow">${fansHtml(side, tm, 30, seed)}</div><div class="fc-frow back">${fansHtml(side, tm, 30, seed + 5)}</div></div>`;
+    stad.querySelector('.fc-stand.top').innerHTML = sec('w', 1) + sec('b', 2);
+    stad.querySelector('.fc-stand.bottom').innerHTML = sec('w', 3) + sec('b', 4);
+  }
+  function cheer(side) {
+    const stad = document.getElementById('fcStadium');
+    if (!stad || !side) return;
+    stad.classList.remove('cheer-w', 'cheer-b');
+    void stad.offsetWidth;
+    stad.classList.add('cheer-' + side);
+    clearTimeout(st.cheerT);
+    st.cheerT = setTimeout(() => stad.classList.remove('cheer-w', 'cheer-b'), 2600);
+  }
+
+  // ---------- 🔊 Stadion ovozi (Web Audio: shovqindan olomon g'uvillashi, golda — hayqiriq; fayl yuklanmaydi) ----------
+  const crowd = { ctx: null, amb: null, buf: null };
+  function crowdPref() {
+    try { const v = JSON.parse(localStorage.getItem('justChessSettings') || '{}') || {}; return v.footCrowd !== false && v.soundEnabled !== false; } catch (e) { return true; }
+  }
+  function noiseBuf(ctx) {
+    const len = ctx.sampleRate * 2, buf = ctx.createBuffer(1, len, ctx.sampleRate), d = buf.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) { const w = Math.random() * 2 - 1; last = (last + 0.02 * w) / 1.02; d[i] = last * 3.5; }
+    return buf;
+  }
+  function crowdStart() {
+    if (!crowdPref() || !st.mode) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!crowd.ctx) { crowd.ctx = new AC(); crowd.buf = noiseBuf(crowd.ctx); }
+      if (crowd.ctx.state === 'suspended') crowd.ctx.resume().catch(() => {});
+      if (crowd.amb) return;
+      const c = crowd.ctx, src = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain(), lfo = c.createOscillator(), lg = c.createGain();
+      src.buffer = crowd.buf; src.loop = true;
+      bp.type = 'bandpass'; bp.frequency.value = 520; bp.Q.value = 0.7;
+      g.gain.value = 0.05; lfo.frequency.value = 0.13; lg.gain.value = 0.022;
+      lfo.connect(lg).connect(g.gain);
+      src.connect(bp).connect(g).connect(c.destination);
+      src.start(); lfo.start();
+      crowd.amb = { src, lfo };
+    } catch (e) { /* ovozsiz davom etadi */ }
+  }
+  function crowdStop() {
+    if (crowd.amb) { try { crowd.amb.src.stop(); crowd.amb.lfo.stop(); } catch (e) { /* allaqachon to'xtagan */ } crowd.amb = null; }
+  }
+  function roar(level, dur) {
+    if (!crowd.amb || !crowd.ctx || !crowdPref()) return;
+    try {
+      const c = crowd.ctx, t = c.currentTime, src = c.createBufferSource(), bp = c.createBiquadFilter(), g = c.createGain();
+      src.buffer = crowd.buf; src.loop = true;
+      bp.type = 'bandpass'; bp.frequency.value = 950; bp.Q.value = 0.6;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.32 * level, t + 0.25);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      src.connect(bp).connect(g).connect(c.destination);
+      src.start(t); src.stop(t + dur + 0.1);
+    } catch (e) { /* ovozsiz */ }
+  }
+  // Olomon munosabati: tortib olish va ushlab qolish — «oh», almashtirish — qarsak
+  function crowdReact(ev) {
+    if (!ev || !ev.a) return;
+    if (ev.tackle || ev.intercept) roar(0.35, 1.1);
+    else if (ev.sub) roar(0.25, 1.4);
+    else if (ev.a.t === 'kick' && !ev.recv && !ev.goal) roar(0.2, 0.9);
+  }
+  function refreshCrowdBtn() {
+    const b = document.querySelector('[data-fc-crowd]');
+    if (!b) return;
+    const on = crowdPref();
+    b.textContent = on ? '🔊' : '🔇';
+    b.title = T('fcCrowd', 'Stadion ovozi');
+    b.setAttribute('aria-label', T('fcCrowd', 'Stadion ovozi'));
+    b.setAttribute('aria-pressed', String(on));
+  }
+  function toggleCrowd() {
+    let v = {};
+    try { v = JSON.parse(localStorage.getItem('justChessSettings') || '{}') || {}; } catch (e) { v = {}; }
+    v.footCrowd = !crowdPref() ? true : false;
+    if (v.footCrowd && v.soundEnabled === false) v.soundEnabled = true;
+    try { localStorage.setItem('justChessSettings', JSON.stringify(v)); } catch (e) { /* saqlanmasa ham */ }
+    if (typeof window.pushSettingsToServer === 'function') window.pushSettingsToServer();
+    if (v.footCrowd) crowdStart(); else crowdStop();
+    refreshCrowdBtn();
+  }
+
   // ---------- Bosish ----------
   async function clickCell(x, y) {
     const s = S();
@@ -363,7 +619,8 @@
       st.sel = st.sel === p.id ? null : p.id;
       st.kmode = 'kick';
       render();
-      if (st.sel) say(s.ball.h === p.id ? T('fcHolding', "{{piece}} to'pni ushlab turibdi: zarba berish yoki to'p bilan yurishni tanlang.", { piece: pieceName(p.kind) }) : T('fcSelected', '{{piece}} tanlandi.', { piece: pieceName(p.kind) }));
+      if (st.sel) say(s.ball.h === p.id ? T('fcHolding', "{{piece}} to'pni ushlab turibdi: zarba berish yoki to'p bilan yurishni tanlang.", { piece: pieceName(p.kind) })
+        : T('fcSelected', '{{piece}} tanlandi.', { piece: pieceName(p.kind) }) + (F.subs(s, p).length ? ' ' + T('fcSubHint', 'Yoki zaxiradagi donani bosib, uni almashtiring.') : ''));
       return;
     }
     if (st.sel) { st.sel = null; render(); }
@@ -373,14 +630,14 @@
     if (st.mode === 'local') return localStep(a);
     st.pending = true;
     render();
-    const r = await emit('fc-move', { code: st.code, t: a.t, id: a.id, x: a.x, y: a.y });
+    const r = await emit('fc-move', { code: st.code, t: a.t, id: a.id, x: a.x, y: a.y, in: a.in });
     st.pending = false;
     if (!r || !r.ok) { toast(T('fcRejected', "Bu harakatni qilib bo'lmaydi."), 'warning'); render(); }
   }
 
   // ---------- Bir qurilmada 2 kishi ----------
   function loadLocalCfg() {
-    try { const c = JSON.parse(localStorage.getItem('justChessFootLocal') || 'null'); if (c) return { w: c.w || null, b: c.b || null }; } catch (e) { /* bo'sh */ }
+    try { const c = JSON.parse(localStorage.getItem('justChessFootLocal') || 'null'); if (c) return { w: c.w || null, b: c.b || null, lu: c.lu || null }; } catch (e) { /* bo'sh */ }
     const mine = window.currentUser && window.currentUser.country && window.currentUser.country !== 'un' ? window.currentUser.country : null;
     return { w: mine, b: null };
   }
@@ -388,16 +645,27 @@
   function startLocal() {
     const pitch = document.getElementById('fcWrap');
     if (pitch) pitch.querySelectorAll('.fc-overlay').forEach((o) => o.remove());
-    st.local = F.formation('w');
+    st.local = null;
     st.localOver = false; st.busy = false; st.sel = null; st.lpen = null; st.reveal = null;
+    st.lphase = 'w'; st.lu = null;
     render();
-    say(T('fcKickoff', '{{team}} markazdan boshlaydi.', { team: teams().w.name }) + ' ' + T('fcSelectHint', "Piyodangiz to'pni ushlab turibdi — uni tanlang."));
+    say(T('fcLineupTeam', '{{team}}: tarkibni tanlang', { team: teams().w.name }));
+  }
+  function kickoffLocal() {
+    const lu = st.localCfg.lu || {};
+    st.lphase = null; st.lu = null;
+    st.local = F.formation('w', null, 0, { lu: { w: lu.w, b: lu.b } });
+    render();
+    crowdStart();
+    roar(0.45, 1.8);
+    say(T('fcKickoff', '{{team}} markazdan boshlaydi.', { team: teams().w.name }));
   }
   function localStep(a) {
     const tm = teams();
     const r = F.step(st.local, a);
     say(describe(r.ev, tm));
     playMoveSound(r.ev);
+    crowdReact(r.ev);
     if (r.ev.goal) {
       // Avval to'p darvozada, keyin markaz
       st.local = F.apply(st.local, a).st;
@@ -531,7 +799,16 @@
       st.myColor = s.players.w && s.players.w.username === me ? 'w' : s.players.b && s.players.b.username === me ? 'b' : null;
     }
     const tm = teams();
+    // Yangi tarkib bosqichi (qo'shilish yoki revansh): eski oynalar yopiladi
+    if (s.status === 'lineup' && (!prev || prev.status !== 'lineup')) {
+      const pitch = document.getElementById('fcWrap');
+      if (pitch) pitch.querySelectorAll('.fc-overlay').forEach((o) => o.remove());
+      st.luSent = false; st.overlayShown = null; st.sel = null;
+      st.pieceEls = st.pieceEls || {};
+      for (const id of Object.keys(st.pieceEls)) { st.pieceEls[id].remove(); delete st.pieceEls[id]; }
+    }
     const freshGame = prev && prev.status !== 'active' && s.status === 'active';
+    if (freshGame) { crowdStart(); roar(0.45, 1.8); }
     if (freshGame || (!prev && s.status === 'active')) {
       const pitch = document.getElementById('fcWrap');
       if (pitch) pitch.querySelectorAll('.fc-overlay').forEach((o) => o.remove());
@@ -546,7 +823,7 @@
     if (s.pen && prev && s.pen.kicks.length > prevKicks) showReveal(s.pen.kicks[s.pen.kicks.length - 1], s.pen, tm);
     else if (prev && s.seq !== prev.seq && s.ev && !s.pen) {
       if (s.ev.timeout) say(T('fcEvTimeout', "{{team}}: vaqt tugadi — navbat o'tdi.", { team: tm[s.ev.timeout].name }));
-      else if (s.ev.a) { say(describe(s.ev, tm)); playMoveSound(s.ev); if (s.ev.a && st.myColor && s.ev.p.side !== st.myColor && typeof window.haptic === 'function') window.haptic(15); }
+      else if (s.ev.a) { say(describe(s.ev, tm)); playMoveSound(s.ev); if (!s.ev.goal) crowdReact(s.ev); if (s.ev.a && st.myColor && s.ev.p.side !== st.myColor && typeof window.haptic === 'function') window.haptic(15); }
       if (s.ev.goal) goalFlash(s.ev.goal, s.st.score, tm);
       if (s.kickoff && s.status === 'active') setTimeout(() => say(T('fcKickoff', '{{team}} markazdan boshlaydi.', { team: tm[s.kickoff].name })), 1800);
     } else if ((!prev || freshGame) && s.status === 'active') say(T('fcKickoff', '{{team}} markazdan boshlaydi.', { team: tm[s.st.turn].name }));
@@ -558,6 +835,7 @@
         if (pitch) pitch.querySelectorAll('.fc-final').forEach((o) => o.remove());
         setTimeout(() => { if (st.state === s) finishOverlay(s.result, s.st, tm); }, prev && prev.status === 'active' && ((s.ev && s.ev.goal) || s.result.reason === 'penalties') ? 1850 : 0);
         if (prev && prev.status === 'active' && typeof playSound === 'function') playSound('gameEnd');
+        if (prev && prev.status === 'active' && s.result.winner) setTimeout(() => { cheer(s.result.winner); roar(0.8, 3); }, 300);
       }
     }
   }
@@ -576,7 +854,8 @@
     if (st.code && st.code !== want) emit('fc-unwatch', { code: st.code });
     clearInterval(st.tick);
     st.code = null; st.state = null; st.myColor = null; st.sel = null; st.busy = false; st.pending = false; st.overlayShown = null;
-    if (!want) { st.mode = null; renderLobby(); }
+    st.lphase = null; st.lu = null; st.luSent = false; st.standKey = '';
+    if (!want) { st.mode = null; crowdStop(); renderLobby(); }
     else if (want === 'local') { st.mode = 'local'; st.localCfg = loadLocalCfg(); gameShell(); startLocal(); }
     else { st.mode = 'online'; st.code = String(want).toUpperCase(); gameShell(); say('…'); watch(st.code); st.tick = setInterval(tickClock, 250); }
     const url = '/futbol' + (st.mode === 'local' ? '?m=local' : st.code ? '?t=' + st.code : '');
@@ -605,6 +884,7 @@
         clearInterval(st.tick);
         st.mode = null; st.code = null; st.state = null;
         setPlaying(false);
+        crowdStop();
       }
       return origSwitch.apply(this, arguments);
     };

@@ -12,6 +12,7 @@ window.LEGAL_TEXT = {
            "O'yinlar: yurishlar, natijalar, reyting tarixi, statistika, yutuqlar, bashoratlar va odob baholari.",
            "Muloqot: shaxsiy xabarlar, klub va o'yin chatlari, tomoshabinlar chati, shikoyatlar.",
            "Texnik: IP manzil (faqat so'rovlar sonini cheklash uchun, server xotirasida vaqtincha), internet kechikishi, o'yin paytida sahifadan chiqishlar va yurish vaqtlari (halol o'yin tekshiruvi uchun).",
+           "Sayt sozlamalari: rang, donalar, taxta, fon, ovoz, til va boshqa tanlovlaringiz akkauntingizda ham saqlanadi — boshqa qurilmadan kirganingizda qaytadan sozlashingiz shart bo'lmasligi uchun.",
            "Brauzeringizda (localStorage): kirish tokeni, sozlamalar va til. Biz cookie, reklama yoki kuzatuv (analitika) skriptlaridan foydalanmaymiz."]
         ]],
         ["Nima uchun ishlatamiz", [
@@ -90,6 +91,7 @@ window.LEGAL_TEXT = {
            'Games: moves, results, rating history, statistics, achievements, predictions and sportsmanship votes.',
            'Communication: private messages, club and game chats, spectator chat and reports.',
            'Technical: IP address (only to rate-limit requests, kept temporarily in server memory), connection latency, leaving the page during a game and move times (for fair-play checks).',
+           "Site settings: your colour, pieces, board, background, sound, language and other choices are also saved to your account, so you don't have to set them up again on another device.",
            'In your browser (localStorage): your login token, settings and language. We do not use cookies, ads or tracking (analytics) scripts.']
         ]],
         ['Why we use it', [
@@ -168,6 +170,7 @@ window.LEGAL_TEXT = {
            'Партии: ходы, результаты, история рейтинга, статистика, достижения, прогнозы и оценки вежливости.',
            'Общение: личные сообщения, чаты клубов и партий, чат зрителей, жалобы.',
            'Технические данные: IP-адрес (только для ограничения числа запросов, временно в памяти сервера), задержка соединения, уходы со страницы во время партии и время ходов (для проверки честной игры).',
+           "Настройки сайта: цвет, фигуры, доска, фон, звук, язык и другие ваши выборы также сохраняются в аккаунте — чтобы на другом устройстве не настраивать всё заново.",
            'В вашем браузере (localStorage): токен входа, настройки и язык. Мы не используем cookie, рекламу и скрипты слежения (аналитику).']
         ]],
         ['Зачем мы их используем', [
@@ -246,6 +249,7 @@ window.LEGAL_TEXT = {
            'Partidas: jugadas, resultados, historial de rating, estadísticas, logros, predicciones y votos de deportividad.',
            'Comunicación: mensajes privados, chats de club y de partida, chat de espectadores y denuncias.',
            'Técnicos: dirección IP (solo para limitar peticiones, temporalmente en la memoria del servidor), latencia, salidas de la página durante la partida y tiempos de jugada (para el control de juego limpio).',
+           "Ajustes del sitio: tu color, piezas, tablero, fondo, sonido, idioma y otras preferencias también se guardan en tu cuenta, para que no tengas que configurarlos de nuevo en otro dispositivo.",
            'En tu navegador (localStorage): token de sesión, ajustes e idioma. No usamos cookies, publicidad ni scripts de seguimiento (analítica).']
         ]],
         ['Para qué los usamos', [
@@ -324,6 +328,7 @@ window.LEGAL_TEXT = {
            'Partien: Züge, Ergebnisse, Wertungsverlauf, Statistiken, Erfolge, Tipps und Fairness-Bewertungen.',
            'Kommunikation: private Nachrichten, Klub- und Partie-Chats, Zuschauer-Chat und Meldungen.',
            'Technisch: IP-Adresse (nur zur Begrenzung von Anfragen, vorübergehend im Serverspeicher), Verbindungslatenz, Verlassen der Seite während einer Partie und Zugzeiten (für Fair-Play-Prüfungen).',
+           "Website-Einstellungen: Farbe, Figuren, Brett, Hintergrund, Ton, Sprache und deine anderen Auswahlen werden auch in deinem Konto gespeichert, damit du sie auf einem anderen Gerät nicht neu einstellen musst.",
            'In deinem Browser (localStorage): Anmelde-Token, Einstellungen und Sprache. Wir nutzen keine Cookies, keine Werbung und keine Tracking- bzw. Analyse-Skripte.']
         ]],
         ['Wofür wir sie nutzen', [
@@ -402,6 +407,7 @@ window.LEGAL_TEXT = {
            'Parties : coups, résultats, historique du classement, statistiques, succès, pronostics et votes de fair-play.',
            'Communication : messages privés, chats de club et de partie, chat des spectateurs et signalements.',
            'Données techniques : adresse IP (uniquement pour limiter les requêtes, temporairement en mémoire du serveur), latence, sorties de la page pendant une partie et temps de jeu (pour le contrôle du fair-play).',
+           "Réglages du site : votre couleur, vos pièces, l'échiquier, le fond, le son, la langue et vos autres choix sont aussi enregistrés dans votre compte, pour ne pas avoir à tout régler à nouveau sur un autre appareil.",
            "Dans votre navigateur (localStorage) : jeton de connexion, réglages et langue. Nous n'utilisons ni cookies, ni publicité, ni scripts de suivi (analytique)."]
         ]],
         ['Pourquoi nous les utilisons', [
@@ -482,6 +488,7 @@ window.LEGAL_TEXT.tr = {
          'Oyunlar: hamleler, sonuçlar, puan geçmişi, istatistikler, başarılar, tahminler ve centilmenlik oyları.',
          'İletişim: özel mesajlar, kulüp ve oyun sohbetleri, izleyici sohbeti ve şikâyetler.',
          'Teknik: IP adresi (yalnızca istekleri sınırlamak için, sunucu belleğinde geçici olarak), bağlantı gecikmesi, oyun sırasında sayfadan ayrılma ve hamle süreleri (fair-play kontrolü için).',
+         "Site ayarları: renk, taşlar, tahta, arka plan, ses, dil ve diğer seçimlerin hesabında da saklanır — başka bir cihazdan girdiğinde yeniden ayarlaman gerekmesin diye.",
          'Tarayıcında (localStorage): giriş anahtarın, ayarların ve dilin. Çerez, reklam veya takip (analitik) betikleri kullanmıyoruz.']
       ]],
       ['Neden kullanıyoruz', [
@@ -561,6 +568,7 @@ window.LEGAL_TEXT.kk = {
          'Ойындар: жүрістер, нәтижелер, рейтинг тарихы, статистика, жетістіктер, болжамдар және әдеп дауыстары.',
          'Қарым-қатынас: жеке хабарламалар, клуб және ойын чаттары, көрермендер чаты және шағымдар.',
          'Техникалық: IP мекенжайы (тек сұрауларды шектеу үшін, сервер жадында уақытша), байланыс кідірісі, ойын кезінде беттен шығу және жүріс уақыттары (адал ойынды тексеру үшін).',
+         "Сайт баптаулары: түс, фигуралар, тақта, фон, дыбыс, тіл және басқа таңдауларыңыз аккаунтыңызда да сақталады — басқа құрылғыдан кіргенде қайта баптамауыңыз үшін.",
          'Браузеріңізде (localStorage): кіру токені, баптаулар және тіл. Біз cookie, жарнама немесе бақылау (аналитика) скрипттерін пайдаланбаймыз.']
       ]],
       ['Не үшін пайдаланамыз', [
@@ -640,6 +648,7 @@ window.LEGAL_TEXT.tg = {
          'Бозиҳо: юришҳо, натиҷаҳо, таърихи рейтинг, омор, дастовардҳо, пешгӯиҳо ва овозҳои одоб.',
          'Муошират: паёмҳои шахсӣ, чатҳои клуб ва бозӣ, чати тамошобинон ва шикоятҳо.',
          'Техникӣ: суроғаи IP (танҳо барои маҳдуд кардани дархостҳо, муваққатан дар хотираи сервер), таъхири пайваст, тарк кардани саҳифа ҳангоми бозӣ ва вақти юришҳо (барои санҷиши бозии ҳалол).',
+         "Танзимоти сайт: ранг, донаҳо, тахта, замина, садо, забон ва дигар интихобҳои шумо дар ҳисоби шумо низ нигоҳ дошта мешаванд — то дар дастгоҳи дигар аз нав танзим накунед.",
          'Дар браузери шумо (localStorage): токени воридшавӣ, танзимот ва забон. Мо cookie, реклама ё скриптҳои пайгирӣ (аналитика) истифода намебарем.']
       ]],
       ['Барои чӣ истифода мебарем', [
@@ -719,6 +728,7 @@ window.LEGAL_TEXT.ky = {
          'Оюндар: жүрүштөр, жыйынтыктар, рейтинг тарыхы, статистика, жетишкендиктер, божомолдор жана адеп добуштары.',
          'Байланыш: жеке билдирүүлөр, клуб жана оюн чаттары, көрүүчүлөр чаты жана даттануулар.',
          'Техникалык: IP дареги (сурамдарды чектөө үчүн гана, сервердин эсинде убактылуу), байланыштын кечигүүсү, оюн учурунда барактан чыгуу жана жүрүштөрдүн убактысы (адилет оюнду текшерүү үчүн).',
+         "Сайттын жөндөөлөрү: түс, фигуралар, такта, фон, үн, тил жана башка тандоолоруңуз аккаунтуңузда да сакталат — башка түзмөктөн киргенде кайра жөндөбөшүңүз үчүн.",
          'Браузериңизде (localStorage): кирүү токени, жөндөөлөр жана тил. Биз cookie, жарнама же көзөмөлдөө (аналитика) скрипттерин колдонбойбуз.']
       ]],
       ['Эмне үчүн колдонобуз', [
@@ -798,6 +808,7 @@ window.LEGAL_TEXT.tk = {
          'Oýunlar: ýörişler, netijeler, reýting taryhy, statistika, üstünlikler, çaklamalar we edep sesleri.',
          'Aragatnaşyk: şahsy habarlar, klub we oýun çatlary, tomaşaçylaryň çaty we arzlar.',
          'Tehniki: IP salgysy (diňe haýyşlary çäklendirmek üçin, serweriň ýadynda wagtlaýyn), birikmäniň gijikmesi, oýun wagtynda sahypadan çykmak we ýöriş wagtlary (dogruçyl oýny barlamak üçin).',
+         "Saýt sazlamalary: reňk, daşlar, tagta, fon, ses, dil we beýleki saýlawlaryňyz hasabyňyzda hem saklanýar — başga enjamdan girende täzeden sazlamaz ýaly.",
          'Brauzeriňizde (localStorage): giriş tokeni, sazlamalar we dil. Biz cookie, mahabat ýa-da yzarlaýyş (analitika) skriptlerini ulanmaýarys.']
       ]],
       ['Näme üçin ulanýarys', [
@@ -877,6 +888,7 @@ window.LEGAL_TEXT.az = {
          'Oyunlar: gedişlər, nəticələr, reytinq tarixçəsi, statistika, nailiyyətlər, proqnozlar və ədəb səsləri.',
          'Ünsiyyət: şəxsi mesajlar, klub və oyun çatları, izləyici çatı və şikayətlər.',
          'Texniki: IP ünvanı (yalnız sorğuları məhdudlaşdırmaq üçün, server yaddaşında müvəqqəti), bağlantı gecikməsi, oyun zamanı səhifəni tərk etmə və gediş vaxtları (ədalətli oyun yoxlaması üçün).',
+         "Sayt ayarları: rəng, fiqurlar, taxta, fon, səs, dil və digər seçimlərin hesabında da saxlanılır — başqa cihazdan girəndə yenidən ayarlamamağın üçün.",
          'Brauzerində (localStorage): giriş tokeni, ayarlar və dil. Biz cookie, reklam və ya izləmə (analitika) skriptlərindən istifadə etmirik.']
       ]],
       ['Nə üçün istifadə edirik', [
@@ -956,6 +968,7 @@ window.LEGAL_TEXT.zh = {
          '对局：着法、结果、等级分历史、统计数据、成就、预测和风度评价。',
          '交流：私信、俱乐部和对局聊天、观众聊天以及举报。',
          '技术信息：IP 地址（仅用于限制请求频率，临时保存在服务器内存中）、连接延迟、对局中离开页面的情况以及走棋用时（用于公平竞赛检查）。',
+         "网站设置：你的颜色、棋子、棋盘、背景、声音、语言等选择也会保存在你的账号中，这样在其他设备上登录时无需重新设置。",
          '在你的浏览器中（localStorage）：你的登录令牌、设置和语言。我们不使用 Cookie、广告或跟踪（统计分析）脚本。']
       ]],
       ['我们为什么使用这些数据', [
@@ -1035,6 +1048,7 @@ window.LEGAL_TEXT.it = {
          'Partite: mosse, risultati, andamento del punteggio, statistiche, traguardi, pronostici e voti di sportività.',
          'Comunicazione: messaggi privati, chat dei club e delle partite, chat degli spettatori e segnalazioni.',
          'Dati tecnici: indirizzo IP (solo per limitare le richieste, tenuto temporaneamente nella memoria del server), latenza della connessione, uscite dalla pagina durante la partita e tempi delle mosse (per i controlli di fair play).',
+         "Impostazioni del sito: colore, pezzi, scacchiera, sfondo, suoni, lingua e le altre tue scelte vengono salvate anche nel tuo account, così non devi reimpostarle su un altro dispositivo.",
          'Nel tuo browser (localStorage): il token di accesso, le impostazioni e la lingua. Non usiamo cookie, pubblicità né script di tracciamento (analytics).']
       ]],
       ['Perché li usiamo', [
@@ -1102,7 +1116,7 @@ window.LEGAL_TEXT.it = {
     ]
   }
 };
-window.LEGAL_UPDATED = '2026-11-04';
+window.LEGAL_UPDATED = '2026-11-24';
 
 // 📜 Mualliflar va litsenziyalar (/mualliflar): [nomi, havola, muallif, litsenziya, litsenziya havolasi]
 // Yangi begona resurs (kutubxona, rasm, ovoz, shrift) qo'shilsa — shu yerga ham. Litsenziyasi noaniq yoki tijoratni

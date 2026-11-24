@@ -85,3 +85,20 @@ test("ADMIN_USERNAMES dagi nom bilan ro'yxatdan o'tgan foydalanuvchi darhol admi
   assert.equal(u.user.role, null);
   assert.equal((await srv.api(u, '/api/admin/stats')).status, 403);
 });
+
+test("Sessiya: token 30 kun amal qiladi va /api/auth/refresh bilan yangilanadi (faol o'yinchi haftada qayta kirmaydi); mehmon va kirmagan — rad", async () => {
+  const days = (tok) => { const p = JSON.parse(Buffer.from(tok.split('.')[1], 'base64url').toString()); return (p.exp - p.iat) / 86400; };
+  const u = await srv.register('Sess');
+  assert.equal(days(u.token), 30);
+  const login = await srv.api(null, '/api/auth/login', 'POST', { username: u.name, password: u.password });
+  assert.equal(days(login.token), 30);
+  const r = await srv.api(u, '/api/auth/refresh', 'POST', {});
+  assert.equal(r.success, true);
+  assert.equal(days(r.token), 30);
+  // Yangi token bilan himoyalangan so'rovlar ishlaydi
+  assert.equal((await srv.api({ token: r.token }, '/api/users/me/settings')).status, 200);
+  assert.equal((await srv.api(null, '/api/auth/refresh', 'POST', {})).status, 401);
+  const g = await srv.api(null, '/api/auth/guest', 'POST', { lang: 'uz' });
+  assert.equal(days(g.token), 7, 'mehmon tokeni 7 kun');
+  assert.equal((await srv.api({ token: g.token }, '/api/auth/refresh', 'POST', {})).status, 403);
+});

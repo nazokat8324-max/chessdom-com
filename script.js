@@ -2289,3 +2289,30 @@ document.addEventListener("click", (event) => {
   }
   document.addEventListener('DOMContentLoaded', () => { if (window.authToken) setTimeout(() => window.pullSettingsFromServer(), 300); });
 })();
+
+// 🔑 Sessiya o'zi yangilanadi (2026-11-24): token 1 kundan eski bo'lsa serverdan yangisi (30 kun) olinadi — sahifa ochilganda
+// va har 6 soatda. Avval token 7 kun amal qilib yangilanmasdi: saytga har kuni kirib turgan odam ham haftada bir marta
+// qaytadan kirishga majbur edi. Mehmon tokeni yangilanmaydi.
+(function () {
+  const DAY = 24 * 3600 * 1000;
+  function issuedAt(token) {
+    try {
+      const part = String(token).split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+      return (JSON.parse(atob(part)).iat || 0) * 1000;
+    } catch (e) { return 0; }
+  }
+  window.refreshSessionToken = async function (force) {
+    const token = window.authToken;
+    if (!token || !window.currentUser || window.currentUser.guest || (typeof window.isGuestUser === 'function' && window.isGuestUser())) return false;
+    if (!force && Date.now() - issuedAt(token) < DAY) return false;
+    try {
+      const d = await fetch('/api/auth/refresh', { method: 'POST', headers: { Authorization: 'Bearer ' + token } }).then((r) => r.json());
+      if (!d || !d.success || !d.token || window.authToken !== token) return false; // shu orada chiqib/boshqa akkauntga kirgan
+      window.authToken = d.token;
+      try { localStorage.setItem('justChessAuthToken', d.token); } catch (e) {}
+      return true;
+    } catch (e) { return false; }
+  };
+  document.addEventListener('DOMContentLoaded', () => setTimeout(() => window.refreshSessionToken(), 1500));
+  setInterval(() => { if (!document.hidden) window.refreshSessionToken(); }, 6 * 3600 * 1000);
+})();

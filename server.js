@@ -1791,6 +1791,7 @@ const GUEST_TTL_MS = 8 * 24 * 60 * 60 * 1000; // JWT 7 kun — undan keyin mehmo
 const GUEST_PREFIX = { uz: 'Mehmon', uzc: 'Mehmon', en: 'Guest', ru: 'Гость', es: 'Invitado', de: 'Gast', fr: 'Invite', tr: 'Misafir', kk: 'Қонақ', tg: 'Меҳмон', ky: 'Конок', tk: 'Myhman', az: 'Qonaq', zh: '访客', it: 'Ospite' };
 const GUEST_NAME_RE = new RegExp('^(' + Object.values(GUEST_PREFIX).join('|') + ')-', 'i');
 // Mehmonga ruxsat etilgan yozuvchi so'rovlar (qolganlari 403 "ro'yxatdan o'ting")
+const USER_TOKEN_TTL = '30d'; // ro'yxatdan o'tgan o'yinchi tokeni (mehmonniki — 7 kun)
 const GUEST_ALLOWED = new Set(['/api/matchmaking/join', '/api/matchmaking/leave', '/api/auth/logout', '/api/users/me/country', '/api/notifications/read', '/api/notifications/clear']);
 const GUEST_ONLY_MSG = "Bu imkoniyat uchun ro'yxatdan o'ting!";
 function activeBan(userId) {
@@ -1998,7 +1999,7 @@ async function start() {
           }
         } catch (e) { console.error('Taklif kodi xatoligi:', e.message); }
       }
-      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+      const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: USER_TOKEN_TTL });
       res.json({ success: true, message: "Muvaffaqiyatli ro'yxatdan o'tdingiz!", user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.statsByMode, role: isAdminName ? 'admin' : null }, token });
     } catch (err) {
       // Bir vaqtda ikki so'rov: tekshiruvdan o'tib, UNIQUE cheklovga urilgan — server xatosi emas
@@ -2010,12 +2011,21 @@ async function start() {
     }
   });
 
-  // Kirish javobi (parol bilan kirish va Telegram Mini App uchun bir xil): JWT 7 kun + klientga kerakli maydonlar
+  // Kirish javobi (parol bilan kirish va Telegram Mini App uchun bir xil): JWT 30 kun + klientga kerakli maydonlar
   async function issueSession(user) {
-    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ userId: user.id, username: user.username }, JWT_SECRET, { expiresIn: USER_TOKEN_TTL });
     await db.touchUserLastActive(user.id);
     return { user: { id: user.id, username: user.username, email: user.email, rating: user.rating, stats: user.stats, statsByMode: user.stats_by_mode, ratingsByMode: user.ratings_by_mode, country: user.country || null, club: db.userClub(user), avatarVersion: user.avatar_version || null, role: user.role || null }, token };
   }
+  // 🔑 Sessiyani yangilash (2026-11-24): avval token 7 kun amal qilib yangilanmasdi — har kuni kirib turgan odam ham haftada
+  // bir marta qayta kirishga majbur edi. Klient (script.js) token 1 kundan eski bo'lsa shu yerdan yangisini oladi (30 kun).
+  // Mehmonga — 403 (GUEST_ALLOWED da yo'q; mehmon akkaunti 8 kunda o'chiriladi). Ban/o'chirilgan — authMiddleware rad etadi.
+  app.post('/api/auth/refresh', authMiddleware, async (req, res) => {
+    try {
+      const token = jwt.sign({ userId: req.user.userId, username: req.user.username }, JWT_SECRET, { expiresIn: USER_TOKEN_TTL });
+      res.json({ success: true, token });
+    } catch (err) { console.error('Sessiya yangilash xatoligi:', err); res.status(500).json({ success: false, message: 'Server xatoligi!' }); }
+  });
   app.post('/api/auth/login', loginLimiter, [
     body('username').notEmpty().withMessage('Username is required'),
     body('password').notEmpty().withMessage('Password is required')

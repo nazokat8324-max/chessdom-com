@@ -958,6 +958,20 @@ test("Ovoz bilan yurish (yaxshilangan): panel eshitilgan gap va natijani ko'rsat
   assert.deepEqual(p.errors, []);
 });
 
+test("Sessiya o'zi yangilanadi: 2 kun oldin olingan token bilan sahifa ochilsa, yangi 30 kunlik token saqlanadi (qayta kirish so'ralmaydi)", opts, async () => {
+  const u = await srv.register('SessUi');
+  const jwt = require('jsonwebtoken');
+  const old = jwt.sign({ userId: u.id, username: u.name, iat: Math.floor(Date.now() / 1000) - 2 * 86400 }, 'test-secret', { expiresIn: '7d' });
+  const p = await page({ ...u, token: old });
+  await p.goto(srv.base + '/', { waitUntil: 'load' });
+  await p.waitForFunction((o) => { const t = localStorage.getItem('justChessAuthToken'); return t && t !== o && window.authToken === t; }, { timeout: 10000 }, old);
+  const t = await p.evaluate(() => localStorage.getItem('justChessAuthToken'));
+  const pl = JSON.parse(Buffer.from(t.split('.')[1], 'base64url').toString());
+  assert.equal((pl.exp - pl.iat) / 86400, 30);
+  assert.equal(await p.evaluate(() => document.body.classList.contains('auth-locked')), false);
+  assert.deepEqual(p.errors, []);
+});
+
 test("Sozlamalar akkauntda: bir qurilmada saqlangan rang va til boshqa qurilmada (toza brauzer) kirganda o'zi qo'llanadi", opts, async () => {
   const u = await srv.register('SyncUi');
   const a = await page(u);
